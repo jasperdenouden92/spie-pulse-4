@@ -69,6 +69,7 @@ import FloatingToolbar from '@/components/FloatingToolbar';
 import AssetDetail from '@/components/AssetDetail';
 import ControlRoomFilters from '@/components/ControlRoomFilters';
 import ExportsPage from '@/components/ExportsPage';
+import NotificationsPanel from '@/components/NotificationsPanel';
 import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
@@ -213,6 +214,7 @@ export default function Home() {
   // ── Local-only state (ephemeral / pure UI) ─────────────────────────────────
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
+  const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const [favorites, setFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
@@ -559,8 +561,17 @@ export default function Home() {
             }
           }}
           isAssetExplorerOpen={isAssetExplorerOpen}
+          notificationsPanelOpen={notificationsPanelOpen}
+          onNotificationsPanelToggle={() => setNotificationsPanelOpen(!notificationsPanelOpen)}
         />
       </Box>
+
+      {/* Notifications Panel — outside sidebar stacking context */}
+      <NotificationsPanel
+        open={notificationsPanelOpen}
+        onClose={() => setNotificationsPanelOpen(false)}
+        sidebarWidth={leftSidebarWidth}
+      />
 
       {/* Scrim/Backdrop when Asset Explorer is open */}
       {isAssetExplorerOpen && (

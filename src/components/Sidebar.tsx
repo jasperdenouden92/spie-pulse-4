@@ -32,6 +32,7 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchModal from '@/components/SearchModal';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import Badge from '@mui/material/Badge';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Tooltip from '@mui/material/Tooltip';
 import Popover from '@mui/material/Popover';
@@ -87,6 +88,8 @@ interface SidebarProps {
   isAssetExplorerOpen?: boolean;
   selection?: string;
   onSelectionChange?: (selection: string) => void;
+  notificationsPanelOpen?: boolean;
+  onNotificationsPanelToggle?: () => void;
 }
 
 interface SortableFavoriteItemProps {
@@ -221,7 +224,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
@@ -917,10 +920,15 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Divider sx={{ mb: 1 }} />
               <List dense sx={{ py: 0 }}>
                 <ListItem disablePadding>
-                  <ListItemButton sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', '&:hover': { backgroundColor: '#f5f5f5' } }}>
-                    <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <NotificationsOutlinedIcon sx={{ fontSize: 16 }} />
-                    </Box>
+                  <ListItemButton
+                    onClick={() => onNotificationsPanelToggle?.()}
+                    sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                  >
+                    <Badge color="primary" variant="dot" invisible={false} sx={{ '& .MuiBadge-badge': { top: 4, right: 4, width: 7, height: 7, minWidth: 7 } }}>
+                      <Box sx={{ width: 28, height: 28, bgcolor: notificationsPanelOpen ? '#e0e0e0' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <NotificationsOutlinedIcon sx={{ fontSize: 16 }} />
+                      </Box>
+                    </Badge>
                     <ListItemText primary="Notifications" primaryTypographyProps={{ variant: 'body2' }} />
                   </ListItemButton>
                 </ListItem>
@@ -1063,7 +1071,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   sx: { ml: 1, p: 1, minWidth: 180, borderRadius: '8px' }
                 } as any
               }}
-              sx={{ pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
+              sx={{ zIndex: 1600, pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
             >
               <Typography variant="subtitle2" sx={{ px: 1.5, py: 0.5, fontWeight: 600, color: 'text.secondary' }}>Themes</Typography>
               {[
@@ -1150,7 +1158,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   sx: { ml: 1, p: 1, minWidth: 160, borderRadius: '8px' }
                 } as any
               }}
-              sx={{ pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
+              sx={{ zIndex: 1600, pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
             >
               <MenuItem
                 onClick={() => { onPageChange?.('operations_docs'); setCollapsedOperationsAnchor(null); }}
@@ -1188,8 +1196,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Box sx={{ mt: 'auto', pb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
               <Divider sx={{ width: 40, mb: 0.5 }} />
               <Tooltip title="Notifications" placement="right">
-                <IconButton sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}>
-                  <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
+                <IconButton
+                  onClick={() => onNotificationsPanelToggle?.()}
+                  sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: '#f5f5f5' } }}
+                >
+                  <Badge color="primary" variant="dot" invisible={false} sx={{ '& .MuiBadge-badge': { top: 2, right: 2, width: 7, height: 7, minWidth: 7 } }}>
+                    <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
+                  </Badge>
                 </IconButton>
               </Tooltip>
               <Tooltip title="Help" placement="right">
@@ -1255,7 +1268,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             sx: { ml: 1, p: 1, minWidth: 200, borderRadius: '8px' }
           } as any
         }}
-        sx={{ pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
+        sx={{ zIndex: 1600, pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
       >
         <Box sx={{ px: 1.5, py: 1 }}>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>Admin User</Typography>
