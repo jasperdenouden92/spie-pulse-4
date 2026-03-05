@@ -45,6 +45,7 @@ interface PageHeaderProps {
   onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports') => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  onExport?: () => void;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -95,6 +96,7 @@ export default function PageHeader({
   onPageChange,
   isCollapsed = false,
   onToggleCollapse,
+  onExport,
 }: PageHeaderProps) {
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
@@ -439,6 +441,7 @@ export default function PageHeader({
             variant="contained"
             size="small"
             startIcon={<FileDownloadOutlinedIcon />}
+            onClick={onExport}
             sx={{
               textTransform: 'none',
               fontWeight: 600,

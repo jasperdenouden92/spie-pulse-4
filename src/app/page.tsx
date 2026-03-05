@@ -70,6 +70,9 @@ import AssetDetail from '@/components/AssetDetail';
 import ControlRoomFilters from '@/components/ControlRoomFilters';
 import ExportsPage from '@/components/ExportsPage';
 import NotificationsPanel from '@/components/NotificationsPanel';
+import type { NotificationsPanelHandle } from '@/components/NotificationsPanel';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
@@ -215,6 +218,8 @@ export default function Home() {
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
+  const notificationsRef = useRef<NotificationsPanelHandle>(null);
+  const [exportToast, setExportToast] = useState<{ open: boolean; message: string; severity: 'info' | 'success' }>({ open: false, message: '', severity: 'info' });
   const [favorites, setFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
@@ -484,6 +489,26 @@ export default function Home() {
     setURLParams(updates);
   };
 
+  const handleExport = () => {
+    const exportName = selectedBuilding
+      ? `${selectedBuilding.name} — ${selection === 'overall' ? 'Overview' : selection.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`
+      : 'Control Room Overview';
+    setExportToast({ open: true, message: `Exporting "${exportName}"...`, severity: 'info' });
+    setTimeout(() => {
+      setExportToast({ open: true, message: `Export "${exportName}" is ready!`, severity: 'success' });
+      notificationsRef.current?.addNotification({
+        id: `export-${Date.now()}`,
+        actor: 'System',
+        actorInitials: 'S',
+        actorColor: '#059669',
+        action: 'export ready:',
+        target: `${exportName} (PDF, ${(Math.random() * 3 + 0.5).toFixed(1)} MB)`,
+        date: new Date().toISOString(),
+        read: false,
+      });
+    }, 3000);
+  };
+
   const isToolbarVisible = true;
 
   // Map metric types to their display info
@@ -568,6 +593,7 @@ export default function Home() {
 
       {/* Notifications Panel — outside sidebar stacking context */}
       <NotificationsPanel
+        ref={notificationsRef}
         open={notificationsPanelOpen}
         onClose={() => setNotificationsPanelOpen(false)}
         sidebarWidth={leftSidebarWidth}
@@ -872,6 +898,7 @@ export default function Home() {
             onPageChange={handlePageChange}
             isCollapsed={leftSidebarCollapsed}
             onToggleCollapse={handleLeftSidebarToggle}
+            onExport={handleExport}
           />
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
@@ -1762,6 +1789,23 @@ export default function Home() {
       </Box>
 
       <ChangelogButton />
+
+      {/* Export toast */}
+      <Snackbar
+        open={exportToast.open}
+        autoHideDuration={4000}
+        onClose={() => setExportToast(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setExportToast(prev => ({ ...prev, open: false }))}
+          severity={exportToast.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {exportToast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
