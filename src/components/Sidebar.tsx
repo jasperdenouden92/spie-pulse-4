@@ -328,12 +328,12 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   );
 
   const customers = [
-    { name: 'ACME Corporation', initials: 'acme' },
-    { name: 'TechVision Inc', initials: 'tv' },
-    { name: 'Global Solutions', initials: 'gs' },
-    { name: 'Nexus Group', initials: 'ng' },
-    { name: 'Pulse Dynamics', initials: 'pd' },
-    { name: 'Summit Enterprises', initials: 'se' },
+    { name: 'ACME Corporation' },
+    { name: 'TechVision Inc' },
+    { name: 'Global Solutions' },
+    { name: 'Nexus Group' },
+    { name: 'Pulse Dynamics' },
+    { name: 'Summit Enterprises' },
   ];
 
   useEffect(() => {
@@ -439,9 +439,9 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Box
                 sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}
               >
-                <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem' }}>
-                    {customers.find(c => c.name === selectedCustomer)?.initials}
+                <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
+                    {selectedCustomer.slice(0, 2)}
                   </Typography>
                 </Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -506,20 +506,20 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     }
                   }}
                 >
-                  <Box 
-                    sx={{ 
-                      width: 40, 
-                      height: 40, 
-                      bgcolor: '#1e5a96', 
-                      borderRadius: '2px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      flexShrink: 0 
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      bgcolor: '#1e5a96',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
                     }}
                   >
-                    <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600 }}>
-                      {customer.initials}
+                    <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, textTransform: 'uppercase' }}>
+                      {customer.name.slice(0, 2)}
                     </Typography>
                   </Box>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -995,9 +995,9 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
                 sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
               >
-                <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem' }}>
-                    {customers.find(c => c.name === selectedCustomer)?.initials}
+                <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
+                    {selectedCustomer.slice(0, 2)}
                   </Typography>
                 </Box>
               </IconButton>
