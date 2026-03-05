@@ -208,6 +208,40 @@ function BuildingPreviewCard({ result }: { result: SearchResult }) {
   );
 }
 
+function AISearchPreviewCard({ query }: { query: string }) {
+  return (
+    <Box sx={{ bgcolor: '#f8f8f8', height: '100%', display: 'flex', flexDirection: 'column', p: 2.5, gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <AutoAwesomeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+          AI Search
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        {/* User message */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ bgcolor: '#1976d2', color: '#fff', px: 2, py: 1, borderRadius: '12px 12px 4px 12px', maxWidth: '85%' }}>
+            <Typography variant="body2" sx={{ fontSize: '0.813rem' }}>
+              {query}
+            </Typography>
+          </Box>
+        </Box>
+        {/* AI thinking */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+          <Box sx={{ bgcolor: '#fff', px: 2, py: 1, borderRadius: '12px 12px 12px 4px', maxWidth: '85%' }}>
+            <Typography variant="body2" sx={{ fontSize: '0.813rem', color: 'text.secondary' }}>
+              ...
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+      <Typography variant="caption" sx={{ color: 'text.disabled', textAlign: 'center' }}>
+        Press Enter to search with AI
+      </Typography>
+    </Box>
+  );
+}
+
 function PreviewCard({ result }: { result: SearchResult }) {
   if (result.type === 'building') return <BuildingPreviewCard result={result} />;
   return (
@@ -290,6 +324,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   });
 
   // Determine which result to show in the preview panel
+  const isAICardActive = isSearching && activeIndex === 0 && hoveredResultIndex === null;
   const previewResult: SearchResult | null = (() => {
     if (hoveredResultIndex !== null) {
       return (isSearching ? filteredResults : recentItems)[hoveredResultIndex] ?? null;
@@ -425,8 +460,6 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             px: 2,
             py: 1,
             gap: 1,
-            borderBottom: 1,
-            borderColor: 'divider',
           }}
         >
           <SearchIcon sx={{ color: 'text.disabled', fontSize: 22, ml: 0.5 }} />
@@ -687,7 +720,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               overflow: 'hidden',
             }}
           >
-            {previewResult ? <PreviewCard result={previewResult} /> : <PreviewSkeleton />}
+            {isAICardActive ? <AISearchPreviewCard query={searchQuery} /> : previewResult ? <PreviewCard result={previewResult} /> : <PreviewSkeleton />}
           </Paper>
         </Box>
         </Box>
