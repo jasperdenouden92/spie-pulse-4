@@ -519,6 +519,8 @@ export default function Home() {
           onMetricSelect={(metric) => setSelection(metric as MetricType)}
           favorites={favorites}
           onFavoritesChange={setFavorites}
+          selection={selection}
+          onSelectionChange={(s) => setSelection(s)}
           isCollapsed={leftSidebarCollapsed}
           onToggleCollapse={handleLeftSidebarToggle}
           currentPage={currentPage}

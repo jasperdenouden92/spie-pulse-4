@@ -75,6 +75,8 @@ interface SidebarProps {
   onPageChange?: (page: 'home' | 'portfolio' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
+  selection?: string;
+  onSelectionChange?: (selection: string) => void;
 }
 
 interface SortableFavoriteItemProps {
@@ -207,12 +209,15 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
+  const [controlRoomExpanded, setControlRoomExpanded] = useState(currentPage === 'portfolio');
+  const [crThemesExpanded, setCrThemesExpanded] = useState(false);
+  const [crOperationsExpanded, setCrOperationsExpanded] = useState(false);
   const [operationsExpanded, setOperationsExpanded] = useState(currentPage?.startsWith('operations') ?? false);
   const [hoveredFavorite, setHoveredFavorite] = useState<string | null>(null);
   const [internalFavorites, setInternalFavorites] = useState<Favorite[]>([
@@ -492,7 +497,10 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton
-                onClick={() => onPageChange?.('portfolio')}
+                onClick={() => {
+                  setControlRoomExpanded(!controlRoomExpanded);
+                  onPageChange?.('portfolio');
+                }}
                 sx={{
                   height: 40,
                   paddingLeft: '4px',
@@ -512,8 +520,106 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   primary="Control Room"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
+                <ExpandMoreIcon sx={{ fontSize: 18, transform: controlRoomExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
               </ListItemButton>
             </ListItem>
+            {controlRoomExpanded && (
+              <List dense sx={{ pl: 2, py: 0 }}>
+                {/* Themes dropdown */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => {
+                      setCrThemesExpanded(!crThemesExpanded);
+                      onPageChange?.('portfolio');
+                      onSelectionChange?.('themes_group');
+                    }}
+                    sx={{
+                      height: 36,
+                      paddingLeft: '4px',
+                      gap: 1.5,
+                      borderRadius: '5px',
+                      bgcolor: currentPage === 'portfolio' && selection === 'themes_group' ? '#e3f2fd' : 'transparent',
+                      '&:hover': { bgcolor: '#f5f5f5' }
+                    }}
+                  >
+                    <NatureOutlinedIcon sx={{ fontSize: 16 }} />
+                    <ListItemText primary="Themes" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'themes_group' ? 600 : 400 }} />
+                    <ExpandMoreIcon sx={{ fontSize: 16, transform: crThemesExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                  </ListItemButton>
+                </ListItem>
+                {crThemesExpanded && [
+                  { key: 'sustainability', label: 'Sustainability' },
+                  { key: 'comfort', label: 'Comfort' },
+                  { key: 'asset_monitoring', label: 'Asset Monitoring' },
+                  { key: 'energy', label: 'Energy' },
+                  { key: 'workspace', label: 'Workspace' },
+                  { key: 'compliance', label: 'Compliance' },
+                  { key: 'water_management', label: 'Water Management' },
+                  { key: 'security_systems', label: 'Security Systems' },
+                  { key: 'access_control', label: 'Access Control' },
+                ].map((item) => (
+                  <ListItem key={item.key} disablePadding>
+                    <ListItemButton
+                      onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                      sx={{
+                        height: 32,
+                        pl: 4,
+                        gap: 1.5,
+                        borderRadius: '5px',
+                        bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
+                        '&:hover': { bgcolor: '#f5f5f5' }
+                      }}
+                    >
+                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontSize: '0.8rem', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400 }} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+
+                {/* Operations dropdown */}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => {
+                      setCrOperationsExpanded(!crOperationsExpanded);
+                      onPageChange?.('portfolio');
+                      onSelectionChange?.('operations_group');
+                    }}
+                    sx={{
+                      height: 36,
+                      paddingLeft: '4px',
+                      gap: 1.5,
+                      borderRadius: '5px',
+                      bgcolor: currentPage === 'portfolio' && selection === 'operations_group' ? '#e3f2fd' : 'transparent',
+                      '&:hover': { bgcolor: '#f5f5f5' }
+                    }}
+                  >
+                    <HandymanOutlinedIcon sx={{ fontSize: 16 }} />
+                    <ListItemText primary="Operations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'operations_group' ? 600 : 400 }} />
+                    <ExpandMoreIcon sx={{ fontSize: 16, transform: crOperationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                  </ListItemButton>
+                </ListItem>
+                {crOperationsExpanded && [
+                  { key: 'tickets', label: 'Tickets' },
+                  { key: 'quotations', label: 'Quotations' },
+                  { key: 'maintenance', label: 'Maintenance' },
+                ].map((item) => (
+                  <ListItem key={item.key} disablePadding>
+                    <ListItemButton
+                      onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                      sx={{
+                        height: 32,
+                        pl: 4,
+                        gap: 1.5,
+                        borderRadius: '5px',
+                        bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
+                        '&:hover': { bgcolor: '#f5f5f5' }
+                      }}
+                    >
+                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontSize: '0.8rem', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400 }} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            )}
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => onPageChange?.('insights')}
