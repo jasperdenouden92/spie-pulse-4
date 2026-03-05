@@ -13,7 +13,6 @@ import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
 import SearchIcon from '@mui/icons-material/Search';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import BusinessIcon from '@mui/icons-material/Business';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
@@ -96,14 +95,14 @@ const rowSx = (active?: boolean) => ({
   gap: 1.5,
   mx: 1,
   px: 1.5,
-  py: 0.75,
+  py: 1.25,
   borderRadius: 1,
   cursor: 'pointer',
   bgcolor: active ? '#f5f5f5' : 'transparent',
   '&:hover': { bgcolor: '#f5f5f5' },
 });
 
-const PREVIEW_WIDTH = 320;
+const PREVIEW_WIDTH = 400;
 
 const typeLabels: Record<string, string> = {
   building: 'Building',
@@ -120,7 +119,7 @@ function ResultRow({ result, onClick, active, rowRef, onMouseEnter }: { result: 
         {typeIcons[result.type]}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2, flexShrink: 0 }} noWrap>
+        <Typography variant="body2" sx={{ fontWeight: 550, lineHeight: 1.2, flexShrink: 0 }} noWrap>
           {result.title}
         </Typography>
         {result.subtitle && (
@@ -195,7 +194,6 @@ function PreviewSkeleton() {
 
 export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filterType, setFilterType] = useState<string>('all');
   const [filterDate, setFilterDate] = useState<string>('any');
@@ -331,7 +329,8 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       <Paper
         sx={{
           width: '90%',
-          maxWidth: showPreview ? 560 + PREVIEW_WIDTH + 96 : 560,
+          maxWidth: 440 + PREVIEW_WIDTH + 96,
+          minHeight: 560,
           maxHeight: '75vh',
           outline: 'none',
           borderRadius: 2,
@@ -339,7 +338,6 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
           flexDirection: 'column',
           overflow: 'hidden',
           boxShadow: '0 16px 70px rgba(0,0,0,0.15)',
-          transition: 'max-width 0.2s ease',
         }}
       >
         {/* Search input row */}
@@ -371,17 +369,6 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               },
             }}
           />
-          <IconButton
-            size="small"
-            onClick={() => setShowPreview((v) => !v)}
-            sx={{
-              color: showPreview ? 'primary.main' : 'text.secondary',
-              bgcolor: showPreview ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
-              '&:hover': { bgcolor: showPreview ? 'rgba(25, 118, 210, 0.12)' : 'action.hover' },
-            }}
-          >
-            <InfoOutlinedIcon fontSize="small" />
-          </IconButton>
           <IconButton
             size="small"
             onClick={() => setShowFilters((v) => !v)}
@@ -534,7 +521,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 }}
               >
                 <AutoAwesomeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                <Typography variant="body2" sx={{ fontWeight: 550 }}>
                   Search everything with AI
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'text.disabled' }}>
@@ -611,23 +598,21 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
         </Box>
 
         {/* Preview panel */}
-        {showPreview && (
-          <Box sx={{ width: PREVIEW_WIDTH, flexShrink: 0, p: 6, pl: 6 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                borderRadius: 2,
-                boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
-                overflow: 'auto',
-              }}
-            >
-              {previewResult ? <PreviewCard result={previewResult} /> : <PreviewSkeleton />}
-            </Paper>
-          </Box>
-        )}
+        <Box sx={{ width: PREVIEW_WIDTH, flexShrink: 0, p: 6, pl: 6 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              borderRadius: 2,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+              border: '1px solid',
+              borderColor: 'divider',
+              height: '100%',
+              overflow: 'auto',
+            }}
+          >
+            {previewResult ? <PreviewCard result={previewResult} /> : <PreviewSkeleton />}
+          </Paper>
+        </Box>
         </Box>
       </Paper>
     </Modal>
