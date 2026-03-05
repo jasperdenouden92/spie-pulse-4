@@ -613,7 +613,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 {/* Themes dropdown */}
                 <ListItem disablePadding>
                   <ListItemButton
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); }}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); setCrThemesExpanded(true); }}
                     sx={{
                       height: 36,
                       paddingLeft: '4px',
@@ -666,7 +666,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 {/* Operations dropdown */}
                 <ListItem disablePadding>
                   <ListItemButton
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); }}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); setCrOperationsExpanded(true); }}
                     sx={{
                       height: 36,
                       paddingLeft: '4px',
