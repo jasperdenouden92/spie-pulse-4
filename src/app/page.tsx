@@ -51,6 +51,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import SortOutlinedIcon from '@mui/icons-material/SortOutlined';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
@@ -1276,69 +1278,32 @@ export default function Home() {
                         borderColor: 'divider',
                         bgcolor: '#fafafa'
                       }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {/* Buildings Tab */}
-                          <Box
-                            component="button"
-                            onClick={() => setBuildingsPanelTab('buildings')}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              px: 2,
-                              py: 1,
-                              border: '1px solid',
-                              borderColor: buildingsPanelTab === 'buildings' ? '#1976d2' : 'divider',
-                              borderRadius: '6px',
-                              bgcolor: buildingsPanelTab === 'buildings' ? '#1976d2' : '#fff',
-                              cursor: 'pointer',
-                              color: buildingsPanelTab === 'buildings' ? '#fff' : 'text.secondary',
+                        <Tabs
+                          value={buildingsPanelTab}
+                          onChange={(_, v) => setBuildingsPanelTab(v)}
+                          sx={{
+                            minHeight: 40,
+                            '& .MuiTab-root': {
+                              minHeight: 40,
+                              py: 0,
+                              px: 1.5,
+                              textTransform: 'none',
                               fontWeight: 500,
                               fontSize: '0.875rem',
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                bgcolor: buildingsPanelTab === 'buildings' ? '#1565c0' : '#f5f5f5',
-                                borderColor: buildingsPanelTab === 'buildings' ? '#1565c0' : '#bdbdbd'
-                              }
-                            }}
-                          >
-                            <ApartmentOutlinedIcon sx={{ fontSize: 18 }} />
-                            Buildings
-                          </Box>
-
-                          {/* KPI Analysis Tab */}
-                          <Box
-                            component="button"
-                            onClick={() => setBuildingsPanelTab('kpi_analysis')}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              px: 2,
-                              py: 1,
-                              border: '1px solid',
-                              borderColor: buildingsPanelTab === 'kpi_analysis' ? '#1976d2' : 'divider',
-                              borderRadius: '6px',
-                              bgcolor: buildingsPanelTab === 'kpi_analysis' ? '#1976d2' : '#fff',
-                              cursor: 'pointer',
-                              color: buildingsPanelTab === 'kpi_analysis' ? '#fff' : 'text.secondary',
-                              fontWeight: 500,
-                              fontSize: '0.875rem',
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                bgcolor: buildingsPanelTab === 'kpi_analysis' ? '#1565c0' : '#f5f5f5',
-                                borderColor: buildingsPanelTab === 'kpi_analysis' ? '#1565c0' : '#bdbdbd'
-                              }
-                            }}
-                          >
-                            <AutoGraphOutlinedIcon sx={{ fontSize: 18 }} />
-                            KPI Analysis
-                          </Box>
-                        </Box>
+                              gap: 0.75,
+                            },
+                            '& .MuiTabs-indicator': { height: 2 }
+                          }}
+                        >
+                          <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
+                          <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
+                        </Tabs>
 
                         {/* Panel Actions */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          {/* Sort Dropdown */}
+                          {/* Sort Dropdown — hidden on KPI Analysis */}
+                          {buildingsPanelTab !== 'kpi_analysis' && (
+                            <>
                           <Chip
                             icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
                             label={sortOrder}
@@ -1363,6 +1328,8 @@ export default function Home() {
                             <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
                             <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
                           </Menu>
+                            </>
+                          )}
                           <Box
                             component="button"
                             sx={{
