@@ -15,6 +15,8 @@ import MonitorHeartOutlined from '@mui/icons-material/MonitorHeartOutlined';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
@@ -114,6 +116,14 @@ export default function PageHeader({
   const [buildingSearch, setBuildingSearch] = useState('');
   const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState<null | HTMLElement>(null);
   const [localDateRange, setLocalDateRange] = useState('This Quarter');
+  const [pickerStart, setPickerStart] = useState<Date | null>(null);
+  const [pickerEnd, setPickerEnd] = useState<Date | null>(null);
+  const [pickerHover, setPickerHover] = useState<Date | null>(null);
+  const [calLeftMonth, setCalLeftMonth] = useState<{ year: number; month: number }>(() => {
+    const now = new Date();
+    const m = now.getMonth() - 1;
+    return m < 0 ? { year: now.getFullYear() - 1, month: 11 } : { year: now.getFullYear(), month: m };
+  });
   const selectedDateRange = selectedDateRangeProp ?? localDateRange;
   const setSelectedDateRange = (v: string) => { setLocalDateRange(v); onDateRangeChange?.(v); };
 
@@ -216,6 +226,113 @@ export default function PageHeader({
       }
       default: return range;
     }
+  };
+
+  // Calendar helpers
+  const calRight = calLeftMonth.month === 11
+    ? { year: calLeftMonth.year + 1, month: 0 }
+    : { year: calLeftMonth.year, month: calLeftMonth.month + 1 };
+
+  const calIsSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  const navigateCalPrev = () => setCalLeftMonth(prev =>
+    prev.month === 0 ? { year: prev.year - 1, month: 11 } : { year: prev.year, month: prev.month - 1 }
+  );
+  const navigateCalNext = () => setCalLeftMonth(prev =>
+    prev.month === 11 ? { year: prev.year + 1, month: 0 } : { year: prev.year, month: prev.month + 1 }
+  );
+
+  const handleCalDayClick = (d: Date) => {
+    if (!pickerStart || (pickerStart && pickerEnd)) {
+      setPickerStart(d);
+      setPickerEnd(null);
+    } else {
+      const [start, end] = d >= pickerStart ? [pickerStart, d] : [d, pickerStart];
+      const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const fmt = (dt: Date) => `${dt.getDate()} ${MONTHS[dt.getMonth()]}`;
+      const label = calIsSameDay(start, end)
+        ? `${fmt(start)} ${start.getFullYear()}`
+        : `${fmt(start)} – ${fmt(end)} ${end.getFullYear()}`;
+      setSelectedDateRange(label);
+      setPickerStart(null);
+      setPickerEnd(null);
+      setPickerHover(null);
+      setDateRangeAnchorEl(null);
+    }
+  };
+
+  const renderCalMonth = (year: number, month: number) => {
+    const today = new Date();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDow = new Date(year, month, 1).getDay();
+    const rangeEndDate = pickerEnd ?? (pickerStart && pickerHover ? pickerHover : null);
+    const [rangeMin, rangeMax] = (() => {
+      if (!pickerStart || !rangeEndDate) return [null, null];
+      return pickerStart <= rangeEndDate ? [pickerStart, rangeEndDate] : [rangeEndDate, pickerStart];
+    })();
+    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+    const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    const cells: (Date | null)[] = [
+      ...Array(firstDow).fill(null),
+      ...Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1)),
+    ];
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    return (
+      <Box sx={{ minWidth: 224 }}>
+        <Typography variant="subtitle2" sx={{ textAlign: 'center', mb: 1.5, fontWeight: 600, fontSize: '0.875rem' }}>
+          {MONTH_NAMES[month]} {year}
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 32px)', rowGap: '2px' }}>
+          {DAY_LABELS.map(d => (
+            <Box key={d} sx={{ height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.688rem', color: 'text.secondary', fontWeight: 500 }}>
+              {d}
+            </Box>
+          ))}
+          {cells.map((day, idx) => {
+            if (!day) return <Box key={`e${idx}`} sx={{ height: 32 }} />;
+            const isToday = calIsSameDay(day, today);
+            const isStart = !!pickerStart && calIsSameDay(day, pickerStart);
+            const isEnd = !!rangeEndDate && calIsSameDay(day, rangeEndDate);
+            const inRange = !!rangeMin && !!rangeMax && day > rangeMin && day < rangeMax;
+            const isSelected = isStart || isEnd;
+            const showBar = (isStart || isEnd || inRange) && !(isStart && isEnd);
+            const barLeft = isEnd || inRange ? 0 : '50%';
+            const barRight = isStart || inRange ? 0 : '50%';
+            const isHovered = !!pickerHover && calIsSameDay(day, pickerHover);
+            return (
+              <Box
+                key={idx}
+                sx={{ position: 'relative', height: 32, cursor: 'pointer' }}
+                onClick={() => handleCalDayClick(day)}
+                onMouseEnter={() => { if (pickerStart && !pickerEnd) setPickerHover(day); }}
+                onMouseLeave={() => { if (pickerStart && !pickerEnd) setPickerHover(null); }}
+              >
+                {showBar && (
+                  <Box sx={{ position: 'absolute', top: 2, bottom: 2, left: barLeft, right: barRight, bgcolor: '#dbeafe', zIndex: 0 }} />
+                )}
+                <Box sx={{
+                  position: 'absolute', top: '50%', left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 28, height: 28, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  bgcolor: isSelected ? '#1e5a96' : isHovered && !inRange ? '#e0e7ff' : 'transparent',
+                  color: isSelected ? 'white' : 'text.primary',
+                  fontSize: '0.8125rem',
+                  fontWeight: isToday ? 700 : 400,
+                  textDecoration: isToday && !isSelected ? 'underline' : 'none',
+                  zIndex: 1,
+                }}>
+                  {day.getDate()}
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
+    );
   };
 
   // Breadcrumb popover anchors
@@ -710,28 +827,64 @@ export default function PageHeader({
                 '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500 }
               }}
             />
-            <Menu
+            <Popover
               anchorEl={dateRangeAnchorEl}
               open={Boolean(dateRangeAnchorEl)}
-              onClose={() => setDateRangeAnchorEl(null)}
-              PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
+              onClose={() => { setDateRangeAnchorEl(null); setPickerStart(null); setPickerEnd(null); setPickerHover(null); }}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              PaperProps={{ sx: { borderRadius: '12px', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', mt: 0.5, overflow: 'hidden' } }}
             >
-              {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
-                <MenuItem
-                  key={range}
-                  selected={selectedDateRange === range}
-                  onClick={() => { setSelectedDateRange(range); setDateRangeAnchorEl(null); }}
-                  sx={{ fontSize: '0.875rem' }}
-                >
-                  <Box>
-                    <Typography variant="body2" fontWeight={selectedDateRange === range ? 600 : 400}>{range}</Typography>
-                    {range !== 'All Time' && (
-                      <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
-                    )}
+              <Box sx={{ display: 'flex' }}>
+                {/* Quick presets */}
+                <Box sx={{ width: 152, borderRight: 1, borderColor: 'divider', py: 1.5 }}>
+                  {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(preset => {
+                    const isActive = selectedDateRange === preset;
+                    return (
+                      <Box
+                        key={preset}
+                        onClick={() => { setSelectedDateRange(preset); setPickerStart(null); setPickerEnd(null); setPickerHover(null); setDateRangeAnchorEl(null); }}
+                        sx={{
+                          px: 2, py: 0.875, mx: 1, borderRadius: '6px', cursor: 'pointer',
+                          bgcolor: isActive ? '#eef2ff' : 'transparent',
+                          '&:hover': { bgcolor: isActive ? '#e0e7ff' : '#f5f5f5' },
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 400, color: isActive ? '#1e5a96' : 'text.primary', fontSize: '0.875rem' }}>
+                          {preset}
+                        </Typography>
+                        {preset !== 'All Time' && (
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.688rem' }}>
+                            {getDateRangeDisplay(preset)}
+                          </Typography>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Box>
+
+                {/* Calendars */}
+                <Box sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <IconButton size="small" onClick={navigateCalPrev} sx={{ mr: 'auto' }}>
+                      <ChevronLeftIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" onClick={navigateCalNext} sx={{ ml: 'auto' }}>
+                      <ChevronRightIcon fontSize="small" />
+                    </IconButton>
                   </Box>
-                </MenuItem>
-              ))}
-            </Menu>
+                  <Box sx={{ display: 'flex', gap: 3 }}>
+                    {renderCalMonth(calLeftMonth.year, calLeftMonth.month)}
+                    {renderCalMonth(calRight.year, calRight.month)}
+                  </Box>
+                  {pickerStart && !pickerEnd && (
+                    <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1, display: 'block', textAlign: 'center' }}>
+                      Select end date
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </Popover>
           </Box>
         )}
       </Box>

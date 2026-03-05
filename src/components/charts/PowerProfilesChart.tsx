@@ -16,7 +16,7 @@ const generateMockData = () => {
 
   return [
     {
-      id: '{{week}}',
+      id: 'Peak demand',
       color: '#2196f3',
       data: months.map((month) => ({
         x: month,
@@ -24,7 +24,7 @@ const generateMockData = () => {
       }))
     },
     {
-      id: '{{week}}',
+      id: 'Average load',
       color: '#64b5f6',
       data: months.map((month) => ({
         x: month,

@@ -56,6 +56,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics } from '@/data/metrics';
@@ -70,6 +71,7 @@ import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
 import ThemesPage from '@/components/Themes';
+import DashboardsView from '@/components/DashboardsView';
 import { tickets } from '@/data/tickets';
 import { quotations } from '@/data/quotations';
 import { maintenanceSchedules } from '@/data/maintenance';
@@ -107,7 +109,7 @@ import type { ToggleState } from '@/components/KPIToggle';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
-type BuildingsPanelTab = 'buildings' | 'kpi_analysis';
+type BuildingsPanelTab = 'buildings' | 'kpi_analysis' | 'dashboards';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
 interface Favorite {
@@ -1314,12 +1316,13 @@ export default function Home() {
                         >
                           <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                           <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
+                          <Tab value="dashboards" label="Dashboards" icon={<GridViewOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                         </Tabs>
 
                         {/* Panel Actions */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           {/* Sort Dropdown — hidden on KPI Analysis */}
-                          {buildingsPanelTab !== 'kpi_analysis' && (
+                          {buildingsPanelTab === 'buildings' && (
                             <>
                           <Chip
                             icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -1370,8 +1373,13 @@ export default function Home() {
                       </Box>
 
                       {/* Panel Content */}
-                      <Box sx={{ p: 2.5 }}>
-                        {buildingsPanelTab === 'buildings' ? (
+                      <Box sx={{ p: buildingsPanelTab === 'dashboards' ? 0 : 2.5, flex: buildingsPanelTab === 'dashboards' ? 1 : 'unset', overflow: buildingsPanelTab === 'dashboards' ? 'hidden' : 'visible', display: buildingsPanelTab === 'dashboards' ? 'flex' : 'block', flexDirection: 'column' }}>
+                        {buildingsPanelTab === 'dashboards' ? (
+                          <DashboardsView
+                            selection={selection}
+                            selectedBuilding={selectedBuilding}
+                          />
+                        ) : buildingsPanelTab === 'buildings' ? (
                           <>
                             {/* Group Selection Banner */}
                             {(selection === 'themes_group' || selection === 'operations_group') && (
