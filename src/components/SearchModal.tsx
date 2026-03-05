@@ -33,6 +33,7 @@ interface SearchResult {
   subtitle?: string;
   date?: string;
   owner?: string;
+  image?: string;
 }
 
 interface RecentItem extends SearchResult {
@@ -48,12 +49,12 @@ const typeIcons: Record<string, React.ReactNode> = {
 };
 
 const mockResults: SearchResult[] = [
-  { id: '1', type: 'building', title: '12 Smith St', subtitle: 'Amsterdam, NL', date: '2024-12-01', owner: 'Jan de Vries' },
+  { id: '1', type: 'building', title: '12 Smith St', subtitle: 'Amsterdam, NL', date: '2024-12-01', owner: 'Jan de Vries', image: '/images/Media-1.png' },
   { id: '2', type: 'asset', title: 'AHU-01 Air Handling Unit', subtitle: '12 Smith St - Floor 3', date: '2025-01-15', owner: 'Pieter Bakker' },
   { id: '3', type: 'document', title: 'Mechanical O&M Manual', subtitle: '12 Smith St - ABC123-CARE-001', date: '2025-02-10', owner: 'Sarah Jansen' },
   { id: '4', type: 'ticket', title: 'HVAC noise complaint - Room 302', subtitle: '12 Smith St - Priority: High', date: '2025-03-01', owner: 'Jan de Vries' },
   { id: '5', type: 'quotation', title: 'Q-2025-0042 Chiller Replacement', subtitle: '12 Smith St - EUR 24,500', date: '2025-02-28', owner: 'Pieter Bakker' },
-  { id: '6', type: 'building', title: '45 Keizersgracht', subtitle: 'Amsterdam, NL', date: '2024-11-20', owner: 'Sarah Jansen' },
+  { id: '6', type: 'building', title: '45 Keizersgracht', subtitle: 'Amsterdam, NL', date: '2024-11-20', owner: 'Sarah Jansen', image: '/images/Media-3.png' },
 ];
 
 const now = new Date();
@@ -61,12 +62,12 @@ const hoursAgo = (h: number) => new Date(now.getTime() - h * 60 * 60 * 1000);
 const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
 
 const initialRecentItems: RecentItem[] = [
-  { id: 'r1', type: 'building', title: '12 Smith St', subtitle: 'Amsterdam, NL', searchedAt: hoursAgo(1) },
+  { id: 'r1', type: 'building', title: '12 Smith St', subtitle: 'Amsterdam, NL', image: '/images/Media-1.png', searchedAt: hoursAgo(1) },
   { id: 'r2', type: 'ticket', title: 'HVAC noise complaint - Room 302', subtitle: '12 Smith St - Priority: High', searchedAt: hoursAgo(3) },
   { id: 'r3', type: 'asset', title: 'AHU-01 Air Handling Unit', subtitle: '12 Smith St - Floor 3', searchedAt: daysAgo(1) },
   { id: 'r4', type: 'document', title: 'Electrical Safety Procedures', subtitle: '45 Keizersgracht - REF-2025-011', searchedAt: daysAgo(1) },
   { id: 'r5', type: 'quotation', title: 'Q-2025-0042 Chiller Replacement', subtitle: '12 Smith St - EUR 24,500', searchedAt: daysAgo(3) },
-  { id: 'r6', type: 'building', title: '45 Keizersgracht', subtitle: 'Amsterdam, NL', searchedAt: daysAgo(5) },
+  { id: 'r6', type: 'building', title: '45 Keizersgracht', subtitle: 'Amsterdam, NL', image: '/images/Media-3.png', searchedAt: daysAgo(5) },
   { id: 'r7', type: 'document', title: 'Mechanical O&M Manual', subtitle: '12 Smith St - ABC123-CARE-001', searchedAt: daysAgo(8) },
 ];
 
@@ -132,7 +133,83 @@ function ResultRow({ result, onClick, active, rowRef, onMouseEnter }: { result: 
   );
 }
 
+function PerformanceBar({ green, yellow, red }: { green: number; yellow: number; red: number }) {
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+          Overall Performance
+        </Typography>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {green}%
+        </Typography>
+      </Box>
+      <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: '#f5f5f5' }}>
+        <Box sx={{ width: `${green}%`, bgcolor: '#4caf50' }} />
+        <Box sx={{ width: `${yellow}%`, bgcolor: '#ffc107' }} />
+        <Box sx={{ width: `${red}%`, bgcolor: '#f44336' }} />
+      </Box>
+    </Box>
+  );
+}
+
+// Mock performance data for buildings
+const buildingPerformance: Record<string, { green: number; yellow: number; red: number }> = {
+  '12 Smith St': { green: 65, yellow: 20, red: 15 },
+  '45 Keizersgracht': { green: 55, yellow: 30, red: 15 },
+};
+
+function BuildingPreviewCard({ result }: { result: SearchResult }) {
+  const performance = buildingPerformance[result.title] ?? { green: 60, yellow: 25, red: 15 };
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Box
+        sx={{
+          height: 80,
+          backgroundImage: result.image ? `url(${result.image})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          bgcolor: result.image ? undefined : '#e0e0e0',
+        }}
+      />
+      <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ color: 'text.disabled' }}>{typeIcons.building}</Box>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            Building
+          </Typography>
+        </Box>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+          {result.title}
+        </Typography>
+        {result.subtitle && (
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {result.subtitle}
+          </Typography>
+        )}
+        <PerformanceBar {...performance} />
+        <Divider />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          {result.owner && (
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Owner</Typography>
+              <Typography variant="body2">{result.owner}</Typography>
+            </Box>
+          )}
+          {result.date && (
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Date</Typography>
+              <Typography variant="body2">{result.date}</Typography>
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 function PreviewCard({ result }: { result: SearchResult }) {
+  if (result.type === 'building') return <BuildingPreviewCard result={result} />;
   return (
     <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -607,7 +684,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               border: '1px solid',
               borderColor: 'divider',
               height: '100%',
-              overflow: 'auto',
+              overflow: 'hidden',
             }}
           >
             {previewResult ? <PreviewCard result={previewResult} /> : <PreviewSkeleton />}
