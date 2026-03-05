@@ -231,6 +231,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const newButtonRef = useRef<HTMLDivElement>(null);
+  const collapsedNewButtonRef = useRef<HTMLButtonElement>(null);
 
   const NEW_MENU_ITEMS = [
     { label: 'Report issue', key: '1' },
@@ -257,7 +258,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
       if (!isTyping && e.key === 'n' && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
-        setNewMenuAnchorEl(newButtonRef.current);
+        setNewMenuAnchorEl(collapsedNewButtonRef.current ?? newButtonRef.current);
         return;
       }
 
@@ -1013,6 +1014,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 1, pt: 2, flex: 1 }}>
             <Tooltip title="New  [N]" placement="right">
               <IconButton
+                ref={collapsedNewButtonRef}
                 onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
                 sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: '#eef2ff', color: '#1e5a96', '&:hover': { bgcolor: '#dde6ff' } }}
               >
