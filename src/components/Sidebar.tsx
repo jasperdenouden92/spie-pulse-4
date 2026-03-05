@@ -497,13 +497,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton
-                onClick={() => {
-                  setControlRoomExpanded(!controlRoomExpanded);
-                  onPageChange?.('portfolio');
-                }}
+                onClick={() => onPageChange?.('portfolio')}
                 sx={{
                   height: 40,
                   paddingLeft: '4px',
+                  pr: 0,
                   gap: 2,
                   borderRadius: '5px',
                   backgroundColor: currentPage === 'portfolio' ? '#f0f0f0' : 'transparent',
@@ -520,7 +518,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   primary="Control Room"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
-                <ExpandMoreIcon sx={{ fontSize: 18, transform: controlRoomExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                <IconButton
+                  size="small"
+                  onClick={(e) => { e.stopPropagation(); setControlRoomExpanded(!controlRoomExpanded); }}
+                  sx={{ width: 28, height: 28, flexShrink: 0 }}
+                >
+                  <ExpandMoreIcon sx={{ fontSize: 18, transform: controlRoomExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                </IconButton>
               </ListItemButton>
             </ListItem>
             {controlRoomExpanded && (
@@ -528,14 +532,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 {/* Themes dropdown */}
                 <ListItem disablePadding>
                   <ListItemButton
-                    onClick={() => {
-                      setCrThemesExpanded(!crThemesExpanded);
-                      onPageChange?.('portfolio');
-                      onSelectionChange?.('themes_group');
-                    }}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); }}
                     sx={{
                       height: 36,
                       paddingLeft: '4px',
+                      pr: 0,
                       gap: 1.5,
                       borderRadius: '5px',
                       bgcolor: currentPage === 'portfolio' && selection === 'themes_group' ? '#e3f2fd' : 'transparent',
@@ -544,7 +545,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   >
                     <NatureOutlinedIcon sx={{ fontSize: 16 }} />
                     <ListItemText primary="Themes" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'themes_group' ? 600 : 400 }} />
-                    <ExpandMoreIcon sx={{ fontSize: 16, transform: crThemesExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                    <IconButton
+                      size="small"
+                      onClick={(e) => { e.stopPropagation(); setCrThemesExpanded(!crThemesExpanded); }}
+                      sx={{ width: 24, height: 24, flexShrink: 0 }}
+                    >
+                      <ExpandMoreIcon sx={{ fontSize: 16, transform: crThemesExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                    </IconButton>
                   </ListItemButton>
                 </ListItem>
                 {crThemesExpanded && [
@@ -578,14 +585,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 {/* Operations dropdown */}
                 <ListItem disablePadding>
                   <ListItemButton
-                    onClick={() => {
-                      setCrOperationsExpanded(!crOperationsExpanded);
-                      onPageChange?.('portfolio');
-                      onSelectionChange?.('operations_group');
-                    }}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); }}
                     sx={{
                       height: 36,
                       paddingLeft: '4px',
+                      pr: 0,
                       gap: 1.5,
                       borderRadius: '5px',
                       bgcolor: currentPage === 'portfolio' && selection === 'operations_group' ? '#e3f2fd' : 'transparent',
@@ -594,7 +598,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   >
                     <HandymanOutlinedIcon sx={{ fontSize: 16 }} />
                     <ListItemText primary="Operations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'operations_group' ? 600 : 400 }} />
-                    <ExpandMoreIcon sx={{ fontSize: 16, transform: crOperationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                    <IconButton
+                      size="small"
+                      onClick={(e) => { e.stopPropagation(); setCrOperationsExpanded(!crOperationsExpanded); }}
+                      sx={{ width: 24, height: 24, flexShrink: 0 }}
+                    >
+                      <ExpandMoreIcon sx={{ fontSize: 16, transform: crOperationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                    </IconButton>
                   </ListItemButton>
                 </ListItem>
                 {crOperationsExpanded && [
@@ -670,10 +680,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton
-                onClick={() => setOperationsExpanded(!operationsExpanded)}
+                onClick={() => onPageChange?.('operations')}
                 sx={{
                   height: 40,
                   paddingLeft: '4px',
+                  pr: 0,
                   gap: 2,
                   borderRadius: '5px',
                   backgroundColor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent',
@@ -690,7 +701,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   primary="Operations"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
-                <ExpandMoreIcon sx={{ fontSize: 18, transform: operationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                <IconButton
+                  size="small"
+                  onClick={(e) => { e.stopPropagation(); setOperationsExpanded(!operationsExpanded); }}
+                  sx={{ width: 28, height: 28, flexShrink: 0 }}
+                >
+                  <ExpandMoreIcon sx={{ fontSize: 18, transform: operationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+                </IconButton>
               </ListItemButton>
             </ListItem>
             {operationsExpanded && (
