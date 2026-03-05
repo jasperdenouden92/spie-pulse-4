@@ -433,24 +433,26 @@ export default function PageHeader({
 
       {/* Right: Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-        {/* Export Button */}
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<FileDownloadOutlinedIcon />}
-          sx={{
-            textTransform: 'none',
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            borderRadius: '6px',
-            px: 2,
-            height: 32,
-            boxShadow: 'none',
-            '&:hover': { boxShadow: 'none' }
-          }}
-        >
-          Export
-        </Button>
+        {/* Export Button — only on Control Room */}
+        {currentPage === 'portfolio' && (
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<FileDownloadOutlinedIcon />}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '0.8125rem',
+              borderRadius: '6px',
+              px: 2,
+              height: 32,
+              boxShadow: 'none',
+              '&:hover': { boxShadow: 'none' }
+            }}
+          >
+            Export
+          </Button>
+        )}
 
         {/* Favorite Icon */}
         <IconButton
