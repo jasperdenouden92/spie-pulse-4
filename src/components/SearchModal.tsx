@@ -9,6 +9,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import Chip from '@mui/material/Chip';
+import Skeleton from '@mui/material/Skeleton';
+import Divider from '@mui/material/Divider';
 import SearchIcon from '@mui/icons-material/Search';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -101,9 +103,19 @@ const rowSx = (active?: boolean) => ({
   '&:hover': { bgcolor: '#f5f5f5' },
 });
 
-function ResultRow({ result, showPreview, onClick, active, rowRef }: { result: SearchResult; showPreview: boolean; onClick: () => void; active?: boolean; rowRef?: React.Ref<HTMLDivElement> }) {
+const PREVIEW_WIDTH = 320;
+
+const typeLabels: Record<string, string> = {
+  building: 'Building',
+  asset: 'Asset',
+  document: 'Document',
+  ticket: 'Ticket',
+  quotation: 'Quotation',
+};
+
+function ResultRow({ result, onClick, active, rowRef, onMouseEnter }: { result: SearchResult; onClick: () => void; active?: boolean; rowRef?: React.Ref<HTMLDivElement>; onMouseEnter?: () => void }) {
   return (
-    <Box ref={rowRef} onClick={onClick} sx={rowSx(active)}>
+    <Box ref={rowRef} onClick={onClick} onMouseEnter={onMouseEnter} sx={rowSx(active)}>
       <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.disabled' }}>
         {typeIcons[result.type]}
       </Box>
@@ -117,16 +129,66 @@ function ResultRow({ result, showPreview, onClick, active, rowRef }: { result: S
           </Typography>
         )}
       </Box>
-      {showPreview && result.date && (
-        <Typography variant="caption" sx={{ color: 'text.disabled', flexShrink: 0 }}>
-          {result.date}
+    </Box>
+  );
+}
+
+function PreviewCard({ result }: { result: SearchResult }) {
+  return (
+    <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ color: 'text.disabled' }}>{typeIcons[result.type]}</Box>
+        <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'capitalize' }}>
+          {typeLabels[result.type]}
+        </Typography>
+      </Box>
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+        {result.title}
+      </Typography>
+      {result.subtitle && (
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {result.subtitle}
         </Typography>
       )}
-      {showPreview && result.owner && (
-        <Typography variant="caption" sx={{ color: 'text.disabled', flexShrink: 0, minWidth: 80, textAlign: 'right' }}>
-          {result.owner}
-        </Typography>
-      )}
+      <Divider />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        {result.owner && (
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Owner</Typography>
+            <Typography variant="body2">{result.owner}</Typography>
+          </Box>
+        )}
+        {result.date && (
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Date</Typography>
+            <Typography variant="body2">{result.date}</Typography>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
+function PreviewSkeleton() {
+  return (
+    <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Skeleton variant="circular" width={18} height={18} />
+        <Skeleton width={60} height={16} />
+      </Box>
+      <Skeleton width="80%" height={24} />
+      <Skeleton width="60%" height={16} />
+      <Divider />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box>
+          <Skeleton width={40} height={14} />
+          <Skeleton width={100} height={18} />
+        </Box>
+        <Box>
+          <Skeleton width={30} height={14} />
+          <Skeleton width={80} height={18} />
+        </Box>
+      </Box>
     </Box>
   );
 }
@@ -140,6 +202,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [filterOwner, setFilterOwner] = useState<string>('all');
   const [recentItems, setRecentItems] = useState<RecentItem[]>(initialRecentItems);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [hoveredResultIndex, setHoveredResultIndex] = useState<number | null>(null);
   const activeRowRef = useRef<HTMLDivElement>(null);
 
   const isSearching = searchQuery.trim().length > 0;
@@ -150,6 +213,17 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     const matchesOwner = filterOwner === 'all' || result.owner === filterOwner;
     return matchesQuery && matchesType && matchesOwner;
   });
+
+  // Determine which result to show in the preview panel
+  const previewResult: SearchResult | null = (() => {
+    if (hoveredResultIndex !== null) {
+      return (isSearching ? filteredResults : recentItems)[hoveredResultIndex] ?? null;
+    }
+    if (isSearching) {
+      return activeIndex > 0 ? filteredResults[activeIndex - 1] ?? null : null;
+    }
+    return activeIndex >= 0 ? recentItems[activeIndex] ?? null : null;
+  })();
 
   // Flat list of visible items for keyboard navigation
   const visibleItems: SearchResult[] = isSearching
@@ -165,6 +239,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   // Reset active index: default to 0 (first item) when searching, -1 otherwise
   useEffect(() => {
     setActiveIndex(searchQuery.trim().length > 0 ? 0 : -1);
+    setHoveredResultIndex(null);
   }, [searchQuery, filterType, filterDate, filterOwner]);
 
   // Scroll active row into view
@@ -249,7 +324,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       <Paper
         sx={{
           width: '90%',
-          maxWidth: 720,
+          maxWidth: showPreview ? 560 + PREVIEW_WIDTH + 96 : 560,
           maxHeight: '75vh',
           outline: 'none',
           borderRadius: 2,
@@ -257,6 +332,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
           flexDirection: 'column',
           overflow: 'hidden',
           boxShadow: '0 16px 70px rgba(0,0,0,0.15)',
+          transition: 'max-width 0.2s ease',
         }}
       >
         {/* Search input row */}
@@ -437,8 +513,9 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
           )}
         </AnimatePresence>
 
-        {/* Results / Recent */}
-        <Box sx={{ flex: 1, overflowY: 'auto', pt: 0.5, pb: 2 }}>
+        {/* Results / Recent + Preview */}
+        <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
+        <Box sx={{ flex: 1, overflowY: 'auto', pt: 0.5, pb: 2, minWidth: 0 }} onMouseLeave={() => setHoveredResultIndex(null)}>
           {isSearching ? (
             <>
               <Box
@@ -471,10 +548,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                       <ResultRow
                         key={result.id}
                         result={result}
-                        showPreview={showPreview}
                         active={idx === activeIndex}
                         rowRef={idx === activeIndex ? activeRowRef : undefined}
                         onClick={() => handleResultClick(result)}
+                        onMouseEnter={() => setHoveredResultIndex(i)}
                       />
                     );
                   })}
@@ -501,14 +578,15 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                     </Typography>
                     {group.items.map((item) => {
                       const idx = flatIndex++;
+                      const recentIdx = recentItems.indexOf(item);
                       return (
                         <ResultRow
                           key={item.id}
                           result={item}
-                          showPreview={showPreview}
                           active={idx === activeIndex}
                           rowRef={idx === activeIndex ? activeRowRef : undefined}
                           onClick={() => handleResultClick(item)}
+                          onMouseEnter={() => setHoveredResultIndex(recentIdx)}
                         />
                       );
                     })}
@@ -523,6 +601,26 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               </Box>
             )
           )}
+        </Box>
+
+        {/* Preview panel */}
+        {showPreview && (
+          <Box sx={{ width: PREVIEW_WIDTH, flexShrink: 0, p: 6, pl: 6 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                borderRadius: 2,
+                boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                border: '1px solid',
+                borderColor: 'divider',
+                height: '100%',
+                overflow: 'auto',
+              }}
+            >
+              {previewResult ? <PreviewCard result={previewResult} /> : <PreviewSkeleton />}
+            </Paper>
+          </Box>
+        )}
         </Box>
       </Paper>
     </Modal>
