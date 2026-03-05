@@ -51,6 +51,7 @@ interface PageHeaderProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
+  onPageChange?: (page: string) => void;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -98,6 +99,7 @@ export default function PageHeader({
   selectedCity: selectedCityProp,
   onCityChange,
   selectedDateRange: selectedDateRangeProp,
+  onPageChange,
 }: PageHeaderProps) {
   const [buildingFilterAnchor, setBuildingFilterAnchor] = useState<null | HTMLElement>(null);
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
@@ -285,38 +287,67 @@ export default function PageHeader({
         </AnimatePresence>
 
         {/* Root breadcrumb segment */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {currentPage === 'insights' ? (
-            <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 20, color: 'text.primary' }} />
-          ) : currentPage === 'themes' ? (
-            <StyleOutlinedIcon sx={{ fontSize: 20, color: 'text.primary' }} />
-          ) : currentPage === 'workspaces' ? (
-            <WorkspacesOutlinedIcon sx={{ fontSize: 20, color: 'text.primary' }} />
-          ) : (
-            <MonitorHeartOutlined sx={{ fontSize: 20, color: 'text.primary' }} />
-          )}
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 600,
-              fontSize: '1rem',
-              cursor: currentPage === 'portfolio' ? 'pointer' : 'default',
-              '&:hover': currentPage === 'portfolio' ? {
-                textDecoration: 'underline'
-              } : {}
-            }}
-            onClick={currentPage === 'portfolio' ? () => {
-              // Reset to overall dashboard
-              if (selectedBuilding || selectedAsset) {
-                onAssetBack?.();
-                onBack?.();
-              }
-              onSelectionChange?.('overall');
-            } : undefined}
-          >
-            {currentPage === 'insights' ? 'Insights' : currentPage === 'themes' ? 'Themes' : currentPage === 'workspaces' ? 'Workspaces' : 'Control Room'}
-          </Typography>
-        </Box>
+        {currentPage === 'portfolio' ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                fontSize: '1rem',
+                cursor: 'pointer',
+                '&:hover': { textDecoration: 'underline' }
+              }}
+              onClick={() => {
+                if (selectedBuilding || selectedAsset) {
+                  onAssetBack?.();
+                  onBack?.();
+                }
+                onSelectionChange?.('overall');
+              }}
+            >
+              Control Room
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {currentPage === 'home' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Home</Typography>
+            )}
+            {currentPage === 'insights' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Insights</Typography>
+            )}
+            {currentPage === 'portfolio_overview' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Portfolio</Typography>
+            )}
+            {currentPage === 'bms' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>BMS</Typography>
+            )}
+            {currentPage === 'themes' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Themes</Typography>
+            )}
+            {currentPage === 'workspaces' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Workspaces</Typography>
+            )}
+            {currentPage === 'operations' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Operations</Typography>
+            )}
+            {currentPage?.startsWith('operations_') && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '1rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline', color: 'text.primary' } }}
+                  onClick={() => onPageChange?.('operations')}
+                >
+                  Operations
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                  {currentPage === 'operations_docs' ? 'Docs' : currentPage === 'operations_tickets' ? 'Tickets' : 'Quotations'}
+                </Typography>
+              </>
+            )}
+          </Box>
+        )}
 
         {/* Smart contextual breadcrumbs for Portfolio page */}
         {currentPage === 'portfolio' && (

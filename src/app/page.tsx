@@ -838,6 +838,7 @@ export default function Home() {
             selectedCity={selectedCity}
             onCityChange={setSelectedCity}
             selectedDateRange={dateRange}
+            onPageChange={handlePageChange}
           />
         )}
 
