@@ -9,8 +9,8 @@ import MonitorHeartOutlined from '@mui/icons-material/MonitorHeartOutlined';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PushPinIcon from '@mui/icons-material/PushPin';
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import StarIcon from '@mui/icons-material/Star';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
@@ -28,8 +28,8 @@ interface PageHeaderProps {
   onBack?: () => void;
   onAssetBack?: () => void;
   onDateRangeChange?: (range: string) => void;
-  onPinToggle?: (pageName: string, isPinned: boolean) => void;
-  isPinned?: boolean;
+  onFavoriteToggle?: (pageName: string, isFavorited: boolean) => void;
+  isFavorited?: boolean;
   hasRightSidebar?: boolean;
   leftSidebarWidth?: number;
   rightSidebarWidth?: number;
@@ -76,8 +76,8 @@ export default function PageHeader({
   onBack,
   onAssetBack,
   onDateRangeChange,
-  onPinToggle,
-  isPinned = false,
+  onFavoriteToggle,
+  isFavorited = false,
   hasRightSidebar = false,
   leftSidebarWidth = 280,
   rightSidebarWidth = 64,
@@ -122,9 +122,9 @@ export default function PageHeader({
 
   const pageName = getPageName();
 
-  const handlePinToggle = () => {
-    const newPinnedState = !isPinned;
-    onPinToggle?.(pageName, newPinnedState);
+  const handleFavoriteToggle = () => {
+    const newFavoritedState = !isFavorited;
+    onFavoriteToggle?.(pageName, newFavoritedState);
   };
 
   // Determine breadcrumb segments for portfolio page
@@ -404,20 +404,20 @@ export default function PageHeader({
         )}
       </Box>
 
-      {/* Right: Filter controls and pin */}
+      {/* Right: Filter controls and favorite */}
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-        {/* Pin Icon */}
+        {/* Favorite Icon */}
         <IconButton
           size="small"
-          onClick={handlePinToggle}
+          onClick={handleFavoriteToggle}
           sx={{
-            color: isPinned ? 'primary.main' : 'text.secondary',
+            color: isFavorited ? 'primary.main' : 'text.secondary',
             '&:hover': {
-              bgcolor: isPinned ? 'rgba(25, 118, 210, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+              bgcolor: isFavorited ? 'rgba(25, 118, 210, 0.08)' : 'rgba(0, 0, 0, 0.04)'
             }
           }}
         >
-          {isPinned ? <PushPinIcon fontSize="small" /> : <PushPinOutlinedIcon fontSize="small" />}
+          {isFavorited ? <StarIcon fontSize="small" /> : <StarOutlineIcon fontSize="small" />}
         </IconButton>
 
         {currentPage === 'portfolio' && !selectedBuilding && (

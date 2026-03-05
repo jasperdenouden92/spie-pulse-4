@@ -107,7 +107,7 @@ type ViewMode = 'dashboard' | 'list' | 'tree';
 type BuildingsPanelTab = 'buildings' | 'kpi_analysis';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
-interface Pin {
+interface Favorite {
   id: string;
   name: string;
   type: string;
@@ -195,7 +195,7 @@ export default function Home() {
   // ── Local-only state (ephemeral / pure UI) ─────────────────────────────────
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
-  const [pins, setPins] = useState<Pin[]>([
+  const [favorites, setFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
     { id: '3', name: 'Reparatie toilet 1e ver', type: 'task' },
@@ -429,20 +429,20 @@ export default function Home() {
     setLeftSidebarCollapsed(!leftSidebarCollapsed);
   };
 
-  // Calculate current page name and pin status
+  // Calculate current page name and favorite status
   const currentPageName = selectedBuilding ? selectedBuilding.name : 'Buildings & Assets';
-  const isCurrentPagePinned = pins.some(pin => pin.name === currentPageName);
+  const isCurrentPageFavorited = favorites.some(fav => fav.name === currentPageName);
 
-  const handlePinToggle = (pageName: string, isPinned: boolean) => {
-    if (isPinned) {
-      const newPin: Pin = {
+  const handleFavoriteToggle = (pageName: string, isFavorited: boolean) => {
+    if (isFavorited) {
+      const newFavorite: Favorite = {
         id: Date.now().toString(),
         name: pageName,
         type: selectedBuilding ? 'building' : 'page'
       };
-      setPins([...pins, newPin]);
+      setFavorites([...favorites, newFavorite]);
     } else {
-      setPins(pins.filter(pin => pin.name !== pageName));
+      setFavorites(favorites.filter(fav => fav.name !== pageName));
     }
   };
 
@@ -517,8 +517,8 @@ export default function Home() {
           selectedMetric={selectedMetric}
           onBuildingSelect={setSelectedBuilding}
           onMetricSelect={(metric) => setSelection(metric as MetricType)}
-          pins={pins}
-          onPinsChange={setPins}
+          favorites={favorites}
+          onFavoritesChange={setFavorites}
           isCollapsed={leftSidebarCollapsed}
           onToggleCollapse={handleLeftSidebarToggle}
           currentPage={currentPage}
@@ -820,8 +820,8 @@ export default function Home() {
             onBack={() => setURLParams({ building: '', asset: '', assetTab: '0' })}
             onAssetBack={() => setURLParams({ asset: '', assetTab: '0' })}
             onDateRangeChange={setDateRange}
-            onPinToggle={handlePinToggle}
-            isPinned={isCurrentPagePinned}
+            onFavoriteToggle={handleFavoriteToggle}
+            isFavorited={isCurrentPageFavorited}
             hasRightSidebar={false}
             leftSidebarWidth={leftSidebarWidth}
             rightSidebarWidth={0}

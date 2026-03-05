@@ -17,8 +17,8 @@ import BuildingIcon from '@mui/icons-material/Domain';
 import MonitorHeartOutlined from '@mui/icons-material/MonitorHeartOutlined';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import PushPinIcon from '@mui/icons-material/PushPin';
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import StarIcon from '@mui/icons-material/Star';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
@@ -52,7 +52,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-interface Pin {
+interface Favorite {
   id: string;
   name: string;
   type: string;
@@ -63,8 +63,8 @@ interface SidebarProps {
   selectedMetric?: string;
   onBuildingSelect?: (building: Building | null) => void;
   onMetricSelect?: (metric: string) => void;
-  pins?: Pin[];
-  onPinsChange?: (pins: Pin[]) => void;
+  favorites?: Favorite[];
+  onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   currentPage?: 'home' | 'portfolio' | 'insights' | 'themes' | 'workspaces';
@@ -73,15 +73,15 @@ interface SidebarProps {
   isAssetExplorerOpen?: boolean;
 }
 
-interface SortablePinItemProps {
-  pin: Pin;
+interface SortableFavoriteItemProps {
+  favorite: Favorite;
   isHovered: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
-  onUnpin: () => void;
+  onRemove: () => void;
 }
 
-function SortablePinItem({ pin, isHovered, onMouseEnter, onMouseLeave, onUnpin }: SortablePinItemProps) {
+function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave, onRemove }: SortableFavoriteItemProps) {
   const {
     attributes,
     listeners,
@@ -89,7 +89,7 @@ function SortablePinItem({ pin, isHovered, onMouseEnter, onMouseLeave, onUnpin }
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: pin.id });
+  } = useSortable({ id: favorite.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -177,19 +177,19 @@ function SortablePinItem({ pin, isHovered, onMouseEnter, onMouseLeave, onUnpin }
               onClick={(e) => {
                 e.stopPropagation();
                 if (isHovered) {
-                  onUnpin();
+                  onRemove();
                 }
               }}
             >
               {isHovered ? (
-                <PushPinOutlinedIcon sx={{ fontSize: 16, color: '#d32f2f' }} />
+                <StarOutlineIcon sx={{ fontSize: 16, color: '#d32f2f' }} />
               ) : (
-                <PushPinIcon sx={{ fontSize: 16 }} />
+                <StarIcon sx={{ fontSize: 16 }} />
               )}
             </Box>
           </ListItemIcon>
           <ListItemText
-            primary={pin.name}
+            primary={favorite.name}
             primaryTypographyProps={{ variant: 'body2' }}
             sx={{
               overflow: 'hidden',
@@ -203,14 +203,14 @@ function SortablePinItem({ pin, isHovered, onMouseEnter, onMouseLeave, onUnpin }
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, pins: externalPins, onPinsChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
-  const [hoveredPin, setHoveredPin] = useState<string | null>(null);
-  const [internalPins, setInternalPins] = useState<Pin[]>([
+  const [hoveredFavorite, setHoveredFavorite] = useState<string | null>(null);
+  const [internalFavorites, setInternalFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
     { id: '3', name: 'Reparatie toilet 1e ver', type: 'task' },
@@ -218,8 +218,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
   const buildingsListRef = useRef<HTMLUListElement>(null);
 
-  // Use external pins if provided, otherwise use internal state
-  const pins = externalPins || internalPins;
+  // Use external favorites if provided, otherwise use internal state
+  const favorites = externalFavorites || internalFavorites;
 
   // Sync expanded building with selected building
   const expandedBuilding = selectedBuilding?.name || null;
@@ -288,12 +288,12 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
     onMetricSelect?.(metric as any);
   };
 
-  const handleUnpin = (pinId: string) => {
-    const newPins = pins.filter(pin => pin.id !== pinId);
-    if (onPinsChange) {
-      onPinsChange(newPins);
+  const handleRemoveFavorite = (favoriteId: string) => {
+    const newFavorites = favorites.filter(fav => fav.id !== favoriteId);
+    if (onFavoritesChange) {
+      onFavoritesChange(newFavorites);
     } else {
-      setInternalPins(newPins);
+      setInternalFavorites(newFavorites);
     }
   };
 
@@ -301,14 +301,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = pins.findIndex((pin) => pin.id === active.id);
-      const newIndex = pins.findIndex((pin) => pin.id === over.id);
-      const newPins = arrayMove(pins, oldIndex, newIndex);
+      const oldIndex = favorites.findIndex((fav) => fav.id === active.id);
+      const newIndex = favorites.findIndex((fav) => fav.id === over.id);
+      const newFavorites = arrayMove(favorites, oldIndex, newIndex);
 
-      if (onPinsChange) {
-        onPinsChange(newPins);
+      if (onFavoritesChange) {
+        onFavoritesChange(newFavorites);
       } else {
-        setInternalPins(newPins);
+        setInternalFavorites(newFavorites);
       }
     }
   };
@@ -705,7 +705,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Divider sx={{ my: 2, flexShrink: 0 }} />
 
             <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', flexShrink: 0 }}>
-              Pins
+              Favorites
             </Typography>
             <Box sx={{
               maxHeight: 120,
@@ -731,16 +731,16 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               },
             }}>
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={pins.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                <SortableContext items={favorites.map(f => f.id)} strategy={verticalListSortingStrategy}>
                   <List dense sx={{ py: 0 }}>
-                    {pins.map((pin) => (
-                      <SortablePinItem
-                        key={pin.id}
-                        pin={pin}
-                        isHovered={hoveredPin === pin.id}
-                        onMouseEnter={() => setHoveredPin(pin.id)}
-                        onMouseLeave={() => setHoveredPin(null)}
-                        onUnpin={() => handleUnpin(pin.id)}
+                    {favorites.map((fav) => (
+                      <SortableFavoriteItem
+                        key={fav.id}
+                        favorite={fav}
+                        isHovered={hoveredFavorite === fav.id}
+                        onMouseEnter={() => setHoveredFavorite(fav.id)}
+                        onMouseLeave={() => setHoveredFavorite(null)}
+                        onRemove={() => handleRemoveFavorite(fav.id)}
                       />
                     ))}
                   </List>
