@@ -45,6 +45,8 @@ import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlin
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { buildings, Building } from '@/data/buildings';
 import {
   DndContext,
@@ -228,17 +230,47 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [newMenuAnchorEl, setNewMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
+  const newButtonRef = useRef<HTMLDivElement>(null);
+
+  const NEW_MENU_ITEMS = [
+    { label: 'Report issue', key: '1' },
+    { label: 'Request quote', key: '2' },
+    { label: 'Service request', key: '3' },
+  ];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable;
+
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setSearchModalOpen(true);
+        return;
+      }
+
+      if (!isTyping && e.key === 'f' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setSearchModalOpen(true);
+        return;
+      }
+
+      if (!isTyping && e.key === 'n' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setNewMenuAnchorEl(newButtonRef.current);
+        return;
+      }
+
+      if (newMenuAnchorEl && ['1', '2', '3'].includes(e.key)) {
+        e.preventDefault();
+        setNewMenuAnchorEl(null);
+        // Action: console.log for now, wire up real handlers later
+        console.log('New menu shortcut:', NEW_MENU_ITEMS[Number(e.key) - 1]?.label);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [newMenuAnchorEl]);
   const [controlRoomExpanded, setControlRoomExpanded] = useState(currentPage === 'portfolio');
   const [crThemesExpanded, setCrThemesExpanded] = useState(false);
   const [crOperationsExpanded, setCrOperationsExpanded] = useState(false);
@@ -486,6 +518,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             {/* "+ New" action button — opens dropdown menu */}
             <ListItem disablePadding>
               <ListItemButton
+                ref={newButtonRef as React.Ref<HTMLDivElement>}
                 onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
                 sx={{
                   height: 40,
@@ -502,6 +535,9 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   primary="New"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600, sx: { color: '#1e5a96' } }}
                 />
+                <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
+                  N
+                </Typography>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
@@ -524,6 +560,9 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   primary="Search"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
+                <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
+                  F
+                </Typography>
               </ListItemButton>
             </ListItem>
             <Divider sx={{ my: 1.5 }} />
@@ -922,12 +961,33 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
         onClose={() => setNewMenuAnchorEl(null)}
         anchorOrigin={{ vertical: isCollapsed ? 'top' : 'bottom', horizontal: isCollapsed ? 'right' : 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        slotProps={{ paper: { sx: { ml: isCollapsed ? 1 : 0, mt: isCollapsed ? 0 : 0.5, minWidth: 220, borderRadius: '8px' } } }}
+        slotProps={{ paper: { sx: { ml: isCollapsed ? 1 : 0, mt: isCollapsed ? 0 : 0.5, minWidth: 260, borderRadius: '10px', py: 0.5 } } }}
         sx={{ zIndex: 1600 }}
       >
-        <MenuItem onClick={() => setNewMenuAnchorEl(null)} sx={{ py: 1.5, px: 2.5 }}>Report issue</MenuItem>
-        <MenuItem onClick={() => setNewMenuAnchorEl(null)} sx={{ py: 1.5, px: 2.5 }}>Request quote</MenuItem>
-        <MenuItem onClick={() => setNewMenuAnchorEl(null)} sx={{ py: 1.5, px: 2.5 }}>Service request</MenuItem>
+        <Typography variant="caption" sx={{ display: 'block', px: 2, pt: 1, pb: 0.5, color: 'text.secondary', fontWeight: 500, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Create new
+        </Typography>
+        {NEW_MENU_ITEMS.map((item, i) => (
+          <MenuItem
+            key={item.key}
+            onClick={() => setNewMenuAnchorEl(null)}
+            sx={{ py: 1, px: 2, gap: 1.5, borderRadius: '6px', mx: 0.5 }}
+          >
+            <ListItemIcon sx={{ minWidth: 0 }}>
+              {i === 0 ? <ReportProblemOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} /> :
+               i === 1 ? <RequestQuoteOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} /> :
+               <EngineeringOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />}
+            </ListItemIcon>
+            <ListItemText
+              primary={item.label}
+              primaryTypographyProps={{ variant: 'body2', fontSize: '0.875rem' }}
+              sx={{ flex: 1 }}
+            />
+            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
+              Press {item.key}
+            </Typography>
+          </MenuItem>
+        ))}
       </Menu>
 
       {/* Collapsed View - Icon Only */}
@@ -951,7 +1011,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
           {/* Nav items */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 1, pt: 2, flex: 1 }}>
-            <Tooltip title="New" placement="right">
+            <Tooltip title="New  [N]" placement="right">
               <IconButton
                 onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
                 sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: '#eef2ff', color: '#1e5a96', '&:hover': { bgcolor: '#dde6ff' } }}
@@ -959,7 +1019,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <AddIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Search" placement="right">
+            <Tooltip title="Search  [F]" placement="right">
               <IconButton
                 onClick={() => setSearchModalOpen(true)}
                 sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
