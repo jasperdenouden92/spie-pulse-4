@@ -17,8 +17,7 @@ import BuildingIcon from '@mui/icons-material/Domain';
 import MonitorHeartOutlined from '@mui/icons-material/MonitorHeartOutlined';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import StarIcon from '@mui/icons-material/Star';
-import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
@@ -186,7 +185,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
                 justifyContent: 'center',
                 flexShrink: 0,
                 transition: 'background-color 0.2s ease',
-                cursor: 'pointer',
+                cursor: isHovered ? 'pointer' : 'default',
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -196,9 +195,11 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
               }}
             >
               {isHovered ? (
-                <StarOutlineIcon sx={{ fontSize: 16, color: '#d32f2f' }} />
+                <CloseIcon sx={{ fontSize: 14, color: '#d32f2f' }} />
               ) : (
-                <StarIcon sx={{ fontSize: 16 }} />
+                favorite.type === 'building' ? <BuildingIcon sx={{ fontSize: 16, color: 'text.secondary' }} /> :
+                favorite.type === 'asset' ? <AccountTreeOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} /> :
+                <AssignmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
               )}
             </Box>
           </ListItemIcon>
