@@ -223,6 +223,17 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchModalOpen(true);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
   const [controlRoomExpanded, setControlRoomExpanded] = useState(currentPage === 'portfolio');
   const [crThemesExpanded, setCrThemesExpanded] = useState(false);
   const [crOperationsExpanded, setCrOperationsExpanded] = useState(false);
