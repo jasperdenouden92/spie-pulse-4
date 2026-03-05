@@ -27,6 +27,7 @@ import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
@@ -67,8 +68,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'insights' | 'themes' | 'workspaces';
-  onPageChange?: (page: 'home' | 'portfolio' | 'insights' | 'themes' | 'workspaces') => void;
+  currentPage?: 'home' | 'portfolio' | 'insights' | 'bms' | 'themes' | 'workspaces';
+  onPageChange?: (page: 'home' | 'portfolio' | 'insights' | 'bms' | 'themes' | 'workspaces') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
 }
@@ -529,6 +530,30 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </Box>
                 <ListItemText
                   primary="Insights"
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => onPageChange?.('bms')}
+                sx={{
+                  height: 40,
+                  paddingLeft: '4px',
+                  gap: 2,
+                  borderRadius: '5px',
+                  backgroundColor: currentPage === 'bms' ? '#f0f0f0' : 'transparent',
+                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    backgroundColor: currentPage === 'bms' ? '#e8e8e8' : '#f5f5f5'
+                  }
+                }}
+              >
+                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <ListItemText
+                  primary="BMS"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
               </ListItemButton>
