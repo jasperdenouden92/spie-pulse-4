@@ -533,30 +533,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 />
               </ListItemButton>
             </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('workspaces')}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage === 'workspaces' ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'workspaces' ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <WorkspacesOutlinedIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Workspaces"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-              </ListItemButton>
-            </ListItem>
           </List>
 
             <Divider sx={{ mt: '4px', mb: '8px', flexShrink: 0 }} />
