@@ -13,6 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
 import SearchIcon from '@mui/icons-material/Search';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import CloseIcon from '@mui/icons-material/Close';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import BusinessIcon from '@mui/icons-material/Business';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
@@ -479,6 +480,15 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               },
             }}
           />
+          {isSearching && (
+            <IconButton
+              size="small"
+              onClick={() => setSearchQuery('')}
+              sx={{ color: 'text.disabled', '&:hover': { color: 'text.secondary' } }}
+            >
+              <CloseIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          )}
           <IconButton
             size="small"
             onClick={() => setShowFilters((v) => !v)}
@@ -631,10 +641,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 }}
               >
                 <AutoAwesomeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                <Typography variant="body2" sx={{ fontWeight: 550 }}>
+                <Typography variant="body2" sx={{ fontWeight: 550, flexShrink: 0, whiteSpace: 'nowrap' }}>
                   Search everything with AI
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                <Typography variant="body2" noWrap sx={{ color: 'text.disabled', flex: 1, minWidth: 0 }}>
                   &ldquo;{searchQuery}&rdquo;
                 </Typography>
               </Box>
