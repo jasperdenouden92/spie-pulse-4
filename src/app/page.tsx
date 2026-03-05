@@ -180,7 +180,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -472,7 +472,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => {
+  const handlePageChange = (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
@@ -914,6 +914,12 @@ export default function Home() {
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
+          {currentPage === 'exports' && (
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Exports</Typography>
+              <Typography variant="body2" color="text.secondary">No exports yet.</Typography>
+            </Box>
+          )}
 
           {/* Portfolio Page */}
           {currentPage === 'portfolio' && (

@@ -81,8 +81,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => void;
+  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports';
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -934,7 +934,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton
-                    onClick={(e) => setUserAnchorEl(e.currentTarget)}
+                    onMouseEnter={(e) => {
+                      safeTriangleCleanupRef.current?.();
+                      setUserAnchorEl(e.currentTarget);
+                    }}
+                    onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
                     sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', '&:hover': { backgroundColor: '#f5f5f5' } }}
                   >
                     <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
@@ -942,15 +946,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   </ListItemButton>
                 </ListItem>
               </List>
-              <Menu
-                anchorEl={userAnchorEl}
-                open={Boolean(userAnchorEl)}
-                onClose={() => setUserAnchorEl(null)}
-              >
-                <MenuItem onClick={() => setUserAnchorEl(null)}>Profile</MenuItem>
-                <MenuItem onClick={() => setUserAnchorEl(null)}>Settings</MenuItem>
-                <MenuItem onClick={() => setUserAnchorEl(null)}>Logout</MenuItem>
-              </Menu>
             </Box>
         </Box>
       )}
@@ -1202,9 +1197,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   <HelpOutlineIcon sx={{ fontSize: 18 }} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Account" placement="right">
+              <Tooltip title={userAnchorEl ? '' : 'Account'} placement="right">
                 <IconButton
-                  onClick={(e) => setUserAnchorEl(e.currentTarget)}
+                  onMouseEnter={(e) => {
+                    safeTriangleCleanupRef.current?.();
+                    setUserAnchorEl(e.currentTarget);
+                  }}
+                  onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
                   sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
                 >
                   <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
@@ -1241,6 +1240,33 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           </MenuItem>
         ))}
       </Menu>
+      {/* Account popover — shared between expanded and collapsed */}
+      <Popover
+        open={Boolean(userAnchorEl)}
+        anchorEl={userAnchorEl}
+        onClose={() => setUserAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        disableRestoreFocus
+        slotProps={{
+          paper: {
+            'data-popover': 'account-menu',
+            onMouseLeave: () => { safeTriangleCleanupRef.current?.(); setUserAnchorEl(null); },
+            sx: { ml: 1, p: 1, minWidth: 200, borderRadius: '8px' }
+          } as any
+        }}
+        sx={{ pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
+      >
+        <Box sx={{ px: 1.5, py: 1 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>Admin User</Typography>
+          <Typography variant="caption" color="text.secondary">admin@spie.com</Typography>
+        </Box>
+        <Divider sx={{ my: 0.5 }} />
+        <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}>Settings</MenuItem>
+        <MenuItem onClick={() => { setUserAnchorEl(null); onPageChange?.('exports'); }} sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}>Exports</MenuItem>
+        <Divider sx={{ my: 0.5 }} />
+        <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}>Logout</MenuItem>
+      </Popover>
       <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </Box>
   );

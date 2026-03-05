@@ -19,7 +19,7 @@ import { AssetNode } from '@/data/assetTree';
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
 interface PageHeaderProps {
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces';
+  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports';
   selectedBuilding?: { name: string } | null;
   selectedAsset?: AssetNode | null;
   onBack?: () => void;
@@ -42,7 +42,7 @@ interface PageHeaderProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => void;
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports') => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -106,6 +106,7 @@ export default function PageHeader({
     if (currentPage === 'insights') return 'Insights';
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
+    if (currentPage === 'exports') return 'Exports';
     return selectedAsset?.type === 'asset' ? selectedAsset.name : selectedBuilding ? selectedBuilding.name : 'Control Room';
   };
 
@@ -220,6 +221,9 @@ export default function PageHeader({
             )}
             {currentPage === 'workspaces' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Workspaces</Typography>
+            )}
+            {currentPage === 'exports' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Exports</Typography>
             )}
             {currentPage === 'operations' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Operations</Typography>
