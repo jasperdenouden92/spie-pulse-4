@@ -6,6 +6,7 @@ import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
 import CloseIcon from '@mui/icons-material/Close';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import Tooltip from '@mui/material/Tooltip';
 
 export interface Notification {
@@ -24,102 +25,7 @@ export interface NotificationsPanelHandle {
   addNotification: (n: Notification) => void;
 }
 
-const initialNotifications: Notification[] = [
-  {
-    id: '1',
-    actor: 'Jasper den Ouden',
-    actorInitials: 'JO',
-    actorColor: '#7c3aed',
-    action: 'commented on',
-    target: 'Skyline Plaza — HVAC alert',
-    detail: 'Ik heb de temperatuur override al aangepast, even monitoren komende 24u.',
-    date: '2026-03-05T10:15:00',
-    read: false,
-  },
-  {
-    id: '2',
-    actor: 'Bart Dunweg',
-    actorInitials: 'BD',
-    actorColor: '#2563eb',
-    action: 'assigned you to',
-    target: 'Ticket #1247 — Verlichting parkeergarage',
-    date: '2026-03-05T09:02:00',
-    read: false,
-  },
-  {
-    id: '3',
-    actor: 'System',
-    actorInitials: 'S',
-    actorColor: '#dc2626',
-    action: 'alert:',
-    target: 'Heritage Building — Comfort score dropped below 70%',
-    detail: 'Current score: 64%. Threshold: 70%.',
-    date: '2026-03-04T16:45:00',
-    read: false,
-  },
-  {
-    id: '4',
-    actor: 'Jasper den Ouden',
-    actorInitials: 'JO',
-    actorColor: '#7c3aed',
-    action: 'mentioned you in',
-    target: 'Quarterly review notes Q1 2026',
-    detail: '@Admin check de sustainability KPIs voor Riverside Tower.',
-    date: '2026-03-04T14:20:00',
-    read: false,
-  },
-  {
-    id: '5',
-    actor: 'System',
-    actorInitials: 'S',
-    actorColor: '#059669',
-    action: 'export ready:',
-    target: 'Control Room Overview Q1 2026 (PDF, 2.4 MB)',
-    date: '2026-03-04T11:00:00',
-    read: true,
-  },
-  {
-    id: '6',
-    actor: 'Elwin de Witte',
-    actorInitials: 'EW',
-    actorColor: '#d97706',
-    action: 'resolved',
-    target: 'Ticket #1198 — Lekkage dak B2',
-    date: '2026-03-03T17:30:00',
-    read: true,
-  },
-  {
-    id: '7',
-    actor: 'Bart Dunweg',
-    actorInitials: 'BD',
-    actorColor: '#2563eb',
-    action: 'invited you to',
-    target: 'Maintenance planning workspace',
-    date: '2026-03-02T09:15:00',
-    read: true,
-  },
-  {
-    id: '8',
-    actor: 'System',
-    actorInitials: 'S',
-    actorColor: '#dc2626',
-    action: 'alert:',
-    target: 'Skyline Plaza — Energy consumption 15% above target',
-    date: '2026-02-28T08:00:00',
-    read: true,
-  },
-  {
-    id: '9',
-    actor: 'Jasper den Ouden',
-    actorInitials: 'JO',
-    actorColor: '#7c3aed',
-    action: 'commented on',
-    target: 'Quotation #Q-892 — HVAC upgrade',
-    detail: 'Offerte is goedgekeurd, kunnen we inplannen voor volgende maand.',
-    date: '2026-02-27T15:45:00',
-    read: true,
-  },
-];
+const initialNotifications: Notification[] = [];
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -221,6 +127,12 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
 
         {/* Notification list */}
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
+          {notifications.length === 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.disabled' }}>
+              <NotificationsNoneIcon sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="body2" color="text.secondary">No notifications yet</Typography>
+            </Box>
+          )}
           {recentNotifications.length > 0 && (
             <>
               <Typography variant="caption" sx={{ display: 'block', px: 2.5, pt: 2, pb: 1, color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>

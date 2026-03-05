@@ -220,6 +220,7 @@ export default function Home() {
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const notificationsRef = useRef<NotificationsPanelHandle>(null);
   const [exportToast, setExportToast] = useState<{ open: boolean; message: string; severity: 'info' | 'success' }>({ open: false, message: '', severity: 'info' });
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [favorites, setFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
@@ -506,6 +507,7 @@ export default function Home() {
         date: new Date().toISOString(),
         read: false,
       });
+      setHasUnreadNotifications(true);
     }, 3000);
   };
 
@@ -587,7 +589,12 @@ export default function Home() {
           }}
           isAssetExplorerOpen={isAssetExplorerOpen}
           notificationsPanelOpen={notificationsPanelOpen}
-          onNotificationsPanelToggle={() => setNotificationsPanelOpen(!notificationsPanelOpen)}
+          onNotificationsPanelToggle={() => {
+            const opening = !notificationsPanelOpen;
+            setNotificationsPanelOpen(opening);
+            if (opening) setHasUnreadNotifications(false);
+          }}
+          hasUnreadNotifications={hasUnreadNotifications}
         />
       </Box>
 

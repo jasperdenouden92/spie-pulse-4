@@ -90,6 +90,7 @@ interface SidebarProps {
   onSelectionChange?: (selection: string) => void;
   notificationsPanelOpen?: boolean;
   onNotificationsPanelToggle?: () => void;
+  hasUnreadNotifications?: boolean;
 }
 
 interface SortableFavoriteItemProps {
@@ -224,7 +225,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
@@ -924,11 +925,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     onClick={() => onNotificationsPanelToggle?.()}
                     sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }}
                   >
-                    <Badge color="primary" variant="dot" invisible={false} sx={{ '& .MuiBadge-badge': { top: 4, right: 4, width: 7, height: 7, minWidth: 7 } }}>
-                      <Box sx={{ width: 28, height: 28, bgcolor: notificationsPanelOpen ? '#e0e0e0' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Box sx={{ width: 28, height: 28, bgcolor: notificationsPanelOpen ? '#e0e0e0' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                         <NotificationsOutlinedIcon sx={{ fontSize: 16 }} />
-                      </Box>
-                    </Badge>
+                      </Badge>
+                    </Box>
                     <ListItemText primary="Notifications" primaryTypographyProps={{ variant: 'body2' }} />
                   </ListItemButton>
                 </ListItem>
@@ -1200,7 +1201,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   onClick={() => onNotificationsPanelToggle?.()}
                   sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: '#f5f5f5' } }}
                 >
-                  <Badge color="primary" variant="dot" invisible={false} sx={{ '& .MuiBadge-badge': { top: 2, right: 2, width: 7, height: 7, minWidth: 7 } }}>
+                  <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                     <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
                   </Badge>
                 </IconButton>
