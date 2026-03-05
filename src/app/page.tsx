@@ -834,6 +834,8 @@ export default function Home() {
             onCityChange={setSelectedCity}
             selectedDateRange={dateRange}
             onPageChange={handlePageChange}
+            isCollapsed={leftSidebarCollapsed}
+            onToggleCollapse={handleLeftSidebarToggle}
           />
 
         {/* Page Content */}

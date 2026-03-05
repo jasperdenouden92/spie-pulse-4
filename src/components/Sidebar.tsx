@@ -29,6 +29,9 @@ import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import Avatar from '@mui/material/Avatar';
 import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
@@ -216,6 +219,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
+  const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const [controlRoomExpanded, setControlRoomExpanded] = useState(currentPage === 'portfolio');
   const [crThemesExpanded, setCrThemesExpanded] = useState(false);
   const [crOperationsExpanded, setCrOperationsExpanded] = useState(false);
@@ -343,31 +347,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
       borderColor: 'divider',
       transition: 'width 0.3s ease'
     }}>
-      {/* Top header - matches AppBar height */}
-      <Box sx={{
-        height: 56,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: isCollapsed ? 'center' : 'space-between',
-        px: isCollapsed ? 0 : 2,
-        flexShrink: 0,
-        borderBottom: 1,
-        borderColor: 'divider',
-        transition: 'all 0.3s ease'
-      }}>
-        {!isCollapsed && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <img src="/images/spie-logo.svg" alt="Logo" style={{ width: 24, height: 24, flexShrink: 0 }} />
-          </Box>
-        )}
-        <IconButton
-          size="small"
-          onClick={onToggleCollapse}
-          sx={{ flexShrink: 0 }}
-        >
-          <MenuOpenIcon sx={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
-        </IconButton>
-      </Box>
 
       {!isCollapsed && (
         <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -858,6 +837,47 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   </List>
                 </SortableContext>
               </DndContext>
+            </Box>
+
+            {/* Bottom section: Notifications, Help, Account */}
+            <Box sx={{ mt: 'auto', flexShrink: 0, pt: 1, pb: 2 }}>
+              <Divider sx={{ mb: 1 }} />
+              <List dense sx={{ py: 0 }}>
+                <ListItem disablePadding>
+                  <ListItemButton sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', '&:hover': { backgroundColor: '#f5f5f5' } }}>
+                    <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <NotificationsOutlinedIcon sx={{ fontSize: 16 }} />
+                    </Box>
+                    <ListItemText primary="Notifications" primaryTypographyProps={{ variant: 'body2' }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', '&:hover': { backgroundColor: '#f5f5f5' } }}>
+                    <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <HelpOutlineIcon sx={{ fontSize: 16 }} />
+                    </Box>
+                    <ListItemText primary="Help" primaryTypographyProps={{ variant: 'body2' }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={(e) => setUserAnchorEl(e.currentTarget)}
+                    sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                  >
+                    <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
+                    <ListItemText primary="Account" primaryTypographyProps={{ variant: 'body2' }} />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+              <Menu
+                anchorEl={userAnchorEl}
+                open={Boolean(userAnchorEl)}
+                onClose={() => setUserAnchorEl(null)}
+              >
+                <MenuItem onClick={() => setUserAnchorEl(null)}>Profile</MenuItem>
+                <MenuItem onClick={() => setUserAnchorEl(null)}>Settings</MenuItem>
+                <MenuItem onClick={() => setUserAnchorEl(null)}>Logout</MenuItem>
+              </Menu>
             </Box>
           </Box>
         </Box>

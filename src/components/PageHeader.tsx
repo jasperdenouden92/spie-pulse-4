@@ -24,6 +24,7 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchIcon from '@mui/icons-material/Search';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import SearchModal from '@/components/SearchModal';
 import { AssetNode } from '@/data/assetTree';
 
@@ -54,6 +55,8 @@ interface PageHeaderProps {
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
   onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -102,6 +105,8 @@ export default function PageHeader({
   onCityChange,
   selectedDateRange: selectedDateRangeProp,
   onPageChange,
+  isCollapsed = false,
+  onToggleCollapse,
 }: PageHeaderProps) {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [buildingFilterAnchor, setBuildingFilterAnchor] = useState<null | HTMLElement>(null);
@@ -267,14 +272,20 @@ export default function PageHeader({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#fff',
-        borderBottom: '1px solid #e0e0e0',
+        backgroundColor: 'transparent',
         zIndex: 1200,
         transition: 'left 0.3s ease, right 0.3s ease'
       }}
     >
-      {/* Left: Breadcrumb with navigation */}
+      {/* Left: Collapse button + Breadcrumb */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <IconButton
+          size="small"
+          onClick={onToggleCollapse}
+          sx={{ flexShrink: 0 }}
+        >
+          <MenuOpenIcon sx={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
+        </IconButton>
         <AnimatePresence>
           {(selectedBuilding || selectedAsset) && (
             <motion.div
