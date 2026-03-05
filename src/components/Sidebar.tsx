@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import AddIcon from '@mui/icons-material/Add';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import BuildingIcon from '@mui/icons-material/Domain';
@@ -224,6 +225,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
+  const [newMenuAnchorEl, setNewMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -305,6 +307,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
     safeTriangleCleanupRef.current = cleanup;
   };
   const [hoveredFavorite, setHoveredFavorite] = useState<string | null>(null);
+  const [favoritesHeight, setFavoritesHeight] = useState(120);
   const [internalFavorites, setInternalFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
@@ -392,6 +395,22 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
     }
   };
 
+  const handleSectionResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = favoritesHeight;
+    const onMouseMove = (ev: MouseEvent) => {
+      const delta = startY - ev.clientY;
+      setFavoritesHeight(Math.max(44, Math.min(320, startHeight + delta)));
+    };
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -460,8 +479,31 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </IconButton>
             </Box>
           </Box>
-          <Box sx={{ px: 2, pt: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-            <List sx={{ py: 0, flexShrink: 0 }}>
+          {/* Scrollable nav section — position trick guarantees bounded height */}
+          <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: 2, pt: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
+            <List sx={{ py: 0 }}>
+            {/* "+ New" action button — opens dropdown menu */}
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
+                sx={{
+                  height: 40,
+                  paddingLeft: '4px',
+                  gap: 2,
+                  borderRadius: '5px',
+                  '&:hover': { backgroundColor: '#f5f5f5' },
+                }}
+              >
+                <Box sx={{ width: 28, height: 28, bgcolor: '#eef2ff', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <AddIcon sx={{ fontSize: 16, color: '#1e5a96' }} />
+                </Box>
+                <ListItemText
+                  primary="New"
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, sx: { color: '#1e5a96' } }}
+                />
+              </ListItemButton>
+            </ListItem>
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => setSearchModalOpen(true)}
@@ -484,6 +526,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 />
               </ListItemButton>
             </ListItem>
+            <Divider sx={{ my: 1.5 }} />
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => onPageChange?.('home')}
@@ -797,36 +840,21 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </ListItemButton>
             </ListItem>
           </List>
-
-
-            <Divider sx={{ mt: 0, mb: '16px', flexShrink: 0 }} />
-
-            <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', flexShrink: 0 }}>
-              Favorites
-            </Typography>
-            <Box sx={{
-              maxHeight: 120,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              flexShrink: 0,
-              '&::-webkit-scrollbar': {
-                width: '8px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'transparent',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: 'transparent',
-                borderRadius: '4px',
-                transition: 'background 0.2s ease',
-              },
-              '&:hover::-webkit-scrollbar-thumb': {
-                background: '#999',
-              },
-              '&::-webkit-scrollbar-thumb:hover': {
-                background: '#666',
-              },
-            }}>
+            </Box>
+          </Box>
+          {/* Drag handle — resize favorites vs nav */}
+            <Box
+              onMouseDown={handleSectionResize}
+              sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: '#f5f5f5' }, '&:hover .resize-icon': { opacity: 0.6 } }}
+            >
+              <Box className="resize-icon" sx={{ opacity: 0.2, lineHeight: 0, transition: 'opacity 0.15s' }}>
+                <DragIndicatorIcon sx={{ fontSize: 14, color: 'text.secondary', transform: 'rotate(90deg)' }} />
+              </Box>
+            </Box>
+            {/* Favorites — resizable height */}
+            <Box sx={{ height: favoritesHeight, flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', px: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
+              <Divider sx={{ mb: 1 }} />
+              <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>Favorites</Typography>
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={favorites.map(f => f.id)} strategy={verticalListSortingStrategy}>
                   <List dense sx={{ py: 0 }}>
@@ -844,9 +872,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </SortableContext>
               </DndContext>
             </Box>
-
-            {/* Bottom section: Notifications, Help, Account */}
-            <Box sx={{ mt: 'auto', flexShrink: 0, pt: 1, pb: 2 }}>
+            {/* Bottom sticky: Notifications, Help, Account */}
+            <Box sx={{ flexShrink: 0, px: 2, pt: 1, pb: 2 }}>
               <Divider sx={{ mb: 1 }} />
               <List dense sx={{ py: 0 }}>
                 <ListItem disablePadding>
@@ -885,9 +912,23 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <MenuItem onClick={() => setUserAnchorEl(null)}>Logout</MenuItem>
               </Menu>
             </Box>
-          </Box>
         </Box>
       )}
+
+      {/* "+ New" dropdown — shared between expanded and collapsed */}
+      <Menu
+        anchorEl={newMenuAnchorEl}
+        open={Boolean(newMenuAnchorEl)}
+        onClose={() => setNewMenuAnchorEl(null)}
+        anchorOrigin={{ vertical: isCollapsed ? 'top' : 'bottom', horizontal: isCollapsed ? 'right' : 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{ paper: { sx: { ml: isCollapsed ? 1 : 0, mt: isCollapsed ? 0 : 0.5, minWidth: 220, borderRadius: '8px' } } }}
+        sx={{ zIndex: 1600 }}
+      >
+        <MenuItem onClick={() => setNewMenuAnchorEl(null)} sx={{ py: 1.5, px: 2.5 }}>Report issue</MenuItem>
+        <MenuItem onClick={() => setNewMenuAnchorEl(null)} sx={{ py: 1.5, px: 2.5 }}>Request quote</MenuItem>
+        <MenuItem onClick={() => setNewMenuAnchorEl(null)} sx={{ py: 1.5, px: 2.5 }}>Service request</MenuItem>
+      </Menu>
 
       {/* Collapsed View - Icon Only */}
       {isCollapsed && (
@@ -910,6 +951,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
           {/* Nav items */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 1, pt: 2, flex: 1 }}>
+            <Tooltip title="New" placement="right">
+              <IconButton
+                onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: '#eef2ff', color: '#1e5a96', '&:hover': { bgcolor: '#dde6ff' } }}
+              >
+                <AddIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Search" placement="right">
               <IconButton
                 onClick={() => setSearchModalOpen(true)}
@@ -918,6 +967,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <SearchIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
+            <Divider sx={{ width: 24, my: 0.5 }} />
 
             <Tooltip title="Home" placement="right">
               <IconButton
