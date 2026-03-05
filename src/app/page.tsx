@@ -163,7 +163,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -446,7 +446,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = (page: 'home' | 'portfolio' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => {
+  const handlePageChange = (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
@@ -846,6 +846,41 @@ export default function Home() {
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
+
+          {/* Portfolio Overview - All Buildings */}
+          {currentPage === 'portfolio_overview' && (
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>Portfolio</Typography>
+              <Box sx={{
+                display: 'grid',
+                gap: 3,
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }
+              }}>
+                {sortedBuildings.map((b) => (
+                  <motion.div
+                    key={b.name}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ opacity: { duration: 0.3 }, scale: { duration: 0.3 } }}
+                    onClick={() => { setURLParams({ page: 'portfolio', building: b.name }); }}
+                    style={{ cursor: 'pointer', borderRadius: '12px' }}
+                  >
+                    <BuildingCard
+                      title={b.name}
+                      address={b.address}
+                      image={b.image}
+                      performance={b.metrics.overall}
+                      metricTitle={metricInfo.overall.title}
+                      metricIcon={metricInfo.overall.icon}
+                      overallPerformance={b.metrics.overall}
+                      showOverall={false}
+                    />
+                  </motion.div>
+                ))}
+              </Box>
+            </Box>
+          )}
 
           {/* Portfolio Page */}
           {currentPage === 'portfolio' && (
