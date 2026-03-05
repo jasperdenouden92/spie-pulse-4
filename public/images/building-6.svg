@@ -1,0 +1,36 @@
+<svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky6" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFE66D;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#sky6)"/>
+  <rect x="80" y="60" width="60" height="160" fill="#2C3E50"/>
+  <rect x="160" y="40" width="60" height="180" fill="#34495E"/>
+  <rect x="240" y="80" width="60" height="140" fill="#1C2833"/>
+  <rect x="90" y="80" width="12" height="15" fill="#F39C12"/>
+  <rect x="110" y="80" width="12" height="15" fill="#F39C12"/>
+  <rect x="90" y="105" width="12" height="15" fill="#F39C12"/>
+  <rect x="110" y="105" width="12" height="15" fill="#F39C12"/>
+  <rect x="90" y="130" width="12" height="15" fill="#F39C12"/>
+  <rect x="110" y="130" width="12" height="15" fill="#F39C12"/>
+  <rect x="90" y="155" width="12" height="15" fill="#F39C12"/>
+  <rect x="110" y="155" width="12" height="15" fill="#F39C12"/>
+  <rect x="170" y="60" width="12" height="15" fill="#F39C12"/>
+  <rect x="190" y="60" width="12" height="15" fill="#F39C12"/>
+  <rect x="170" y="85" width="12" height="15" fill="#F39C12"/>
+  <rect x="190" y="85" width="12" height="15" fill="#F39C12"/>
+  <rect x="170" y="110" width="12" height="15" fill="#F39C12"/>
+  <rect x="190" y="110" width="12" height="15" fill="#F39C12"/>
+  <rect x="170" y="135" width="12" height="15" fill="#F39C12"/>
+  <rect x="190" y="135" width="12" height="15" fill="#F39C12"/>
+  <rect x="170" y="160" width="12" height="15" fill="#F39C12"/>
+  <rect x="190" y="160" width="12" height="15" fill="#F39C12"/>
+  <rect x="250" y="100" width="12" height="15" fill="#F39C12"/>
+  <rect x="270" y="100" width="12" height="15" fill="#F39C12"/>
+  <rect x="250" y="125" width="12" height="15" fill="#F39C12"/>
+  <rect x="270" y="125" width="12" height="15" fill="#F39C12"/>
+  <rect x="250" y="150" width="12" height="15" fill="#F39C12"/>
+  <rect x="270" y="150" width="12" height="15" fill="#F39C12"/>
+</svg>

@@ -1,0 +1,24 @@
+<svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky5" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FA8BFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2BD2FF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#sky5)"/>
+  <rect x="60" y="100" width="280" height="120" fill="#C0504D"/>
+  <rect x="80" y="120" width="25" height="35" fill="#E8E8E8"/>
+  <rect x="115" y="120" width="25" height="35" fill="#333333"/>
+  <rect x="150" y="120" width="25" height="35" fill="#E8E8E8"/>
+  <rect x="185" y="120" width="25" height="35" fill="#333333"/>
+  <rect x="220" y="120" width="25" height="35" fill="#E8E8E8"/>
+  <rect x="255" y="120" width="25" height="35" fill="#333333"/>
+  <rect x="290" y="120" width="25" height="35" fill="#E8E8E8"/>
+  <rect x="80" y="165" width="25" height="35" fill="#333333"/>
+  <rect x="115" y="165" width="25" height="35" fill="#E8E8E8"/>
+  <rect x="150" y="165" width="25" height="35" fill="#333333"/>
+  <rect x="185" y="165" width="25" height="35" fill="#E8E8E8"/>
+  <rect x="220" y="165" width="25" height="35" fill="#333333"/>
+  <rect x="255" y="165" width="25" height="35" fill="#E8E8E8"/>
+  <rect x="290" y="165" width="25" height="35" fill="#333333"/>
+</svg>

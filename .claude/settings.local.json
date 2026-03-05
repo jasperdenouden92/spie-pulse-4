@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel:*)",
+      "Bash(git config:*)",
+      "Bash(git rebase -i HEAD~2 --exec 'git commit --amend --author=\"\"whitemope <whitemope@users.noreply.github.com>\"\" --no-edit')",
+      "Bash(tee:*)",
+      "Bash([Asset Name]\"\n- Action buttons \\(Edit, Share, More\\) before close button\n- Visual separator between actions and close button\n- Higher z-index \\(1450\\) ensures it covers Inspect toolbar\n\nSmart Dual-Close Logic:\n- Tracks whether asset was opened via inspect vs. explorer\n- Closing Asset Details when opened via inspect closes both drawers\n- Closing Asset Explorer when Asset Details is open closes both drawers\n- Clicking scrim when both drawers open closes both sequentially\n- All dual-close actions use sequential concertina animation\n\nSequential Concertina Animation:\n- Asset Details slides left first \\(300ms\\)\n- Asset Explorer slides left second \\(after 300ms delay\\)\n- Creates smooth, polished closing effect\n\nEdge Cases Covered:\n- Inspect mode disabled when opening explorer\n- Scrim click handles both single and dual drawer states\n- All close buttons check context before closing\n- State properly tracked for inspect vs. explorer workflows\n\nAll transitions use smooth cubic-bezier easing for premium feel.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(/tmp/remove_inspect.sh:*)",
+      "Bash(chmod:*)",
+      "Bash(/tmp/remove_inspect.sh)",
+      "Bash(git revert:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}

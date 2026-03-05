@@ -1,0 +1,1143 @@
+export interface AssetNode {
+  id: string;
+  name: string;
+  type: 'building' | 'floor' | 'zone' | 'room' | 'system' | 'category' | 'asset';
+  children?: AssetNode[];
+  metadata?: {
+    category?: string;
+    model?: string;
+    serialNumber?: string;
+    installDate?: string;
+    lastMaintenance?: string;
+    manufacturer?: string;
+    capacity?: string;
+    location?: string;
+    floor?: string;
+    zone?: string;
+    status?: string;
+  };
+}
+
+// Asset templates - used to create copies for multiple paths
+const assetTemplates = {
+  // HVAC Assets
+  'hvac-skyline-3n-01': {
+    id: 'hvac-skyline-3n-01',
+    name: 'HVAC Unit 3N-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'HVAC',
+      model: 'Carrier 50TC-08',
+      serialNumber: 'CAR-3N01-2019',
+      manufacturer: 'Carrier',
+      capacity: '25 kW',
+      installDate: '2019-06-15',
+      lastMaintenance: '2024-01-05',
+      floor: 'Floor 3',
+      zone: 'North Wing',
+      status: 'operational'
+    }
+  },
+  'hvac-skyline-3s-01': {
+    id: 'hvac-skyline-3s-01',
+    name: 'HVAC Unit 3S-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'HVAC',
+      model: 'Trane Voyager',
+      serialNumber: 'TRA-3S01-2019',
+      manufacturer: 'Trane',
+      capacity: '30 kW',
+      installDate: '2019-06-15',
+      lastMaintenance: '2024-01-05',
+      floor: 'Floor 3',
+      zone: 'South Wing',
+      status: 'operational'
+    }
+  },
+  'hvac-skyline-7e-01': {
+    id: 'hvac-skyline-7e-01',
+    name: 'HVAC Unit 7E-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'HVAC',
+      model: 'Carrier 50TC-12',
+      serialNumber: 'CAR-7E01-2020',
+      manufacturer: 'Carrier',
+      capacity: '35 kW',
+      installDate: '2020-02-10',
+      lastMaintenance: '2024-01-12',
+      floor: 'Floor 7',
+      zone: 'East Wing',
+      status: 'operational'
+    }
+  },
+  'hvac-skyline-7w-01': {
+    id: 'hvac-skyline-7w-01',
+    name: 'HVAC Unit 7W-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'HVAC',
+      model: 'Daikin VRV-IV',
+      serialNumber: 'DAI-7W01-2020',
+      manufacturer: 'Daikin',
+      capacity: '32 kW',
+      installDate: '2020-02-12',
+      lastMaintenance: '2024-01-12',
+      floor: 'Floor 7',
+      zone: 'West Wing',
+      status: 'operational'
+    }
+  },
+  // Lighting Assets
+  'light-skyline-3n-01': {
+    id: 'light-skyline-3n-01',
+    name: 'Lighting Panel 3N-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Lighting',
+      model: 'Lutron GRAFIK Eye',
+      serialNumber: 'LUT-3N01-2020',
+      manufacturer: 'Lutron',
+      installDate: '2020-03-10',
+      lastMaintenance: '2023-12-15',
+      floor: 'Floor 3',
+      zone: 'North Wing',
+      status: 'operational'
+    }
+  },
+  'light-skyline-3s-01': {
+    id: 'light-skyline-3s-01',
+    name: 'Lighting Panel 3S-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Lighting',
+      model: 'Lutron HomeWorks',
+      serialNumber: 'LUT-3S01-2020',
+      manufacturer: 'Lutron',
+      installDate: '2020-03-12',
+      lastMaintenance: '2023-12-15',
+      floor: 'Floor 3',
+      zone: 'South Wing',
+      status: 'operational'
+    }
+  },
+  'light-skyline-7e-01': {
+    id: 'light-skyline-7e-01',
+    name: 'Lighting Control 7E-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Lighting',
+      model: 'Philips Dynalite',
+      serialNumber: 'PHI-7E01-2020',
+      manufacturer: 'Philips',
+      installDate: '2020-03-15',
+      lastMaintenance: '2023-12-18',
+      floor: 'Floor 7',
+      zone: 'East Wing',
+      status: 'operational'
+    }
+  },
+  // Fire Safety
+  'fire-skyline-3n-01': {
+    id: 'fire-skyline-3n-01',
+    name: 'Fire Alarm Panel 3N-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Fire Safety',
+      model: 'Notifier NFS2-640',
+      serialNumber: 'NOT-3N01-2018',
+      manufacturer: 'Notifier',
+      installDate: '2018-11-20',
+      lastMaintenance: '2024-01-15',
+      floor: 'Floor 3',
+      zone: 'North Wing',
+      status: 'operational'
+    }
+  },
+  'fire-skyline-3s-01': {
+    id: 'fire-skyline-3s-01',
+    name: 'Fire Sprinkler 3S-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Fire Safety',
+      model: 'Viking VK534',
+      serialNumber: 'VIK-3S01-2018',
+      manufacturer: 'Viking',
+      installDate: '2018-11-22',
+      lastMaintenance: '2024-01-15',
+      floor: 'Floor 3',
+      zone: 'South Wing',
+      status: 'operational'
+    }
+  },
+  // Access Control
+  'access-skyline-3s-01': {
+    id: 'access-skyline-3s-01',
+    name: 'Access Control Panel',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Access Control',
+      model: 'Honeywell Pro-Watch',
+      serialNumber: 'HON-3S01-2021',
+      manufacturer: 'Honeywell',
+      installDate: '2021-08-05',
+      lastMaintenance: '2023-12-10',
+      floor: 'Floor 3',
+      zone: 'South Wing',
+      status: 'operational'
+    }
+  },
+  'access-skyline-7e-01': {
+    id: 'access-skyline-7e-01',
+    name: 'Card Reader 7E-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Access Control',
+      model: 'HID VertX',
+      serialNumber: 'HID-7E01-2021',
+      manufacturer: 'HID',
+      installDate: '2021-08-08',
+      lastMaintenance: '2023-12-12',
+      floor: 'Floor 7',
+      zone: 'East Wing',
+      status: 'operational'
+    }
+  },
+  // Elevators
+  'elev-skyline-01': {
+    id: 'elev-skyline-01',
+    name: 'Elevator 1',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Vertical Transportation',
+      model: 'Otis Gen2',
+      serialNumber: 'OTS-E01-2017',
+      manufacturer: 'Otis',
+      capacity: '1600 kg',
+      installDate: '2017-04-01',
+      lastMaintenance: '2024-01-08',
+      status: 'operational'
+    }
+  },
+  'elev-skyline-02': {
+    id: 'elev-skyline-02',
+    name: 'Elevator 2',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Vertical Transportation',
+      model: 'Schindler 5500',
+      serialNumber: 'SCH-E02-2017',
+      manufacturer: 'Schindler',
+      capacity: '1600 kg',
+      installDate: '2017-04-01',
+      lastMaintenance: '2024-01-08',
+      status: 'operational'
+    }
+  },
+  // Electrical
+  'elec-skyline-3n-01': {
+    id: 'elec-skyline-3n-01',
+    name: 'Distribution Panel 3N-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Electrical',
+      model: 'Eaton Pow-R-Line',
+      serialNumber: 'EAT-3N01-2019',
+      manufacturer: 'Eaton',
+      capacity: '400A',
+      installDate: '2019-05-10',
+      lastMaintenance: '2023-11-20',
+      floor: 'Floor 3',
+      zone: 'North Wing',
+      status: 'operational'
+    }
+  },
+  'elec-skyline-7e-01': {
+    id: 'elec-skyline-7e-01',
+    name: 'UPS System 7E-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Electrical',
+      model: 'APC Symmetra',
+      serialNumber: 'APC-7E01-2020',
+      manufacturer: 'APC',
+      capacity: '10 kVA',
+      installDate: '2020-03-20',
+      lastMaintenance: '2023-12-05',
+      floor: 'Floor 7',
+      zone: 'East Wing',
+      status: 'operational'
+    }
+  },
+  // Plumbing
+  'plumb-skyline-3n-01': {
+    id: 'plumb-skyline-3n-01',
+    name: 'Water Heater 3N-01',
+    type: 'asset' as const,
+    metadata: {
+      category: 'Plumbing',
+      model: 'Rheem Marathon',
+      serialNumber: 'RHE-3N01-2019',
+      manufacturer: 'Rheem',
+      capacity: '200L',
+      installDate: '2019-06-20',
+      lastMaintenance: '2024-01-10',
+      floor: 'Floor 3',
+      zone: 'North Wing',
+      status: 'operational'
+    }
+  }
+};
+
+// Helper to create a copy of an asset (prevents React from hanging on shared references)
+const cloneAsset = (templateKey: keyof typeof assetTemplates): AssetNode => {
+  const template = assetTemplates[templateKey];
+  return {
+    ...template,
+    id: template.id,
+    metadata: template.metadata ? { ...template.metadata } : undefined
+  };
+};
+
+// Create Skyline Plaza building structure
+const skylinePlazaBuilding: AssetNode = {
+  id: 'skyline-plaza',
+  name: 'Skyline Plaza',
+  type: 'building',
+  metadata: {
+    location: 'Downtown District',
+    status: 'operational'
+  },
+  children: [
+    // View by Floors
+    {
+      id: 'skyline-floors',
+      name: 'By Floors',
+      type: 'category',
+      children: [
+          {
+            id: 'skyline-floor-1',
+            name: 'Floor 1 - Lobby',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-1-lobby',
+                name: 'Main Lobby',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  cloneAsset('elev-skyline-01'),
+                  cloneAsset('elev-skyline-02'),
+                  {
+                    id: 'hvac-skyline-1l-01',
+                    name: 'Lobby HVAC Unit',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'York YK Chiller',
+                      serialNumber: 'YOR-1L01-2018',
+                      manufacturer: 'York',
+                      capacity: '50 kW',
+                      installDate: '2018-03-20',
+                      lastMaintenance: '2024-01-08',
+                      floor: 'Floor 1',
+                      zone: 'Main Lobby',
+                      status: 'operational'
+                    }
+                  },
+                  {
+                    id: 'light-skyline-1l-01',
+                    name: 'Chandelier Control',
+                    type: 'asset',
+                    metadata: {
+                      category: 'Lighting',
+                      model: 'Lutron HomeWorks',
+                      serialNumber: 'LUT-1L01-2018',
+                      manufacturer: 'Lutron',
+                      installDate: '2018-03-25',
+                      lastMaintenance: '2023-11-30',
+                      floor: 'Floor 1',
+                      zone: 'Main Lobby',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'skyline-floor-2',
+            name: 'Floor 2 - Retail',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-2-retail-east',
+                name: 'Retail Zone East',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  {
+                    id: 'hvac-skyline-2e-01',
+                    name: 'Retail HVAC 2E-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'Mitsubishi City Multi',
+                      serialNumber: 'MIT-2E01-2018',
+                      manufacturer: 'Mitsubishi',
+                      capacity: '28 kW',
+                      installDate: '2018-04-10',
+                      lastMaintenance: '2023-12-15',
+                      floor: 'Floor 2',
+                      zone: 'Retail Zone East',
+                      status: 'operational'
+                    }
+                  },
+                  {
+                    id: 'fire-skyline-2e-01',
+                    name: 'Fire Sprinkler 2E-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'Fire Safety',
+                      model: 'Viking VK534',
+                      serialNumber: 'VIK-2E01-2018',
+                      manufacturer: 'Viking',
+                      installDate: '2018-03-01',
+                      lastMaintenance: '2024-01-15',
+                      floor: 'Floor 2',
+                      zone: 'Retail Zone East',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              },
+              {
+                id: 'skyline-floor-2-retail-west',
+                name: 'Retail Zone West',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  {
+                    id: 'hvac-skyline-2w-01',
+                    name: 'Retail HVAC 2W-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'Daikin VRV-IV',
+                      serialNumber: 'DAI-2W01-2018',
+                      manufacturer: 'Daikin',
+                      capacity: '30 kW',
+                      installDate: '2018-04-12',
+                      lastMaintenance: '2023-12-15',
+                      floor: 'Floor 2',
+                      zone: 'Retail Zone West',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'skyline-floor-3',
+            name: 'Floor 3 - Office',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-3-north',
+                name: 'North Wing',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  cloneAsset('hvac-skyline-3n-01'),
+                  cloneAsset('light-skyline-3n-01'),
+                  cloneAsset('fire-skyline-3n-01'),
+                  cloneAsset('elec-skyline-3n-01'),
+                  cloneAsset('plumb-skyline-3n-01')
+                ]
+              },
+              {
+                id: 'skyline-floor-3-south',
+                name: 'South Wing',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  cloneAsset('hvac-skyline-3s-01'),
+                  cloneAsset('light-skyline-3s-01'),
+                  cloneAsset('fire-skyline-3s-01'),
+                  cloneAsset('access-skyline-3s-01')
+                ]
+              }
+            ]
+          },
+          {
+            id: 'skyline-floor-4',
+            name: 'Floor 4 - Office',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-4-open-plan',
+                name: 'Open Plan Area',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  {
+                    id: 'hvac-skyline-4o-01',
+                    name: 'VAV Box 4O-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'Price VAV-SD',
+                      serialNumber: 'PRI-4O01-2019',
+                      manufacturer: 'Price',
+                      installDate: '2019-01-15',
+                      lastMaintenance: '2024-01-10',
+                      floor: 'Floor 4',
+                      zone: 'Open Plan Area',
+                      status: 'operational'
+                    }
+                  },
+                  {
+                    id: 'hvac-skyline-4o-02',
+                    name: 'VAV Box 4O-02',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'Price VAV-SD',
+                      serialNumber: 'PRI-4O02-2019',
+                      manufacturer: 'Price',
+                      installDate: '2019-01-15',
+                      lastMaintenance: '2024-01-10',
+                      floor: 'Floor 4',
+                      zone: 'Open Plan Area',
+                      status: 'operational'
+                    }
+                  },
+                  {
+                    id: 'light-skyline-4o-01',
+                    name: 'Lighting Control 4O-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'Lighting',
+                      model: 'Lutron Quantum',
+                      serialNumber: 'LUT-4O01-2019',
+                      manufacturer: 'Lutron',
+                      installDate: '2019-02-01',
+                      lastMaintenance: '2023-12-18',
+                      floor: 'Floor 4',
+                      zone: 'Open Plan Area',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'skyline-floor-5',
+            name: 'Floor 5 - Office',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-5-west',
+                name: 'West Wing',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  {
+                    id: 'hvac-skyline-5w-01',
+                    name: 'HVAC Unit 5W-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'Trane Voyager',
+                      serialNumber: 'TRA-5W01-2019',
+                      manufacturer: 'Trane',
+                      capacity: '28 kW',
+                      installDate: '2019-03-10',
+                      lastMaintenance: '2024-01-05',
+                      floor: 'Floor 5',
+                      zone: 'West Wing',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              },
+              {
+                id: 'skyline-floor-5-east',
+                name: 'East Wing',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  {
+                    id: 'hvac-skyline-5e-01',
+                    name: 'HVAC Unit 5E-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'Carrier 50TC-10',
+                      serialNumber: 'CAR-5E01-2019',
+                      manufacturer: 'Carrier',
+                      capacity: '30 kW',
+                      installDate: '2019-03-12',
+                      lastMaintenance: '2024-01-05',
+                      floor: 'Floor 5',
+                      zone: 'East Wing',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'skyline-floor-6',
+            name: 'Floor 6 - Office',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-6-conference',
+                name: 'Conference Zone',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  {
+                    id: 'hvac-skyline-6c-01',
+                    name: 'Conference HVAC',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'McQuay AGZ',
+                      serialNumber: 'MCQ-6C01-2019',
+                      manufacturer: 'McQuay',
+                      capacity: '22 kW',
+                      installDate: '2019-04-10',
+                      lastMaintenance: '2023-11-20',
+                      floor: 'Floor 6',
+                      zone: 'Conference Zone',
+                      status: 'operational'
+                    }
+                  },
+                  {
+                    id: 'av-skyline-6c-01',
+                    name: 'AV Control System',
+                    type: 'asset',
+                    metadata: {
+                      category: 'Building Automation',
+                      model: 'Crestron DM-NVX',
+                      serialNumber: 'CRE-6C01-2019',
+                      manufacturer: 'Crestron',
+                      installDate: '2019-04-15',
+                      lastMaintenance: '2023-10-05',
+                      floor: 'Floor 6',
+                      zone: 'Conference Zone',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'skyline-floor-7',
+            name: 'Floor 7 - Executive',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-7-east',
+                name: 'East Wing',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  cloneAsset('hvac-skyline-7e-01'),
+                  cloneAsset('light-skyline-7e-01'),
+                  cloneAsset('access-skyline-7e-01'),
+                  cloneAsset('elec-skyline-7e-01')
+                ]
+              },
+              {
+                id: 'skyline-floor-7-west',
+                name: 'West Wing',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  cloneAsset('hvac-skyline-7w-01'),
+                  {
+                    id: 'light-skyline-7w-01',
+                    name: 'Lighting Control 7W-01',
+                    type: 'asset',
+                    metadata: {
+                      category: 'Lighting',
+                      model: 'Philips Dynalite',
+                      serialNumber: 'PHI-7W01-2020',
+                      manufacturer: 'Philips',
+                      installDate: '2020-03-18',
+                      lastMaintenance: '2023-12-20',
+                      floor: 'Floor 7',
+                      zone: 'West Wing',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'skyline-floor-8',
+            name: 'Floor 8 - Penthouse',
+            type: 'floor',
+            metadata: { status: 'operational' },
+            children: [
+              {
+                id: 'skyline-floor-8-terrace',
+                name: 'Terrace Zone',
+                type: 'zone',
+                metadata: { status: 'operational' },
+                children: [
+                  {
+                    id: 'hvac-skyline-8t-01',
+                    name: 'Rooftop Unit',
+                    type: 'asset',
+                    metadata: {
+                      category: 'HVAC',
+                      model: 'Lennox Energence',
+                      serialNumber: 'LEN-8T01-2020',
+                      manufacturer: 'Lennox',
+                      capacity: '45 kW',
+                      installDate: '2020-06-10',
+                      lastMaintenance: '2024-01-22',
+                      floor: 'Floor 8',
+                      zone: 'Terrace Zone',
+                      status: 'operational'
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      // View by Systems
+      {
+        id: 'skyline-systems',
+        name: 'By Systems',
+        type: 'category',
+        children: [
+          {
+            id: 'skyline-system-hvac',
+            name: 'HVAC System',
+            type: 'system',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('hvac-skyline-3n-01'),
+              cloneAsset('hvac-skyline-3s-01'),
+              cloneAsset('hvac-skyline-7e-01'),
+              cloneAsset('hvac-skyline-7w-01')
+            ]
+          },
+          {
+            id: 'skyline-system-lighting',
+            name: 'Lighting System',
+            type: 'system',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('light-skyline-3n-01'),
+              cloneAsset('light-skyline-3s-01'),
+              cloneAsset('light-skyline-7e-01')
+            ]
+          },
+          {
+            id: 'skyline-system-fire',
+            name: 'Fire Safety System',
+            type: 'system',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('fire-skyline-3n-01'),
+              cloneAsset('fire-skyline-3s-01')
+            ]
+          },
+          {
+            id: 'skyline-system-access',
+            name: 'Access Control System',
+            type: 'system',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('access-skyline-3s-01'),
+              cloneAsset('access-skyline-7e-01')
+            ]
+          },
+          {
+            id: 'skyline-system-vertical',
+            name: 'Vertical Transportation',
+            type: 'system',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('elev-skyline-01'),
+              cloneAsset('elev-skyline-02')
+            ]
+          },
+          {
+            id: 'skyline-system-electrical',
+            name: 'Electrical System',
+            type: 'system',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('elec-skyline-3n-01'),
+              cloneAsset('elec-skyline-7e-01')
+            ]
+          },
+          {
+            id: 'skyline-system-plumbing',
+            name: 'Plumbing System',
+            type: 'system',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('plumb-skyline-3n-01')
+            ]
+          }
+        ]
+      },
+      // View by Zones
+      {
+        id: 'skyline-zones',
+        name: 'By Zones',
+        type: 'category',
+        children: [
+          {
+            id: 'skyline-zone-north',
+            name: 'North Wing Zones',
+            type: 'zone',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('hvac-skyline-3n-01'),
+              cloneAsset('light-skyline-3n-01'),
+              cloneAsset('fire-skyline-3n-01'),
+              cloneAsset('elec-skyline-3n-01'),
+              cloneAsset('plumb-skyline-3n-01')
+            ]
+          },
+          {
+            id: 'skyline-zone-south',
+            name: 'South Wing Zones',
+            type: 'zone',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('hvac-skyline-3s-01'),
+              cloneAsset('light-skyline-3s-01'),
+              cloneAsset('fire-skyline-3s-01'),
+              cloneAsset('access-skyline-3s-01')
+            ]
+          },
+          {
+            id: 'skyline-zone-east',
+            name: 'East Wing Zones',
+            type: 'zone',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('hvac-skyline-7e-01'),
+              cloneAsset('light-skyline-7e-01'),
+              cloneAsset('access-skyline-7e-01'),
+              cloneAsset('elec-skyline-7e-01')
+            ]
+          },
+          {
+            id: 'skyline-zone-west',
+            name: 'West Wing Zones',
+            type: 'zone',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('hvac-skyline-7w-01')
+            ]
+          }
+        ]
+      },
+      // View by Equipment Type
+      {
+        id: 'skyline-equipment',
+        name: 'By Equipment Type',
+        type: 'category',
+        children: [
+          {
+            id: 'skyline-equip-chillers',
+            name: 'Chillers & Cooling',
+            type: 'category',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('hvac-skyline-3n-01'),
+              cloneAsset('hvac-skyline-3s-01'),
+              cloneAsset('hvac-skyline-7e-01'),
+              cloneAsset('hvac-skyline-7w-01')
+            ]
+          },
+          {
+            id: 'skyline-equip-lighting',
+            name: 'Lighting Controls',
+            type: 'category',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('light-skyline-3n-01'),
+              cloneAsset('light-skyline-3s-01'),
+              cloneAsset('light-skyline-7e-01')
+            ]
+          },
+          {
+            id: 'skyline-equip-life-safety',
+            name: 'Life Safety Equipment',
+            type: 'category',
+            metadata: { status: 'operational' },
+            children: [
+              cloneAsset('fire-skyline-3n-01'),
+              cloneAsset('fire-skyline-3s-01'),
+              cloneAsset('elev-skyline-01'),
+              cloneAsset('elev-skyline-02')
+            ]
+          }
+        ]
+      }
+    ]
+  }
+};
+
+// Digital Twin Asset Ontology - organized by asset types at top level
+export const assetTree: AssetNode[] = [
+  // Buildings Category
+  {
+    id: 'dt-buildings',
+    name: 'Buildings',
+    type: 'category',
+    metadata: { status: 'operational' },
+    children: [
+      skylinePlazaBuilding
+      // Additional buildings can be added here
+    ]
+  },
+  // Systems Category
+  {
+    id: 'dt-systems',
+    name: 'Systems',
+    type: 'category',
+    metadata: { status: 'operational' },
+    children: [
+      {
+        id: 'dt-system-hvac',
+        name: 'HVAC System',
+        type: 'system',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('hvac-skyline-3n-01'),
+          cloneAsset('hvac-skyline-3s-01'),
+          cloneAsset('hvac-skyline-7e-01'),
+          cloneAsset('hvac-skyline-7w-01')
+        ]
+      },
+      {
+        id: 'dt-system-lighting',
+        name: 'Lighting System',
+        type: 'system',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('light-skyline-3n-01'),
+          cloneAsset('light-skyline-3s-01'),
+          cloneAsset('light-skyline-7e-01')
+        ]
+      },
+      {
+        id: 'dt-system-fire',
+        name: 'Fire Safety System',
+        type: 'system',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('fire-skyline-3n-01'),
+          cloneAsset('fire-skyline-3s-01')
+        ]
+      },
+      {
+        id: 'dt-system-access',
+        name: 'Access Control System',
+        type: 'system',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('access-skyline-3s-01'),
+          cloneAsset('access-skyline-7e-01')
+        ]
+      },
+      {
+        id: 'dt-system-vertical',
+        name: 'Vertical Transportation',
+        type: 'system',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('elev-skyline-01'),
+          cloneAsset('elev-skyline-02')
+        ]
+      },
+      {
+        id: 'dt-system-electrical',
+        name: 'Electrical System',
+        type: 'system',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('elec-skyline-3n-01'),
+          cloneAsset('elec-skyline-7e-01')
+        ]
+      },
+      {
+        id: 'dt-system-plumbing',
+        name: 'Plumbing System',
+        type: 'system',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('plumb-skyline-3n-01')
+        ]
+      }
+    ]
+  },
+  // Zones Category
+  {
+    id: 'dt-zones',
+    name: 'Zones',
+    type: 'category',
+    metadata: { status: 'operational' },
+    children: [
+      {
+        id: 'dt-zone-north',
+        name: 'North Wing Zones',
+        type: 'zone',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('hvac-skyline-3n-01'),
+          cloneAsset('light-skyline-3n-01'),
+          cloneAsset('fire-skyline-3n-01'),
+          cloneAsset('elec-skyline-3n-01'),
+          cloneAsset('plumb-skyline-3n-01')
+        ]
+      },
+      {
+        id: 'dt-zone-south',
+        name: 'South Wing Zones',
+        type: 'zone',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('hvac-skyline-3s-01'),
+          cloneAsset('light-skyline-3s-01'),
+          cloneAsset('fire-skyline-3s-01'),
+          cloneAsset('access-skyline-3s-01')
+        ]
+      },
+      {
+        id: 'dt-zone-east',
+        name: 'East Wing Zones',
+        type: 'zone',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('hvac-skyline-7e-01'),
+          cloneAsset('light-skyline-7e-01'),
+          cloneAsset('access-skyline-7e-01'),
+          cloneAsset('elec-skyline-7e-01')
+        ]
+      },
+      {
+        id: 'dt-zone-west',
+        name: 'West Wing Zones',
+        type: 'zone',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('hvac-skyline-7w-01')
+        ]
+      }
+    ]
+  },
+  // Equipment Types Category
+  {
+    id: 'dt-equipment',
+    name: 'Equipment Types',
+    type: 'category',
+    metadata: { status: 'operational' },
+    children: [
+      {
+        id: 'dt-equip-chillers',
+        name: 'Chillers & Cooling',
+        type: 'category',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('hvac-skyline-3n-01'),
+          cloneAsset('hvac-skyline-3s-01'),
+          cloneAsset('hvac-skyline-7e-01'),
+          cloneAsset('hvac-skyline-7w-01')
+        ]
+      },
+      {
+        id: 'dt-equip-lighting',
+        name: 'Lighting Controls',
+        type: 'category',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('light-skyline-3n-01'),
+          cloneAsset('light-skyline-3s-01'),
+          cloneAsset('light-skyline-7e-01')
+        ]
+      },
+      {
+        id: 'dt-equip-life-safety',
+        name: 'Life Safety Equipment',
+        type: 'category',
+        metadata: { status: 'operational' },
+        children: [
+          cloneAsset('fire-skyline-3n-01'),
+          cloneAsset('fire-skyline-3s-01'),
+          cloneAsset('elev-skyline-01'),
+          cloneAsset('elev-skyline-02')
+        ]
+      }
+    ]
+  }
+];
+
+// Helper function to search the asset tree
+export function searchAssetTree(query: string, tree: AssetNode[] = assetTree): AssetNode[] {
+  const results: AssetNode[] = [];
+  const seen = new Set<string>();
+
+  const search = (nodes: AssetNode[]) => {
+    for (const node of nodes) {
+      if (!seen.has(node.id) &&
+          (node.name.toLowerCase().includes(query.toLowerCase()) ||
+           node.metadata?.category?.toLowerCase().includes(query.toLowerCase()) ||
+           node.metadata?.model?.toLowerCase().includes(query.toLowerCase()))) {
+        results.push(node);
+        seen.add(node.id);
+      }
+      if (node.children) {
+        search(node.children);
+      }
+    }
+  };
+
+  search(tree);
+  return results;
+}
+
+// Helper to get asset by ID
+export function getAssetById(id: string, tree: AssetNode[] = assetTree): AssetNode | null {
+  for (const node of tree) {
+    if (node.id === id) return node;
+    if (node.children) {
+      const found = getAssetById(id, node.children);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// Helper to filter tree by building
+export function filterTreeByBuilding(buildingName: string): AssetNode[] {
+  return assetTree.filter(node => node.name === buildingName);
+}
