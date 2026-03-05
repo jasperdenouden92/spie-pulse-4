@@ -12,61 +12,25 @@ function inferType(title: string): ChangeType {
   return 'improvement';
 }
 
+// Strip common prefixes from commit titles for cleaner display
+function cleanTitle(title: string): string {
+  return title
+    .replace(/^(add|feat|fix|update|improve|refactor|remove|hide|replace|implement)\s+/i, '')
+    .replace(/^(feat|fix|chore|style|docs|refactor|perf|test)(\(.+?\))?:\s*/i, '')
+    .trim();
+}
+
 function titleCase(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function buildHighlights(commits: { title: string; description: string; author: string; date: string }[]): string[] {
-  const byType: Record<ChangeType, typeof commits> = { feature: [], improvement: [], fix: [], design: [] };
-
-  for (const c of commits) {
-    byType[inferType(c.title)].push(c);
-  }
-
-  const bullets: string[] = [];
-
-  // Features — list up to 3 by name
-  if (byType.feature.length > 0) {
-    const names = byType.feature.slice(0, 3).map(c => titleCase(c.title.replace(/^add\s+/i, '').replace(/^implement\s+/i, '').replace(/^new\s+/i, '')));
-    if (byType.feature.length === 1) {
-      bullets.push(`• New: ${names[0]}.`);
-    } else {
-      const listed = names.slice(0, -1).join(', ') + (names.length > 1 ? ` and ${names[names.length - 1]}` : '');
-      const extra = byType.feature.length > 3 ? ` (+${byType.feature.length - 3} more)` : '';
-      bullets.push(`• ${byType.feature.length} new feature${byType.feature.length > 1 ? 's' : ''} added: ${listed}${extra}.`);
-    }
-  }
-
-  // Improvements — summarise with most recent title
-  if (byType.improvement.length > 0) {
-    const top = byType.improvement[0];
-    const extra = byType.improvement.length > 1 ? ` and ${byType.improvement.length - 1} other improvement${byType.improvement.length > 2 ? 's' : ''}` : '';
-    bullets.push(`• Improved: ${titleCase(top.title)}${extra}.`);
-  }
-
-  // Design
-  if (byType.design.length > 0) {
-    const top = byType.design[0];
-    const extra = byType.design.length > 1 ? ` (${byType.design.length} design changes total)` : '';
-    bullets.push(`• Design update: ${titleCase(top.title)}${extra}.`);
-  }
-
-  // Fixes
-  if (byType.fix.length > 0) {
-    if (byType.fix.length === 1) {
-      bullets.push(`• Fixed: ${titleCase(byType.fix[0].title.replace(/^fix\s+/i, ''))}.`);
-    } else {
-      bullets.push(`• ${byType.fix.length} bugs fixed, including: ${titleCase(byType.fix[0].title.replace(/^fix\s+/i, ''))}.`);
-    }
-  }
-
-  // Contributors
-  const authors = [...new Set(commits.map(c => c.author).filter(a => !a.toLowerCase().includes('bot')))];
-  if (authors.length > 0) {
-    bullets.push(`• ${commits.length} commits by ${authors.slice(0, 3).join(', ')}${authors.length > 3 ? ` +${authors.length - 3} more` : ''}.`);
-  }
-
-  return bullets;
+export interface HighlightsData {
+  commitCount: number;
+  authors: string[];
+  sections: {
+    type: ChangeType;
+    items: string[];
+  }[];
 }
 
 export async function GET() {
@@ -93,13 +57,30 @@ export async function GET() {
       .filter((l: string) => l && !l.startsWith('Co-Authored-By:') && !l.startsWith('Co-authored-by:'));
     return {
       title: lines[0] ?? '',
-      description: lines.slice(1).join(' ').trim(),
       author: c.commit.author.name as string,
-      date: c.commit.author.date as string,
     };
   });
 
-  const highlights = buildHighlights(commits);
+  const byType: Record<ChangeType, string[]> = { feature: [], improvement: [], fix: [], design: [] };
 
-  return NextResponse.json({ highlights: highlights.join('\n') });
+  for (const c of commits) {
+    const type = inferType(c.title);
+    byType[type].push(titleCase(cleanTitle(c.title)));
+  }
+
+  const sections = (['feature', 'improvement', 'design', 'fix'] as ChangeType[])
+    .filter((t) => byType[t].length > 0)
+    .map((type) => ({ type, items: byType[type].slice(0, 4) }));
+
+  const authors = [...new Set(
+    commits.map((c: { author: string }) => c.author).filter((a: string) => !a.toLowerCase().includes('bot'))
+  )] as string[];
+
+  const data: HighlightsData = {
+    commitCount: commits.length,
+    authors: authors.slice(0, 5),
+    sections,
+  };
+
+  return NextResponse.json(data);
 }
