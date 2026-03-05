@@ -63,6 +63,7 @@ interface FloatingToolbarProps {
   onOpenInMainApp?: (asset: AssetNode) => void;
   inLeftPanel?: boolean;
   onClose?: () => void;
+  large?: boolean;
 }
 
 export default function FloatingToolbar({
@@ -73,7 +74,8 @@ export default function FloatingToolbar({
   onAssetSelect,
   onOpenInMainApp,
   inLeftPanel = false,
-  onClose
+  onClose,
+  large = false,
 }: FloatingToolbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNode, setSelectedNode] = useState<AssetNode | null>(null);
@@ -122,7 +124,7 @@ export default function FloatingToolbar({
 
   // Get icon for node type - Microsoft Explorer style (very small)
   const getNodeIcon = (node: AssetNode) => {
-    const iconSize = 12;
+    const iconSize = large ? 16 : 12;
     const iconProps = { sx: { fontSize: iconSize } };
 
     if (node.type === 'building') return <BusinessIcon {...iconProps} />;
@@ -197,8 +199,8 @@ export default function FloatingToolbar({
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.5,
-                  py: 0.125,
+                  gap: 0.75,
+                  py: large ? 0.375 : 0.125,
                   width: '100%',
                   '&:hover .node-actions': {
                     opacity: 1
@@ -217,8 +219,8 @@ export default function FloatingToolbar({
                 {/* Status indicator - smaller for all nodes */}
                 <Box
                   sx={{
-                    width: 5,
-                    height: 5,
+                    width: large ? 7 : 5,
+                    height: large ? 7 : 5,
                     borderRadius: '50%',
                     bgcolor: statusColor,
                     flexShrink: 0
@@ -230,7 +232,7 @@ export default function FloatingToolbar({
                   variant="body2"
                   sx={{
                     fontWeight: node.type === 'building' ? 600 : node.type === 'asset' ? 400 : 500,
-                    fontSize: '0.688rem',
+                    fontSize: large ? '0.813rem' : '0.688rem',
                     flex: 1,
                     minWidth: 0,
                     overflow: 'hidden',
@@ -247,8 +249,8 @@ export default function FloatingToolbar({
                     label={node.metadata.serialNumber}
                     size="small"
                     sx={{
-                      height: 14,
-                      fontSize: '0.563rem',
+                      height: large ? 18 : 14,
+                      fontSize: large ? '0.688rem' : '0.563rem',
                       fontFamily: 'monospace',
                       bgcolor: '#f5f5f5',
                       '& .MuiChip-label': { px: 0.5, py: 0 }
@@ -491,16 +493,16 @@ export default function FloatingToolbar({
               }}
               sx={{
                 '& .MuiTreeItem-content': {
-                  py: '1px',
+                  py: large ? '3px' : '1px',
                   px: '4px',
                   borderRadius: '3px'
                 },
                 '& .MuiTreeItem-iconContainer svg': {
-                  fontSize: 14
+                  fontSize: large ? 16 : 14
                 },
                 '& .MuiTreeItem-group': {
                   marginLeft: 0,
-                  paddingLeft: '20px',
+                  paddingLeft: large ? '24px' : '20px',
                   borderLeft: '1px solid #e0e0e0'
                 }
               }}

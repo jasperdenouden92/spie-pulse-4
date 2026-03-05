@@ -107,7 +107,7 @@ import type { ToggleState } from '@/components/KPIToggle';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
-type BuildingsPanelTab = 'buildings' | 'kpi_analysis' | 'assets';
+type BuildingsPanelTab = 'buildings' | 'kpi_analysis';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
 interface Favorite {
@@ -608,7 +608,7 @@ export default function Home() {
         sx={{
           position: 'fixed',
           top: '56px',
-          left: isAssetQuickviewOpen && quickviewAsset && buildingsPanelTab !== 'assets' ? `${leftSidebarWidth + 280}px` : `calc(-100vw + ${leftSidebarWidth + 280}px)`,
+          left: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? `${leftSidebarWidth + 280}px` : `calc(-100vw + ${leftSidebarWidth + 280}px)`,
           width: `calc(100vw - ${leftSidebarWidth + 280}px)`,
           height: 'calc(100vh - 56px)',
           zIndex: 1425,
@@ -617,7 +617,7 @@ export default function Home() {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          pointerEvents: isAssetQuickviewOpen && quickviewAsset && buildingsPanelTab !== 'assets' ? 'auto' : 'none',
+          pointerEvents: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'auto' : 'none',
         }}
       >
         {/* Header with breadcrumb, actions, and close button */}
@@ -849,46 +849,45 @@ export default function Home() {
             onToggleCollapse={handleLeftSidebarToggle}
           />
 
+        {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
+        {currentPage === 'portfolio_overview' && (
+          <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden', mt: '56px' }}>
+            {/* Asset Tree */}
+            <Box sx={{ width: 320, flexShrink: 0, borderRight: 1, borderColor: 'divider' }}>
+              <FloatingToolbar
+                selectedView="tree"
+                onViewChange={setViewMode}
+                visible={true}
+                buildingName={undefined}
+                onAssetSelect={handleAssetSelect}
+                onOpenInMainApp={(asset) => {
+                  setLocalQuickviewAsset(null);
+                  setURLParams({ asset: asset.id, assetTab: '0' });
+                }}
+                inLeftPanel={true}
+                onClose={() => setCurrentPage('home')}
+                large={true}
+              />
+            </Box>
+            {/* Asset Detail */}
+            <Box sx={{ flex: 1, overflow: 'auto', p: 4 }}>
+              {quickviewAsset ? (
+                <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
+                  <Typography variant="body2">Select an asset from the tree to view details</Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
+
         {/* Page Content */}
+        {currentPage !== 'portfolio_overview' && (
         <Container maxWidth="xl" sx={{ pb: 3, flex: 1, mt: '56px', pt: 2 }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
-
-          {/* Portfolio Overview - All Buildings */}
-          {currentPage === 'portfolio_overview' && (
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>Portfolio</Typography>
-              <Box sx={{
-                display: 'grid',
-                gap: 3,
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }
-              }}>
-                {sortedBuildings.map((b) => (
-                  <motion.div
-                    key={b.name}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ opacity: { duration: 0.3 }, scale: { duration: 0.3 } }}
-                    onClick={() => { setURLParams({ page: 'portfolio', building: b.name }); }}
-                    style={{ cursor: 'pointer', borderRadius: '12px' }}
-                  >
-                    <BuildingCard
-                      title={b.name}
-                      address={b.address}
-                      image={b.image}
-                      performance={b.metrics.overall}
-                      metricTitle={metricInfo.overall.title}
-                      metricIcon={metricInfo.overall.icon}
-                      overallPerformance={b.metrics.overall}
-                      showOverall={false}
-                    />
-                  </motion.div>
-                ))}
-              </Box>
-            </Box>
-          )}
 
           {/* Portfolio Page */}
           {currentPage === 'portfolio' && (
@@ -1302,13 +1301,12 @@ export default function Home() {
                         >
                           <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                           <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                          <Tab value="assets" label="Assets" icon={<AccountTreeOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                         </Tabs>
 
                         {/* Panel Actions */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          {/* Sort Dropdown — only on Buildings tab */}
-                          {buildingsPanelTab === 'buildings' && (
+                          {/* Sort Dropdown — hidden on KPI Analysis */}
+                          {buildingsPanelTab !== 'kpi_analysis' && (
                             <>
                           <Chip
                             icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -1359,35 +1357,6 @@ export default function Home() {
                       </Box>
 
                       {/* Panel Content */}
-                      {buildingsPanelTab === 'assets' ? (
-                        /* ===== ASSETS SPLIT VIEW ===== */
-                        <Box sx={{ display: 'flex', height: 600 }}>
-                          <Box sx={{ width: 280, flexShrink: 0, borderRight: 1, borderColor: 'divider' }}>
-                            <FloatingToolbar
-                              selectedView="tree"
-                              onViewChange={setViewMode}
-                              visible={true}
-                              buildingName={undefined}
-                              onAssetSelect={handleAssetSelect}
-                              onOpenInMainApp={(asset) => {
-                                setLocalQuickviewAsset(null);
-                                setURLParams({ asset: asset.id, assetTab: '0' });
-                              }}
-                              inLeftPanel={true}
-                              onClose={() => setBuildingsPanelTab('buildings')}
-                            />
-                          </Box>
-                          <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-                            {quickviewAsset ? (
-                              <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />
-                            ) : (
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
-                                <Typography variant="body2">Select an asset from the tree to view details</Typography>
-                              </Box>
-                            )}
-                          </Box>
-                        </Box>
-                      ) : (
                       <Box sx={{ p: 2.5 }}>
                         {buildingsPanelTab === 'buildings' ? (
                           <>
@@ -1542,7 +1511,6 @@ export default function Home() {
                           />
                         )}
                       </Box>
-                      )}
                     </Box>
                   ) : (
                     /* ===== Building Level Detail ===== */
@@ -1735,6 +1703,7 @@ export default function Home() {
             </>
           )}
         </Container>
+        )}
       </Box>
     </Box>
   );

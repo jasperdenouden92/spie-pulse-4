@@ -528,7 +528,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   <MonitorHeartOutlined sx={{ fontSize: 16 }} />
                 </Box>
                 <ListItemText
-                  primary="Portfolio & Assets"
+                  primary="Control Room"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
                 <IconButton
@@ -686,7 +686,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   <ApartmentOutlinedIcon sx={{ fontSize: 16 }} />
                 </Box>
                 <ListItemText
-                  primary="Portfolio"
+                  primary="Portfolio & Assets"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
               </ListItemButton>
