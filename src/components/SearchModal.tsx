@@ -134,7 +134,8 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        pt: 8
+        pt: 8,
+        zIndex: 1500
       }}
     >
       <Paper
