@@ -49,6 +49,7 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import SortOutlinedIcon from '@mui/icons-material/SortOutlined';
 import Tab from '@mui/material/Tab';
@@ -106,7 +107,7 @@ import type { ToggleState } from '@/components/KPIToggle';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
-type BuildingsPanelTab = 'buildings' | 'kpi_analysis';
+type BuildingsPanelTab = 'buildings' | 'kpi_analysis' | 'assets';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
 interface Favorite {
@@ -607,7 +608,7 @@ export default function Home() {
         sx={{
           position: 'fixed',
           top: '56px',
-          left: isAssetQuickviewOpen && quickviewAsset ? `${leftSidebarWidth + 280}px` : `calc(-100vw + ${leftSidebarWidth + 280}px)`,
+          left: isAssetQuickviewOpen && quickviewAsset && buildingsPanelTab !== 'assets' ? `${leftSidebarWidth + 280}px` : `calc(-100vw + ${leftSidebarWidth + 280}px)`,
           width: `calc(100vw - ${leftSidebarWidth + 280}px)`,
           height: 'calc(100vh - 56px)',
           zIndex: 1425,
@@ -616,7 +617,7 @@ export default function Home() {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          pointerEvents: isAssetQuickviewOpen && quickviewAsset ? 'auto' : 'none',
+          pointerEvents: isAssetQuickviewOpen && quickviewAsset && buildingsPanelTab !== 'assets' ? 'auto' : 'none',
         }}
       >
         {/* Header with breadcrumb, actions, and close button */}
@@ -1301,12 +1302,13 @@ export default function Home() {
                         >
                           <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                           <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
+                          <Tab value="assets" label="Assets" icon={<AccountTreeOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                         </Tabs>
 
                         {/* Panel Actions */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          {/* Sort Dropdown — hidden on KPI Analysis */}
-                          {buildingsPanelTab !== 'kpi_analysis' && (
+                          {/* Sort Dropdown — only on Buildings tab */}
+                          {buildingsPanelTab === 'buildings' && (
                             <>
                           <Chip
                             icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -1357,6 +1359,35 @@ export default function Home() {
                       </Box>
 
                       {/* Panel Content */}
+                      {buildingsPanelTab === 'assets' ? (
+                        /* ===== ASSETS SPLIT VIEW ===== */
+                        <Box sx={{ display: 'flex', height: 600 }}>
+                          <Box sx={{ width: 280, flexShrink: 0, borderRight: 1, borderColor: 'divider' }}>
+                            <FloatingToolbar
+                              selectedView="tree"
+                              onViewChange={setViewMode}
+                              visible={true}
+                              buildingName={undefined}
+                              onAssetSelect={handleAssetSelect}
+                              onOpenInMainApp={(asset) => {
+                                setLocalQuickviewAsset(null);
+                                setURLParams({ asset: asset.id, assetTab: '0' });
+                              }}
+                              inLeftPanel={true}
+                              onClose={() => setBuildingsPanelTab('buildings')}
+                            />
+                          </Box>
+                          <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+                            {quickviewAsset ? (
+                              <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />
+                            ) : (
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
+                                <Typography variant="body2">Select an asset from the tree to view details</Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+                      ) : (
                       <Box sx={{ p: 2.5 }}>
                         {buildingsPanelTab === 'buildings' ? (
                           <>
@@ -1511,6 +1542,7 @@ export default function Home() {
                           />
                         )}
                       </Box>
+                      )}
                     </Box>
                   ) : (
                     /* ===== Building Level Detail ===== */

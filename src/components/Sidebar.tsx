@@ -528,7 +528,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   <MonitorHeartOutlined sx={{ fontSize: 16 }} />
                 </Box>
                 <ListItemText
-                  primary="Control Room"
+                  primary="Portfolio & Assets"
                   primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
                 />
                 <IconButton
@@ -798,33 +798,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             </ListItem>
           </List>
 
-            <Divider sx={{ mt: '4px', mb: '8px', flexShrink: 0 }} />
-
-            {/* Asset Explorer Menu Item */}
-            <ListItem disablePadding sx={{ mb: 1 }}>
-              <ListItemButton
-                onClick={onAssetExplorerToggle}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: isAssetExplorerOpen ? '#1976d2' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: isAssetExplorerOpen ? '#1565c0' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: isAssetExplorerOpen ? 'rgba(255,255,255,0.2)' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <AccountTreeOutlinedIcon sx={{ fontSize: 16, color: isAssetExplorerOpen ? '#fff' : 'inherit' }} />
-                </Box>
-                <ListItemText
-                  primary="Asset Explorer"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: isAssetExplorerOpen ? '#fff' : 'inherit' }}
-                />
-              </ListItemButton>
-            </ListItem>
 
             <Divider sx={{ mt: 0, mb: '16px', flexShrink: 0 }} />
 
