@@ -28,6 +28,9 @@ import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
+import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
@@ -68,8 +71,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'insights' | 'bms' | 'themes' | 'workspaces';
-  onPageChange?: (page: 'home' | 'portfolio' | 'insights' | 'bms' | 'themes' | 'workspaces') => void;
+  currentPage?: 'home' | 'portfolio' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces';
+  onPageChange?: (page: 'home' | 'portfolio' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
 }
@@ -210,6 +213,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
+  const [operationsExpanded, setOperationsExpanded] = useState(currentPage?.startsWith('operations') ?? false);
   const [hoveredFavorite, setHoveredFavorite] = useState<string | null>(null);
   const [internalFavorites, setInternalFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
@@ -558,6 +562,80 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 />
               </ListItemButton>
             </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => setOperationsExpanded(!operationsExpanded)}
+                sx={{
+                  height: 40,
+                  paddingLeft: '4px',
+                  gap: 2,
+                  borderRadius: '5px',
+                  backgroundColor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent',
+                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    backgroundColor: currentPage?.startsWith('operations') ? '#e8e8e8' : '#f5f5f5'
+                  }
+                }}
+              >
+                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <HandymanOutlinedIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <ListItemText
+                  primary="Operations"
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                />
+                <ExpandMoreIcon sx={{ fontSize: 18, transform: operationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
+              </ListItemButton>
+            </ListItem>
+            {operationsExpanded && (
+              <List dense sx={{ pl: 4, py: 0 }}>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => onPageChange?.('operations_docs')}
+                    sx={{
+                      height: 36,
+                      gap: 1.5,
+                      borderRadius: '5px',
+                      bgcolor: currentPage === 'operations_docs' ? '#e3f2fd' : 'transparent',
+                      '&:hover': { bgcolor: currentPage === 'operations_docs' ? '#e3f2fd' : '#f5f5f5' }
+                    }}
+                  >
+                    <DescriptionOutlinedIcon sx={{ fontSize: 16 }} />
+                    <ListItemText primary="Docs" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_docs' ? 600 : 400 }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => onPageChange?.('operations_tickets')}
+                    sx={{
+                      height: 36,
+                      gap: 1.5,
+                      borderRadius: '5px',
+                      bgcolor: currentPage === 'operations_tickets' ? '#e3f2fd' : 'transparent',
+                      '&:hover': { bgcolor: currentPage === 'operations_tickets' ? '#e3f2fd' : '#f5f5f5' }
+                    }}
+                  >
+                    <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} />
+                    <ListItemText primary="Tickets" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_tickets' ? 600 : 400 }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => onPageChange?.('operations_quotations')}
+                    sx={{
+                      height: 36,
+                      gap: 1.5,
+                      borderRadius: '5px',
+                      bgcolor: currentPage === 'operations_quotations' ? '#e3f2fd' : 'transparent',
+                      '&:hover': { bgcolor: currentPage === 'operations_quotations' ? '#e3f2fd' : '#f5f5f5' }
+                    }}
+                  >
+                    <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} />
+                    <ListItemText primary="Quotations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_quotations' ? 600 : 400 }} />
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            )}
           </List>
 
             <Divider sx={{ mt: '4px', mb: '8px', flexShrink: 0 }} />
