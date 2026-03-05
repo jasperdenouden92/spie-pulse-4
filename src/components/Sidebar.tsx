@@ -33,6 +33,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import SearchModal from '@/components/SearchModal';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import Tooltip from '@mui/material/Tooltip';
+import Popover from '@mui/material/Popover';
 import Avatar from '@mui/material/Avatar';
 import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
@@ -238,6 +240,69 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [crThemesExpanded, setCrThemesExpanded] = useState(false);
   const [crOperationsExpanded, setCrOperationsExpanded] = useState(false);
   const [operationsExpanded, setOperationsExpanded] = useState(currentPage?.startsWith('operations') ?? false);
+  const [collapsedControlRoomAnchor, setCollapsedControlRoomAnchor] = useState<HTMLElement | null>(null);
+  const [collapsedOperationsAnchor, setCollapsedOperationsAnchor] = useState<HTMLElement | null>(null);
+  const safeTriangleCleanupRef = useRef<(() => void) | null>(null);
+
+  const isPointInTriangle = (px: number, py: number, ax: number, ay: number, bx: number, by: number, cx: number, cy: number) => {
+    const d1 = (px - bx) * (ay - by) - (ax - bx) * (py - by);
+    const d2 = (px - cx) * (by - cy) - (bx - cx) * (py - cy);
+    const d3 = (px - ax) * (cy - ay) - (cx - ax) * (py - ay);
+    const hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    const hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+    return !(hasNeg && hasPos);
+  };
+
+  const handleSubmenuTriggerLeave = (
+    e: React.MouseEvent,
+    popoverAttr: string,
+    setAnchor: (el: HTMLElement | null) => void
+  ) => {
+    // Clean up any existing listener
+    safeTriangleCleanupRef.current?.();
+
+    const exitPoint = { x: e.clientX, y: e.clientY };
+
+    const handleMouseMove = (ev: MouseEvent) => {
+      const popoverEl = document.querySelector(`[data-popover="${popoverAttr}"]`) as HTMLElement | null;
+      if (!popoverEl) {
+        setAnchor(null);
+        cleanup();
+        return;
+      }
+
+      const rect = popoverEl.getBoundingClientRect();
+      const mx = ev.clientX;
+      const my = ev.clientY;
+
+      // If mouse entered the popover, stop tracking
+      if (mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom) {
+        cleanup();
+        return;
+      }
+
+      // Safe triangle: from exit point to top-left and bottom-left of popover (with padding)
+      const inTriangle = isPointInTriangle(
+        mx, my,
+        exitPoint.x, exitPoint.y,
+        rect.left, rect.top - 20,
+        rect.left, rect.bottom + 20
+      );
+
+      if (!inTriangle) {
+        setAnchor(null);
+        cleanup();
+      }
+    };
+
+    const cleanup = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      safeTriangleCleanupRef.current = null;
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    safeTriangleCleanupRef.current = cleanup;
+  };
   const [hoveredFavorite, setHoveredFavorite] = useState<string | null>(null);
   const [internalFavorites, setInternalFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
@@ -921,45 +986,215 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
       {/* Collapsed View - Icon Only */}
       {isCollapsed && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 2 }}>
-          {/* Buildings & Assets Icon */}
-          <IconButton
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: '8px',
-              bgcolor: !selectedBuilding ? '#f0f0f0' : 'transparent',
-              '&:hover': { bgcolor: '#e8e8e8' }
-            }}
-            onClick={() => onBuildingSelect?.(null)}
-          >
-            <BuildingIcon />
-          </IconButton>
-
-          <Divider sx={{ width: 40 }} />
-
-          {/* Metric Icons */}
-          {buildingMenuItems.slice(1).map((item) => {
-            const isActive = selectedMetric === item.metric;
-            return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          {/* Tenant switcher */}
+          <Box sx={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Tooltip title={selectedCustomer} placement="right">
               <IconButton
-                key={item.metric}
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '8px',
-                  bgcolor: isActive ? '#1976d2' : 'transparent',
-                  color: isActive ? '#fff' : 'inherit',
-                  '&:hover': {
-                    bgcolor: isActive ? '#1565c0' : '#f5f5f5'
-                  }
-                }}
-                onClick={() => handleMenuItemClick(item.metric)}
+                onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
+                sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
               >
-                <item.icon sx={{ fontSize: 20 }} />
+                <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem' }}>
+                    {customers.find(c => c.name === selectedCustomer)?.initials}
+                  </Typography>
+                </Box>
               </IconButton>
-            );
-          })}
+            </Tooltip>
+          </Box>
+
+          {/* Nav items */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 1, pt: 2, flex: 1 }}>
+            <Tooltip title="Search" placement="right">
+              <IconButton
+                onClick={() => setSearchModalOpen(true)}
+                sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
+              >
+                <SearchIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Home" placement="right">
+              <IconButton
+                onClick={() => onPageChange?.('home')}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'home' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'home' ? '#e8e8e8' : '#f5f5f5' } }}
+              >
+                <HomeOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+
+            {/* Control Room with hover submenu */}
+            <Tooltip title={collapsedControlRoomAnchor ? '' : 'Control Room'} placement="right">
+              <IconButton
+                onClick={() => onPageChange?.('portfolio')}
+                onMouseEnter={(e) => {
+                  safeTriangleCleanupRef.current?.();
+                  setCollapsedControlRoomAnchor(e.currentTarget);
+                }}
+                onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'control-room', setCollapsedControlRoomAnchor)}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'portfolio' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio' ? '#e8e8e8' : '#f5f5f5' } }}
+              >
+                <MonitorHeartOutlined sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+            <Popover
+              open={Boolean(collapsedControlRoomAnchor)}
+              anchorEl={collapsedControlRoomAnchor}
+              onClose={() => setCollapsedControlRoomAnchor(null)}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              disableRestoreFocus
+              slotProps={{
+                paper: {
+                  'data-popover': 'control-room',
+                  onMouseLeave: () => { safeTriangleCleanupRef.current?.(); setCollapsedControlRoomAnchor(null); },
+                  sx: { ml: 1, p: 1, minWidth: 180, borderRadius: '8px' }
+                } as any
+              }}
+              sx={{ pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
+            >
+              <Typography variant="subtitle2" sx={{ px: 1.5, py: 0.5, fontWeight: 600, color: 'text.secondary' }}>Themes</Typography>
+              {[
+                { key: 'sustainability', label: 'Sustainability' },
+                { key: 'comfort', label: 'Comfort' },
+                { key: 'asset_monitoring', label: 'Asset Monitoring' },
+                { key: 'energy', label: 'Energy' },
+                { key: 'workspace', label: 'Workspace' },
+                { key: 'compliance', label: 'Compliance' },
+                { key: 'water_management', label: 'Water Management' },
+                { key: 'security_systems', label: 'Security Systems' },
+                { key: 'access_control', label: 'Access Control' },
+              ].map((item) => (
+                <MenuItem
+                  key={item.key}
+                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); setCollapsedControlRoomAnchor(null); }}
+                  selected={currentPage === 'portfolio' && selection === item.key}
+                  sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+              <Divider sx={{ my: 0.5 }} />
+              <Typography variant="subtitle2" sx={{ px: 1.5, py: 0.5, fontWeight: 600, color: 'text.secondary' }}>Operations</Typography>
+              {[
+                { key: 'tickets', label: 'Tickets' },
+                { key: 'quotations', label: 'Quotations' },
+                { key: 'maintenance', label: 'Maintenance' },
+              ].map((item) => (
+                <MenuItem
+                  key={item.key}
+                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); setCollapsedControlRoomAnchor(null); }}
+                  selected={currentPage === 'portfolio' && selection === item.key}
+                  sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Popover>
+
+            <Tooltip title="Insights" placement="right">
+              <IconButton
+                onClick={() => onPageChange?.('insights')}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'insights' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'insights' ? '#e8e8e8' : '#f5f5f5' } }}
+              >
+                <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Portfolio" placement="right">
+              <IconButton
+                onClick={() => onPageChange?.('portfolio_overview')}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'portfolio_overview' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? '#e8e8e8' : '#f5f5f5' } }}
+              >
+                <ApartmentOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+
+            {/* Operations with hover submenu */}
+            <Tooltip title={collapsedOperationsAnchor ? '' : 'Operations'} placement="right">
+              <IconButton
+                onClick={() => onPageChange?.('operations')}
+                onMouseEnter={(e) => {
+                  safeTriangleCleanupRef.current?.();
+                  setCollapsedOperationsAnchor(e.currentTarget);
+                }}
+                onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'operations', setCollapsedOperationsAnchor)}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage?.startsWith('operations') ? '#e8e8e8' : '#f5f5f5' } }}
+              >
+                <HandymanOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+            <Popover
+              open={Boolean(collapsedOperationsAnchor)}
+              anchorEl={collapsedOperationsAnchor}
+              onClose={() => setCollapsedOperationsAnchor(null)}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              disableRestoreFocus
+              slotProps={{
+                paper: {
+                  'data-popover': 'operations',
+                  onMouseLeave: () => { safeTriangleCleanupRef.current?.(); setCollapsedOperationsAnchor(null); },
+                  sx: { ml: 1, p: 1, minWidth: 160, borderRadius: '8px' }
+                } as any
+              }}
+              sx={{ pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
+            >
+              <MenuItem
+                onClick={() => { onPageChange?.('operations_docs'); setCollapsedOperationsAnchor(null); }}
+                selected={currentPage === 'operations_docs'}
+                sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
+              >
+                <DescriptionOutlinedIcon sx={{ fontSize: 16 }} /> Docs
+              </MenuItem>
+              <MenuItem
+                onClick={() => { onPageChange?.('operations_tickets'); setCollapsedOperationsAnchor(null); }}
+                selected={currentPage === 'operations_tickets'}
+                sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
+              >
+                <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> Tickets
+              </MenuItem>
+              <MenuItem
+                onClick={() => { onPageChange?.('operations_quotations'); setCollapsedOperationsAnchor(null); }}
+                selected={currentPage === 'operations_quotations'}
+                sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
+              >
+                <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} /> Quotations
+              </MenuItem>
+            </Popover>
+
+            <Tooltip title="BMS" placement="right">
+              <IconButton
+                onClick={() => onPageChange?.('bms')}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'bms' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'bms' ? '#e8e8e8' : '#f5f5f5' } }}
+              >
+                <SettingsInputComponentOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+
+            {/* Bottom section */}
+            <Box sx={{ mt: 'auto', pb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+              <Divider sx={{ width: 40, mb: 0.5 }} />
+              <Tooltip title="Notifications" placement="right">
+                <IconButton sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}>
+                  <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Help" placement="right">
+                <IconButton sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}>
+                  <HelpOutlineIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Account" placement="right">
+                <IconButton
+                  onClick={(e) => setUserAnchorEl(e.currentTarget)}
+                  sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
+                >
+                  <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
         </Box>
       )}
       <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
