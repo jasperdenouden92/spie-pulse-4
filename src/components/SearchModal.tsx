@@ -88,22 +88,22 @@ function groupByDate(items: RecentItem[]): { label: string; items: RecentItem[] 
   return Array.from(groups.entries()).map(([label, items]) => ({ label, items }));
 }
 
+const rowSx = (active?: boolean) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1.5,
+  mx: 1,
+  px: 1.5,
+  py: 0.75,
+  borderRadius: 1,
+  cursor: 'pointer',
+  bgcolor: active ? '#f5f5f5' : 'transparent',
+  '&:hover': { bgcolor: '#f5f5f5' },
+});
+
 function ResultRow({ result, showPreview, onClick, active, rowRef }: { result: SearchResult; showPreview: boolean; onClick: () => void; active?: boolean; rowRef?: React.Ref<HTMLDivElement> }) {
   return (
-    <Box
-      ref={rowRef}
-      onClick={onClick}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        px: 2.5,
-        py: 0.75,
-        cursor: 'pointer',
-        bgcolor: active ? '#f5f5f5' : 'transparent',
-        '&:hover': { bgcolor: '#f5f5f5' },
-      }}
-    >
+    <Box ref={rowRef} onClick={onClick} sx={rowSx(active)}>
       <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.disabled' }}>
         {typeIcons[result.type]}
       </Box>
@@ -156,9 +156,15 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     ? filteredResults
     : recentItems;
 
-  // Reset active index when query or filters change
+  // The AI card counts as index 0 when searching; result rows start at 1
+  // When not searching, recent items start at index 0
+  const totalNavigableItems = isSearching
+    ? 1 + filteredResults.length // AI card + results
+    : recentItems.length;
+
+  // Reset active index: default to 0 (first item) when searching, -1 otherwise
   useEffect(() => {
-    setActiveIndex(-1);
+    setActiveIndex(searchQuery.trim().length > 0 ? 0 : -1);
   }, [searchQuery, filterType, filterDate, filterOwner]);
 
   // Scroll active row into view
@@ -169,7 +175,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   }, [activeIndex]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const count = visibleItems.length;
+    const count = totalNavigableItems;
     if (count === 0) return;
 
     if (e.key === 'ArrowDown') {
@@ -185,11 +191,17 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       } else {
         setActiveIndex((prev) => (prev < count - 1 ? prev + 1 : 0));
       }
-    } else if (e.key === 'Enter' && activeIndex >= 0 && activeIndex < count) {
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
       e.preventDefault();
-      handleResultClick(visibleItems[activeIndex]);
+      if (isSearching && activeIndex === 0) {
+        // AI search card selected — handle AI action
+      } else if (isSearching) {
+        handleResultClick(filteredResults[activeIndex - 1]);
+      } else {
+        handleResultClick(visibleItems[activeIndex]);
+      }
     }
-  }, [visibleItems, activeIndex]);
+  }, [totalNavigableItems, activeIndex, isSearching, filteredResults, visibleItems]);
 
   const uniqueOwners = Array.from(new Set(mockResults.map((r) => r.owner).filter(Boolean))) as string[];
 
@@ -428,56 +440,53 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
         {/* Results / Recent */}
         <Box sx={{ flex: 1, overflowY: 'auto', pt: 0.5, pb: 2 }}>
           {isSearching ? (
-            filteredResults.length > 0 ? (
-              <>
-                <Box
-                  sx={{
-                    mx: 2.5,
-                    mt: 1.5,
-                    mb: 1,
-                    px: 1.5,
-                    py: 1.25,
-                    borderRadius: 1,
-                    bgcolor: '#f5f5f5',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: '#efefef' },
-                  }}
-                >
-                  <AutoAwesomeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.813rem' }}>
-                    Search everything with AI
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.disabled', fontSize: '0.813rem' }}>
-                    &ldquo;{searchQuery}&rdquo;
-                  </Typography>
-                </Box>
-                <Typography
-                  variant="caption"
-                  sx={{ color: 'text.disabled', px: 2.5, pt: 0.5, pb: 0.5, display: 'block', fontWeight: 600 }}
-                >
-                  Search results
+            <>
+              <Box
+                ref={activeIndex === 0 ? activeRowRef : undefined}
+                sx={{
+                  ...rowSx(activeIndex === 0),
+                  mt: 0.5,
+                  py: 1.25,
+                }}
+              >
+                <AutoAwesomeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  Search everything with AI
                 </Typography>
-                {filteredResults.map((result, i) => (
-                  <ResultRow
-                    key={result.id}
-                    result={result}
-                    showPreview={showPreview}
-                    active={i === activeIndex}
-                    rowRef={i === activeIndex ? activeRowRef : undefined}
-                    onClick={() => handleResultClick(result)}
-                  />
-                ))}
-              </>
-            ) : (
-              <Box sx={{ py: 6, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  No results found
+                <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                  &ldquo;{searchQuery}&rdquo;
                 </Typography>
               </Box>
-            )
+              {filteredResults.length > 0 ? (
+                <>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.disabled', px: 2.5, pt: 0.5, pb: 0.5, display: 'block', fontWeight: 600 }}
+                  >
+                    Search results
+                  </Typography>
+                  {filteredResults.map((result, i) => {
+                    const idx = i + 1;
+                    return (
+                      <ResultRow
+                        key={result.id}
+                        result={result}
+                        showPreview={showPreview}
+                        active={idx === activeIndex}
+                        rowRef={idx === activeIndex ? activeRowRef : undefined}
+                        onClick={() => handleResultClick(result)}
+                      />
+                    );
+                  })}
+                </>
+              ) : (
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No results found
+                  </Typography>
+                </Box>
+              )}
+            </>
           ) : (
             recentItems.length > 0 ? (
               (() => {
