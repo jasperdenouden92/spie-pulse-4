@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
-import Avatar from '@mui/material/Avatar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchModal from '@/components/SearchModal';
 
@@ -19,7 +13,6 @@ interface HeaderProps {
 }
 
 export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280, rightSidebarWidth = 64 }: HeaderProps) {
-  const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   return (
@@ -81,30 +74,8 @@ export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280
           }}
         />
 
-        {/* Right icons */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton size="small" sx={{ color: 'text.secondary' }}>
-            <NotificationsOutlinedIcon fontSize="small" />
-          </IconButton>
-          <IconButton size="small" sx={{ color: 'text.secondary' }}>
-            <HelpOutlineIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={(e) => setUserAnchorEl(e.currentTarget)}
-          >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: '#c084fc', fontSize: '0.875rem', fontWeight: 600 }}>A</Avatar>
-          </IconButton>
-        </Box>
-        <Menu
-          anchorEl={userAnchorEl}
-          open={Boolean(userAnchorEl)}
-          onClose={() => setUserAnchorEl(null)}
-        >
-          <MenuItem onClick={() => setUserAnchorEl(null)}>Profile</MenuItem>
-          <MenuItem onClick={() => setUserAnchorEl(null)}>Settings</MenuItem>
-          <MenuItem onClick={() => setUserAnchorEl(null)}>Logout</MenuItem>
-        </Menu>
+        {/* Right spacer to balance layout */}
+        <Box sx={{ width: 120 }} />
       </Toolbar>
 
       {/* Search Modal */}

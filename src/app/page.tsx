@@ -810,14 +810,7 @@ export default function Home() {
         border: '3px dashed',
         borderColor: isInspectMode ? '#1976d2' : 'transparent'
       }}>
-        <Header
-          hasRightSidebar={false}
-          leftSidebarWidth={leftSidebarWidth}
-          rightSidebarWidth={0}
-        />
-
-        {currentPage !== 'home' && (
-          <PageHeader
+        <PageHeader
             currentPage={currentPage}
             selectedBuilding={selectedBuilding}
             selectedAsset={selectedAsset}
@@ -842,10 +835,9 @@ export default function Home() {
             selectedDateRange={dateRange}
             onPageChange={handlePageChange}
           />
-        )}
 
         {/* Page Content */}
-        <Container maxWidth="xl" sx={{ pb: 3, flex: 1, mt: currentPage === 'home' ? '56px' : '112px', pt: 2 }}>
+        <Container maxWidth="xl" sx={{ pb: 3, flex: 1, mt: '56px', pt: 2 }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}

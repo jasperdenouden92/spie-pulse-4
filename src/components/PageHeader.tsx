@@ -23,6 +23,8 @@ import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
+import SearchIcon from '@mui/icons-material/Search';
+import SearchModal from '@/components/SearchModal';
 import { AssetNode } from '@/data/assetTree';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
@@ -51,7 +53,7 @@ interface PageHeaderProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
-  onPageChange?: (page: string) => void;
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces') => void;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -101,6 +103,7 @@ export default function PageHeader({
   selectedDateRange: selectedDateRangeProp,
   onPageChange,
 }: PageHeaderProps) {
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [buildingFilterAnchor, setBuildingFilterAnchor] = useState<null | HTMLElement>(null);
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
   const [buildingSearch, setBuildingSearch] = useState('');
@@ -256,7 +259,7 @@ export default function PageHeader({
     <Box
       sx={{
         position: 'fixed',
-        top: 56,
+        top: 0,
         left: effectiveLeft,
         right: rightSidebarWidth,
         height: 56,
@@ -264,8 +267,9 @@ export default function PageHeader({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#fafafa',
-        zIndex: 1100,
+        backgroundColor: '#fff',
+        borderBottom: '1px solid #e0e0e0',
+        zIndex: 1200,
         transition: 'left 0.3s ease, right 0.3s ease'
       }}
     >
@@ -535,6 +539,31 @@ export default function PageHeader({
           </>
         )}
       </Box>
+
+      {/* Center: Search bar */}
+      <TextField
+        placeholder="Search..."
+        size="small"
+        onClick={() => setSearchModalOpen(true)}
+        InputProps={{
+          startAdornment: <SearchIcon sx={{ fontSize: 18, color: 'text.secondary', mr: 1 }} />,
+          readOnly: true
+        }}
+        sx={{
+          width: '100%',
+          maxWidth: 400,
+          cursor: 'pointer',
+          '& .MuiOutlinedInput-root': {
+            bgcolor: '#f5f5f5',
+            cursor: 'pointer',
+            '& fieldset': { borderColor: 'transparent' },
+            '&:hover fieldset': { borderColor: 'rgba(0, 0, 0, 0.23)' },
+            '&.Mui-focused fieldset': { borderColor: 'primary.main' }
+          },
+          '& input': { cursor: 'pointer', paddingLeft: '2px' }
+        }}
+      />
+      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
 
       {/* Right: Filter controls and favorite */}
       <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
