@@ -509,7 +509,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
         {/* Results / Recent + Preview */}
         <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        <Box sx={{ flex: 1, overflowY: 'auto', pt: 0.5, pb: 2, minWidth: 0 }} onMouseLeave={() => setHoveredResultIndex(null)}>
+        <Box sx={{ flex: 1, overflowY: 'auto', pt: 0.5, pb: 2, pl: 2, minWidth: 0 }} onMouseLeave={() => setHoveredResultIndex(null)}>
           {isSearching ? (
             <>
               <Box
