@@ -2,32 +2,18 @@ import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Popover from '@mui/material/Popover';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Divider from '@mui/material/Divider';
-import TextField from '@mui/material/TextField';
-import { buildings as allBuildingsData } from '@/data/buildings';
-import MonitorHeartOutlined from '@mui/icons-material/MonitorHeartOutlined';
+import Button from '@mui/material/Button';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
-import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
-import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
-import SearchIcon from '@mui/icons-material/Search';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
-import SearchModal from '@/components/SearchModal';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { AssetNode } from '@/data/assetTree';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
@@ -110,231 +96,6 @@ export default function PageHeader({
   isCollapsed = false,
   onToggleCollapse,
 }: PageHeaderProps) {
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [buildingFilterAnchor, setBuildingFilterAnchor] = useState<null | HTMLElement>(null);
-  const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
-  const [buildingSearch, setBuildingSearch] = useState('');
-  const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState<null | HTMLElement>(null);
-  const [localDateRange, setLocalDateRange] = useState('This Quarter');
-  const [pickerStart, setPickerStart] = useState<Date | null>(null);
-  const [pickerEnd, setPickerEnd] = useState<Date | null>(null);
-  const [pickerHover, setPickerHover] = useState<Date | null>(null);
-  const [calLeftMonth, setCalLeftMonth] = useState<{ year: number; month: number }>(() => {
-    const now = new Date();
-    const m = now.getMonth() - 1;
-    return m < 0 ? { year: now.getFullYear() - 1, month: 11 } : { year: now.getFullYear(), month: m };
-  });
-  const selectedDateRange = selectedDateRangeProp ?? localDateRange;
-  const setSelectedDateRange = (v: string) => { setLocalDateRange(v); onDateRangeChange?.(v); };
-
-  const allGroups = [...new Set(allBuildingsData.map(b => b.group))].sort();
-  const allCities = [...new Set(allBuildingsData.map(b => b.city))].sort();
-
-  const allSelected = selectedBuildingNames.length === 0;
-  const isFiltered = !allSelected;
-
-  const getBuildingFilterLabel = () => {
-    if (!isFiltered) return 'All Buildings';
-    return `${selectedBuildingNames.length} gebouw${selectedBuildingNames.length !== 1 ? 'en' : ''}`;
-  };
-
-  const getGroupState = (group: string): 'checked' | 'indeterminate' | 'unchecked' => {
-    const names = allBuildingsData.filter(b => b.group === group).map(b => b.name);
-    if (allSelected) return 'checked';
-    const n = names.filter(n => selectedBuildingNames.includes(n)).length;
-    if (n === names.length) return 'checked';
-    if (n > 0) return 'indeterminate';
-    return 'unchecked';
-  };
-
-  const getCityState = (city: string): 'checked' | 'indeterminate' | 'unchecked' => {
-    const names = allBuildingsData.filter(b => b.city === city).map(b => b.name);
-    if (allSelected) return 'checked';
-    const n = names.filter(n => selectedBuildingNames.includes(n)).length;
-    if (n === names.length) return 'checked';
-    if (n > 0) return 'indeterminate';
-    return 'unchecked';
-  };
-
-  const toggleGroup = (group: string) => {
-    const groupNames = allBuildingsData.filter(b => b.group === group).map(b => b.name);
-    const state = getGroupState(group);
-    if (state === 'checked') {
-      const base = allSelected ? allBuildingsData.map(b => b.name) : selectedBuildingNames;
-      setSelectedBuildingNames(base.filter(n => !groupNames.includes(n)));
-    } else if (!allSelected) {
-      const next = [...new Set([...selectedBuildingNames, ...groupNames])];
-      setSelectedBuildingNames(next.length === allBuildingsData.length ? [] : next);
-    }
-  };
-
-  const toggleCity = (city: string) => {
-    const cityNames = allBuildingsData.filter(b => b.city === city).map(b => b.name);
-    const state = getCityState(city);
-    if (state === 'checked') {
-      const base = allSelected ? allBuildingsData.map(b => b.name) : selectedBuildingNames;
-      setSelectedBuildingNames(base.filter(n => !cityNames.includes(n)));
-    } else if (!allSelected) {
-      const next = [...new Set([...selectedBuildingNames, ...cityNames])];
-      setSelectedBuildingNames(next.length === allBuildingsData.length ? [] : next);
-    }
-  };
-
-  const toggleBuilding = (name: string) => {
-    if (allSelected) {
-      setSelectedBuildingNames(allBuildingsData.map(b => b.name).filter(n => n !== name));
-    } else if (selectedBuildingNames.includes(name)) {
-      setSelectedBuildingNames(selectedBuildingNames.filter(n => n !== name));
-    } else {
-      const next = [...selectedBuildingNames, name];
-      setSelectedBuildingNames(next.length === allBuildingsData.length ? [] : next);
-    }
-  };
-
-  const filteredBuildingsList = buildingSearch
-    ? allBuildingsData.filter(b => b.name.toLowerCase().includes(buildingSearch.toLowerCase()))
-    : allBuildingsData;
-
-  const getDateRangeDisplay = (range: string): string => {
-    const now = new Date();
-    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-    const fmt = (d: Date) => `${d.getDate()} ${months[d.getMonth()]}`;
-    const fmtFull = (d: Date) => `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-    switch (range) {
-      case 'Today': return fmtFull(now);
-      case 'This Week': {
-        const day = now.getDay() || 7;
-        const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-        const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-        return `${fmt(mon)} – ${fmtFull(sun)}`;
-      }
-      case 'This Month': {
-        const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      case 'This Quarter': {
-        const q = Math.floor(now.getMonth() / 3);
-        const start = new Date(now.getFullYear(), q * 3, 1);
-        const end = new Date(now.getFullYear(), q * 3 + 3, 0);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      case 'This Year': {
-        const start = new Date(now.getFullYear(), 0, 1);
-        const end = new Date(now.getFullYear(), 11, 31);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      default: return range;
-    }
-  };
-
-  // Calendar helpers
-  const calRight = calLeftMonth.month === 11
-    ? { year: calLeftMonth.year + 1, month: 0 }
-    : { year: calLeftMonth.year, month: calLeftMonth.month + 1 };
-
-  const calIsSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-
-  const navigateCalPrev = () => setCalLeftMonth(prev =>
-    prev.month === 0 ? { year: prev.year - 1, month: 11 } : { year: prev.year, month: prev.month - 1 }
-  );
-  const navigateCalNext = () => setCalLeftMonth(prev =>
-    prev.month === 11 ? { year: prev.year + 1, month: 0 } : { year: prev.year, month: prev.month + 1 }
-  );
-
-  const handleCalDayClick = (d: Date) => {
-    if (!pickerStart || (pickerStart && pickerEnd)) {
-      setPickerStart(d);
-      setPickerEnd(null);
-    } else {
-      const [start, end] = d >= pickerStart ? [pickerStart, d] : [d, pickerStart];
-      const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const fmt = (dt: Date) => `${dt.getDate()} ${MONTHS[dt.getMonth()]}`;
-      const label = calIsSameDay(start, end)
-        ? `${fmt(start)} ${start.getFullYear()}`
-        : `${fmt(start)} – ${fmt(end)} ${end.getFullYear()}`;
-      setSelectedDateRange(label);
-      setPickerStart(null);
-      setPickerEnd(null);
-      setPickerHover(null);
-      setDateRangeAnchorEl(null);
-    }
-  };
-
-  const renderCalMonth = (year: number, month: number) => {
-    const today = new Date();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDow = new Date(year, month, 1).getDay();
-    const rangeEndDate = pickerEnd ?? (pickerStart && pickerHover ? pickerHover : null);
-    const [rangeMin, rangeMax] = (() => {
-      if (!pickerStart || !rangeEndDate) return [null, null];
-      return pickerStart <= rangeEndDate ? [pickerStart, rangeEndDate] : [rangeEndDate, pickerStart];
-    })();
-    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'];
-    const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    const cells: (Date | null)[] = [
-      ...Array(firstDow).fill(null),
-      ...Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1)),
-    ];
-    while (cells.length % 7 !== 0) cells.push(null);
-
-    return (
-      <Box sx={{ minWidth: 224 }}>
-        <Typography variant="subtitle2" sx={{ textAlign: 'center', mb: 1.5, fontWeight: 600, fontSize: '0.875rem' }}>
-          {MONTH_NAMES[month]} {year}
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 32px)', rowGap: '2px' }}>
-          {DAY_LABELS.map(d => (
-            <Box key={d} sx={{ height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.688rem', color: 'text.secondary', fontWeight: 500 }}>
-              {d}
-            </Box>
-          ))}
-          {cells.map((day, idx) => {
-            if (!day) return <Box key={`e${idx}`} sx={{ height: 32 }} />;
-            const isToday = calIsSameDay(day, today);
-            const isStart = !!pickerStart && calIsSameDay(day, pickerStart);
-            const isEnd = !!rangeEndDate && calIsSameDay(day, rangeEndDate);
-            const inRange = !!rangeMin && !!rangeMax && day > rangeMin && day < rangeMax;
-            const isSelected = isStart || isEnd;
-            const showBar = (isStart || isEnd || inRange) && !(isStart && isEnd);
-            const barLeft = isEnd || inRange ? 0 : '50%';
-            const barRight = isStart || inRange ? 0 : '50%';
-            const isHovered = !!pickerHover && calIsSameDay(day, pickerHover);
-            return (
-              <Box
-                key={idx}
-                sx={{ position: 'relative', height: 32, cursor: 'pointer' }}
-                onClick={() => handleCalDayClick(day)}
-                onMouseEnter={() => { if (pickerStart && !pickerEnd) setPickerHover(day); }}
-                onMouseLeave={() => { if (pickerStart && !pickerEnd) setPickerHover(null); }}
-              >
-                {showBar && (
-                  <Box sx={{ position: 'absolute', top: 2, bottom: 2, left: barLeft, right: barRight, bgcolor: '#dbeafe', zIndex: 0 }} />
-                )}
-                <Box sx={{
-                  position: 'absolute', top: '50%', left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: 28, height: 28, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  bgcolor: isSelected ? '#1e5a96' : isHovered && !inRange ? '#e0e7ff' : 'transparent',
-                  color: isSelected ? 'white' : 'text.primary',
-                  fontSize: '0.8125rem',
-                  fontWeight: isToday ? 700 : 400,
-                  textDecoration: isToday && !isSelected ? 'underline' : 'none',
-                  zIndex: 1,
-                }}>
-                  {day.getDate()}
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
-      </Box>
-    );
-  };
-
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
   const [groupCaretAnchor, setGroupCaretAnchor] = useState<null | HTMLElement>(null);
@@ -666,8 +427,27 @@ export default function PageHeader({
         )}
       </Box>
 
-      {/* Right: Filter controls and favorite */}
-      <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+      {/* Right: Export + Favorite */}
+      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+        {/* Export Button */}
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<FileDownloadOutlinedIcon />}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 600,
+            fontSize: '0.8125rem',
+            borderRadius: '6px',
+            px: 2,
+            height: 32,
+            boxShadow: 'none',
+            '&:hover': { boxShadow: 'none' }
+          }}
+        >
+          Export
+        </Button>
+
         {/* Favorite Icon */}
         <IconButton
           size="small"
@@ -681,212 +461,6 @@ export default function PageHeader({
         >
           {isFavorited ? <StarIcon fontSize="small" /> : <StarOutlineIcon fontSize="small" />}
         </IconButton>
-
-        {currentPage === 'portfolio' && !selectedBuilding && (
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            {/* Buildings Filter (replaces Group + City) */}
-            <Chip
-              label={getBuildingFilterLabel()}
-              onClick={(e) => setBuildingFilterAnchor(e.currentTarget)}
-              deleteIcon={<ExpandMoreIcon />}
-              onDelete={(e) => setBuildingFilterAnchor(e.currentTarget as any)}
-              sx={{
-                height: 32,
-                borderRadius: '6px',
-                backgroundColor: isFiltered ? '#e3f2fd' : 'white',
-                border: '1px solid',
-                borderColor: isFiltered ? '#1976d2' : '#d0d0d0',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-                '&:hover': { backgroundColor: isFiltered ? '#bbdefb' : '#f5f5f5' },
-                '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500, color: isFiltered ? '#1976d2' : 'inherit' },
-                '& .MuiChip-deleteIcon': { color: isFiltered ? '#1976d2' : undefined }
-              }}
-            />
-            <Popover
-              anchorEl={buildingFilterAnchor}
-              open={Boolean(buildingFilterAnchor)}
-              onClose={() => { setBuildingFilterAnchor(null); setBuildingSearch(''); }}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              PaperProps={{ sx: { mt: 0.5, width: 560, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
-            >
-              {/* Header */}
-              <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0' }}>
-                <Typography variant="subtitle2" fontWeight={600}>Filter gebouwen</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    {isFiltered ? selectedBuildingNames.length : allBuildingsData.length}/{allBuildingsData.length} geselecteerd
-                  </Typography>
-                  {isFiltered && (
-                    <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setSelectedBuildingNames([])}>
-                      Wis alles
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-
-              {/* Two-panel body */}
-              <Box sx={{ display: 'flex', height: 340 }}>
-
-                {/* Left: Quick selects */}
-                <Box sx={{ width: 190, borderRight: '1px solid #f0f0f0', overflowY: 'auto', p: 1.5 }}>
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
-                    Groepen
-                  </Typography>
-                  {allGroups.map(group => {
-                    const state = getGroupState(group);
-                    const count = allBuildingsData.filter(b => b.group === group).length;
-                    return (
-                      <Box key={group} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: '#f5f5f5' } }}>
-                        <FormControlLabel
-                          control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => toggleGroup(group)} sx={{ p: '4px' }} />}
-                          label={<Typography variant="body2">{group}</Typography>}
-                          sx={{ m: 0, flex: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary">{count}</Typography>
-                      </Box>
-                    );
-                  })}
-
-                  <Divider sx={{ my: 1.5 }} />
-
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
-                    Steden
-                  </Typography>
-                  {allCities.map(city => {
-                    const state = getCityState(city);
-                    const count = allBuildingsData.filter(b => b.city === city).length;
-                    return (
-                      <Box key={city} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: '#f5f5f5' } }}>
-                        <FormControlLabel
-                          control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => toggleCity(city)} sx={{ p: '4px' }} />}
-                          label={<Typography variant="body2">{city}</Typography>}
-                          sx={{ m: 0, flex: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary">{count}</Typography>
-                      </Box>
-                    );
-                  })}
-                </Box>
-
-                {/* Right: Individual buildings */}
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                  <Box sx={{ p: 1, borderBottom: '1px solid #f0f0f0' }}>
-                    <TextField
-                      size="small"
-                      placeholder="Zoek gebouw..."
-                      value={buildingSearch}
-                      onChange={(e) => setBuildingSearch(e.target.value)}
-                      fullWidth
-                      sx={{
-                        '& .MuiOutlinedInput-root': { borderRadius: '6px', fontSize: '0.8rem' },
-                        '& .MuiOutlinedInput-input': { py: '5px', px: '10px' }
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ flex: 1, overflowY: 'auto' }}>
-                    {filteredBuildingsList.map(b => {
-                      const isSelected = allSelected || selectedBuildingNames.includes(b.name);
-                      return (
-                        <Box
-                          key={b.name}
-                          sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
-                          onClick={() => toggleBuilding(b.name)}
-                        >
-                          <Checkbox size="small" checked={isSelected} onChange={() => toggleBuilding(b.name)} onClick={e => e.stopPropagation()} sx={{ p: '4px' }} />
-                          <Box sx={{ ml: 1, minWidth: 0 }}>
-                            <Typography variant="body2" noWrap>{b.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">{b.city} · {b.group}</Typography>
-                          </Box>
-                        </Box>
-                      );
-                    })}
-                    {filteredBuildingsList.length === 0 && (
-                      <Box sx={{ p: 2, textAlign: 'center' }}>
-                        <Typography variant="body2" color="text.secondary">Geen gebouwen gevonden</Typography>
-                      </Box>
-                    )}
-                  </Box>
-                </Box>
-              </Box>
-            </Popover>
-
-            {/* Date Range Picker */}
-            <Chip
-              label={getDateRangeDisplay(selectedDateRange)}
-              onClick={(e) => setDateRangeAnchorEl(e.currentTarget)}
-              deleteIcon={<ExpandMoreIcon />}
-              onDelete={(e) => setDateRangeAnchorEl(e.currentTarget as any)}
-              sx={{
-                height: 32,
-                borderRadius: '6px',
-                backgroundColor: 'white',
-                border: '1px solid #d0d0d0',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-                '&:hover': { backgroundColor: '#f5f5f5' },
-                '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500 }
-              }}
-            />
-            <Popover
-              anchorEl={dateRangeAnchorEl}
-              open={Boolean(dateRangeAnchorEl)}
-              onClose={() => { setDateRangeAnchorEl(null); setPickerStart(null); setPickerEnd(null); setPickerHover(null); }}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-              PaperProps={{ sx: { borderRadius: '12px', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', mt: 0.5, overflow: 'hidden' } }}
-            >
-              <Box sx={{ display: 'flex' }}>
-                {/* Quick presets */}
-                <Box sx={{ width: 152, borderRight: 1, borderColor: 'divider', py: 1.5 }}>
-                  {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(preset => {
-                    const isActive = selectedDateRange === preset;
-                    return (
-                      <Box
-                        key={preset}
-                        onClick={() => { setSelectedDateRange(preset); setPickerStart(null); setPickerEnd(null); setPickerHover(null); setDateRangeAnchorEl(null); }}
-                        sx={{
-                          px: 2, py: 0.875, mx: 1, borderRadius: '6px', cursor: 'pointer',
-                          bgcolor: isActive ? '#eef2ff' : 'transparent',
-                          '&:hover': { bgcolor: isActive ? '#e0e7ff' : '#f5f5f5' },
-                        }}
-                      >
-                        <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 400, color: isActive ? '#1e5a96' : 'text.primary', fontSize: '0.875rem' }}>
-                          {preset}
-                        </Typography>
-                        {preset !== 'All Time' && (
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.688rem' }}>
-                            {getDateRangeDisplay(preset)}
-                          </Typography>
-                        )}
-                      </Box>
-                    );
-                  })}
-                </Box>
-
-                {/* Calendars */}
-                <Box sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                    <IconButton size="small" onClick={navigateCalPrev} sx={{ mr: 'auto' }}>
-                      <ChevronLeftIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={navigateCalNext} sx={{ ml: 'auto' }}>
-                      <ChevronRightIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 3 }}>
-                    {renderCalMonth(calLeftMonth.year, calLeftMonth.month)}
-                    {renderCalMonth(calRight.year, calRight.month)}
-                  </Box>
-                  {pickerStart && !pickerEnd && (
-                    <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1, display: 'block', textAlign: 'center' }}>
-                      Select end date
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-            </Popover>
-          </Box>
-        )}
       </Box>
     </Box>
   );

@@ -67,6 +67,7 @@ import QuotationsList from '@/components/QuotationsList';
 import MaintenanceScheduleList from '@/components/MaintenanceScheduleList';
 import FloatingToolbar from '@/components/FloatingToolbar';
 import AssetDetail from '@/components/AssetDetail';
+import ControlRoomFilters from '@/components/ControlRoomFilters';
 import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
@@ -981,6 +982,14 @@ export default function Home() {
                   )}
 
                   {/* ========== KPI METRICS SECTION ========== */}
+                  {/* Filters bar (only when no building selected) */}
+                  {!selectedBuilding && (
+                    <ControlRoomFilters
+                      selectedDateRange={dateRange}
+                      onDateRangeChange={setDateRange}
+                    />
+                  )}
+
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
                   <Box sx={{
                     display: 'flex', gap: 2, mb: 3,
