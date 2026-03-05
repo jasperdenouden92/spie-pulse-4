@@ -68,6 +68,7 @@ import MaintenanceScheduleList from '@/components/MaintenanceScheduleList';
 import FloatingToolbar from '@/components/FloatingToolbar';
 import AssetDetail from '@/components/AssetDetail';
 import ControlRoomFilters from '@/components/ControlRoomFilters';
+import ExportsPage from '@/components/ExportsPage';
 import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
@@ -914,12 +915,7 @@ export default function Home() {
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
-          {currentPage === 'exports' && (
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Exports</Typography>
-              <Typography variant="body2" color="text.secondary">No exports yet.</Typography>
-            </Box>
-          )}
+          {currentPage === 'exports' && <ExportsPage />}
 
           {/* Portfolio Page */}
           {currentPage === 'portfolio' && (
