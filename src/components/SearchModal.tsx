@@ -236,11 +236,18 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     ? 1 + filteredResults.length // AI card + results
     : recentItems.length;
 
-  // Reset active index: default to 0 (first item) when searching, -1 otherwise
+  // Always focus the first logical item:
+  // - Searching with results: first search result (index 1, after AI card)
+  // - Searching empty: AI card (index 0)
+  // - Not searching: first recent item (index 0)
   useEffect(() => {
-    setActiveIndex(searchQuery.trim().length > 0 ? 0 : -1);
+    if (searchQuery.trim().length > 0) {
+      setActiveIndex(filteredResults.length > 0 ? 1 : 0);
+    } else {
+      setActiveIndex(recentItems.length > 0 ? 0 : -1);
+    }
     setHoveredResultIndex(null);
-  }, [searchQuery, filterType, filterDate, filterOwner]);
+  }, [searchQuery, filterType, filterDate, filterOwner, filteredResults.length, recentItems.length]);
 
   // Scroll active row into view
   useEffect(() => {
