@@ -460,75 +460,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </IconButton>
             </Box>
           </Box>
-          <Menu
-              anchorEl={customerAnchorEl}
-              open={Boolean(customerAnchorEl)}
-              onClose={() => setCustomerAnchorEl(null)}
-              PaperProps={{
-                sx: {
-                  minWidth: 280,
-                  p: 1,
-                  zIndex: 1500,
-                }
-              }}
-              slotProps={{ root: { style: { zIndex: 1500 } } }}
-            >
-              <Box sx={{ px: 2, py: 1.5, mb: 1 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                  Switch Tenant
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 0.5 }} />
-              {customers.map((customer) => (
-                <MenuItem
-                  key={customer.name}
-                  onClick={() => {
-                    setSelectedCustomer(customer.name);
-                    setCustomerAnchorEl(null);
-                  }}
-                  selected={selectedCustomer === customer.name}
-                  sx={{
-                    display: 'flex',
-                    gap: 2,
-                    py: 1.5,
-                    px: 1.5,
-                    mx: 0.5,
-                    mb: 0.5,
-                    borderRadius: '5px',
-                    '&:hover': {
-                      backgroundColor: '#f5f5f5',
-                    },
-                    '&.Mui-selected': {
-                      backgroundColor: '#e3f2fd',
-                      '&:hover': {
-                        backgroundColor: '#e3f2fd',
-                      }
-                    }
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      bgcolor: '#1e5a96',
-                      borderRadius: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}
-                  >
-                    <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, textTransform: 'uppercase' }}>
-                      {customer.name.slice(0, 2)}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {customer.name}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-
           <Box sx={{ px: 2, pt: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <List sx={{ py: 0, flexShrink: 0 }}>
             <ListItem disablePadding>
@@ -1198,6 +1129,39 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           </Box>
         </Box>
       )}
+      <Menu
+        anchorEl={customerAnchorEl}
+        open={Boolean(customerAnchorEl)}
+        onClose={() => setCustomerAnchorEl(null)}
+        PaperProps={{ sx: { minWidth: 280, p: 1, zIndex: 1500 } }}
+        slotProps={{ root: { style: { zIndex: 1500 } } }}
+      >
+        <Box sx={{ px: 2, py: 1.5, mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+            Switch Tenant
+          </Typography>
+        </Box>
+        <Divider sx={{ my: 0.5 }} />
+        {customers.map((customer) => (
+          <MenuItem
+            key={customer.name}
+            onClick={() => { setSelectedCustomer(customer.name); setCustomerAnchorEl(null); }}
+            selected={selectedCustomer === customer.name}
+            sx={{
+              display: 'flex', gap: 2, py: 1.5, px: 1.5, mx: 0.5, mb: 0.5, borderRadius: '5px',
+              '&:hover': { backgroundColor: '#f5f5f5' },
+              '&.Mui-selected': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#e3f2fd' } }
+            }}
+          >
+            <Box sx={{ width: 40, height: 40, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600, textTransform: 'uppercase' }}>
+                {customer.name.slice(0, 2)}
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>{customer.name}</Typography>
+          </MenuItem>
+        ))}
+      </Menu>
       <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </Box>
   );
