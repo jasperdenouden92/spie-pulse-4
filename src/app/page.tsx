@@ -149,7 +149,7 @@ export default function Home() {
     panel: 'buildings',
   };
 
-  const setURLParams = useCallback((updates: Record<string, string>) => {
+  const buildParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(latestParamsRef.current.toString());
     for (const [key, value] of Object.entries(updates)) {
       if (value === (URL_DEFAULTS[key] ?? '')) {
@@ -158,10 +158,20 @@ export default function Home() {
         params.set(key, value);
       }
     }
-    // Update ref immediately so sequential calls in the same tick accumulate correctly.
     latestParamsRef.current = params as unknown as typeof searchParams;
-    const qs = params.toString();
+    return params.toString();
+  };
+
+  // replace — for filters/preferences that shouldn't create browser history entries
+  const setURLParams = useCallback((updates: Record<string, string>) => {
+    const qs = buildParams(updates);
     router.replace(qs ? `?${qs}` : '/', { scroll: false });
+  }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // push — for real navigation (page changes, building selection, metric/theme)
+  const navigateTo = useCallback((updates: Record<string, string>) => {
+    const qs = buildParams(updates);
+    router.push(qs ? `?${qs}` : '/', { scroll: false });
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
@@ -210,9 +220,9 @@ export default function Home() {
   const [openedViaInspect, setOpenedViaInspect] = useState(false);
 
   // ── URL setter helpers ─────────────────────────────────────────────────────
-  const setCurrentPage = (page: string) => setURLParams({ page });
-  const setSelectedBuilding = (b: Building | null) => setURLParams({ building: b?.name ?? '' });
-  const setSelection = (s: string) => setURLParams({ metric: s });
+  const setCurrentPage = (page: string) => navigateTo({ page });
+  const setSelectedBuilding = (b: Building | null) => navigateTo({ building: b?.name ?? '' });
+  const setSelection = (s: string) => navigateTo({ metric: s });
   const setViewMode = (v: string) => setURLParams({ view: v });
   const setSortOrder = (s: string) => setURLParams({ sort: s });
   const setDateRange = (r: string) => setURLParams({ dateRange: r });
