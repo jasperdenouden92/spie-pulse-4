@@ -851,33 +851,46 @@ export default function Home() {
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
         {currentPage === 'portfolio_overview' && (
-          <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden', mt: '56px' }}>
-            {/* Asset Tree */}
-            <Box sx={{ width: 320, flexShrink: 0, borderRight: 1, borderColor: 'divider' }}>
-              <FloatingToolbar
-                selectedView="tree"
-                onViewChange={setViewMode}
-                visible={true}
-                buildingName={undefined}
-                onAssetSelect={handleAssetSelect}
-                onOpenInMainApp={(asset) => {
-                  setLocalQuickviewAsset(null);
-                  setURLParams({ asset: asset.id, assetTab: '0' });
-                }}
-                inLeftPanel={true}
-                onClose={() => setCurrentPage('home')}
-                large={true}
-              />
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', mt: '56px' }}>
+            {/* Page title */}
+            <Box sx={{ px: 3, py: 1.5, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>Portfolio & Assets</Typography>
             </Box>
-            {/* Asset Detail */}
-            <Box sx={{ flex: 1, overflow: 'auto', p: 4 }}>
-              {quickviewAsset ? (
-                <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />
-              ) : (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
-                  <Typography variant="body2">Select an asset from the tree to view details</Typography>
-                </Box>
-              )}
+            <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+              {/* Asset Tree */}
+              <Box sx={{ width: 320, flexShrink: 0, borderRight: 1, borderColor: 'divider' }}>
+                <FloatingToolbar
+                  selectedView="tree"
+                  onViewChange={setViewMode}
+                  visible={true}
+                  buildingName={undefined}
+                  onAssetSelect={(node) => {
+                    if (node) {
+                      setLocalQuickviewAsset(null);
+                      setURLParams({ asset: node.id, assetTab: '0' });
+                    } else {
+                      setURLParams({ asset: '' });
+                    }
+                  }}
+                  onOpenInMainApp={(asset) => {
+                    setLocalQuickviewAsset(null);
+                    setURLParams({ asset: asset.id, assetTab: '0' });
+                  }}
+                  inLeftPanel={true}
+                  onClose={() => setCurrentPage('home')}
+                  large={true}
+                />
+              </Box>
+              {/* Asset Detail */}
+              <Box sx={{ flex: 1, overflow: 'auto', p: 4 }}>
+                {quickviewAsset ? (
+                  <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
+                    <Typography variant="body2">Select an item from the tree to view details</Typography>
+                  </Box>
+                )}
+              </Box>
             </Box>
           </Box>
         )}

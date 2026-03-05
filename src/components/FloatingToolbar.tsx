@@ -209,6 +209,10 @@ export default function FloatingToolbar({
                 onClick={() => {
                   setSelectedNode(node);
                   onAssetSelect?.(node);
+                  // Expand node if it has children and isn't already expanded
+                  if (node.children && node.children.length > 0 && !expanded.includes(node.id)) {
+                    handleExpandedItemsChange(null, [...expanded, node.id]);
+                  }
                 }}
               >
                 {/* Icon */}
@@ -418,7 +422,8 @@ export default function FloatingToolbar({
       ) : (
         /* Expanded View - Professional Asset Navigator */
         <>
-          {/* Header - Breadcrumb style */}
+          {/* Header - Breadcrumb style (hidden in inline/large mode) */}
+          {!large && (
           <Box sx={{
             display: 'flex',
             alignItems: 'center',
@@ -438,9 +443,10 @@ export default function FloatingToolbar({
               <CloseIcon fontSize="small" />
             </IconButton>
           </Box>
+          )}
 
           {/* Quicksearch */}
-          <Box sx={{ px: 2, pb: 1.5, flexShrink: 0 }}>
+          <Box sx={{ px: 2, pb: 1.5, pt: large ? 2 : 0, flexShrink: 0 }}>
             <TextField
               size="small"
               placeholder="Quicksearch"
