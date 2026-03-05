@@ -578,7 +578,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton
-                onClick={() => onPageChange?.('portfolio')}
+                onClick={() => { onPageChange?.('portfolio'); setControlRoomExpanded(true); }}
                 sx={{
                   height: 40,
                   paddingLeft: '4px',
@@ -761,7 +761,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton
-                onClick={() => onPageChange?.('operations')}
+                onClick={() => { onPageChange?.('operations'); setOperationsExpanded(true); }}
                 sx={{
                   height: 40,
                   paddingLeft: '4px',
