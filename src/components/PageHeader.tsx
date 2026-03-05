@@ -461,25 +461,22 @@ export default function PageHeader({
                     sx={{
                       fontWeight: 600,
                       fontSize: '1rem',
-                      cursor: showChildSegment ? 'pointer' : 'default',
-                      '&:hover': showChildSegment ? { textDecoration: 'underline' } : {}
+                      cursor: 'pointer',
+                      '&:hover': { textDecoration: 'underline' }
                     }}
                     onClick={showChildSegment ? () => {
                       const groupKey = isThemeChild ? 'themes_group' : 'operations_group';
                       onSelectionChange?.(groupKey);
-                    } : undefined}
+                    } : (e) => setGroupCaretAnchor(e.currentTarget)}
                   >
                     {groupLabel}
                   </Typography>
                   {!showChildSegment && (
                     <>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => setGroupCaretAnchor(e.currentTarget)}
-                        sx={{ color: 'text.secondary', p: 0.25 }}
-                      >
-                        <UnfoldMoreIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
+                      <UnfoldMoreIcon
+                        onClick={(e) => setGroupCaretAnchor(e.currentTarget as unknown as HTMLElement)}
+                        sx={{ fontSize: 18, color: 'text.secondary', cursor: 'pointer' }}
+                      />
                       <Menu
                         anchorEl={groupCaretAnchor}
                         open={Boolean(groupCaretAnchor)}
@@ -516,16 +513,17 @@ export default function PageHeader({
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, fontSize: '1rem', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    onClick={(e) => setChildCaretAnchor(e.currentTarget)}
+                  >
                     {childLabel}
                   </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => setChildCaretAnchor(e.currentTarget)}
-                    sx={{ color: 'text.secondary', p: 0.25 }}
-                  >
-                    <UnfoldMoreIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
+                  <UnfoldMoreIcon
+                    onClick={(e) => setChildCaretAnchor(e.currentTarget as unknown as HTMLElement)}
+                    sx={{ fontSize: 18, color: 'text.secondary', cursor: 'pointer' }}
+                  />
                   <Menu
                     anchorEl={childCaretAnchor}
                     open={Boolean(childCaretAnchor)}
