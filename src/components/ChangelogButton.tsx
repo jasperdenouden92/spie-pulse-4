@@ -178,12 +178,7 @@ export default function ChangelogButton() {
               )}
               {highlightsError && (
                 <Box sx={{ pt: 4 }}>
-                  <Typography color="error" variant="body2">Failed: {highlightsError}</Typography>
-                  {highlightsError.includes('503') && (
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                      Add ANTHROPIC_API_KEY to .env.local to enable AI highlights.
-                    </Typography>
-                  )}
+                  <Typography color="error" variant="body2">Failed to load highlights: {highlightsError}</Typography>
                 </Box>
               )}
               {!highlightsLoading && !highlightsError && bulletPoints.length > 0 && (
@@ -191,7 +186,7 @@ export default function ChangelogButton() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <Box sx={{ px: 1, py: 0.25, bgcolor: '#f3e8ff', borderRadius: '6px' }}>
                       <Typography variant="caption" sx={{ fontSize: '0.7rem', color: '#7c3aed', fontWeight: 600 }}>
-                        AI summary · last 20 commits
+                        Last 20 commits
                       </Typography>
                     </Box>
                   </Box>
