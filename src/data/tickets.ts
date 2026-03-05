@@ -1,6 +1,6 @@
 import { randomFromArray, randomDate, randomInt, weightedRandom, padNumber, addDays, randomDecimal, STAFF_POOL, BUILDING_POOL } from './generators';
 
-export interface WorkOrder {
+export interface Ticket {
   id: string;
   title: string;
   building: string;
@@ -16,7 +16,7 @@ export interface WorkOrder {
   actualHours?: number;
 }
 
-// Categories for work orders
+// Categories for tickets
 const CATEGORIES = [
   'HVAC',
   'Electrical',
@@ -124,19 +124,19 @@ const TASK_TEMPLATES: Record<string, string[]> = {
   ]
 };
 
-// Generate work orders
-function generateWorkOrders(): WorkOrder[] {
-  const orders: WorkOrder[] = [];
+// Generate tickets
+function generateTickets(): Ticket[] {
+  const orders: Ticket[] = [];
   const startDate = new Date('2023-07-01');
   const endDate = new Date('2024-01-23');
 
   for (let i = 9; i <= 150; i++) {
     const category = randomFromArray(CATEGORIES);
-    const priority = weightedRandom<WorkOrder['priority']>(
+    const priority = weightedRandom<Ticket['priority']>(
       ['Low', 'Medium', 'High', 'Critical'],
       [30, 40, 25, 5]
     );
-    const status = weightedRandom<WorkOrder['status']>(
+    const status = weightedRandom<Ticket['status']>(
       ['Open', 'In Progress', 'On Hold', 'Completed', 'Cancelled'],
       [35, 25, 5, 30, 5]
     );
@@ -161,7 +161,7 @@ function generateWorkOrders(): WorkOrder[] {
 
     const dueDate = addDays(createdDateObj, daysUntilDue).toISOString().split('T')[0];
 
-    const order: WorkOrder = {
+    const order: Ticket = {
       id: `WO-2024-${padNumber(i, 3)}`,
       title,
       building: randomFromArray(BUILDING_POOL),
@@ -194,8 +194,8 @@ function generateWorkOrders(): WorkOrder[] {
   return orders;
 }
 
-// Original 8 work orders
-export const workOrders: WorkOrder[] = [
+// Original 8 tickets
+export const tickets: Ticket[] = [
   {
     id: 'WO-2024-001',
     title: 'HVAC System Maintenance - Floor 3',
@@ -305,6 +305,6 @@ export const workOrders: WorkOrder[] = [
     description: 'Software update for building management system controllers',
     estimatedHours: 3
   },
-  // Generated work orders
-  ...generateWorkOrders()
+  // Generated tickets
+  ...generateTickets()
 ];

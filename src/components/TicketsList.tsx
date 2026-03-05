@@ -8,12 +8,12 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { WorkOrder } from '@/data/workOrders';
+import { Ticket } from '@/data/tickets';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import InfiniteScrollContainer from './InfiniteScrollContainer';
 
-interface WorkOrdersListProps {
-  workOrders: WorkOrder[];
+interface TicketsListProps {
+  tickets: Ticket[];
   buildingName?: string;
   compact?: boolean;
 }
@@ -33,15 +33,15 @@ const statusColors = {
   'Cancelled': '#f44336'
 };
 
-export default function WorkOrdersList({ workOrders, buildingName, compact = false }: WorkOrdersListProps) {
-  const filteredOrders = useMemo(() => {
+export default function TicketsList({ tickets, buildingName, compact = false }: TicketsListProps) {
+  const filteredTickets = useMemo(() => {
     return buildingName
-      ? workOrders.filter(wo => wo.building === buildingName)
-      : workOrders;
-  }, [workOrders, buildingName]);
+      ? tickets.filter(t => t.building === buildingName)
+      : tickets;
+  }, [tickets, buildingName]);
 
   const { visibleData, hasMore, loadMore, isLoading } = useInfiniteScroll({
-    data: filteredOrders,
+    data: filteredTickets,
     pageSize: 50
   });
 
@@ -49,10 +49,10 @@ export default function WorkOrdersList({ workOrders, buildingName, compact = fal
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          Work Orders {buildingName && `- ${buildingName}`}
+          Tickets {buildingName && `- ${buildingName}`}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Showing {visibleData.length} of {filteredOrders.length} items
+          Showing {visibleData.length} of {filteredTickets.length} items
         </Typography>
       </Box>
       <InfiniteScrollContainer

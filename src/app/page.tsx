@@ -58,7 +58,7 @@ import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics } from '@/data/metrics';
 import { sortBuildingsByMetric, Building, buildings as allBuildings } from '@/data/buildings';
 import { motion, AnimatePresence } from 'framer-motion';
-import WorkOrdersList from '@/components/WorkOrdersList';
+import TicketsList from '@/components/TicketsList';
 import QuotationsList from '@/components/QuotationsList';
 import MaintenanceScheduleList from '@/components/MaintenanceScheduleList';
 import FloatingToolbar from '@/components/FloatingToolbar';
@@ -67,7 +67,7 @@ import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
 import ThemesPage from '@/components/Themes';
-import { workOrders } from '@/data/workOrders';
+import { tickets } from '@/data/tickets';
 import { quotations } from '@/data/quotations';
 import { maintenanceSchedules } from '@/data/maintenance';
 import { AssetNode, getAssetById } from '@/data/assetTree';
@@ -488,7 +488,7 @@ export default function Home() {
   };
 
   const operationsIcons: Record<string, React.ReactNode> = {
-    'Work Orders': <AssignmentOutlinedIcon />,
+    'Tickets': <AssignmentOutlinedIcon />,
     'Quotations': <RequestQuoteOutlinedIcon />,
     'Maintenance': <BuildOutlinedIcon />,
   };
@@ -1434,8 +1434,8 @@ export default function Home() {
                                 ];
                               } else if (selectedMetric === 'tickets' && stats) {
                                 operationalStats = [
-                                  { label: 'Tickets', value: stats.workOrders.count, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> },
-                                  { label: 'Outstanding', value: formatCurrency(stats.workOrders.outstanding), icon: <EuroOutlinedIcon sx={{ fontSize: 16 }} /> }
+                                  { label: 'Tickets', value: stats.tickets.count, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> },
+                                  { label: 'Outstanding', value: formatCurrency(stats.tickets.outstanding), icon: <EuroOutlinedIcon sx={{ fontSize: 16 }} /> }
                                 ];
                               } else if (selectedMetric === 'quotations' && stats) {
                                 operationalStats = [
@@ -1526,7 +1526,7 @@ export default function Home() {
                       )}
 
                       {selectedMetric === 'tickets' ? (
-                        <WorkOrdersList workOrders={workOrders} buildingName={selectedBuilding.name} compact={viewMode === 'list'} />
+                        <TicketsList tickets={tickets} buildingName={selectedBuilding.name} compact={viewMode === 'list'} />
                       ) : selectedMetric === 'quotations' ? (
                         <QuotationsList quotations={quotations} buildingName={selectedBuilding.name} compact={viewMode === 'list'} />
                       ) : selectedMetric === 'maintenance' ? (
@@ -2287,7 +2287,7 @@ const themeCardData: Record<string, {
     ]
   },
   tickets: {
-    description: 'Work order tracking, resolution times, and operational efficiency',
+    description: 'Ticket tracking, resolution times, and operational efficiency',
     alerts: 8,
     metrics: [
       { label: 'Open Tickets', value: '156', progress: 60, color: '#ed6c02' },

@@ -75,7 +75,7 @@ export const expandedThemeMetrics: MetricData[] = [
 // Operations KPIs
 export const operationsMetrics: MetricData[] = [
   {
-    title: 'Work Orders',
+    title: 'Tickets',
     score: 88,
     trend: 15,
     sparklineData: [78, 80, 83, 81, 85, 84, 87, 86, 88, 88]
