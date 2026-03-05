@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ResponsiveLine } from '@nivo/line';
 
 interface AssetTrendChartProps {
@@ -69,8 +66,6 @@ const generateMockData = (assetFilter?: string) => {
 };
 
 export default function AssetTrendChart({ buildingName, assetFilter }: AssetTrendChartProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState('Week 05');
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const data = generateMockData(assetFilter);
 
   return (
@@ -114,45 +109,6 @@ export default function AssetTrendChart({ buildingName, assetFilter }: AssetTren
             </Box>
           </IconButton>
         </Box>
-      </Box>
-
-      {/* Time selector */}
-      <Box sx={{ mb: 2 }}>
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            px: 1.5,
-            py: 0.5,
-            border: 1,
-            borderColor: 'divider',
-            borderRadius: '6px',
-            bgcolor: '#fff',
-            cursor: 'pointer',
-            minWidth: 100,
-            justifyContent: 'space-between',
-            '&:hover': {
-              bgcolor: '#f5f5f5'
-            }
-          }}
-          onClick={(e) => setAnchorEl(e.currentTarget)}
-        >
-          <Typography variant="body2" sx={{ fontSize: '0.813rem', fontWeight: 500 }}>
-            {selectedPeriod}
-          </Typography>
-          <ExpandMoreIcon sx={{ fontSize: 16 }} />
-        </Box>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
-        >
-          <MenuItem onClick={() => { setSelectedPeriod('Week 04'); setAnchorEl(null); }}>Week 04</MenuItem>
-          <MenuItem onClick={() => { setSelectedPeriod('Week 05'); setAnchorEl(null); }}>Week 05</MenuItem>
-          <MenuItem onClick={() => { setSelectedPeriod('Week 06'); setAnchorEl(null); }}>Week 06</MenuItem>
-          <MenuItem onClick={() => { setSelectedPeriod('Last Month'); setAnchorEl(null); }}>Last Month</MenuItem>
-        </Menu>
       </Box>
 
       {/* Chart */}

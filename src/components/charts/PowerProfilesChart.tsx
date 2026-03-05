@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ResponsiveLine } from '@nivo/line';
 
 interface PowerProfilesChartProps {
@@ -35,8 +32,6 @@ const generateMockData = () => {
 };
 
 export default function PowerProfilesChart({ buildingName }: PowerProfilesChartProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState('Week');
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const data = generateMockData();
 
   return (
@@ -51,39 +46,6 @@ export default function PowerProfilesChart({ buildingName }: PowerProfilesChartP
             38 kW
           </Typography>
         </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            px: 1.5,
-            py: 0.5,
-            borderRadius: '6px',
-            bgcolor: '#f5f5f5',
-            cursor: 'pointer',
-            minWidth: 80,
-            justifyContent: 'space-between',
-            '&:hover': {
-              bgcolor: '#e8e8e8'
-            }
-          }}
-          onClick={(e) => setAnchorEl(e.currentTarget)}
-        >
-          <Typography variant="body2" sx={{ fontSize: '0.813rem', fontWeight: 500 }}>
-            {selectedPeriod}
-          </Typography>
-          <ExpandMoreIcon sx={{ fontSize: 16 }} />
-        </Box>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
-        >
-          <MenuItem onClick={() => { setSelectedPeriod('Day'); setAnchorEl(null); }}>Day</MenuItem>
-          <MenuItem onClick={() => { setSelectedPeriod('Week'); setAnchorEl(null); }}>Week</MenuItem>
-          <MenuItem onClick={() => { setSelectedPeriod('Month'); setAnchorEl(null); }}>Month</MenuItem>
-          <MenuItem onClick={() => { setSelectedPeriod('Year'); setAnchorEl(null); }}>Year</MenuItem>
-        </Menu>
       </Box>
 
       {/* Chart */}

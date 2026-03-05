@@ -253,6 +253,7 @@ const DASHBOARD_GROUPS: ThemeGroup[] = [
 const THEME_KEY_MAP: Record<string, string> = {
   energy: 'sustainability',
   water_management: 'sustainability',
+  operations_group: 'maintenance',
 };
 
 export default function DashboardsView({ selection, selectedBuilding }: DashboardsViewProps) {
@@ -260,7 +261,8 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
 
   // Filter groups based on active theme selection
   const effectiveKey = selection ? (THEME_KEY_MAP[selection] ?? selection) : null;
-  const isFiltered = !!effectiveKey && effectiveKey !== 'themes_group' && effectiveKey !== 'operations_group';
+  const knownKeys = new Set(DASHBOARD_GROUPS.map(g => g.themeKey));
+  const isFiltered = !!effectiveKey && knownKeys.has(effectiveKey);
   const visibleGroups = isFiltered
     ? DASHBOARD_GROUPS.filter(g => g.themeKey === effectiveKey)
     : DASHBOARD_GROUPS;

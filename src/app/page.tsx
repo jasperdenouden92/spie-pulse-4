@@ -379,6 +379,15 @@ export default function Home() {
   }, [selectedMetric, sortOrder]);
 
   // Handle clicking a child KPI
+  // Auto-switch off Dashboards tab when an ops-only selection is made
+  const OPS_ONLY_SELECTIONS = ['tickets', 'quotations'];
+  React.useEffect(() => {
+    if (buildingsPanelTab === 'dashboards' && OPS_ONLY_SELECTIONS.includes(selection)) {
+      setBuildingsPanelTab('kpi_analysis');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selection]);
+
   const handleMetricSelect = (metric: MetricType) => {
     if (selection === metric) {
       setURLParams({ metric: 'overall', themes: '0' });
@@ -683,8 +692,8 @@ export default function Home() {
         </Container>
       </Box>
 
-      {/* Floating Inspect Toolbar */}
-      <Paper
+      {/* Floating Inspect Toolbar — HIDDEN: disabled for now, uncomment to restore */}
+      {false && <Paper
         elevation={8}
         sx={{
           position: 'fixed',
@@ -731,7 +740,7 @@ export default function Home() {
             </Box>
           </IconButton>
         </Tooltip>
-      </Paper>
+      </Paper>}
 
       {/* Inspect Mode Overlay - Dims the page with blue tinge */}
       {isInspectMode && (
@@ -1316,7 +1325,9 @@ export default function Home() {
                         >
                           <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                           <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                          <Tab value="dashboards" label="Dashboards" icon={<GridViewOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
+                          {!['tickets', 'quotations'].includes(selection) && (
+                            <Tab value="dashboards" label="Dashboards" icon={<GridViewOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
+                          )}
                         </Tabs>
 
                         {/* Panel Actions */}
@@ -1440,8 +1451,8 @@ export default function Home() {
                             {/* ===== BUILDINGS GRID ===== */}
                             <Box sx={{
                               display: 'grid',
-                              gap: 3,
-                              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }
+                              gap: 2,
+                              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }
                             }}>
                               {sortedBuildings.map((b) => {
                               const stats = buildingOperationalStats[b.name];
