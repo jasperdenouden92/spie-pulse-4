@@ -73,6 +73,7 @@ import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
 import ThemesPage from '@/components/Themes';
 import DashboardsView from '@/components/DashboardsView';
+import ChangelogButton from '@/components/ChangelogButton';
 import { tickets } from '@/data/tickets';
 import { quotations } from '@/data/quotations';
 import { maintenanceSchedules } from '@/data/maintenance';
@@ -1746,6 +1747,8 @@ export default function Home() {
         </Container>
         )}
       </Box>
+
+      <ChangelogButton />
     </Box>
   );
 }
