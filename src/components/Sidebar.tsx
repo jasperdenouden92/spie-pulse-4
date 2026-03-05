@@ -29,6 +29,8 @@ import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import SearchIcon from '@mui/icons-material/Search';
+import SearchModal from '@/components/SearchModal';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import Avatar from '@mui/material/Avatar';
@@ -219,6 +221,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const [controlRoomExpanded, setControlRoomExpanded] = useState(currentPage === 'portfolio');
   const [crThemesExpanded, setCrThemesExpanded] = useState(false);
@@ -451,6 +454,28 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
           <Box sx={{ px: 2, pt: 2, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
             <List sx={{ py: 0, flexShrink: 0 }}>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={() => setSearchModalOpen(true)}
+                sx={{
+                  height: 40,
+                  paddingLeft: '4px',
+                  gap: 2,
+                  borderRadius: '5px',
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5'
+                  }
+                }}
+              >
+                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <SearchIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <ListItemText
+                  primary="Search"
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                />
+              </ListItemButton>
+            </ListItem>
             <ListItem disablePadding>
               <ListItemButton
                 onClick={() => onPageChange?.('home')}
@@ -926,6 +951,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           })}
         </Box>
       )}
+      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </Box>
   );
 }
