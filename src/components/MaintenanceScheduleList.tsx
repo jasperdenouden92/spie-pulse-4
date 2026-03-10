@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -32,7 +33,7 @@ const priorityColors = {
 };
 
 const frequencyColors = {
-  'Daily': '#e3f2fd',
+  'Daily': colors.bgActive,
   'Weekly': '#f3e5f5',
   'Monthly': '#e8f5e9',
   'Quarterly': '#fff3e0',
@@ -77,7 +78,7 @@ export default function MaintenanceScheduleList({ schedules, buildingName, compa
         >
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: compact ? 'transparent' : '#fafafa' }}>
+              <TableRow sx={{ bgcolor: compact ? 'transparent' : colors.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Title</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Building</TableCell>
@@ -94,7 +95,7 @@ export default function MaintenanceScheduleList({ schedules, buildingName, compa
                 <TableRow
                   key={schedule.id}
                   sx={{
-                    '&:hover': { bgcolor: '#f5f5f5' },
+                    '&:hover': { bgcolor: colors.bgPrimaryHover },
                     cursor: 'pointer'
                   }}
                 >

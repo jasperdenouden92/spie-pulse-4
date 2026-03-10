@@ -1,4 +1,5 @@
 'use client';
+import { colors } from '@/colors';
 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -301,7 +302,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
         borderRight: 1,
         borderColor: 'divider',
         overflowY: 'auto',
-        bgcolor: '#fafafa',
+        bgcolor: colors.bgSecondary,
         '&::-webkit-scrollbar': { width: '4px' },
         '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
       }}>
@@ -344,7 +345,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                             py: 0.625,
                             bgcolor: isActive ? '#eef2ff' : 'transparent',
                             borderRight: isActive ? '2px solid #1e5a96' : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? '#eef2ff' : '#f0f0f0' },
+                            '&:hover': { bgcolor: isActive ? '#eef2ff' : colors.bgSecondaryHover },
                           }}
                         >
                           <ListItemText

@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -24,7 +25,7 @@ export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280
       sx={{
         height: 56,
         backgroundColor: '#fff',
-        borderBottom: '1px solid #e0e0e0',
+        borderBottom: `1px solid ${colors.borderSecondary}`,
         zIndex: 1200,
         left: leftSidebarWidth,
         width: `calc(100% - ${leftSidebarWidth}px - ${rightSidebarWidth}px)`,
@@ -56,7 +57,7 @@ export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280
             maxWidth: 400,
             cursor: 'pointer',
             '& .MuiOutlinedInput-root': {
-              bgcolor: '#f5f5f5',
+              bgcolor: colors.bgPrimaryHover,
               cursor: 'pointer',
               '& fieldset': {
                 borderColor: 'transparent'

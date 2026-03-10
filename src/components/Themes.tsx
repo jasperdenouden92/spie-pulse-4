@@ -16,6 +16,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import NatureIcon from '@mui/icons-material/Nature';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import { colors } from '@/colors';
 
 interface Theme {
   id: string;
@@ -58,8 +59,8 @@ export default function Themes() {
       id: 'access',
       name: 'Access Control',
       icon: <LockIcon sx={{ fontSize: 40 }} />,
-      color: '#1976d2',
-      bgColor: '#e3f2fd',
+      color: colors.brand,
+      bgColor: colors.bgActive,
       description: 'Physical access, security systems, and entry management',
       metrics: [
         { label: 'Active Cards', value: '12,453' },
@@ -151,7 +152,7 @@ export default function Themes() {
                 height: '100%',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                border: selectedTheme === theme.id ? `2px solid ${theme.color}` : '1px solid #e0e0e0',
+                border: selectedTheme === theme.id ? `2px solid ${theme.color}` : `1px solid ${colors.borderSecondary}`,
                 '&:hover': {
                   boxShadow: 4,
                   transform: 'translateY(-4px)',
@@ -225,7 +226,7 @@ export default function Themes() {
                                 mt: 1,
                                 height: 6,
                                 borderRadius: 1,
-                                bgcolor: '#f0f0f0',
+                                bgcolor: colors.bgSecondaryHover,
                                 '& .MuiLinearProgress-bar': {
                                   bgcolor: theme.color,
                                   borderRadius: 1,
@@ -267,10 +268,10 @@ export default function Themes() {
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             border: '2px dashed',
-            borderColor: '#d0d0d0',
+            borderColor: colors.borderPrimary,
             bgcolor: 'rgba(250, 250, 250, 0.5)',
             '&:hover': {
-              borderColor: '#1976d2',
+              borderColor: colors.brand,
               bgcolor: 'rgba(25, 118, 210, 0.02)',
               transform: 'translateY(-4px)',
             }
@@ -291,7 +292,7 @@ export default function Themes() {
                 width: 80,
                 height: 80,
                 borderRadius: 2,
-                bgcolor: '#f5f5f5',
+                bgcolor: colors.bgPrimaryHover,
                 color: '#999',
                 display: 'flex',
                 alignItems: 'center',

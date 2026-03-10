@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -198,7 +199,7 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
                   cursor: 'pointer',
                   borderRadius: 1,
                   '&:hover': {
-                    bgcolor: '#f5f5f5'
+                    bgcolor: colors.bgPrimaryHover
                   }
                 }}
               >
@@ -228,9 +229,9 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
                         px: 1,
                         cursor: 'pointer',
                         borderRadius: 1,
-                        bgcolor: selectedRow === `${index}-${itemIndex}` ? '#e3f2fd' : 'transparent',
+                        bgcolor: selectedRow === `${index}-${itemIndex}` ? colors.bgActive : 'transparent',
                         '&:hover': {
-                          bgcolor: selectedRow === `${index}-${itemIndex}` ? '#e3f2fd' : '#f5f5f5'
+                          bgcolor: selectedRow === `${index}-${itemIndex}` ? colors.bgActive : colors.bgPrimaryHover
                         }
                       }}
                       onClick={() => setSelectedRow(`${index}-${itemIndex}`)}
@@ -305,7 +306,7 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
                   <TableRow
                     key={index}
                     sx={{
-                      '&:hover': { bgcolor: '#f5f5f5' },
+                      '&:hover': { bgcolor: colors.bgPrimaryHover },
                       cursor: 'pointer'
                     }}
                   >

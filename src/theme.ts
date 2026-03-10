@@ -1,6 +1,7 @@
 'use client';
 
 import { createTheme } from '@mui/material/styles';
+import { colors } from '@/colors';
 
 export const theme = createTheme({
   typography: {
@@ -11,5 +12,17 @@ export const theme = createTheme({
   },
   palette: {
     mode: 'light',
+    primary: {
+      main: colors.brand,
+    },
+    text: {
+      primary: colors.textPrimary,
+      secondary: colors.textSecondary,
+      disabled: colors.textDisabled,
+    },
+    background: {
+      default: colors.bgSecondary,
+      paper: colors.bgPrimary,
+    },
   },
 });

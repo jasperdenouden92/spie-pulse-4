@@ -6,6 +6,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import AnimatedNumber from './AnimatedNumber';
 import KPIToggle, { ToggleState } from './KPIToggle';
+import { colors } from '@/colors';
 
 interface KPICardProps {
   title: string;
@@ -48,7 +49,7 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
       sx={{
         p: isCompact ? 1.5 : 2.5,
         borderRadius: 1,
-        bgcolor: isSelected ? '#e3f2fd' : '#fff',
+        bgcolor: isSelected ? colors.bgActive : colors.bgPrimary,
         display: 'flex',
         flexDirection: 'column',
         gap: isCompact ? 1 : 1.5,
@@ -60,8 +61,8 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
         boxShadow: 'none',
         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          bgcolor: isSelected ? '#e3f2fd' : '#f8f9fa',
-          borderColor: isSelected ? '#42a5f5' : '#bdbdbd',
+          bgcolor: isSelected ? colors.bgActive : colors.bgSecondary,
+          borderColor: isSelected ? '#42a5f5' : colors.borderPrimary,
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
           opacity: 1,
           transform: 'translateY(-1px)',
@@ -108,7 +109,7 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
           <path
             d={generateSparkline(sparklineData)}
             fill="none"
-            stroke="#1976d2"
+            stroke={colors.brand}
             strokeWidth={isCompact ? 1.5 : 2}
             strokeLinecap="round"
             strokeLinejoin="round"

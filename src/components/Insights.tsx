@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -127,7 +128,7 @@ export default function Insights() {
       case 'warning':
         return <WarningIcon sx={{ fontSize: 20, color: '#f57c00' }} />;
       case 'info':
-        return <InfoIcon sx={{ fontSize: 20, color: '#1976d2' }} />;
+        return <InfoIcon sx={{ fontSize: 20, color: colors.brand }} />;
       case 'recommendation':
         return <CheckCircleIcon sx={{ fontSize: 20, color: '#9c27b0' }} />;
       default:
@@ -142,11 +143,11 @@ export default function Insights() {
       case 'warning':
         return { bg: '#fff3e0', text: '#f57c00' };
       case 'info':
-        return { bg: '#e3f2fd', text: '#1976d2' };
+        return { bg: colors.bgActive, text: colors.brand };
       case 'recommendation':
         return { bg: '#f3e5f5', text: '#9c27b0' };
       default:
-        return { bg: '#f5f5f5', text: '#757575' };
+        return { bg: colors.bgPrimaryHover, text: '#757575' };
     }
   };
 

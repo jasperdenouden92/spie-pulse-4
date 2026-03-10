@@ -12,6 +12,7 @@ import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Tooltip from '@mui/material/Tooltip';
+import { colors } from '@/colors';
 
 type OperationalStats = {
   label: string;
@@ -137,7 +138,7 @@ export default function BuildingCard({
                 </Typography>
               </Box>
             </Box>
-            <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: '#f5f5f5' }}>
+            <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover }}>
               <Box
                 sx={{
                   width: `${overallPerformance?.green || 0}%`,
@@ -194,7 +195,7 @@ export default function BuildingCard({
                 )}
               </Box>
             </Box>
-            <Box sx={{ display: 'flex', height: 8, borderRadius: '2px', overflow: 'hidden', bgcolor: '#f5f5f5', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+            <Box sx={{ display: 'flex', height: 8, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover, transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
               <Box
                 sx={{
                   width: `${performance.green}%`,

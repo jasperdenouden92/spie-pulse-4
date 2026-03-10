@@ -13,6 +13,7 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import PlumbingIcon from '@mui/icons-material/Plumbing';
 import SecurityIcon from '@mui/icons-material/Security';
+import { colors } from '@/colors';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import ElevatorIcon from '@mui/icons-material/Elevator';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
@@ -38,7 +39,7 @@ export default function AssetDetail({ asset, tab: tabProp, onTabChange }: AssetD
 
   // Get icon for asset category
   const getCategoryIcon = () => {
-    const iconProps = { sx: { fontSize: 40, color: '#1976d2' } };
+    const iconProps = { sx: { fontSize: 40, color: colors.brand } };
     if (!asset.metadata?.category) return <SettingsInputAntennaIcon {...iconProps} />;
 
     const IconComponent = {
@@ -80,7 +81,7 @@ export default function AssetDetail({ asset, tab: tabProp, onTabChange }: AssetD
             width: 80,
             height: 80,
             borderRadius: 2,
-            bgcolor: '#e3f2fd',
+            bgcolor: colors.bgActive,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

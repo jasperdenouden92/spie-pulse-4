@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -157,7 +158,7 @@ export default function MaintenanceOverviewTable({
             {data.map((row, index) => (
               <TableRow
                 key={index}
-                sx={{ '&:hover': { bgcolor: '#f5f5f5' } }}
+                sx={{ '&:hover': { bgcolor: colors.bgPrimaryHover } }}
               >
                 <TableCell sx={{ fontSize: '0.813rem' }}>{row.location}</TableCell>
                 <TableCell sx={{ fontSize: '0.813rem' }}>{row.equipment}</TableCell>
@@ -195,7 +196,7 @@ export default function MaintenanceOverviewTable({
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', display: 'flex', gap: 2 }}>
         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#1976d2' }} />
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: colors.brand }} />
             Distributie Aanvoertemperatuur, CV na buffer - S2TT12
           </Box>
         </Typography>
@@ -208,7 +209,7 @@ export default function MaintenanceOverviewTable({
       </Box>
 
       {/* Guidelines info */}
-      <Box sx={{ p: 2, bgcolor: '#f5f5f5', display: 'flex', gap: 2 }}>
+      <Box sx={{ p: 2, bgcolor: colors.bgPrimaryHover, display: 'flex', gap: 2 }}>
         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <InfoOutlinedIcon sx={{ fontSize: 12 }} />

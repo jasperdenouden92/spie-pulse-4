@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -47,7 +48,7 @@ export default function EnergyDistributionChart({ buildingName }: EnergyDistribu
             px: 1,
             py: 0.5,
             borderRadius: '6px',
-            bgcolor: '#f5f5f5',
+            bgcolor: colors.bgPrimaryHover,
             cursor: 'pointer',
             '&:hover': {
               bgcolor: '#e8e8e8'

@@ -20,6 +20,7 @@ import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
+import { colors } from '@/colors';
 
 interface HomeProps {
   userName?: string;
@@ -48,7 +49,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
       good: 3,
       poor: 5,
       bad: 2,
-      color: '#1976d2'
+      color: colors.brand
     },
     {
       label: 'Sustainability',
@@ -124,7 +125,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
                 borderColor: 'divider',
                 '&:hover': {
                   boxShadow: 2,
-                  borderColor: '#1976d2'
+                  borderColor: colors.brand
                 }
               }}
             >
@@ -134,7 +135,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
                     width: 32,
                     height: 32,
                     borderRadius: 1,
-                    bgcolor: '#f5f5f5',
+                    bgcolor: colors.bgPrimaryHover,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -276,7 +277,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
         </Box>
 
         {/* Chart Area */}
-        <Box sx={{ p: 3, height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#fafafa' }}>
+        <Box sx={{ p: 3, height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: colors.bgSecondary }}>
           <Typography variant="body2" color="text.secondary">
             Chart visualization would appear here
           </Typography>
@@ -332,7 +333,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     boxShadow: 1,
-                    borderColor: '#1976d2'
+                    borderColor: colors.brand
                   }
                 }}
               >
@@ -347,7 +348,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
                     px: 1.5,
                     py: 0.5,
                     borderRadius: 1,
-                    bgcolor: '#f5f5f5',
+                    bgcolor: colors.bgPrimaryHover,
                     border: '1px solid',
                     borderColor: 'divider'
                   }}
@@ -411,7 +412,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
                   transition: 'all 0.2s ease',
                   '&:hover': {
                     boxShadow: 1,
-                    borderColor: '#1976d2'
+                    borderColor: colors.brand
                   }
                 }}
               >

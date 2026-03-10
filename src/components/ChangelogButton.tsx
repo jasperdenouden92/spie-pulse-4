@@ -10,6 +10,7 @@ import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
 import AppTabs from '@/components/AppTabs';
+import { colors } from '@/colors';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -179,7 +180,7 @@ export default function ChangelogButton() {
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       {highlights.authors.map((author) => (
                         <Chip key={author} label={author} size="small"
-                          sx={{ height: 20, fontSize: '0.7rem', fontWeight: 500, bgcolor: '#f5f5f5', '& .MuiChip-label': { px: 1 } }} />
+                          sx={{ height: 20, fontSize: '0.7rem', fontWeight: 500, bgcolor: colors.bgPrimaryHover, '& .MuiChip-label': { px: 1 } }} />
                       ))}
                     </Box>
                   </Box>
