@@ -1185,6 +1185,61 @@ export default function Home() {
                   )}
 
                   {/* ========== PAGE TITLE WITH INLINE FILTERS ========== */}
+                  {selectedBuilding && (
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+                        Showing {({
+                          overall: 'overall performance',
+                          themes_group: 'theme KPIs',
+                          operations_group: 'operational KPIs',
+                          sustainability: 'sustainability',
+                          comfort: 'comfort',
+                          asset_monitoring: 'asset monitoring',
+                          tickets: 'tickets',
+                          quotations: 'quotations',
+                          maintenance: 'maintenance',
+                          energy: 'energy',
+                          workspace: 'workspace',
+                          compliance: 'compliance',
+                          water_management: 'water management',
+                          security_systems: 'security systems',
+                          access_control: 'access control',
+                        } as Record<string, string>)[selection] ?? 'overall performance'} of
+                        <Box
+                          component="span"
+                          onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
+                          sx={inlineDropdownSx}
+                        >
+                          {getPeriodDisplayLabel(dateRange)}
+                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
+                        </Box>
+                      </Typography>
+
+                      {/* Date Range Menu (building detail) */}
+                      <Menu
+                        anchorEl={titleDateRangeAnchor}
+                        open={Boolean(titleDateRangeAnchor)}
+                        onClose={() => setTitleDateRangeAnchor(null)}
+                        PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
+                      >
+                        {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
+                          <MenuItem
+                            key={range}
+                            selected={dateRange === range}
+                            onClick={() => { setDateRange(range); setTitleDateRangeAnchor(null); }}
+                            sx={{ fontSize: '0.875rem' }}
+                          >
+                            <Box>
+                              <Typography variant="body2" fontWeight={dateRange === range ? 600 : 400}>{range}</Typography>
+                              {range !== 'All Time' && (
+                                <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
+                              )}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </Box>
+                  )}
                   {!selectedBuilding && (
                     <Box sx={{ mb: 3 }}>
                       <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
