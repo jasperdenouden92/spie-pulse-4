@@ -458,7 +458,7 @@ export default function PageHeader({
 
       {/* Center: Compact filter title (fades in when page title scrolls out of view) */}
       <AnimatePresence>
-        {isFilterTitleScrolled && filterSelectionLabel && filterPeriodLabel && (
+        {isFilterTitleScrolled && filterPeriodLabel && (
           <motion.div
             key="compact-filter"
             initial={{ opacity: 0, y: 4 }}
@@ -479,7 +479,7 @@ export default function PageHeader({
                 whiteSpace: 'nowrap',
               }}
             >
-              Showing {filterSelectionLabel} of
+              Showing{filterSelectionLabel ? ` ${filterSelectionLabel} of` : ''}
               <Box
                 component="span"
                 onClick={onFilterDateClick}

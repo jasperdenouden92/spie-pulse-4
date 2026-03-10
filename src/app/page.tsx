@@ -1115,7 +1115,7 @@ export default function Home() {
             }
             filterSelectionLabel={
               currentPage === 'dashboards'
-                ? (activeDashboardLabel || 'dashboard')
+                ? undefined
                 : (SELECTION_LABELS[selection] ?? 'overall performance')
             }
             filterPeriodLabel={getPeriodDisplayLabel(dateRange)}
