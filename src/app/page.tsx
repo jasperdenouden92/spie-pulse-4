@@ -15,6 +15,10 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
+import Popover from '@mui/material/Popover';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import TextField from '@mui/material/TextField';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -58,7 +62,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
-import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics } from '@/data/metrics';
+import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod } from '@/data/metrics';
 import { sortBuildingsByMetric, Building, buildings as allBuildings } from '@/data/buildings';
 import { motion, AnimatePresence } from 'framer-motion';
 import TicketsList from '@/components/TicketsList';
@@ -233,6 +237,136 @@ export default function Home() {
   const [openedViaInspect, setOpenedViaInspect] = useState(false);
   const [activeDashboardId, setActiveDashboardId] = useState<string>('');
   const [activeDashboardLabel, setActiveDashboardLabel] = useState<string>('');
+
+  // Page title inline filter state
+  const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
+  const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
+  const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
+  const [titleBuildingSearch, setTitleBuildingSearch] = useState('');
+
+  const titleAllGroups = useMemo(() => [...new Set(allBuildings.map(b => b.group))].sort(), []);
+  const titleAllCities = useMemo(() => [...new Set(allBuildings.map(b => b.city))].sort(), []);
+  const titleAllSelected = titleBuildingNames.length === 0;
+
+  const getTitleBuildingLabel = () => {
+    if (titleAllSelected) return 'all buildings';
+    return `${titleBuildingNames.length} building${titleBuildingNames.length !== 1 ? 's' : ''}`;
+  };
+
+  const getTitleGroupState = (group: string): 'checked' | 'indeterminate' | 'unchecked' => {
+    const names = allBuildings.filter(b => b.group === group).map(b => b.name);
+    if (titleAllSelected) return 'checked';
+    const n = names.filter(n => titleBuildingNames.includes(n)).length;
+    if (n === names.length) return 'checked';
+    if (n > 0) return 'indeterminate';
+    return 'unchecked';
+  };
+
+  const getTitleCityState = (city: string): 'checked' | 'indeterminate' | 'unchecked' => {
+    const names = allBuildings.filter(b => b.city === city).map(b => b.name);
+    if (titleAllSelected) return 'checked';
+    const n = names.filter(n => titleBuildingNames.includes(n)).length;
+    if (n === names.length) return 'checked';
+    if (n > 0) return 'indeterminate';
+    return 'unchecked';
+  };
+
+  const titleToggleGroup = (group: string) => {
+    const groupNames = allBuildings.filter(b => b.group === group).map(b => b.name);
+    const state = getTitleGroupState(group);
+    if (state === 'checked') {
+      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames;
+      setTitleBuildingNames(base.filter(n => !groupNames.includes(n)));
+    } else if (!titleAllSelected) {
+      const next = [...new Set([...titleBuildingNames, ...groupNames])];
+      setTitleBuildingNames(next.length === allBuildings.length ? [] : next);
+    }
+  };
+
+  const titleToggleCity = (city: string) => {
+    const cityNames = allBuildings.filter(b => b.city === city).map(b => b.name);
+    const state = getTitleCityState(city);
+    if (state === 'checked') {
+      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames;
+      setTitleBuildingNames(base.filter(n => !cityNames.includes(n)));
+    } else if (!titleAllSelected) {
+      const next = [...new Set([...titleBuildingNames, ...cityNames])];
+      setTitleBuildingNames(next.length === allBuildings.length ? [] : next);
+    }
+  };
+
+  const titleToggleBuilding = (name: string) => {
+    if (titleAllSelected) {
+      setTitleBuildingNames(allBuildings.map(b => b.name).filter(n => n !== name));
+    } else if (titleBuildingNames.includes(name)) {
+      setTitleBuildingNames(titleBuildingNames.filter(n => n !== name));
+    } else {
+      const next = [...titleBuildingNames, name];
+      setTitleBuildingNames(next.length === allBuildings.length ? [] : next);
+    }
+  };
+
+  const titleFilteredBuildings = titleBuildingSearch
+    ? allBuildings.filter(b => b.name.toLowerCase().includes(titleBuildingSearch.toLowerCase()))
+    : allBuildings;
+
+  const getPeriodDisplayLabel = (range: string): string => {
+    switch (range) {
+      case 'Today': return 'today';
+      case 'This Week': return 'this week';
+      case 'This Month': return 'this month';
+      case 'This Quarter': return 'this quarter';
+      case 'This Year': return 'this year';
+      case 'All Time': return 'all time';
+      default: return 'this quarter';
+    }
+  };
+
+  const getDateRangeDisplay = (range: string): string => {
+    const now = new Date();
+    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    const fmt = (d: Date) => `${d.getDate()} ${months[d.getMonth()]}`;
+    const fmtFull = (d: Date) => `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    switch (range) {
+      case 'Today': return fmtFull(now);
+      case 'This Week': {
+        const day = now.getDay() || 7;
+        const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+        const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+        return `${fmt(mon)} – ${fmtFull(sun)}`;
+      }
+      case 'This Month': {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        return `${fmt(start)} – ${fmtFull(end)}`;
+      }
+      case 'This Quarter': {
+        const q = Math.floor(now.getMonth() / 3);
+        const start = new Date(now.getFullYear(), q * 3, 1);
+        const end = new Date(now.getFullYear(), q * 3 + 3, 0);
+        return `${fmt(start)} – ${fmtFull(end)}`;
+      }
+      case 'This Year': {
+        const start = new Date(now.getFullYear(), 0, 1);
+        const end = new Date(now.getFullYear(), 11, 31);
+        return `${fmt(start)} – ${fmtFull(end)}`;
+      }
+      default: return range;
+    }
+  };
+
+  const inlineDropdownSx = {
+    display: 'inline-flex',
+    alignItems: 'baseline',
+    gap: '2px',
+    cursor: 'pointer',
+    fontWeight: 600,
+    color: 'primary.main',
+    transition: 'opacity 0.2s ease',
+    '&:hover': {
+      opacity: 0.7,
+    },
+  };
 
   // ── URL setter helpers ─────────────────────────────────────────────────────
   const setCurrentPage = (page: string) => navigateTo({ page });
@@ -560,14 +694,17 @@ export default function Home() {
     'Maintenance': <BuildOutlinedIcon />,
   };
 
+  // Period-aware metrics based on selected date range
+  const periodMetrics = useMemo(() => getMetricsForPeriod(dateRange), [dateRange]);
+
   // Calculate rolled-up scores for KPI groups
   const themesScore = selectedBuilding
     ? Math.round(PRIMARY_THEME_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / PRIMARY_THEME_KEYS.length)
-    : Math.round(themeMetrics.reduce((sum, m) => sum + m.score, 0) / themeMetrics.length);
+    : Math.round(periodMetrics.themes.reduce((sum, m) => sum + m.score, 0) / periodMetrics.themes.length);
 
   const operationsScore = selectedBuilding
     ? Math.round(OPERATIONS_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / OPERATIONS_KEYS.length)
-    : Math.round(operationsMetrics.reduce((sum, m) => sum + m.score, 0) / operationsMetrics.length);
+    : Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.score, 0) / periodMetrics.operations.length);
 
   // Calculate sidebar widths
   const leftSidebarWidth = leftSidebarCollapsed ? 64 : 280;
@@ -1047,6 +1184,181 @@ export default function Home() {
                     </Box>
                   )}
 
+                  {/* ========== PAGE TITLE WITH INLINE FILTERS ========== */}
+                  {!selectedBuilding && (
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+                        Showing {({
+                          overall: 'overall performance',
+                          themes_group: 'theme KPIs',
+                          operations_group: 'operational KPIs',
+                          sustainability: 'sustainability',
+                          comfort: 'comfort',
+                          asset_monitoring: 'asset monitoring',
+                          tickets: 'tickets',
+                          quotations: 'quotations',
+                          maintenance: 'maintenance',
+                          energy: 'energy',
+                          workspace: 'workspace',
+                          compliance: 'compliance',
+                          water_management: 'water management',
+                          security_systems: 'security systems',
+                          access_control: 'access control',
+                        } as Record<string, string>)[selection] ?? 'overall performance'} of
+                        <Box
+                          component="span"
+                          onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
+                          sx={inlineDropdownSx}
+                        >
+                          {getPeriodDisplayLabel(dateRange)}
+                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
+                        </Box>
+                        for
+                        <Box
+                          component="span"
+                          onClick={(e) => setTitleBuildingAnchor(e.currentTarget)}
+                          sx={inlineDropdownSx}
+                        >
+                          {getTitleBuildingLabel()}
+                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
+                        </Box>
+                      </Typography>
+
+                      {/* Date Range Menu */}
+                      <Menu
+                        anchorEl={titleDateRangeAnchor}
+                        open={Boolean(titleDateRangeAnchor)}
+                        onClose={() => setTitleDateRangeAnchor(null)}
+                        PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
+                      >
+                        {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
+                          <MenuItem
+                            key={range}
+                            selected={dateRange === range}
+                            onClick={() => { setDateRange(range); setTitleDateRangeAnchor(null); }}
+                            sx={{ fontSize: '0.875rem' }}
+                          >
+                            <Box>
+                              <Typography variant="body2" fontWeight={dateRange === range ? 600 : 400}>{range}</Typography>
+                              {range !== 'All Time' && (
+                                <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
+                              )}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Menu>
+
+                      {/* Building Filter Popover */}
+                      <Popover
+                        anchorEl={titleBuildingAnchor}
+                        open={Boolean(titleBuildingAnchor)}
+                        onClose={() => { setTitleBuildingAnchor(null); setTitleBuildingSearch(''); }}
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                        PaperProps={{ sx: { mt: 0.5, width: 560, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
+                      >
+                        {/* Header */}
+                        <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0' }}>
+                          <Typography variant="subtitle2" fontWeight={600}>Filter buildings</Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              {!titleAllSelected ? titleBuildingNames.length : allBuildings.length}/{allBuildings.length} selected
+                            </Typography>
+                            {!titleAllSelected && (
+                              <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setTitleBuildingNames([])}>
+                                Clear all
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+
+                        {/* Two-panel body */}
+                        <Box sx={{ display: 'flex', height: 340 }}>
+                          {/* Left: Quick selects */}
+                          <Box sx={{ width: 190, borderRight: '1px solid #f0f0f0', overflowY: 'auto', p: 1.5 }}>
+                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
+                              Groups
+                            </Typography>
+                            {titleAllGroups.map(group => {
+                              const state = getTitleGroupState(group);
+                              const count = allBuildings.filter(b => b.group === group).length;
+                              return (
+                                <Box key={group} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                                  <FormControlLabel
+                                    control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleGroup(group)} sx={{ p: '4px' }} />}
+                                    label={<Typography variant="body2">{group}</Typography>}
+                                    sx={{ m: 0, flex: 1 }}
+                                  />
+                                  <Typography variant="caption" color="text.secondary">{count}</Typography>
+                                </Box>
+                              );
+                            })}
+
+                            <Divider sx={{ my: 1.5 }} />
+
+                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
+                              Cities
+                            </Typography>
+                            {titleAllCities.map(city => {
+                              const state = getTitleCityState(city);
+                              const count = allBuildings.filter(b => b.city === city).length;
+                              return (
+                                <Box key={city} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                                  <FormControlLabel
+                                    control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleCity(city)} sx={{ p: '4px' }} />}
+                                    label={<Typography variant="body2">{city}</Typography>}
+                                    sx={{ m: 0, flex: 1 }}
+                                  />
+                                  <Typography variant="caption" color="text.secondary">{count}</Typography>
+                                </Box>
+                              );
+                            })}
+                          </Box>
+
+                          {/* Right: Individual buildings */}
+                          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                            <Box sx={{ p: 1, borderBottom: '1px solid #f0f0f0' }}>
+                              <TextField
+                                size="small"
+                                placeholder="Search building..."
+                                value={titleBuildingSearch}
+                                onChange={(e) => setTitleBuildingSearch(e.target.value)}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': { borderRadius: '6px', fontSize: '0.8rem' },
+                                  '& .MuiOutlinedInput-input': { py: '5px', px: '10px' }
+                                }}
+                              />
+                            </Box>
+                            <Box sx={{ flex: 1, overflowY: 'auto' }}>
+                              {titleFilteredBuildings.map(b => {
+                                const isChecked = titleAllSelected || titleBuildingNames.includes(b.name);
+                                return (
+                                  <Box
+                                    key={b.name}
+                                    sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                                    onClick={() => titleToggleBuilding(b.name)}
+                                  >
+                                    <Checkbox size="small" checked={isChecked} onChange={() => titleToggleBuilding(b.name)} onClick={e => e.stopPropagation()} sx={{ p: '4px' }} />
+                                    <Box sx={{ ml: 1, minWidth: 0 }}>
+                                      <Typography variant="body2" noWrap>{b.name}</Typography>
+                                      <Typography variant="caption" color="text.secondary">{b.city} · {b.group}</Typography>
+                                    </Box>
+                                  </Box>
+                                );
+                              })}
+                              {titleFilteredBuildings.length === 0 && (
+                                <Box sx={{ p: 2, textAlign: 'center' }}>
+                                  <Typography variant="body2" color="text.secondary">No buildings found</Typography>
+                                </Box>
+                              )}
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Popover>
+                    </Box>
+                  )}
+
                   {/* ========== KPI METRICS SECTION ========== */}
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
                   <Box sx={{
@@ -1095,15 +1407,19 @@ export default function Home() {
                       </Box>
                       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
-                          <AnimatedNumber value={selectedBuilding ? selectedBuilding.metrics.overall.green : overallMetrics.score} />%
+                          <AnimatedNumber value={selectedBuilding ? selectedBuilding.metrics.overall.green : periodMetrics.overall.score} />%
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: overallMetrics.trend >= 0 ? 'success.main' : 'error.main', mt: isCompact ? 1 : 2 }}>
-                        {overallMetrics.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18, transition: 'font-size 0.3s ease' }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18, transition: 'font-size 0.3s ease' }} />}
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem', transition: 'font-size 0.3s ease' }}>
-                          {Math.abs(overallMetrics.trend)}% from last quarter
-                        </Typography>
-                      </Box>
+                      {periodMetrics.periodLabel !== null && (
+                        <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main', mt: isCompact ? 1 : 2 }}>
+                            {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18, transition: 'font-size 0.3s ease' }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18, transition: 'font-size 0.3s ease' }} />}
+                            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem', transition: 'font-size 0.3s ease' }}>
+                              {Math.abs(periodMetrics.overall.trend)}% from {periodMetrics.periodLabel}
+                            </Typography>
+                          </Box>
+                        </Tooltip>
+                      )}
                     </Box>
 
                     {/* KPI Groups Container — also gets sibling-dimming on hover */}
@@ -1171,7 +1487,7 @@ export default function Home() {
                           gap: isCompact ? 1.5 : 2,
                           transition: 'gap 0.3s ease'
                         }}>
-                          {themeMetrics.map((metric, index) => {
+                          {periodMetrics.themes.map((metric, index) => {
                             const metricKey = PRIMARY_THEME_KEYS[index];
                             const score = selectedBuilding
                               ? selectedBuilding.metrics[metricKey].green
@@ -1185,6 +1501,7 @@ export default function Home() {
                                 score={score}
                                 trend={metric.trend}
                                 sparklineData={metric.sparklineData}
+                                periodLabel={periodMetrics.periodLabel}
                                 onClick={() => handleMetricSelect(metricKey)}
                                 onToggle={() => handleMetricSelect(metricKey)}
                                 toggleState={getToggleState(metricKey, 'themes')}
@@ -1213,7 +1530,7 @@ export default function Home() {
                                 mt: isCompact ? 1.5 : 2,
                                 transition: 'gap 0.3s ease'
                               }}>
-                                {expandedThemeMetrics.map((metric, index) => {
+                                {periodMetrics.expandedThemes.map((metric, index) => {
                                   const metricKey = EXPANDED_THEME_KEYS[index];
                                   const score = selectedBuilding
                                     ? selectedBuilding.metrics[metricKey].green
@@ -1227,6 +1544,7 @@ export default function Home() {
                                       score={score}
                                       trend={metric.trend}
                                       sparklineData={metric.sparklineData}
+                                      periodLabel={periodMetrics.periodLabel}
                                       onClick={() => handleMetricSelect(metricKey)}
                                       onToggle={() => handleMetricSelect(metricKey)}
                                       toggleState={getToggleState(metricKey, 'themes')}
@@ -1325,7 +1643,7 @@ export default function Home() {
                           gap: isCompact ? 1.5 : 2,
                           transition: 'gap 0.3s ease'
                         }}>
-                          {operationsMetrics.map((metric, index) => {
+                          {periodMetrics.operations.map((metric, index) => {
                             const metricKey = OPERATIONS_KEYS[index];
                             const score = selectedBuilding
                               ? selectedBuilding.metrics[metricKey].green
@@ -1339,6 +1657,7 @@ export default function Home() {
                                 score={score}
                                 trend={metric.trend}
                                 sparklineData={metric.sparklineData}
+                                periodLabel={periodMetrics.periodLabel}
                                 onClick={() => handleMetricSelect(metricKey)}
                                 onToggle={() => handleMetricSelect(metricKey)}
                                 toggleState={getToggleState(metricKey, 'operations')}

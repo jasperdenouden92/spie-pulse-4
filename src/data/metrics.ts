@@ -99,3 +99,93 @@ export const kpiMetrics: MetricData[] = [
   ...themeMetrics,
   ...operationsMetrics
 ];
+
+// Period label mapping for tooltip display
+export function getPeriodLabel(dateRange: string): string | null {
+  switch (dateRange) {
+    case 'Today': return 'yesterday';
+    case 'This Week': return 'last week';
+    case 'This Month': return 'last month';
+    case 'This Quarter': return 'last quarter';
+    case 'This Year': return 'last year';
+    default: return null;
+  }
+}
+
+// Seeded random to produce stable per-period variations
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function hashString(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+  }
+  return Math.abs(hash);
+}
+
+// Generate a simulated metric variation for a given date range
+function varyMetric(metric: MetricData, dateRange: string): MetricData {
+  const rand = seededRandom(hashString(metric.title + dateRange));
+
+  // Generate a trend between -15 and +25
+  const trend = Math.round((rand() * 40 - 15));
+  // Derive score from base score + small shift per period
+  const scoreShift = Math.round((rand() * 10 - 5));
+  const score = Math.max(10, Math.min(99, metric.score + scoreShift));
+
+  // Generate sparkline: start from (score - |trend| adjusted) and trend toward score
+  const startScore = Math.max(10, Math.min(99, score - trend));
+  const sparklineData = Array.from({ length: 10 }, (_, i) => {
+    const progress = i / 9;
+    const base = startScore + (score - startScore) * progress;
+    const noise = (rand() - 0.5) * 6;
+    return Math.round(Math.max(5, Math.min(99, base + noise)));
+  });
+  // Ensure last point matches score
+  sparklineData[9] = score;
+
+  return { title: metric.title, score, trend, sparklineData };
+}
+
+function varyOverall(dateRange: string): { score: number; trend: number } {
+  const rand = seededRandom(hashString('overall' + dateRange));
+  const trend = Math.round((rand() * 30 - 10));
+  const scoreShift = Math.round((rand() * 8 - 4));
+  const score = Math.max(10, Math.min(99, overallMetrics.score + scoreShift));
+  return { score, trend };
+}
+
+export interface PeriodMetrics {
+  overall: { score: number; trend: number };
+  themes: MetricData[];
+  expandedThemes: MetricData[];
+  operations: MetricData[];
+  periodLabel: string | null;
+}
+
+export function getMetricsForPeriod(dateRange: string): PeriodMetrics {
+  if (dateRange === 'This Quarter') {
+    // Default period — return original data as-is
+    return {
+      overall: overallMetrics,
+      themes: themeMetrics,
+      expandedThemes: expandedThemeMetrics,
+      operations: operationsMetrics,
+      periodLabel: getPeriodLabel(dateRange),
+    };
+  }
+
+  return {
+    overall: varyOverall(dateRange),
+    themes: themeMetrics.map(m => varyMetric(m, dateRange)),
+    expandedThemes: expandedThemeMetrics.map(m => varyMetric(m, dateRange)),
+    operations: operationsMetrics.map(m => varyMetric(m, dateRange)),
+    periodLabel: getPeriodLabel(dateRange),
+  };
+}
