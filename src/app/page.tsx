@@ -1108,13 +1108,155 @@ export default function Home() {
             onExport={handleExport}
             activeDashboardId={activeDashboardId}
             activeDashboardLabel={activeDashboardLabel}
-            isFilterTitleScrolled={isFilterTitleScrolled && currentPage === 'portfolio'}
-            filterSelectionLabel={SELECTION_LABELS[selection] ?? 'overall performance'}
+            isFilterTitleScrolled={
+              currentPage === 'dashboards'
+                ? true
+                : isFilterTitleScrolled && currentPage === 'portfolio'
+            }
+            filterSelectionLabel={
+              currentPage === 'dashboards'
+                ? (activeDashboardLabel || 'dashboard')
+                : (SELECTION_LABELS[selection] ?? 'overall performance')
+            }
             filterPeriodLabel={getPeriodDisplayLabel(dateRange)}
-            filterBuildingLabel={selectedBuilding ? undefined : getTitleBuildingLabel()}
+            filterBuildingLabel={
+              (currentPage === 'portfolio' && selectedBuilding) ? undefined : getTitleBuildingLabel()
+            }
             onFilterDateClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
-            onFilterBuildingClick={selectedBuilding ? undefined : (e) => setTitleBuildingAnchor(e.currentTarget)}
+            onFilterBuildingClick={
+              (currentPage === 'portfolio' && selectedBuilding) ? undefined : (e) => setTitleBuildingAnchor(e.currentTarget)
+            }
           />
+
+        {/* ========== Shared filter menus (used by inline title & header compact filter) ========== */}
+        <Menu
+          anchorEl={titleDateRangeAnchor}
+          open={Boolean(titleDateRangeAnchor)}
+          onClose={() => setTitleDateRangeAnchor(null)}
+          PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
+        >
+          {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
+            <MenuItem
+              key={range}
+              selected={dateRange === range}
+              onClick={() => { setDateRange(range); setTitleDateRangeAnchor(null); }}
+              sx={{ fontSize: '0.875rem' }}
+            >
+              <Box>
+                <Typography variant="body2" fontWeight={dateRange === range ? 600 : 400}>{range}</Typography>
+                {range !== 'All Time' && (
+                  <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
+                )}
+              </Box>
+            </MenuItem>
+          ))}
+        </Menu>
+
+        <Popover
+          anchorEl={titleBuildingAnchor}
+          open={Boolean(titleBuildingAnchor)}
+          onClose={() => { setTitleBuildingAnchor(null); setTitleBuildingSearch(''); }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          PaperProps={{ sx: { mt: 0.5, width: 560, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
+        >
+          {/* Header */}
+          <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.borderTertiary}` }}>
+            <Typography variant="subtitle2" fontWeight={600}>Filter buildings</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Typography variant="caption" color="text.secondary">
+                {titleAllSelected ? allBuildings.length : titleBuildingNames!.length}/{allBuildings.length} selected
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setTitleBuildingNames(titleAllSelected ? [] : null)}>
+                {titleAllSelected ? 'Deselect all' : 'Select all'}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Two-panel body */}
+          <Box sx={{ display: 'flex', height: 340 }}>
+            {/* Left: Quick selects */}
+            <Box sx={{ width: 190, borderRight: `1px solid ${colors.borderTertiary}`, overflowY: 'auto', p: 1.5 }}>
+              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
+                Groups
+              </Typography>
+              {titleAllGroups.map(group => {
+                const state = getTitleGroupState(group);
+                const count = allBuildings.filter(b => b.group === group).length;
+                return (
+                  <Box key={group} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
+                    <FormControlLabel
+                      control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleGroup(group)} sx={{ p: '4px' }} />}
+                      label={<Typography variant="body2">{group}</Typography>}
+                      sx={{ m: 0, flex: 1 }}
+                    />
+                    <Typography variant="caption" color="text.secondary">{count}</Typography>
+                  </Box>
+                );
+              })}
+
+              <Divider sx={{ my: 1.5 }} />
+
+              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
+                Cities
+              </Typography>
+              {titleAllCities.map(city => {
+                const state = getTitleCityState(city);
+                const count = allBuildings.filter(b => b.city === city).length;
+                return (
+                  <Box key={city} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
+                    <FormControlLabel
+                      control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleCity(city)} sx={{ p: '4px' }} />}
+                      label={<Typography variant="body2">{city}</Typography>}
+                      sx={{ m: 0, flex: 1 }}
+                    />
+                    <Typography variant="caption" color="text.secondary">{count}</Typography>
+                  </Box>
+                );
+              })}
+            </Box>
+
+            {/* Right: Individual buildings */}
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <Box sx={{ p: 1, borderBottom: `1px solid ${colors.borderTertiary}` }}>
+                <TextField
+                  size="small"
+                  placeholder="Search building..."
+                  value={titleBuildingSearch}
+                  onChange={(e) => setTitleBuildingSearch(e.target.value)}
+                  fullWidth
+                  sx={{
+                    '& .MuiOutlinedInput-root': { borderRadius: '6px', fontSize: '0.8rem' },
+                    '& .MuiOutlinedInput-input': { py: '5px', px: '10px' }
+                  }}
+                />
+              </Box>
+              <Box sx={{ flex: 1, overflowY: 'auto' }}>
+                {titleFilteredBuildings.map(b => {
+                  const isChecked = titleAllSelected || titleBuildingNames!.includes(b.name);
+                  return (
+                    <Box
+                      key={b.name}
+                      sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, cursor: 'pointer', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
+                      onClick={() => titleToggleBuilding(b.name)}
+                    >
+                      <Checkbox size="small" checked={isChecked} onChange={() => titleToggleBuilding(b.name)} onClick={e => e.stopPropagation()} sx={{ p: '4px' }} />
+                      <Box sx={{ ml: 1, minWidth: 0 }}>
+                        <Typography variant="body2" noWrap>{b.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">{b.city} · {b.group}</Typography>
+                      </Box>
+                    </Box>
+                  );
+                })}
+                {titleFilteredBuildings.length === 0 && (
+                  <Box sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">No buildings found</Typography>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          </Box>
+        </Popover>
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
         {currentPage === 'portfolio_overview' && (
@@ -1261,29 +1403,6 @@ export default function Home() {
                         </Box>
                       </Typography>
 
-                      {/* Date Range Menu (building detail) */}
-                      <Menu
-                        anchorEl={titleDateRangeAnchor}
-                        open={Boolean(titleDateRangeAnchor)}
-                        onClose={() => setTitleDateRangeAnchor(null)}
-                        PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
-                      >
-                        {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
-                          <MenuItem
-                            key={range}
-                            selected={dateRange === range}
-                            onClick={() => { setDateRange(range); setTitleDateRangeAnchor(null); }}
-                            sx={{ fontSize: '0.875rem' }}
-                          >
-                            <Box>
-                              <Typography variant="body2" fontWeight={dateRange === range ? 600 : 400}>{range}</Typography>
-                              {range !== 'All Time' && (
-                                <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
-                              )}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Menu>
                     </Box>
                   )}
                   {!selectedBuilding && (
@@ -1309,138 +1428,6 @@ export default function Home() {
                         </Box>
                       </Typography>
 
-                      {/* Date Range Menu */}
-                      <Menu
-                        anchorEl={titleDateRangeAnchor}
-                        open={Boolean(titleDateRangeAnchor)}
-                        onClose={() => setTitleDateRangeAnchor(null)}
-                        PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
-                      >
-                        {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
-                          <MenuItem
-                            key={range}
-                            selected={dateRange === range}
-                            onClick={() => { setDateRange(range); setTitleDateRangeAnchor(null); }}
-                            sx={{ fontSize: '0.875rem' }}
-                          >
-                            <Box>
-                              <Typography variant="body2" fontWeight={dateRange === range ? 600 : 400}>{range}</Typography>
-                              {range !== 'All Time' && (
-                                <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
-                              )}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Menu>
-
-                      {/* Building Filter Popover */}
-                      <Popover
-                        anchorEl={titleBuildingAnchor}
-                        open={Boolean(titleBuildingAnchor)}
-                        onClose={() => { setTitleBuildingAnchor(null); setTitleBuildingSearch(''); }}
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                        PaperProps={{ sx: { mt: 0.5, width: 560, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
-                      >
-                        {/* Header */}
-                        <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.borderTertiary}` }}>
-                          <Typography variant="subtitle2" fontWeight={600}>Filter buildings</Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              {titleAllSelected ? allBuildings.length : titleBuildingNames!.length}/{allBuildings.length} selected
-                            </Typography>
-                            {(
-                              <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setTitleBuildingNames(titleAllSelected ? [] : null)}>
-                                {titleAllSelected ? 'Deselect all' : 'Select all'}
-                              </Typography>
-                            )}
-                          </Box>
-                        </Box>
-
-                        {/* Two-panel body */}
-                        <Box sx={{ display: 'flex', height: 340 }}>
-                          {/* Left: Quick selects */}
-                          <Box sx={{ width: 190, borderRight: `1px solid ${colors.borderTertiary}`, overflowY: 'auto', p: 1.5 }}>
-                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
-                              Groups
-                            </Typography>
-                            {titleAllGroups.map(group => {
-                              const state = getTitleGroupState(group);
-                              const count = allBuildings.filter(b => b.group === group).length;
-                              return (
-                                <Box key={group} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
-                                  <FormControlLabel
-                                    control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleGroup(group)} sx={{ p: '4px' }} />}
-                                    label={<Typography variant="body2">{group}</Typography>}
-                                    sx={{ m: 0, flex: 1 }}
-                                  />
-                                  <Typography variant="caption" color="text.secondary">{count}</Typography>
-                                </Box>
-                              );
-                            })}
-
-                            <Divider sx={{ my: 1.5 }} />
-
-                            <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
-                              Cities
-                            </Typography>
-                            {titleAllCities.map(city => {
-                              const state = getTitleCityState(city);
-                              const count = allBuildings.filter(b => b.city === city).length;
-                              return (
-                                <Box key={city} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
-                                  <FormControlLabel
-                                    control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleCity(city)} sx={{ p: '4px' }} />}
-                                    label={<Typography variant="body2">{city}</Typography>}
-                                    sx={{ m: 0, flex: 1 }}
-                                  />
-                                  <Typography variant="caption" color="text.secondary">{count}</Typography>
-                                </Box>
-                              );
-                            })}
-                          </Box>
-
-                          {/* Right: Individual buildings */}
-                          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                            <Box sx={{ p: 1, borderBottom: `1px solid ${colors.borderTertiary}` }}>
-                              <TextField
-                                size="small"
-                                placeholder="Search building..."
-                                value={titleBuildingSearch}
-                                onChange={(e) => setTitleBuildingSearch(e.target.value)}
-                                fullWidth
-                                sx={{
-                                  '& .MuiOutlinedInput-root': { borderRadius: '6px', fontSize: '0.8rem' },
-                                  '& .MuiOutlinedInput-input': { py: '5px', px: '10px' }
-                                }}
-                              />
-                            </Box>
-                            <Box sx={{ flex: 1, overflowY: 'auto' }}>
-                              {titleFilteredBuildings.map(b => {
-                                const isChecked = titleAllSelected || titleBuildingNames!.includes(b.name);
-                                return (
-                                  <Box
-                                    key={b.name}
-                                    sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, cursor: 'pointer', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
-                                    onClick={() => titleToggleBuilding(b.name)}
-                                  >
-                                    <Checkbox size="small" checked={isChecked} onChange={() => titleToggleBuilding(b.name)} onClick={e => e.stopPropagation()} sx={{ p: '4px' }} />
-                                    <Box sx={{ ml: 1, minWidth: 0 }}>
-                                      <Typography variant="body2" noWrap>{b.name}</Typography>
-                                      <Typography variant="caption" color="text.secondary">{b.city} · {b.group}</Typography>
-                                    </Box>
-                                  </Box>
-                                );
-                              })}
-                              {titleFilteredBuildings.length === 0 && (
-                                <Box sx={{ p: 2, textAlign: 'center' }}>
-                                  <Typography variant="body2" color="text.secondary">No buildings found</Typography>
-                                </Box>
-                              )}
-                            </Box>
-                          </Box>
-                        </Box>
-                      </Popover>
                     </Box>
                   )}
 

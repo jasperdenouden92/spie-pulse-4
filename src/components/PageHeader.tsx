@@ -16,7 +16,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { AssetNode } from '@/data/assetTree';
-import ControlRoomFilters from './ControlRoomFilters';
 import { colors } from '@/colors';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
@@ -527,14 +526,6 @@ export default function PageHeader({
 
       {/* Right: Filters + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        {/* Filters — on Dashboards only (portfolio uses inline page title filters) */}
-        {currentPage === 'dashboards' && (
-          <ControlRoomFilters
-            selectedDateRange={selectedDateRangeProp}
-            onDateRangeChange={onDateRangeChange}
-            activeDashboardId={activeDashboardId}
-          />
-        )}
         {/* Export Button — on Control Room and Dashboards */}
         {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
           <Button
