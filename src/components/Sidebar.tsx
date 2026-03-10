@@ -92,6 +92,7 @@ interface SidebarProps {
   notificationsPanelOpen?: boolean;
   onNotificationsPanelToggle?: () => void;
   hasUnreadNotifications?: boolean;
+  onDashboardNavigate?: (dashboardId: string) => void;
 }
 
 interface NavItemProps {
@@ -324,8 +325,9 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, onDashboardNavigate }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [modifierHeld, setModifierHeld] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
   const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
@@ -353,13 +355,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
         return;
       }
 
-      if (!isTyping && e.key === 'f' && !e.metaKey && !e.ctrlKey) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
         e.preventDefault();
         setSearchModalOpen(true);
         return;
       }
 
-      if (!isTyping && e.key === 'n' && !e.metaKey && !e.ctrlKey) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
         e.preventDefault();
         setNewMenuAnchorEl(collapsedNewButtonRef.current ?? newButtonRef.current);
         return;
@@ -372,8 +374,20 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
         console.log('New menu shortcut:', NEW_MENU_ITEMS[Number(e.key) - 1]?.label);
       }
     };
+    const handleModifier = (e: KeyboardEvent) => {
+      setModifierHeld(e.metaKey || e.ctrlKey);
+    };
+    const handleBlur = () => setModifierHeld(false);
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleModifier);
+    document.addEventListener('keyup', handleModifier);
+    window.addEventListener('blur', handleBlur);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleModifier);
+      document.removeEventListener('keyup', handleModifier);
+      window.removeEventListener('blur', handleBlur);
+    };
   }, [newMenuAnchorEl]);
   const [controlRoomExpanded, setControlRoomExpanded] = useState(currentPage === 'portfolio');
   const [crThemesExpanded, setCrThemesExpanded] = useState(false);
@@ -624,7 +638,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               label="New"
               icon={<AddIcon sx={{ fontSize: 16 }} />}
               onClick={(e) => setNewMenuAnchorEl(e?.currentTarget as HTMLElement)}
-              shortcut="N"
+              shortcut={modifierHeld ? 'N' : undefined}
               iconBoxBgColor="#eef2ff"
               alwaysAccent
               buttonRef={newButtonRef as React.Ref<HTMLDivElement>}
@@ -633,7 +647,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               label="Search"
               icon={<SearchIcon sx={{ fontSize: 16 }} />}
               onClick={() => setSearchModalOpen(true)}
-              shortcut="F"
+              shortcut={modifierHeld ? 'F' : undefined}
             />
             <Divider sx={{ my: 1.5 }} />
             <NavItem
@@ -1161,7 +1175,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Logout</MenuItem>
       </Popover>
-      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} onNavigate={(page, dashboardId) => { onPageChange?.(page as any); if (dashboardId) onDashboardNavigate?.(dashboardId); }} />
     </Box>
   );
 }

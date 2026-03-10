@@ -10,9 +10,10 @@ interface HeaderProps {
   hasRightSidebar?: boolean;
   leftSidebarWidth?: number;
   rightSidebarWidth?: number;
+  onPageChange?: (page: string) => void;
 }
 
-export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280, rightSidebarWidth = 64 }: HeaderProps) {
+export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280, rightSidebarWidth = 64, onPageChange }: HeaderProps) {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   return (
@@ -79,7 +80,7 @@ export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280
       </Toolbar>
 
       {/* Search Modal */}
-      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} onNavigate={onPageChange} />
     </AppBar>
   );
 }
