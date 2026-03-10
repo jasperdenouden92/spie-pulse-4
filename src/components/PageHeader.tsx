@@ -444,12 +444,12 @@ export default function PageHeader({
 
       {/* Right: Filters + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        {/* Filters — on Control Room (no building) and Dashboards */}
-        {((currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards') && (
+        {/* Filters — on Dashboards only (portfolio uses inline page title filters) */}
+        {currentPage === 'dashboards' && (
           <ControlRoomFilters
             selectedDateRange={selectedDateRangeProp}
             onDateRangeChange={onDateRangeChange}
-            activeDashboardId={currentPage === 'dashboards' ? activeDashboardId : undefined}
+            activeDashboardId={activeDashboardId}
           />
         )}
         {/* Export Button — on Control Room and Dashboards */}

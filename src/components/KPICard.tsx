@@ -1,6 +1,7 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import AnimatedNumber from './AnimatedNumber';
@@ -12,6 +13,7 @@ interface KPICardProps {
   score: number;
   trend: number;
   sparklineData: number[];
+  periodLabel?: string | null;
   onClick?: () => void;
   onToggle?: () => void;
   toggleState?: ToggleState;
@@ -20,7 +22,7 @@ interface KPICardProps {
   isCompact?: boolean;
 }
 
-export default function KPICard({ title, icon, score, trend, sparklineData, onClick, onToggle, toggleState = 'on', isSelected = false, isDimmed = false, isCompact = false }: KPICardProps) {
+export default function KPICard({ title, icon, score, trend, sparklineData, periodLabel, onClick, onToggle, toggleState = 'on', isSelected = false, isDimmed = false, isCompact = false }: KPICardProps) {
   const generateSparkline = (data: number[]) => {
     const width = isCompact ? 70 : 100;
     const height = isCompact ? 30 : 40;
@@ -89,12 +91,16 @@ export default function KPICard({ title, icon, score, trend, sparklineData, onCl
           <Typography variant="h5" sx={{ fontWeight: 600, fontSize: isCompact ? '1.25rem' : '1.5rem', transition: 'font-size 0.3s ease' }}>
             <AnimatedNumber value={score} />%
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: trend >= 0 ? 'success.main' : 'error.main' }}>
-            {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 12 : 16, transition: 'font-size 0.3s ease' }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 12 : 16, transition: 'font-size 0.3s ease' }} />}
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem', transition: 'font-size 0.3s ease' }}>
-              {Math.abs(trend)}%
-            </Typography>
-          </Box>
+          {periodLabel !== null && (
+            <Tooltip title={`Compared to ${periodLabel}`} arrow placement="top">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: trend >= 0 ? 'success.main' : 'error.main' }}>
+                {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 12 : 16, transition: 'font-size 0.3s ease' }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 12 : 16, transition: 'font-size 0.3s ease' }} />}
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem', transition: 'font-size 0.3s ease' }}>
+                  {Math.abs(trend)}%
+                </Typography>
+              </Box>
+            </Tooltip>
+          )}
         </Box>
 
         {/* Sparkline */}
