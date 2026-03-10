@@ -228,21 +228,6 @@ function BuildingPreviewCard({ result }: { result: SearchResult }) {
           </Typography>
         )}
         <PerformanceBar {...performance} />
-        <Divider />
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          {result.owner && (
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Owner</Typography>
-              <Typography variant="body2">{result.owner}</Typography>
-            </Box>
-          )}
-          {result.date && (
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Date</Typography>
-              <Typography variant="body2">{result.date}</Typography>
-            </Box>
-          )}
-        </Box>
       </Box>
     </Box>
   );
@@ -313,38 +298,18 @@ function MiniSparkline({ data, color, width = 140, height = 32 }: { data: number
 function DashboardPreviewCard({ result }: { result: SearchResult }) {
   const sparkline = dashboardSparklines[result.title] ?? { data: [50, 55, 52, 58, 60, 57, 62, 59, 64, 61, 63, 65], color: '#1976d2' };
   return (
-    <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ color: 'text.disabled' }}>{typeIcons.dashboard}</Box>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          Dashboard
-        </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box sx={{ flex: 1, px: 2.5, pt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <MiniSparkline data={sparkline.data} color={sparkline.color} width={340} height={120} />
       </Box>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
-        {result.title}
-      </Typography>
-      {result.subtitle && (
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {result.subtitle}
+      <Box sx={{ px: 2.5, pb: 2.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+          {result.title}
         </Typography>
-      )}
-      <Divider />
-      <Box sx={{ bgcolor: '#fafafa', borderRadius: 1, p: 1, display: 'flex', justifyContent: 'center' }}>
-        <MiniSparkline data={sparkline.data} color={sparkline.color} width={300} height={48} />
-      </Box>
-      <Divider />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {result.owner && (
-          <Box>
-            <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Owner</Typography>
-            <Typography variant="body2">{result.owner}</Typography>
-          </Box>
-        )}
-        {result.date && (
-          <Box>
-            <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block' }}>Last updated</Typography>
-            <Typography variant="body2">{result.date}</Typography>
-          </Box>
+        {result.subtitle && (
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {result.subtitle}
+          </Typography>
         )}
       </Box>
     </Box>
@@ -882,7 +847,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
               border: '1px solid',
               borderColor: 'divider',
-              height: '100%',
+              height: 280,
               overflow: 'hidden',
             }}
           >
