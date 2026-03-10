@@ -56,8 +56,7 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import SortOutlinedIcon from '@mui/icons-material/SortOutlined';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
+import AppTabs from '@/components/AppTabs';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
@@ -1749,27 +1748,15 @@ export default function Home() {
                         borderColor: 'divider',
                         bgcolor: '#fafafa'
                       }}>
-                        <Tabs
+                        <AppTabs
                           value={buildingsPanelTab}
-                          onChange={(_, v) => setBuildingsPanelTab(v)}
-                          sx={{
-                            minHeight: 40,
-                            '& .MuiTab-root': {
-                              minHeight: 40,
-                              py: 0,
-                              px: 1.5,
-                              textTransform: 'none',
-                              fontWeight: 500,
-                              fontSize: '0.875rem',
-                              gap: 0.75,
-                            },
-                            '& .MuiTabs-indicator': { height: 2 }
-                          }}
-                        >
-                          <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                          <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                          <Tab value="recommendations" label="Recommendations" icon={<LightbulbOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                        </Tabs>
+                          onChange={setBuildingsPanelTab}
+                          tabs={[
+                            { value: 'buildings', label: 'Buildings', icon: <ApartmentOutlinedIcon sx={{ fontSize: 16 }} /> },
+                            { value: 'kpi_analysis', label: 'KPI Analysis', icon: <AutoGraphOutlinedIcon sx={{ fontSize: 16 }} /> },
+                            { value: 'recommendations', label: 'Recommendations', icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} /> },
+                          ]}
+                        />
 
                         {/* Panel Actions */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

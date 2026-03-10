@@ -4,8 +4,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import AppTabs from '@/components/AppTabs';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -135,24 +134,18 @@ export default function AssetDetail({ asset, tab: tabProp, onTabChange }: AssetD
 
       {/* Tabs */}
       <Paper sx={{ bgcolor: '#fff' }}>
-        <Tabs
+        <AppTabs
           value={tab}
-          onChange={(_, newValue) => setTab(newValue)}
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontWeight: 500
-            }
-          }}
-        >
-          <Tab label="Overview" />
-          <Tab label="Specifications" />
-          <Tab label="Maintenance History" />
-          <Tab label="Sensor Data" />
-          <Tab label="Documents" />
-        </Tabs>
+          onChange={setTab}
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+          tabs={[
+            { label: 'Overview' },
+            { label: 'Specifications' },
+            { label: 'Maintenance History' },
+            { label: 'Sensor Data' },
+            { label: 'Documents' },
+          ]}
+        />
 
         {/* Tab Content */}
         <Box sx={{ p: 3 }}>
