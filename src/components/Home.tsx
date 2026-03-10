@@ -6,8 +6,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import AppTabs from '@/components/AppTabs';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -264,21 +263,16 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
               <MenuItem onClick={() => setBuildingFilter(null)}>Innovation Hub</MenuItem>
             </Menu>
           </Box>
-          <Tabs
+          <AppTabs
             value={selectedTab}
-            onChange={(_, newValue) => setSelectedTab(newValue)}
-            sx={{
-              '& .MuiTab-root': {
-                textTransform: 'none',
-                minHeight: 36,
-                fontSize: '0.875rem'
-              }
-            }}
-          >
-            <Tab label="Building trend" />
-            <Tab label="Comfort trend" />
-            <Tab label="Asset trend" />
-          </Tabs>
+            onChange={setSelectedTab}
+            size="small"
+            tabs={[
+              { label: 'Building trend' },
+              { label: 'Comfort trend' },
+              { label: 'Asset trend' },
+            ]}
+          />
         </Box>
 
         {/* Chart Area */}

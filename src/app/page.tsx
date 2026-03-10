@@ -56,10 +56,10 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import SortOutlinedIcon from '@mui/icons-material/SortOutlined';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
+import AppTabs from '@/components/AppTabs';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod } from '@/data/metrics';
@@ -78,6 +78,7 @@ import Alert from '@mui/material/Alert';
 import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
+import RecommendationsInbox from '@/components/RecommendationsInbox';
 import ThemesPage from '@/components/Themes';
 import DashboardsPage from '@/components/DashboardsPage';
 import ChangelogButton from '@/components/ChangelogButton';
@@ -118,7 +119,7 @@ import type { ToggleState } from '@/components/KPIToggle';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
-type BuildingsPanelTab = 'buildings' | 'kpi_analysis';
+type BuildingsPanelTab = 'buildings' | 'kpi_analysis' | 'recommendations';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
 interface Favorite {
@@ -229,7 +230,7 @@ export default function Home() {
     { id: '3', name: 'Reparatie toilet 1e ver', type: 'task' },
   ]);
   const rawPanelTab = searchParams.get('panel') ?? 'buildings';
-  const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis') ? rawPanelTab : 'buildings';
+  const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis' || rawPanelTab === 'recommendations') ? rawPanelTab : 'buildings';
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
@@ -1741,84 +1742,50 @@ export default function Home() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        px: 2.5,
-                        py: 1.5,
+                        p: 1.5,
                         borderBottom: 1,
                         borderColor: 'divider',
                         bgcolor: '#fafafa'
                       }}>
-                        <Tabs
+                        <AppTabs
                           value={buildingsPanelTab}
-                          onChange={(_, v) => setBuildingsPanelTab(v)}
-                          sx={{
-                            minHeight: 40,
-                            '& .MuiTab-root': {
-                              minHeight: 40,
-                              py: 0,
-                              px: 1.5,
-                              textTransform: 'none',
-                              fontWeight: 500,
-                              fontSize: '0.875rem',
-                              gap: 0.75,
-                            },
-                            '& .MuiTabs-indicator': { height: 2 }
-                          }}
-                        >
-                          <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                          <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                        </Tabs>
+                          onChange={setBuildingsPanelTab}
+                          tabs={[
+                            { value: 'buildings', label: 'Buildings' },
+                            { value: 'kpi_analysis', label: 'Analysis' },
+                            { value: 'recommendations', label: 'Recommendations' },
+                          ]}
+                        />
 
-                        {/* Panel Actions */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          {/* Sort Dropdown — hidden on KPI Analysis */}
-                          {buildingsPanelTab === 'buildings' && (
-                            <>
-                          <Chip
-                            icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
-                            label={sortOrder}
-                            onClick={(e) => setSortAnchorEl(e.currentTarget)}
-                            deleteIcon={<ExpandMoreIcon />}
-                            onDelete={(e) => setSortAnchorEl(e.currentTarget as any)}
-                            sx={{
-                              height: 32,
-                              borderRadius: '6px',
-                              backgroundColor: '#f5f5f5',
-                              '&:hover': { backgroundColor: '#e8e8e8' },
-                              '& .MuiChip-label': { px: 1, fontSize: '0.813rem', fontWeight: 500 }
-                            }}
-                          />
-                          <Menu
-                            anchorEl={sortAnchorEl}
-                            open={Boolean(sortAnchorEl)}
-                            onClose={() => setSortAnchorEl(null)}
-                          >
-                            <MenuItem onClick={() => { setSortOrder('Worst to Best'); setSortAnchorEl(null); }}>Worst to Best</MenuItem>
-                            <MenuItem onClick={() => { setSortOrder('Best to Worst'); setSortAnchorEl(null); }}>Best to Worst</MenuItem>
-                            <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
-                            <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
-                          </Menu>
-                            </>
-                          )}
-                          <Box
-                            component="button"
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: 32,
-                              height: 32,
-                              border: 1,
-                              borderColor: 'divider',
-                              borderRadius: 1,
-                              bgcolor: '#fff',
-                              cursor: 'pointer',
-                              color: 'text.secondary',
-                              '&:hover': { bgcolor: '#f5f5f5' }
-                            }}
-                          >
-                            <SettingsOutlinedIcon sx={{ fontSize: 18 }} />
+                        {/* Sort Dropdown — only on Buildings tab */}
+                        {buildingsPanelTab === 'buildings' && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Chip
+                              icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
+                              label={sortOrder}
+                              onClick={(e) => setSortAnchorEl(e.currentTarget)}
+                              deleteIcon={<ExpandMoreIcon />}
+                              onDelete={(e) => setSortAnchorEl(e.currentTarget as any)}
+                              sx={{
+                                height: 32,
+                                borderRadius: '6px',
+                                backgroundColor: '#f5f5f5',
+                                '&:hover': { backgroundColor: '#e8e8e8' },
+                                '& .MuiChip-label': { px: 1, fontSize: '0.813rem', fontWeight: 500 }
+                              }}
+                            />
+                            <Menu
+                              anchorEl={sortAnchorEl}
+                              open={Boolean(sortAnchorEl)}
+                              onClose={() => setSortAnchorEl(null)}
+                            >
+                              <MenuItem onClick={() => { setSortOrder('Worst to Best'); setSortAnchorEl(null); }}>Worst to Best</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('Best to Worst'); setSortAnchorEl(null); }}>Best to Worst</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
+                            </Menu>
                           </Box>
-                        </Box>
+                        )}
                       </Box>
 
                       {/* Panel Content */}
@@ -1964,7 +1931,7 @@ export default function Home() {
                             })}
                             </Box>
                           </>
-                        ) : (
+                        ) : buildingsPanelTab === 'kpi_analysis' ? (
                           /* ===== KPI ANALYSIS VIEW ===== */
                           <KPIAnalysisView
                             selection={selection}
@@ -1974,6 +1941,9 @@ export default function Home() {
                             metricInfo={metricInfo}
                             onMetricSelect={handleMetricSelect}
                           />
+                        ) : (
+                          /* ===== RECOMMENDATIONS VIEW ===== */
+                          <RecommendationsInbox />
                         )}
                       </Box>
                     </Box>

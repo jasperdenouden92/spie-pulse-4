@@ -9,8 +9,7 @@ import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import AppTabs from '@/components/AppTabs';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -141,17 +140,17 @@ export default function ChangelogButton() {
         </Box>
 
         {/* Tabs */}
-        <Tabs
+        <AppTabs
           value={tab}
-          onChange={(_, v) => setTab(v)}
-          sx={{ px: 2, borderBottom: 1, borderColor: 'divider', flexShrink: 0, minHeight: 40 }}
-          TabIndicatorProps={{ style: { backgroundColor: '#7c3aed' } }}
-        >
-          <Tab value="highlights" label="Highlights" icon={<AutoAwesomeIcon sx={{ fontSize: 14 }} />} iconPosition="start"
-            sx={{ minHeight: 40, fontSize: '0.8125rem', textTransform: 'none', fontWeight: 500, color: tab === 'highlights' ? '#7c3aed' : 'text.secondary', gap: 0.5, px: 1.5 }} />
-          <Tab value="commits" label="Commits" icon={<FormatListBulletedIcon sx={{ fontSize: 14 }} />} iconPosition="start"
-            sx={{ minHeight: 40, fontSize: '0.8125rem', textTransform: 'none', fontWeight: 500, color: tab === 'commits' ? '#7c3aed' : 'text.secondary', gap: 0.5, px: 1.5 }} />
-        </Tabs>
+          onChange={setTab}
+          size="small"
+          indicatorColor="#7c3aed"
+          sx={{ px: 2, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
+          tabs={[
+            { value: 'highlights', label: 'Highlights', icon: <AutoAwesomeIcon sx={{ fontSize: 14 }} /> },
+            { value: 'commits', label: 'Commits', icon: <FormatListBulletedIcon sx={{ fontSize: 14 }} /> },
+          ]}
+        />
 
         {/* Body */}
         <Box sx={{ overflowY: 'auto', flex: 1, px: 3, py: 2.5 }}>
