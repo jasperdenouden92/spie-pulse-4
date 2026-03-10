@@ -19,7 +19,7 @@ import ElevatorIcon from '@mui/icons-material/Elevator';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
@@ -124,8 +124,9 @@ export default function AssetDetail({ asset, tab: tabProp, onTabChange }: AssetD
               <IconButton
                 size="small"
                 onClick={(e) => setMenuAnchor(e.currentTarget)}
+                sx={{ borderRadius: '50%', aspectRatio: 1 }}
               >
-                <MoreVertIcon />
+                <MoreHorizIcon />
               </IconButton>
             </Box>
           </Box>

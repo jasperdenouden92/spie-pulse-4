@@ -71,7 +71,7 @@ export default function AssetPerformanceByCategoryChart({
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Performance by Category
         </Typography>
-        <IconButton size="small">
+        <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
           <MoreHorizIcon fontSize="small" />
         </IconButton>
       </Box>

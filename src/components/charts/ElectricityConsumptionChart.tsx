@@ -60,7 +60,7 @@ export default function ElectricityConsumptionChart({ buildingName }: Electricit
             </Box>
           </Box>
         </Box>
-        <IconButton size="small">
+        <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
           <MoreHorizIcon fontSize="small" />
         </IconButton>
       </Box>

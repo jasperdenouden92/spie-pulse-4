@@ -102,7 +102,7 @@ export default function UtilizationOverviewChart({ buildingName }: UtilizationOv
               Daily utilization
             </ToggleButton>
           </ToggleButtonGroup>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
             <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>

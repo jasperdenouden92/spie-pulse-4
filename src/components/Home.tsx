@@ -109,7 +109,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
             Recently visited
           </Typography>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
             <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -310,7 +310,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
               >
                 All buildings
               </Button>
-              <IconButton size="small">
+              <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
                 <MoreHorizIcon fontSize="small" />
               </IconButton>
             </Box>
@@ -389,7 +389,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
               >
                 All buildings
               </Button>
-              <IconButton size="small">
+              <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
                 <MoreHorizIcon fontSize="small" />
               </IconButton>
             </Box>

@@ -104,7 +104,7 @@ export default function CriticalAssetsCard({
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Critical Assets
         </Typography>
-        <IconButton size="small">
+        <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
           <MoreHorizIcon fontSize="small" />
         </IconButton>
       </Box>

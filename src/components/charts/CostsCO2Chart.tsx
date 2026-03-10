@@ -42,7 +42,7 @@ export default function CostsCO2Chart({ buildingName }: CostsCO2ChartProps) {
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Costs and CO₂
         </Typography>
-        <IconButton size="small">
+        <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
           <MoreHorizIcon fontSize="small" />
         </IconButton>
       </Box>

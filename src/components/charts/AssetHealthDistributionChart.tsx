@@ -42,7 +42,7 @@ export default function AssetHealthDistributionChart({
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Asset Health Distribution
         </Typography>
-        <IconButton size="small">
+        <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
           <MoreHorizIcon fontSize="small" />
         </IconButton>
       </Box>
