@@ -94,6 +94,103 @@ interface SidebarProps {
   hasUnreadNotifications?: boolean;
 }
 
+interface NavItemProps {
+  label: string;
+  icon?: React.ReactNode;
+  active?: boolean;
+  onClick?: (e?: React.MouseEvent) => void;
+  shortcut?: string;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
+  size?: number;
+  iconBoxBgColor?: string;
+  alwaysAccent?: boolean;
+  buttonRef?: React.Ref<HTMLDivElement>;
+}
+
+function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExpand, size = 28, iconBoxBgColor, alwaysAccent, buttonRef }: NavItemProps) {
+  const hasChevron = onToggleExpand !== undefined;
+  const isDot = !icon && !alwaysAccent;
+  const accentColor = '#1e5a96';
+  const isAccent = active || alwaysAccent;
+
+  return (
+    <ListItem disablePadding>
+      <ListItemButton
+        ref={buttonRef}
+        onClick={onClick}
+        sx={{
+          height: 36,
+          paddingLeft: '4px',
+          gap: 1,
+          borderRadius: '6px',
+          backgroundColor: active ? '#e3f2fd' : 'transparent',
+          transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            backgroundColor: active ? '#d6ebf9' : '#f8f8f8',
+          },
+          ...(hasChevron && {
+            '&:hover .nav-icon': { opacity: 0 },
+            '&:hover .nav-chevron': { opacity: 1 },
+          }),
+        }}
+      >
+        {isDot ? (
+          <Box sx={{ width: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: active ? accentColor : '#bdbdbd' }} />
+          </Box>
+        ) : hasChevron ? (
+          <Box
+            onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
+            sx={{
+              width: size, height: size,
+              bgcolor: active ? '#e3f2fd' : (iconBoxBgColor || '#f0f0f0'),
+              borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, position: 'relative', cursor: 'pointer',
+            }}
+          >
+            <Box className="nav-icon" sx={{ display: 'flex', transition: 'opacity 0.2s', color: isAccent ? accentColor : undefined }}>
+              {icon}
+            </Box>
+            <ExpandMoreIcon
+              className="nav-chevron"
+              sx={{
+                fontSize: size === 28 ? 18 : 16,
+                position: 'absolute', opacity: 0,
+                transition: 'opacity 0.2s, transform 0.3s',
+                transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                color: isAccent ? accentColor : undefined,
+              }}
+            />
+          </Box>
+        ) : (
+          <Box sx={{
+            width: size, height: size,
+            bgcolor: active ? '#e3f2fd' : (iconBoxBgColor || '#f0f0f0'),
+            borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, color: isAccent ? accentColor : undefined,
+          }}>
+            {icon}
+          </Box>
+        )}
+        <ListItemText
+          primary={label}
+          primaryTypographyProps={{
+            variant: 'body2',
+            fontWeight: (icon || active || alwaysAccent) ? 600 : 400,
+            color: isAccent ? accentColor : undefined,
+          }}
+        />
+        {shortcut && (
+          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
+            {shortcut}
+          </Typography>
+        )}
+      </ListItemButton>
+    </ListItem>
+  );
+}
+
 interface SortableFavoriteItemProps {
   favorite: Favorite;
   isHovered: boolean;
@@ -143,7 +240,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
         />
       )}
 
-      <ListItemButton sx={{ height: 40, pl: '4px', gap: 2, borderRadius: '5px', position: 'relative', overflow: 'hidden' }}>
+      <ListItemButton sx={{ height: 40, pl: '4px', gap: 1, borderRadius: '6px', position: 'relative', overflow: 'hidden' }}>
         {/* Drag Handle - appears on left on hover */}
         <Box
           {...attributes}
@@ -174,7 +271,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 2,
+            gap: 1,
             flex: 1,
             minWidth: 0,
             transform: isHovered ? 'translateX(20px)' : 'translateX(0)',
@@ -491,11 +588,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           {/* ACME Corp section - aligns with PageHeader breadcrumb */}
           <Box sx={{ height: 56, display: 'flex', alignItems: 'center', px: 2, flexShrink: 0 }}>
             <Box
-              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '5px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: '#f5f5f5' } }}
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: '#f5f5f5' } }}
               onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
             >
               <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}
               >
                 <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
@@ -521,141 +618,50 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           {/* Scrollable nav section — position trick guarantees bounded height */}
           <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
             <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: 2, pt: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
-            <List sx={{ py: 0 }}>
+            <List sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {/* "+ New" action button — opens dropdown menu */}
-            <ListItem disablePadding>
-              <ListItemButton
-                ref={newButtonRef as React.Ref<HTMLDivElement>}
-                onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  '&:hover': { backgroundColor: '#f5f5f5' },
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#eef2ff', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <AddIcon sx={{ fontSize: 16, color: '#1e5a96' }} />
-                </Box>
-                <ListItemText
-                  primary="New"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, sx: { color: '#1e5a96' } }}
-                />
-                <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
-                  N
-                </Typography>
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => setSearchModalOpen(true)}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  '&:hover': {
-                    backgroundColor: '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <SearchIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Search"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-                <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
-                  F
-                </Typography>
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="New"
+              icon={<AddIcon sx={{ fontSize: 16 }} />}
+              onClick={(e) => setNewMenuAnchorEl(e?.currentTarget as HTMLElement)}
+              shortcut="N"
+              iconBoxBgColor="#eef2ff"
+              alwaysAccent
+              buttonRef={newButtonRef as React.Ref<HTMLDivElement>}
+            />
+            <NavItem
+              label="Search"
+              icon={<SearchIcon sx={{ fontSize: 16 }} />}
+              onClick={() => setSearchModalOpen(true)}
+              shortcut="F"
+            />
             <Divider sx={{ my: 1.5 }} />
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('home')}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage === 'home' ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'home' ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <HomeOutlinedIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Home"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => { onPageChange?.('portfolio'); setControlRoomExpanded(true); }}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  pr: 0,
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage === 'portfolio' ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'portfolio' ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <MonitorHeartOutlined sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Control Room"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={(e) => { e.stopPropagation(); setControlRoomExpanded(!controlRoomExpanded); }}
-                  sx={{ width: 28, height: 28, flexShrink: 0 }}
-                >
-                  <ExpandMoreIcon sx={{ fontSize: 18, transform: controlRoomExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
-                </IconButton>
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="Home"
+              icon={<HomeOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'home'}
+              onClick={() => onPageChange?.('home')}
+            />
+            <NavItem
+              label="Control Room"
+              icon={<MonitorHeartOutlined sx={{ fontSize: 16 }} />}
+              active={currentPage === 'portfolio'}
+              onClick={() => { onPageChange?.('portfolio'); setControlRoomExpanded(true); }}
+              expanded={controlRoomExpanded}
+              onToggleExpand={() => setControlRoomExpanded(!controlRoomExpanded)}
+            />
             {controlRoomExpanded && (
-              <List dense sx={{ pl: 2, py: 0 }}>
+              <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {/* Themes dropdown */}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); setCrThemesExpanded(true); }}
-                    sx={{
-                      height: 36,
-                      paddingLeft: '4px',
-                      pr: 0,
-                      gap: 1.5,
-                      borderRadius: '5px',
-                      bgcolor: currentPage === 'portfolio' && selection === 'themes_group' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: '#f5f5f5' }
-                    }}
-                  >
-                    <NatureOutlinedIcon sx={{ fontSize: 16 }} />
-                    <ListItemText primary="Themes" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'themes_group' ? 600 : 400 }} />
-                    <IconButton
-                      size="small"
-                      onClick={(e) => { e.stopPropagation(); setCrThemesExpanded(!crThemesExpanded); }}
-                      sx={{ width: 24, height: 24, flexShrink: 0 }}
-                    >
-                      <ExpandMoreIcon sx={{ fontSize: 16, transform: crThemesExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
-                    </IconButton>
-                  </ListItemButton>
-                </ListItem>
+                <NavItem
+                  label="Themes"
+                  icon={<NatureOutlinedIcon sx={{ fontSize: 16 }} />}
+                  active={currentPage === 'portfolio' && selection === 'themes_group'}
+                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); setCrThemesExpanded(true); }}
+                  expanded={crThemesExpanded}
+                  onToggleExpand={() => setCrThemesExpanded(!crThemesExpanded)}
+                  size={20}
+                />
                 {crThemesExpanded && [
                   { key: 'sustainability', label: 'Sustainability' },
                   { key: 'comfort', label: 'Comfort' },
@@ -667,248 +673,79 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   { key: 'security_systems', label: 'Security Systems' },
                   { key: 'access_control', label: 'Access Control' },
                 ].map((item) => (
-                  <ListItem key={item.key} disablePadding>
-                    <ListItemButton
-                      onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                      sx={{
-                        height: 32,
-                        pl: 4,
-                        gap: 1.5,
-                        borderRadius: '5px',
-                        bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
-                        '&:hover': { bgcolor: '#f5f5f5' }
-                      }}
-                    >
-                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontSize: '0.8rem', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400 }} />
-                    </ListItemButton>
-                  </ListItem>
+                  <NavItem
+                    key={item.key}
+                    label={item.label}
+                    active={currentPage === 'portfolio' && selection === item.key}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                    size={20}
+                  />
                 ))}
 
                 {/* Operations dropdown */}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); setCrOperationsExpanded(true); }}
-                    sx={{
-                      height: 36,
-                      paddingLeft: '4px',
-                      pr: 0,
-                      gap: 1.5,
-                      borderRadius: '5px',
-                      bgcolor: currentPage === 'portfolio' && selection === 'operations_group' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: '#f5f5f5' }
-                    }}
-                  >
-                    <HandymanOutlinedIcon sx={{ fontSize: 16 }} />
-                    <ListItemText primary="Operations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'operations_group' ? 600 : 400 }} />
-                    <IconButton
-                      size="small"
-                      onClick={(e) => { e.stopPropagation(); setCrOperationsExpanded(!crOperationsExpanded); }}
-                      sx={{ width: 24, height: 24, flexShrink: 0 }}
-                    >
-                      <ExpandMoreIcon sx={{ fontSize: 16, transform: crOperationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
-                    </IconButton>
-                  </ListItemButton>
-                </ListItem>
+                <NavItem
+                  label="Operations"
+                  icon={<HandymanOutlinedIcon sx={{ fontSize: 16 }} />}
+                  active={currentPage === 'portfolio' && selection === 'operations_group'}
+                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); setCrOperationsExpanded(true); }}
+                  expanded={crOperationsExpanded}
+                  onToggleExpand={() => setCrOperationsExpanded(!crOperationsExpanded)}
+                  size={20}
+                />
                 {crOperationsExpanded && [
                   { key: 'tickets', label: 'Tickets' },
                   { key: 'quotations', label: 'Quotations' },
                   { key: 'maintenance', label: 'Maintenance' },
                 ].map((item) => (
-                  <ListItem key={item.key} disablePadding>
-                    <ListItemButton
-                      onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                      sx={{
-                        height: 32,
-                        pl: 4,
-                        gap: 1.5,
-                        borderRadius: '5px',
-                        bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
-                        '&:hover': { bgcolor: '#f5f5f5' }
-                      }}
-                    >
-                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontSize: '0.8rem', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400 }} />
-                    </ListItemButton>
-                  </ListItem>
+                  <NavItem
+                    key={item.key}
+                    label={item.label}
+                    active={currentPage === 'portfolio' && selection === item.key}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                    size={20}
+                  />
                 ))}
               </List>
             )}
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('insights')}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage === 'insights' ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'insights' ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Insights"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('dashboards')}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage === 'dashboards' ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'dashboards' ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <DashboardOutlinedIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Dashboards"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('portfolio_overview')}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage === 'portfolio_overview' ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'portfolio_overview' ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ApartmentOutlinedIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Portfolio & Assets"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => { onPageChange?.('operations'); setOperationsExpanded(true); }}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  pr: 0,
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage?.startsWith('operations') ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <HandymanOutlinedIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Operations"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={(e) => { e.stopPropagation(); setOperationsExpanded(!operationsExpanded); }}
-                  sx={{ width: 28, height: 28, flexShrink: 0 }}
-                >
-                  <ExpandMoreIcon sx={{ fontSize: 18, transform: operationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.3s' }} />
-                </IconButton>
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="Insights"
+              icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'insights'}
+              onClick={() => onPageChange?.('insights')}
+            />
+            <NavItem
+              label="Dashboards"
+              icon={<DashboardOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'dashboards'}
+              onClick={() => onPageChange?.('dashboards')}
+            />
+            <NavItem
+              label="Portfolio & Assets"
+              icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'portfolio_overview'}
+              onClick={() => onPageChange?.('portfolio_overview')}
+            />
+            <NavItem
+              label="Operations"
+              icon={<HandymanOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage?.startsWith('operations')}
+              onClick={() => { onPageChange?.('operations'); setOperationsExpanded(true); }}
+              expanded={operationsExpanded}
+              onToggleExpand={() => setOperationsExpanded(!operationsExpanded)}
+            />
             {operationsExpanded && (
-              <List dense sx={{ pl: 4, py: 0 }}>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => onPageChange?.('operations_docs')}
-                    sx={{
-                      height: 36,
-                      gap: 1.5,
-                      borderRadius: '5px',
-                      bgcolor: currentPage === 'operations_docs' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_docs' ? '#e3f2fd' : '#f5f5f5' }
-                    }}
-                  >
-                    <DescriptionOutlinedIcon sx={{ fontSize: 16 }} />
-                    <ListItemText primary="Docs" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_docs' ? 600 : 400 }} />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => onPageChange?.('operations_tickets')}
-                    sx={{
-                      height: 36,
-                      gap: 1.5,
-                      borderRadius: '5px',
-                      bgcolor: currentPage === 'operations_tickets' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_tickets' ? '#e3f2fd' : '#f5f5f5' }
-                    }}
-                  >
-                    <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} />
-                    <ListItemText primary="Tickets" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_tickets' ? 600 : 400 }} />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => onPageChange?.('operations_quotations')}
-                    sx={{
-                      height: 36,
-                      gap: 1.5,
-                      borderRadius: '5px',
-                      bgcolor: currentPage === 'operations_quotations' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_quotations' ? '#e3f2fd' : '#f5f5f5' }
-                    }}
-                  >
-                    <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} />
-                    <ListItemText primary="Quotations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_quotations' ? 600 : 400 }} />
-                  </ListItemButton>
-                </ListItem>
+              <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <NavItem label="Docs" active={currentPage === 'operations_docs'} onClick={() => onPageChange?.('operations_docs')} />
+                <NavItem label="Tickets" active={currentPage === 'operations_tickets'} onClick={() => onPageChange?.('operations_tickets')} />
+                <NavItem label="Quotations" active={currentPage === 'operations_quotations'} onClick={() => onPageChange?.('operations_quotations')} />
               </List>
             )}
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('bms')}
-                sx={{
-                  height: 40,
-                  paddingLeft: '4px',
-                  gap: 2,
-                  borderRadius: '5px',
-                  backgroundColor: currentPage === 'bms' ? '#f0f0f0' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'bms' ? '#e8e8e8' : '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="BMS"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="BMS"
+              icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'bms'}
+              onClick={() => onPageChange?.('bms')}
+            />
           </List>
             </Box>
           </Box>
@@ -949,7 +786,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onNotificationsPanelToggle?.()}
-                    sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                    sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }}
                   >
                     <Box sx={{ width: 28, height: 28, bgcolor: notificationsPanelOpen ? '#e0e0e0' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
@@ -960,7 +797,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', '&:hover': { backgroundColor: '#f5f5f5' } }}>
+                  <ListItemButton sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: '#f5f5f5' } }}>
                     <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <HelpOutlineIcon sx={{ fontSize: 16 }} />
                     </Box>
@@ -974,7 +811,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       setUserAnchorEl(e.currentTarget);
                     }}
                     onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                    sx={{ height: 36, paddingLeft: '4px', gap: 2, borderRadius: '5px', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                    sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: '#f5f5f5' } }}
                   >
                     <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                     <ListItemText primary="Account" primaryTypographyProps={{ variant: 'body2' }} />
@@ -1002,7 +839,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           <MenuItem
             key={item.key}
             onClick={() => setNewMenuAnchorEl(null)}
-            sx={{ py: 1, px: 2, gap: 1.5, borderRadius: '6px', mx: 0.5 }}
+            sx={{ py: 1, px: 2, gap: 1, borderRadius: '6px', mx: 0.5 }}
           >
             <ListItemIcon sx={{ minWidth: 0 }}>
               {i === 0 ? <ReportProblemOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} /> :
@@ -1029,7 +866,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title={selectedCustomer} placement="right">
               <IconButton
                 onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
-                sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}
               >
                 <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
@@ -1046,7 +883,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <IconButton
                 ref={collapsedNewButtonRef}
                 onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: '#eef2ff', color: '#1e5a96', '&:hover': { bgcolor: '#dde6ff' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: '#eef2ff', color: '#1e5a96', '&:hover': { bgcolor: '#dde6ff' } }}
               >
                 <AddIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1054,7 +891,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Search  [F]" placement="right">
               <IconButton
                 onClick={() => setSearchModalOpen(true)}
-                sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}
               >
                 <SearchIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1064,7 +901,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Home" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('home')}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'home' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'home' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'home' ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <HomeOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1079,7 +916,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   setCollapsedControlRoomAnchor(e.currentTarget);
                 }}
                 onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'control-room', setCollapsedControlRoomAnchor)}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'portfolio' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio' ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <MonitorHeartOutlined sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1116,7 +953,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   key={item.key}
                   onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); setCollapsedControlRoomAnchor(null); }}
                   selected={currentPage === 'portfolio' && selection === item.key}
-                  sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}
+                  sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}
                 >
                   {item.label}
                 </MenuItem>
@@ -1132,7 +969,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   key={item.key}
                   onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); setCollapsedControlRoomAnchor(null); }}
                   selected={currentPage === 'portfolio' && selection === item.key}
-                  sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}
+                  sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}
                 >
                   {item.label}
                 </MenuItem>
@@ -1142,7 +979,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Insights" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('insights')}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'insights' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'insights' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'insights' ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1151,7 +988,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Dashboards" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('dashboards')}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'dashboards' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'dashboards' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'dashboards' ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <DashboardOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1160,7 +997,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Portfolio" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('portfolio_overview')}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'portfolio_overview' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio_overview' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <ApartmentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1175,7 +1012,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   setCollapsedOperationsAnchor(e.currentTarget);
                 }}
                 onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'operations', setCollapsedOperationsAnchor)}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage?.startsWith('operations') ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage?.startsWith('operations') ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <HandymanOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1199,21 +1036,21 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <MenuItem
                 onClick={() => { onPageChange?.('operations_docs'); setCollapsedOperationsAnchor(null); }}
                 selected={currentPage === 'operations_docs'}
-                sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
+                sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
               >
                 <DescriptionOutlinedIcon sx={{ fontSize: 16 }} /> Docs
               </MenuItem>
               <MenuItem
                 onClick={() => { onPageChange?.('operations_tickets'); setCollapsedOperationsAnchor(null); }}
                 selected={currentPage === 'operations_tickets'}
-                sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
+                sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
               >
                 <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> Tickets
               </MenuItem>
               <MenuItem
                 onClick={() => { onPageChange?.('operations_quotations'); setCollapsedOperationsAnchor(null); }}
                 selected={currentPage === 'operations_quotations'}
-                sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
+                sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
               >
                 <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} /> Quotations
               </MenuItem>
@@ -1222,7 +1059,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="BMS" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('bms')}
-                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'bms' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'bms' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'bms' ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <SettingsInputComponentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1234,7 +1071,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Tooltip title="Notifications" placement="right">
                 <IconButton
                   onClick={() => onNotificationsPanelToggle?.()}
-                  sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: '#f5f5f5' } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: '#f5f5f5' } }}
                 >
                   <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                     <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
@@ -1242,7 +1079,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </IconButton>
               </Tooltip>
               <Tooltip title="Help" placement="right">
-                <IconButton sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}>
+                <IconButton sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}>
                   <HelpOutlineIcon sx={{ fontSize: 18 }} />
                 </IconButton>
               </Tooltip>
@@ -1253,7 +1090,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     setUserAnchorEl(e.currentTarget);
                   }}
                   onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                  sx={{ width: 40, height: 40, borderRadius: '5px', '&:hover': { bgcolor: '#f5f5f5' } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}
                 >
                   <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                 </IconButton>
@@ -1275,9 +1112,9 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             onClick={() => { setSelectedCustomer(customer.name); setCustomerAnchorEl(null); }}
             selected={selectedCustomer === customer.name}
             sx={{
-              display: 'flex', gap: 1.5, py: 0.75, px: 1.5, mx: 0.5, borderRadius: '5px',
+              display: 'flex', gap: 1, py: 0.75, px: 1.5, mx: 0.5, borderRadius: '6px',
               '&:hover': { backgroundColor: '#f5f5f5' },
-              '&.Mui-selected': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#e3f2fd' } }
+              '&.Mui-selected': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#d6ebf9' } }
             }}
           >
             <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1311,10 +1148,10 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           <Typography variant="caption" color="text.secondary">admin@spie.com</Typography>
         </Box>
         <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}>Settings</MenuItem>
-        <MenuItem onClick={() => { setUserAnchorEl(null); onPageChange?.('exports'); }} sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}>Exports</MenuItem>
+        <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Settings</MenuItem>
+        <MenuItem onClick={() => { setUserAnchorEl(null); onPageChange?.('exports'); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Exports</MenuItem>
         <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '5px', fontSize: '0.875rem', minHeight: 32 }}>Logout</MenuItem>
+        <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Logout</MenuItem>
       </Popover>
       <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </Box>
