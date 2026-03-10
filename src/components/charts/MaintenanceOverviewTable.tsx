@@ -2,6 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -90,18 +91,8 @@ export default function MaintenanceOverviewTable({
             <InfoOutlinedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
           </IconButton>
         </Box>
-        <IconButton size="small">
-          <Box
-            component="span"
-            sx={{
-              fontSize: '1.25rem',
-              fontWeight: 600,
-              color: 'text.secondary',
-              lineHeight: 1
-            }}
-          >
-            ⋮
-          </Box>
+        <IconButton size="small" sx={{ borderRadius: '50%', aspectRatio: 1 }}>
+          <MoreHorizIcon fontSize="small" />
         </IconButton>
       </Box>
 

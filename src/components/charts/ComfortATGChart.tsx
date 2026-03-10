@@ -83,7 +83,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
           >
             EDIT
           </Button>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
             <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -157,7 +157,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Temperature ATG assessment
           </Typography>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
             <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>

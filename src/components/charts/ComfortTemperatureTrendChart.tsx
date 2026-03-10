@@ -69,7 +69,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
           >
             EDIT
           </Button>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
             <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -133,7 +133,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Temperature assessment
           </Typography>
-          <IconButton size="small">
+          <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
             <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>

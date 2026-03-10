@@ -70,6 +70,8 @@ export default function BuildingCard({
             position: 'absolute',
             top: 12,
             right: 12,
+            borderRadius: '50%',
+            aspectRatio: 1,
             bgcolor: 'rgba(255, 255, 255, 0.9)',
             '&:hover': {
               bgcolor: 'rgba(255, 255, 255, 1)'

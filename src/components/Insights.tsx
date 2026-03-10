@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WarningIcon from '@mui/icons-material/Warning';
 import InfoIcon from '@mui/icons-material/Info';
@@ -283,8 +283,8 @@ export default function Insights() {
                       color={getImpactColor(insight.impact) as any}
                       sx={{ textTransform: 'capitalize', height: 24 }}
                     />
-                    <IconButton size="small">
-                      <MoreVertIcon fontSize="small" />
+                    <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
+                      <MoreHorizIcon fontSize="small" />
                     </IconButton>
                   </Box>
                 </Box>

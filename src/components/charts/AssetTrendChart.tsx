@@ -5,6 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { ResponsiveLine } from '@nivo/line';
 
 interface AssetTrendChartProps {
@@ -95,18 +96,8 @@ export default function AssetTrendChart({ buildingName, assetFilter }: AssetTren
           >
             EDIT
           </Button>
-          <IconButton size="small" sx={{ ml: 1 }}>
-            <Box
-              component="span"
-              sx={{
-                fontSize: '1.25rem',
-                fontWeight: 600,
-                color: 'text.secondary',
-                lineHeight: 1
-              }}
-            >
-              ⋮
-            </Box>
+          <IconButton size="small" sx={{ borderRadius: '50%', aspectRatio: 1 }}>
+            <MoreHorizIcon fontSize="small" />
           </IconButton>
         </Box>
       </Box>
