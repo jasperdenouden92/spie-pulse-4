@@ -51,6 +51,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { AssetNode, assetTree, filterTreeByBuilding } from '@/data/assetTree';
+import { colors } from '@/colors';
 
 type ViewMode = 'dashboard' | 'list' | 'tree';
 
@@ -256,7 +257,7 @@ export default function FloatingToolbar({
                       height: large ? 18 : 14,
                       fontSize: large ? '0.688rem' : '0.563rem',
                       fontFamily: 'monospace',
-                      bgcolor: '#f5f5f5',
+                      bgcolor: colors.bgPrimaryHover,
                       '& .MuiChip-label': { px: 0.5, py: 0 }
                     }}
                   />
@@ -359,9 +360,9 @@ export default function FloatingToolbar({
                 width: 48,
                 height: 48,
                 borderRadius: '8px',
-                bgcolor: selectedView === 'tree' ? '#1976d2' : 'transparent',
+                bgcolor: selectedView === 'tree' ? colors.brand : 'transparent',
                 color: selectedView === 'tree' ? '#fff' : 'inherit',
-                '&:hover': { bgcolor: selectedView === 'tree' ? '#1565c0' : '#f5f5f5' }
+                '&:hover': { bgcolor: selectedView === 'tree' ? '#1565c0' : colors.bgPrimaryHover }
               }}
               onClick={() => {
                 onViewChange('tree');
@@ -381,9 +382,9 @@ export default function FloatingToolbar({
                 width: 48,
                 height: 48,
                 borderRadius: '8px',
-                bgcolor: selectedView === 'dashboard' ? '#1976d2' : 'transparent',
+                bgcolor: selectedView === 'dashboard' ? colors.brand : 'transparent',
                 color: selectedView === 'dashboard' ? '#fff' : 'inherit',
-                '&:hover': { bgcolor: selectedView === 'dashboard' ? '#1565c0' : '#f5f5f5' }
+                '&:hover': { bgcolor: selectedView === 'dashboard' ? '#1565c0' : colors.bgPrimaryHover }
               }}
               onClick={() => onViewChange('dashboard')}
             >
@@ -397,9 +398,9 @@ export default function FloatingToolbar({
                 width: 48,
                 height: 48,
                 borderRadius: '8px',
-                bgcolor: selectedView === 'list' ? '#1976d2' : 'transparent',
+                bgcolor: selectedView === 'list' ? colors.brand : 'transparent',
                 color: selectedView === 'list' ? '#fff' : 'inherit',
-                '&:hover': { bgcolor: selectedView === 'list' ? '#1565c0' : '#f5f5f5' }
+                '&:hover': { bgcolor: selectedView === 'list' ? '#1565c0' : colors.bgPrimaryHover }
               }}
               onClick={() => onViewChange('list')}
             >
@@ -408,13 +409,13 @@ export default function FloatingToolbar({
           </Tooltip>
 
           <Tooltip title="Grid View" placement="left">
-            <IconButton sx={{ width: 48, height: 48, borderRadius: '8px', '&:hover': { bgcolor: '#f5f5f5' } }}>
+            <IconButton sx={{ width: 48, height: 48, borderRadius: '8px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
               <GridViewOutlinedIcon sx={{ fontSize: 20 }} />
             </IconButton>
           </Tooltip>
 
           <Tooltip title="Map View" placement="left">
-            <IconButton sx={{ width: 48, height: 48, borderRadius: '8px', '&:hover': { bgcolor: '#f5f5f5' } }}>
+            <IconButton sx={{ width: 48, height: 48, borderRadius: '8px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
               <MapOutlinedIcon sx={{ fontSize: 20 }} />
             </IconButton>
           </Tooltip>
@@ -455,7 +456,7 @@ export default function FloatingToolbar({
               fullWidth
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#f5f5f5',
+                  backgroundColor: colors.bgPrimaryHover,
                   border: 'none',
                   '& fieldset': { border: 'none' }
                 },
@@ -509,7 +510,7 @@ export default function FloatingToolbar({
                 '& .MuiTreeItem-group': {
                   marginLeft: 0,
                   paddingLeft: large ? '24px' : '20px',
-                  borderLeft: '1px solid #e0e0e0'
+                  borderLeft: `1px solid ${colors.borderSecondary}`
                 }
               }}
             >

@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -18,42 +19,42 @@ const generateMockData = () => {
       performance: 87,
       target: 90,
       performanceColor: '#42a5f5',
-      targetColor: '#e0e0e0'
+      targetColor: colors.borderSecondary
     },
     {
       category: 'Electrical',
       performance: 92,
       target: 90,
       performanceColor: '#66bb6a',
-      targetColor: '#e0e0e0'
+      targetColor: colors.borderSecondary
     },
     {
       category: 'Plumbing',
       performance: 78,
       target: 90,
       performanceColor: '#ffa726',
-      targetColor: '#e0e0e0'
+      targetColor: colors.borderSecondary
     },
     {
       category: 'Fire Safety',
       performance: 95,
       target: 90,
       performanceColor: '#66bb6a',
-      targetColor: '#e0e0e0'
+      targetColor: colors.borderSecondary
     },
     {
       category: 'Elevators',
       performance: 84,
       target: 90,
       performanceColor: '#42a5f5',
-      targetColor: '#e0e0e0'
+      targetColor: colors.borderSecondary
     },
     {
       category: 'Access Control',
       performance: 89,
       target: 90,
       performanceColor: '#42a5f5',
-      targetColor: '#e0e0e0'
+      targetColor: colors.borderSecondary
     }
   ];
 };
@@ -132,7 +133,7 @@ export default function AssetPerformanceByCategoryChart({
             axis: {
               domain: {
                 line: {
-                  stroke: '#e0e0e0',
+                  stroke: colors.borderSecondary,
                   strokeWidth: 1,
                 },
               },
@@ -145,7 +146,7 @@ export default function AssetPerformanceByCategoryChart({
             },
             grid: {
               line: {
-                stroke: '#f0f0f0',
+                stroke: colors.bgSecondaryHover,
                 strokeWidth: 1,
               },
             },

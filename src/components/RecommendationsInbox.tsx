@@ -1,4 +1,5 @@
 'use client';
+import { colors } from '@/colors';
 
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
@@ -123,14 +124,14 @@ const insights: Insight[] = [
 const typeConfig = {
   opportunity: { icon: <TrendingUpIcon sx={{ fontSize: 16 }} />, color: '#2e7d32', bg: '#e8f5e9', label: 'Opportunity' },
   warning: { icon: <WarningAmberOutlinedIcon sx={{ fontSize: 16 }} />, color: '#e65100', bg: '#fff3e0', label: 'Warning' },
-  info: { icon: <InfoOutlinedIcon sx={{ fontSize: 16 }} />, color: '#1565c0', bg: '#e3f2fd', label: 'Info' },
+  info: { icon: <InfoOutlinedIcon sx={{ fontSize: 16 }} />, color: '#1565c0', bg: colors.bgActive, label: 'Info' },
   recommendation: { icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} />, color: '#7b1fa2', bg: '#f3e5f5', label: 'Recommendation' },
 };
 
 const impactConfig = {
   high: { color: '#d32f2f', bg: '#ffebee', label: 'High impact' },
   medium: { color: '#ed6c02', bg: '#fff3e0', label: 'Medium impact' },
-  low: { color: '#757575', bg: '#f5f5f5', label: 'Low impact' },
+  low: { color: '#757575', bg: colors.bgPrimaryHover, label: 'Low impact' },
 };
 
 type FilterType = 'all' | 'opportunity' | 'warning' | 'info' | 'recommendation';
@@ -197,9 +198,9 @@ export default function RecommendationsInbox() {
                 height: 28,
                 fontSize: '0.75rem',
                 fontWeight: 500,
-                bgcolor: filter === f.key ? '#1976d2' : '#f0f0f0',
+                bgcolor: filter === f.key ? colors.brand : colors.bgSecondaryHover,
                 color: filter === f.key ? '#fff' : 'text.secondary',
-                '&:hover': { bgcolor: filter === f.key ? '#1565c0' : '#e0e0e0' },
+                '&:hover': { bgcolor: filter === f.key ? '#1565c0' : colors.borderSecondary },
                 '& .MuiChip-label': { px: 1 },
               }}
             />
@@ -248,7 +249,7 @@ export default function RecommendationsInbox() {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    bgcolor: isRead ? 'transparent' : '#1976d2',
+                    bgcolor: isRead ? 'transparent' : colors.brand,
                     mt: 0.75,
                     flexShrink: 0,
                   }} />

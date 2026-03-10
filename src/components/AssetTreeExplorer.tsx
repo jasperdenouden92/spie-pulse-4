@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -111,7 +112,7 @@ export default function AssetTreeExplorer({
                 <Typography
                   variant="caption"
                   sx={{
-                    bgcolor: '#e3f2fd',
+                    bgcolor: colors.bgActive,
                     color: 'primary.main',
                     px: 1,
                     py: 0.25,
@@ -209,7 +210,7 @@ export default function AssetTreeExplorer({
             p: 2,
             border: 1,
             borderColor: 'divider',
-            bgcolor: '#f5f5f5'
+            bgcolor: colors.bgPrimaryHover
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>

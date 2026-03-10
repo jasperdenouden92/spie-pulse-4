@@ -8,6 +8,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import { colors } from '@/colors';
 import { Quotation } from '@/data/quotations';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import InfiniteScrollContainer from './InfiniteScrollContainer';
@@ -70,7 +71,7 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
         >
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: compact ? 'transparent' : '#fafafa' }}>
+              <TableRow sx={{ bgcolor: compact ? 'transparent' : colors.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Title</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Building</TableCell>
@@ -86,7 +87,7 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
                 <TableRow
                   key={quotation.id}
                   sx={{
-                    '&:hover': { bgcolor: '#f5f5f5' },
+                    '&:hover': { bgcolor: colors.bgPrimaryHover },
                     cursor: 'pointer'
                   }}
                 >

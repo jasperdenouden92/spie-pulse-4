@@ -13,6 +13,7 @@ import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { buildings as allBuildingsData } from '@/data/buildings';
 import { assetTree, AssetNode } from '@/data/assetTree';
+import { colors } from '@/colors';
 
 // Dashboards that show the asset filter
 const DASHBOARDS_WITH_ASSET_FILTER = new Set(['metertrend', 'energie_buitentemperatuur']);
@@ -90,7 +91,7 @@ function AssetTreeNode({
           pr: 1,
           py: 0.25,
           cursor: 'pointer',
-          '&:hover': { bgcolor: '#f5f5f5' },
+          '&:hover': { bgcolor: colors.bgPrimaryHover },
         }}
         onClick={() => onToggleSelect(node.id, [node.id])}
       >
@@ -127,7 +128,7 @@ function AssetTreeNode({
           pr: 1,
           py: 0.5,
           cursor: 'pointer',
-          '&:hover': { bgcolor: '#f5f5f5' },
+          '&:hover': { bgcolor: colors.bgPrimaryHover },
         }}
         onClick={() => onToggleExpand(node.id)}
       >
@@ -336,13 +337,13 @@ export default function ControlRoomFilters({
   const chipSx = (active: boolean) => ({
     height: 32,
     borderRadius: '6px',
-    backgroundColor: active ? '#e3f2fd' : 'white',
+    backgroundColor: active ? colors.bgActive : 'white',
     border: '1px solid',
-    borderColor: active ? '#1976d2' : '#d0d0d0',
+    borderColor: active ? colors.brand : colors.borderPrimary,
     boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-    '&:hover': { backgroundColor: active ? '#bbdefb' : '#f5f5f5' },
-    '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500, color: active ? '#1976d2' : 'inherit' },
-    '& .MuiChip-deleteIcon': { color: active ? '#1976d2' : undefined },
+    '&:hover': { backgroundColor: active ? '#bbdefb' : colors.bgPrimaryHover },
+    '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500, color: active ? colors.brand : 'inherit' },
+    '& .MuiChip-deleteIcon': { color: active ? colors.brand : undefined },
   });
 
   const searchLower = assetSearch.toLowerCase();
@@ -366,7 +367,7 @@ export default function ControlRoomFilters({
         PaperProps={{ sx: { mt: 0.5, width: 560, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
       >
         {/* Header */}
-        <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0' }}>
+        <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.bgSecondaryHover}` }}>
           <Typography variant="subtitle2" fontWeight={600}>Filter gebouwen</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography variant="caption" color="text.secondary">
@@ -383,7 +384,7 @@ export default function ControlRoomFilters({
         {/* Two-panel body */}
         <Box sx={{ display: 'flex', height: 340 }}>
           {/* Left: Quick selects */}
-          <Box sx={{ width: 190, borderRight: '1px solid #f0f0f0', overflowY: 'auto', p: 1.5 }}>
+          <Box sx={{ width: 190, borderRight: `1px solid ${colors.bgSecondaryHover}`, overflowY: 'auto', p: 1.5 }}>
             <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
               Groepen
             </Typography>
@@ -391,7 +392,7 @@ export default function ControlRoomFilters({
               const state = getGroupState(group);
               const count = allBuildingsData.filter(b => b.group === group).length;
               return (
-                <Box key={group} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                <Box key={group} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
                   <FormControlLabel
                     control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => toggleGroup(group)} sx={{ p: '4px' }} />}
                     label={<Typography variant="body2">{group}</Typography>}
@@ -411,7 +412,7 @@ export default function ControlRoomFilters({
               const state = getCityState(city);
               const count = allBuildingsData.filter(b => b.city === city).length;
               return (
-                <Box key={city} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                <Box key={city} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
                   <FormControlLabel
                     control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => toggleCity(city)} sx={{ p: '4px' }} />}
                     label={<Typography variant="body2">{city}</Typography>}
@@ -425,7 +426,7 @@ export default function ControlRoomFilters({
 
           {/* Right: Individual buildings */}
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-            <Box sx={{ p: 1, borderBottom: '1px solid #f0f0f0' }}>
+            <Box sx={{ p: 1, borderBottom: `1px solid ${colors.bgSecondaryHover}` }}>
               <TextField
                 size="small"
                 placeholder="Zoek gebouw..."
@@ -444,7 +445,7 @@ export default function ControlRoomFilters({
                 return (
                   <Box
                     key={b.name}
-                    sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                    sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, cursor: 'pointer', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
                     onClick={() => toggleBuilding(b.name)}
                   >
                     <Checkbox size="small" checked={isSelected} onChange={() => toggleBuilding(b.name)} onClick={e => e.stopPropagation()} sx={{ p: '4px' }} />
@@ -484,7 +485,7 @@ export default function ControlRoomFilters({
             PaperProps={{ sx: { mt: 0.5, width: 420, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
           >
             {/* Header */}
-            <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0' }}>
+            <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.bgSecondaryHover}` }}>
               <Typography variant="subtitle2" fontWeight={600}>Filter assets</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Typography variant="caption" color="text.secondary">
@@ -499,7 +500,7 @@ export default function ControlRoomFilters({
             </Box>
 
             {/* Search */}
-            <Box sx={{ p: 1, borderBottom: '1px solid #f0f0f0' }}>
+            <Box sx={{ p: 1, borderBottom: `1px solid ${colors.bgSecondaryHover}` }}>
               <TextField
                 size="small"
                 placeholder="Zoek asset..."
@@ -537,8 +538,8 @@ export default function ControlRoomFilters({
                         px: 1.5,
                         py: 0.75,
                         cursor: 'pointer',
-                        '&:hover': { bgcolor: '#f5f5f5' },
-                        borderBottom: '1px solid #f0f0f0',
+                        '&:hover': { bgcolor: colors.bgPrimaryHover },
+                        borderBottom: `1px solid ${colors.bgSecondaryHover}`,
                       }}
                       onClick={() => toggleAssetExpand(building.id)}
                     >
@@ -594,9 +595,9 @@ export default function ControlRoomFilters({
           height: 32,
           borderRadius: '6px',
           backgroundColor: 'white',
-          border: '1px solid #d0d0d0',
+          border: `1px solid ${colors.borderPrimary}`,
           boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-          '&:hover': { backgroundColor: '#f5f5f5' },
+          '&:hover': { backgroundColor: colors.bgPrimaryHover },
           '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500 }
         }}
       />

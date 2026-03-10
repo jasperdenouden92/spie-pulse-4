@@ -1,5 +1,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
+import { colors } from '@/colors';
 
 export type ToggleState = 'on' | 'off' | 'inherited';
 
@@ -14,10 +15,10 @@ export default function KPIToggle({ state, size = 'medium', onClick }: KPIToggle
   const dims = size === 'small' ? { width: 28, height: 16, knob: 12, offset: 2 } : { width: 34, height: 18, knob: 14, offset: 2 };
 
   const bgColor = state === 'on'
-    ? '#1976d2'
+    ? colors.brand
     : state === 'inherited'
       ? '#b0bec5'
-      : '#e0e0e0';
+      : colors.borderSecondary;
 
   const knobColor = state === 'on'
     ? '#fff'

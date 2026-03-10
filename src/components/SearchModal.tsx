@@ -22,6 +22,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
+import { colors } from '@/colors';
 
 interface SearchModalProps {
   open: boolean;
@@ -139,8 +140,8 @@ const rowSx = (active?: boolean) => ({
   py: 1.25,
   borderRadius: 1,
   cursor: 'pointer',
-  bgcolor: active ? '#f5f5f5' : 'transparent',
-  '&:hover': { bgcolor: '#f5f5f5' },
+  bgcolor: active ? colors.bgPrimaryHover : 'transparent',
+  '&:hover': { bgcolor: colors.bgPrimaryHover },
 });
 
 const PREVIEW_WIDTH = 400;
@@ -203,7 +204,7 @@ function PerformanceBar({ green, yellow, red }: { green: number; yellow: number;
           {green}%
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: '#f5f5f5' }}>
+      <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover }}>
         <Box sx={{ width: `${green}%`, bgcolor: '#4caf50' }} />
         <Box sx={{ width: `${yellow}%`, bgcolor: '#ffc107' }} />
         <Box sx={{ width: `${red}%`, bgcolor: '#f44336' }} />
@@ -228,7 +229,7 @@ function BuildingPreviewCard({ result }: { result: SearchResult }) {
           backgroundImage: result.image ? `url(${result.image})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          bgcolor: result.image ? undefined : '#e0e0e0',
+          bgcolor: result.image ? undefined : colors.borderSecondary,
         }}
       />
       <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -288,27 +289,27 @@ const dashboardIdMap: Record<string, string> = {
 const dashboardSparklines: Record<string, { data: number[]; color: string }> = {
   // Sustainability
   'Gebouwtrend': { data: [72, 74, 71, 76, 78, 75, 80, 77, 82, 79, 81, 83], color: '#4caf50' },
-  'Energieverbruik per gebouw': { data: [42, 38, 45, 52, 48, 55, 50, 47, 53, 49, 44, 41], color: '#1976d2' },
+  'Energieverbruik per gebouw': { data: [42, 38, 45, 52, 48, 55, 50, 47, 53, 49, 44, 41], color: colors.brand },
   'Totaalverbruik en -opwekking': { data: [120, 115, 130, 125, 140, 135, 128, 142, 138, 145, 132, 127], color: '#f44336' },
   'Kosten en CO₂': { data: [8500, 8200, 9100, 8800, 9500, 9200, 8700, 9300, 8900, 9600, 9000, 8600], color: '#ff9800' },
-  'Week- en dagprofielen': { data: [35, 55, 80, 95, 90, 85, 75, 70, 82, 88, 60, 40], color: '#1976d2' },
+  'Week- en dagprofielen': { data: [35, 55, 80, 95, 90, 85, 75, 70, 82, 88, 60, 40], color: colors.brand },
   'Prognose en doelstelling': { data: [92, 88, 95, 90, 87, 93, 96, 91, 89, 94, 97, 95], color: '#4caf50' },
-  'Metertrend': { data: [310, 295, 320, 305, 335, 315, 300, 325, 310, 340, 320, 308], color: '#1976d2' },
-  'Energie vs buitentemperatuur': { data: [180, 160, 140, 110, 80, 55, 45, 50, 75, 120, 155, 175], color: '#1976d2' },
+  'Metertrend': { data: [310, 295, 320, 305, 335, 315, 300, 325, 310, 340, 320, 308], color: colors.brand },
+  'Energie vs buitentemperatuur': { data: [180, 160, 140, 110, 80, 55, 45, 50, 75, 120, 155, 175], color: colors.brand },
   // Comfort
   'Comfort gebouwoverzicht': { data: [21, 21.5, 22, 22.5, 23, 22.8, 22, 21.5, 22, 22.2, 21.8, 22.1], color: '#4caf50' },
   'Comforttrend': { data: [78, 80, 76, 82, 85, 83, 79, 81, 84, 82, 80, 83], color: '#4caf50' },
   'Adaptieve temperatuurgrenzen': { data: [20, 20.5, 21, 22, 23, 24, 24.5, 24, 23, 21.5, 20.5, 20], color: '#ff9800' },
   'Frisse Scholen': { data: [680, 720, 850, 920, 780, 650, 600, 710, 830, 900, 760, 690], color: '#2196f3' },
   'Instellingniveau overzicht': { data: [88, 90, 87, 92, 91, 89, 93, 90, 94, 92, 91, 93], color: '#4caf50' },
-  'KPI Comfortniveaus': { data: [75, 78, 74, 80, 82, 79, 77, 81, 83, 80, 78, 82], color: '#1976d2' },
+  'KPI Comfortniveaus': { data: [75, 78, 74, 80, 82, 79, 77, 81, 83, 80, 78, 82], color: colors.brand },
   'Luchtkwaliteit': { data: [520, 480, 550, 610, 490, 460, 500, 540, 580, 510, 470, 495], color: '#2196f3' },
   'KPI Comfortniveaus Ruimtetemperaturen': { data: [21.2, 21.5, 22, 22.3, 22.8, 22.5, 22, 21.8, 22.1, 22.4, 21.9, 22.2], color: '#ff9800' },
   // Asset Monitoring
   'Locatieniveau overzicht': { data: [88, 90, 87, 92, 94, 91, 93, 95, 92, 96, 94, 95], color: '#4caf50' },
-  'Workspace Pilot': { data: [45, 52, 48, 55, 60, 58, 62, 57, 65, 63, 60, 64], color: '#1976d2' },
+  'Workspace Pilot': { data: [45, 52, 48, 55, 60, 58, 62, 57, 65, 63, 60, 64], color: colors.brand },
   'Asset trend': { data: [85, 82, 88, 86, 90, 87, 84, 89, 91, 88, 86, 90], color: '#4caf50' },
-  'Warmte- koudeopslag (WKO)': { data: [12, 11, 14, 13, 10, 12, 15, 11, 13, 14, 12, 10], color: '#1976d2' },
+  'Warmte- koudeopslag (WKO)': { data: [12, 11, 14, 13, 10, 12, 15, 11, 13, 14, 12, 10], color: colors.brand },
   // Workspace
   'Overzicht benutting': { data: [62, 58, 70, 75, 68, 72, 65, 78, 74, 80, 71, 76], color: '#9c27b0' },
   // Other
@@ -318,7 +319,7 @@ const dashboardSparklines: Record<string, { data: number[]; color: string }> = {
   'KPI Gasverbruik per jaar': { data: [180, 175, 168, 160, 155, 150, 148, 145, 140, 138, 135, 132], color: '#ff9800' },
   'KPI Gasverbruik per maand': { data: [28, 25, 20, 15, 10, 8, 7, 8, 12, 18, 24, 27], color: '#ff9800' },
   'Max Vermogen Check': { data: [85, 92, 88, 95, 90, 87, 93, 89, 96, 91, 88, 94], color: '#f44336' },
-  'Stroomtangen': { data: [220, 215, 230, 225, 240, 235, 228, 242, 238, 245, 232, 227], color: '#1976d2' },
+  'Stroomtangen': { data: [220, 215, 230, 225, 240, 235, 228, 242, 238, 245, 232, 227], color: colors.brand },
 };
 
 function MiniSparkline({ data, color, width = 140, height = 32 }: { data: number[]; color: string; width?: number; height?: number }) {
@@ -347,7 +348,7 @@ function MiniSparkline({ data, color, width = 140, height = 32 }: { data: number
 }
 
 function DashboardPreviewCard({ result }: { result: SearchResult }) {
-  const sparkline = dashboardSparklines[result.title] ?? { data: [50, 55, 52, 58, 60, 57, 62, 59, 64, 61, 63, 65], color: '#1976d2' };
+  const sparkline = dashboardSparklines[result.title] ?? { data: [50, 55, 52, 58, 60, 57, 62, 59, 64, 61, 63, 65], color: colors.brand };
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box sx={{ flex: 1, px: 2.5, pt: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -369,7 +370,7 @@ function DashboardPreviewCard({ result }: { result: SearchResult }) {
 
 function AISearchPreviewCard({ query }: { query: string }) {
   return (
-    <Box sx={{ bgcolor: '#f8f8f8', height: '100%', display: 'flex', flexDirection: 'column', p: 2.5, gap: 2 }}>
+    <Box sx={{ bgcolor: colors.bgPrimaryHover, height: '100%', display: 'flex', flexDirection: 'column', p: 2.5, gap: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <AutoAwesomeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
@@ -379,7 +380,7 @@ function AISearchPreviewCard({ query }: { query: string }) {
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {/* User message */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Box sx={{ bgcolor: '#1976d2', color: '#fff', px: 2, py: 1, borderRadius: '12px 12px 4px 12px', maxWidth: '85%' }}>
+          <Box sx={{ bgcolor: colors.brand, color: '#fff', px: 2, py: 1, borderRadius: '12px 12px 4px 12px', maxWidth: '85%' }}>
             <Typography variant="body2" sx={{ fontSize: '0.813rem' }}>
               {query}
             </Typography>
@@ -921,7 +922,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
             py: 1.5,
             borderTop: 1,
             borderColor: 'divider',
-            bgcolor: '#fafafa',
+            bgcolor: colors.bgSecondary,
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>

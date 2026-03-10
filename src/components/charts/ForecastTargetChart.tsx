@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -145,7 +146,7 @@ export default function ForecastTargetChart({ buildingName }: ForecastTargetChar
             axis: {
               domain: {
                 line: {
-                  stroke: '#e0e0e0',
+                  stroke: colors.borderSecondary,
                   strokeWidth: 1,
                 },
               },
@@ -158,7 +159,7 @@ export default function ForecastTargetChart({ buildingName }: ForecastTargetChar
             },
             grid: {
               line: {
-                stroke: '#f0f0f0',
+                stroke: colors.bgSecondaryHover,
                 strokeWidth: 1,
               },
             },

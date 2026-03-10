@@ -8,6 +8,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import Tooltip from '@mui/material/Tooltip';
+import { colors } from '@/colors';
 
 export interface Notification {
   id: string;
@@ -106,7 +107,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Inbox</Typography>
             {unreadCount > 0 && (
-              <Box sx={{ bgcolor: '#1976d2', color: '#fff', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '0.7rem', fontWeight: 700, lineHeight: 1.4, minWidth: 18, textAlign: 'center' }}>
+              <Box sx={{ bgcolor: colors.brand, color: '#fff', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '0.7rem', fontWeight: 700, lineHeight: 1.4, minWidth: 18, textAlign: 'center' }}>
                 {unreadCount}
               </Box>
             )}
@@ -172,9 +173,9 @@ function NotificationRow({ notification, onRead }: { notification: Notification;
         px: 2.5,
         py: 1.5,
         cursor: n.read ? 'default' : 'pointer',
-        borderBottom: '1px solid #f5f5f5',
+        borderBottom: `1px solid ${colors.bgPrimaryHover}`,
         bgcolor: n.read ? 'transparent' : 'rgba(25, 118, 210, 0.03)',
-        '&:hover': { bgcolor: n.read ? '#fafafa' : 'rgba(25, 118, 210, 0.06)' },
+        '&:hover': { bgcolor: n.read ? colors.bgSecondary : 'rgba(25, 118, 210, 0.06)' },
         transition: 'background-color 0.15s ease',
       }}
     >
@@ -193,7 +194,7 @@ function NotificationRow({ notification, onRead }: { notification: Notification;
               {formatDate(n.date)}
             </Typography>
             {!n.read && (
-              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#1976d2', flexShrink: 0 }} />
+              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: colors.brand, flexShrink: 0 }} />
             )}
           </Box>
         </Box>

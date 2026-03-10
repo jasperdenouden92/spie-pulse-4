@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -59,7 +60,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
             width: 32,
             height: 32,
             borderRadius: '50%',
-            bgcolor: '#e3f2fd',
+            bgcolor: colors.bgActive,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -111,11 +112,11 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
             colors={(d) => {
               if (d.id === 'Upper Limit') return '#ef5350';
               if (d.id === 'Lower Limit') return '#42a5f5';
-              return '#1976d2';
+              return colors.brand;
             }}
             lineWidth={2}
             pointSize={6}
-            pointColor="#1976d2"
+            pointColor={colors.brand}
             pointBorderWidth={2}
             pointBorderColor="#fff"
             enableGridX={false}
@@ -126,10 +127,10 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
             areaOpacity={0.1}
             theme={{
               axis: {
-                domain: { line: { stroke: '#e0e0e0', strokeWidth: 1 } },
+                domain: { line: { stroke: colors.borderSecondary, strokeWidth: 1 } },
                 ticks: { text: { fontSize: 11, fill: '#666' } },
               },
-              grid: { line: { stroke: '#f0f0f0', strokeWidth: 1 } },
+              grid: { line: { stroke: colors.bgSecondaryHover, strokeWidth: 1 } },
             }}
           />
         </Box>
@@ -137,7 +138,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
         {/* Legend */}
         <Box sx={{ display: 'flex', gap: 2, mt: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#1976d2' }} />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: colors.brand }} />
             <Typography variant="caption">Temperature</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -167,7 +168,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
 
         {/* Progress bar */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ height: 40, bgcolor: '#1976d2', borderRadius: 1, position: 'relative' }}>
+          <Box sx={{ height: 40, bgcolor: colors.brand, borderRadius: 1, position: 'relative' }}>
             <Typography
               variant="caption"
               sx={{

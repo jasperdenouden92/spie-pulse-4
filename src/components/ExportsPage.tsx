@@ -13,6 +13,7 @@ import Chip from '@mui/material/Chip';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import { colors } from '@/colors';
 
 interface ExportItem {
   id: string;
@@ -78,16 +79,16 @@ export default function ExportsPage() {
           </Typography>
         </Box>
       ) : (
-        <TableContainer sx={{ bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
+        <TableContainer sx={{ bgcolor: 'white', borderRadius: 1, border: `1px solid ${colors.borderSecondary}` }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: '1px solid #e0e0e0' }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: '1px solid #e0e0e0' }}>Origin</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: '1px solid #e0e0e0' }}>Created</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: '1px solid #e0e0e0' }}>Format</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: '1px solid #e0e0e0' }}>Size</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: '1px solid #e0e0e0', width: 80 }} />
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Origin</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Created</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Format</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Size</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}`, width: 80 }} />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -98,7 +99,7 @@ export default function ExportsPage() {
                   onMouseLeave={() => setHoveredRow(null)}
                   sx={{
                     '&:last-child td': { borderBottom: 0 },
-                    '&:hover': { bgcolor: '#fafafa' },
+                    '&:hover': { bgcolor: colors.bgSecondary },
                     transition: 'background-color 0.15s ease',
                   }}
                 >

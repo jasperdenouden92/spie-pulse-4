@@ -16,6 +16,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { AssetNode } from '@/data/assetTree';
 import ControlRoomFilters from './ControlRoomFilters';
+import { colors } from '@/colors';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
@@ -159,7 +160,7 @@ export default function PageHeader({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#fafafa',
+        backgroundColor: colors.bgSecondary,
         zIndex: 1200,
         transition: 'left 0.3s ease, right 0.3s ease'
       }}

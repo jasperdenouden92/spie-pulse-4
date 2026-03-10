@@ -67,6 +67,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { colors } from '@/colors';
 
 interface Favorite {
   id: string;
@@ -125,10 +126,10 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
           paddingLeft: '4px',
           gap: 1,
           borderRadius: '6px',
-          backgroundColor: active ? '#e3f2fd' : 'transparent',
+          backgroundColor: active ? colors.bgActive : 'transparent',
           transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            backgroundColor: active ? '#d6ebf9' : '#f8f8f8',
+            backgroundColor: active ? colors.bgActiveHover : colors.bgPrimaryHover,
           },
           ...(hasChevron && {
             '&:hover .nav-icon': { opacity: 0 },
@@ -145,7 +146,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
             onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
             sx={{
               width: size, height: size,
-              bgcolor: active ? '#e3f2fd' : (iconBoxBgColor || '#f0f0f0'),
+              bgcolor: active ? colors.bgActive : (iconBoxBgColor || colors.bgSecondaryHover),
               borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0, position: 'relative', cursor: 'pointer',
             }}
@@ -167,7 +168,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
         ) : (
           <Box sx={{
             width: size, height: size,
-            bgcolor: active ? '#e3f2fd' : (iconBoxBgColor || '#f0f0f0'),
+            bgcolor: active ? colors.bgActive : (iconBoxBgColor || colors.bgSecondaryHover),
             borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0, color: isAccent ? accentColor : undefined,
           }}>
@@ -183,7 +184,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
           }}
         />
         {shortcut && (
-          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
+          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: colors.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
             {shortcut}
           </Typography>
         )}
@@ -602,7 +603,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           {/* ACME Corp section - aligns with PageHeader breadcrumb */}
           <Box sx={{ height: 56, display: 'flex', alignItems: 'center', px: 2, flexShrink: 0 }}>
             <Box
-              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: '#f5f5f5' } }}
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
               onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
             >
               <Box
@@ -774,7 +775,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           {/* Drag handle — resize favorites vs nav */}
             <Box
               onMouseDown={handleSectionResize}
-              sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: '#f5f5f5' }, '&:hover .resize-icon': { opacity: 0.6 } }}
+              sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: colors.bgPrimaryHover }, '&:hover .resize-icon': { opacity: 0.6 } }}
             >
               <Box className="resize-icon" sx={{ opacity: 0.2, lineHeight: 0, transition: 'opacity 0.15s' }}>
                 <DragIndicatorIcon sx={{ fontSize: 14, color: 'text.secondary', transform: 'rotate(90deg)' }} />
@@ -808,9 +809,9 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onNotificationsPanelToggle?.()}
-                    sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                    sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
                   >
-                    <Box sx={{ width: 28, height: 28, bgcolor: notificationsPanelOpen ? '#e0e0e0' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Box sx={{ width: 28, height: 28, bgcolor: notificationsPanelOpen ? colors.borderSecondary : colors.bgSecondaryHover, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                         <NotificationsOutlinedIcon sx={{ fontSize: 16 }} />
                       </Badge>
@@ -819,8 +820,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: '#f5f5f5' } }}>
-                    <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ListItemButton sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}>
+                    <Box sx={{ width: 28, height: 28, bgcolor: colors.bgSecondaryHover, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <HelpOutlineIcon sx={{ fontSize: 16 }} />
                     </Box>
                     <ListItemText primary="Help" primaryTypographyProps={{ variant: 'body2' }} />
@@ -833,7 +834,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       setUserAnchorEl(e.currentTarget);
                     }}
                     onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                    sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: '#f5f5f5' } }}
+                    sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
                   >
                     <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                     <ListItemText primary="Account" primaryTypographyProps={{ variant: 'body2' }} />
@@ -873,7 +874,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               primaryTypographyProps={{ variant: 'body2', fontSize: '0.875rem' }}
               sx={{ flex: 1 }}
             />
-            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
+            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: colors.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
               Press {item.key}
             </Typography>
           </MenuItem>
@@ -888,7 +889,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title={selectedCustomer} placement="right">
               <IconButton
                 onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
               >
                 <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
@@ -913,7 +914,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Search  [F]" placement="right">
               <IconButton
                 onClick={() => setSearchModalOpen(true)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
               >
                 <SearchIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -923,7 +924,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Home" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('home')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'home' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'home' ? '#e8e8e8' : colors.bgPrimaryHover } }}
               >
                 <HomeOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -938,7 +939,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   setCollapsedControlRoomAnchor(e.currentTarget);
                 }}
                 onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'control-room', setCollapsedControlRoomAnchor)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio' ? '#e8e8e8' : colors.bgPrimaryHover } }}
               >
                 <MonitorHeartOutlined sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1001,7 +1002,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Insights" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('insights')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'insights' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'insights' ? '#e8e8e8' : colors.bgPrimaryHover } }}
               >
                 <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1010,7 +1011,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Dashboards" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('dashboards')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'dashboards' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'dashboards' ? '#e8e8e8' : colors.bgPrimaryHover } }}
               >
                 <DashboardOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1019,7 +1020,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Portfolio" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('portfolio_overview')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio_overview' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio_overview' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? '#e8e8e8' : colors.bgPrimaryHover } }}
               >
                 <ApartmentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1034,7 +1035,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   setCollapsedOperationsAnchor(e.currentTarget);
                 }}
                 onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'operations', setCollapsedOperationsAnchor)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage?.startsWith('operations') ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage?.startsWith('operations') ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage?.startsWith('operations') ? '#e8e8e8' : colors.bgPrimaryHover } }}
               >
                 <HandymanOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1081,7 +1082,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="BMS" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('bms')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'bms' ? '#e8e8e8' : '#f5f5f5' } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'bms' ? '#e8e8e8' : colors.bgPrimaryHover } }}
               >
                 <SettingsInputComponentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1093,7 +1094,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Tooltip title="Notifications" placement="right">
                 <IconButton
                   onClick={() => onNotificationsPanelToggle?.()}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: '#f5f5f5' } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
                 >
                   <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                     <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
@@ -1101,7 +1102,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </IconButton>
               </Tooltip>
               <Tooltip title="Help" placement="right">
-                <IconButton sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}>
+                <IconButton sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
                   <HelpOutlineIcon sx={{ fontSize: 18 }} />
                 </IconButton>
               </Tooltip>
@@ -1112,7 +1113,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     setUserAnchorEl(e.currentTarget);
                   }}
                   onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: '#f5f5f5' } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
                 >
                   <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                 </IconButton>
@@ -1135,8 +1136,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             selected={selectedCustomer === customer.name}
             sx={{
               display: 'flex', gap: 1, py: 0.75, px: 1.5, mx: 0.5, borderRadius: '6px',
-              '&:hover': { backgroundColor: '#f5f5f5' },
-              '&.Mui-selected': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#d6ebf9' } }
+              '&:hover': { backgroundColor: colors.bgPrimaryHover },
+              '&.Mui-selected': { backgroundColor: colors.bgActive, '&:hover': { backgroundColor: colors.bgActiveHover } }
             }}
           >
             <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

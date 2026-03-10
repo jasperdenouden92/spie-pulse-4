@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -200,7 +201,7 @@ export default function CriticalAssetsCard({
               border: 1,
               borderColor: 'divider',
               borderRadius: 1,
-              bgcolor: '#fafafa',
+              bgcolor: colors.bgSecondary,
               outline: isInspectMode && hoveredAssetId === asset.id ? '3px dashed #1976d2' : 'none',
               outlineOffset: '4px',
               transition: 'outline 0.2s ease, background-color 0.2s ease',
@@ -208,7 +209,7 @@ export default function CriticalAssetsCard({
               zIndex: isInspectMode && hoveredAssetId === asset.id ? 1100 : 'auto',
               cursor: isInspectMode ? 'pointer' : 'default',
               '&:hover': {
-                bgcolor: isInspectMode ? '#f5f5f5' : '#f5f5f5',
+                bgcolor: isInspectMode ? colors.bgPrimaryHover : colors.bgPrimaryHover,
                 cursor: isInspectMode ? 'pointer' : 'pointer'
               }
             }}

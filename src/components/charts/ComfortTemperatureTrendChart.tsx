@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -45,7 +46,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
             width: 32,
             height: 32,
             borderRadius: '50%',
-            bgcolor: '#e3f2fd',
+            bgcolor: colors.bgActive,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -107,10 +108,10 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
             enableArea={false}
             theme={{
               axis: {
-                domain: { line: { stroke: '#e0e0e0', strokeWidth: 1 } },
+                domain: { line: { stroke: colors.borderSecondary, strokeWidth: 1 } },
                 ticks: { text: { fontSize: 11, fill: '#666' } },
               },
-              grid: { line: { stroke: '#f0f0f0', strokeWidth: 1 } },
+              grid: { line: { stroke: colors.bgSecondaryHover, strokeWidth: 1 } },
             }}
           />
         </Box>
@@ -143,7 +144,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
 
         {/* Progress bar */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ height: 40, bgcolor: '#1976d2', borderRadius: 1, position: 'relative' }}>
+          <Box sx={{ height: 40, bgcolor: colors.brand, borderRadius: 1, position: 'relative' }}>
             <Typography
               variant="caption"
               sx={{

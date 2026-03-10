@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -59,15 +60,15 @@ const generateMockData = (): AssetUtilization[] => {
 };
 
 const getUtilizationColor = (level: UtilizationLevel): string => {
-  const colors = [
-    '#f5f5f5', // 0 - No utilization
+  const scale = [
+    colors.bgPrimaryHover, // 0 - No utilization
     '#bbdefb', // 1 - Very low
     '#64b5f6', // 2 - Low
     '#2196f3', // 3 - Medium
-    '#1976d2', // 4 - High
+    colors.brand, // 4 - High
     '#0d47a1'  // 5 - Very high
   ];
-  return colors[level];
+  return scale[level];
 };
 
 const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];

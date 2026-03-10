@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -106,7 +107,7 @@ export default function ElectricityConsumptionChart({ buildingName }: Electricit
             axis: {
               domain: {
                 line: {
-                  stroke: '#e0e0e0',
+                  stroke: colors.borderSecondary,
                   strokeWidth: 1,
                 },
               },
@@ -119,7 +120,7 @@ export default function ElectricityConsumptionChart({ buildingName }: Electricit
             },
             grid: {
               line: {
-                stroke: '#f0f0f0',
+                stroke: colors.bgSecondaryHover,
                 strokeWidth: 1,
               },
             },

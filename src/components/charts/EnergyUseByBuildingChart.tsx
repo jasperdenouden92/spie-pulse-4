@@ -1,3 +1,4 @@
+import { colors } from '@/colors';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -54,7 +55,7 @@ export default function EnergyUseByBuildingChart({ buildingName }: EnergyUseByBu
             px: 1.5,
             py: 0.5,
             borderRadius: '6px',
-            bgcolor: '#f5f5f5',
+            bgcolor: colors.bgPrimaryHover,
             cursor: 'pointer',
             '&:hover': {
               bgcolor: '#e8e8e8'
@@ -111,7 +112,7 @@ export default function EnergyUseByBuildingChart({ buildingName }: EnergyUseByBu
             axis: {
               domain: {
                 line: {
-                  stroke: '#e0e0e0',
+                  stroke: colors.borderSecondary,
                   strokeWidth: 1,
                 },
               },
