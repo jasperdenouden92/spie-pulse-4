@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { AssetNode } from '@/data/assetTree';
+import ControlRoomFilters from './ControlRoomFilters';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
@@ -433,8 +434,15 @@ export default function PageHeader({
         )}
       </Box>
 
-      {/* Right: Export + Favorite */}
-      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+      {/* Right: Filters + Export + Favorite */}
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        {/* Filters — only on Control Room without a building selected */}
+        {currentPage === 'portfolio' && !selectedBuilding && (
+          <ControlRoomFilters
+            selectedDateRange={selectedDateRangeProp}
+            onDateRangeChange={onDateRangeChange}
+          />
+        )}
         {/* Export Button — only on Control Room */}
         {currentPage === 'portfolio' && (
           <Button

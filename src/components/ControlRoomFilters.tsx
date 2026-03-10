@@ -131,7 +131,7 @@ export default function ControlRoomFilters({
   };
 
   return (
-    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 2 }}>
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
       {/* Buildings Filter */}
       <Chip
         label={getBuildingFilterLabel()}
