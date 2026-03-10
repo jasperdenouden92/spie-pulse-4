@@ -63,7 +63,7 @@ import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod } from '@/data/metrics';
-import { sortBuildingsByMetric, Building, buildings as allBuildings } from '@/data/buildings';
+import { sortBuildingsByMetric, sortBuildingsByTrend, Building, buildings as allBuildings } from '@/data/buildings';
 import { motion, AnimatePresence } from 'framer-motion';
 import TicketsList from '@/components/TicketsList';
 import QuotationsList from '@/components/QuotationsList';
@@ -512,6 +512,13 @@ export default function Home() {
   // Sort buildings based on selected metric and sort order
   const sortedBuildings = useMemo(() => {
     const metricForSort = selectedMetric === 'overall' ? 'overall' : selectedMetric;
+
+    if (sortOrder === 'Most Improved') {
+      return sortBuildingsByTrend(metricForSort, 'improved');
+    } else if (sortOrder === 'Most Deteriorated') {
+      return sortBuildingsByTrend(metricForSort, 'deteriorated');
+    }
+
     const buildings = sortBuildingsByMetric(metricForSort);
 
     if (sortOrder === 'Best to Worst') {
@@ -1781,6 +1788,8 @@ export default function Home() {
                             >
                               <MenuItem onClick={() => { setSortOrder('Worst to Best'); setSortAnchorEl(null); }}>Worst to Best</MenuItem>
                               <MenuItem onClick={() => { setSortOrder('Best to Worst'); setSortAnchorEl(null); }}>Best to Worst</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('Most Improved'); setSortAnchorEl(null); }}>Most Improved</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('Most Deteriorated'); setSortAnchorEl(null); }}>Most Deteriorated</MenuItem>
                               <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
                               <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
                             </Menu>
@@ -1925,6 +1934,8 @@ export default function Home() {
                                     overallPerformance={b.metrics.overall}
                                     showOverall={selectedMetric !== 'overall'}
                                     operationalStats={operationalStats}
+                                    trend={b.trends[selectedMetric]}
+                                    periodLabel={periodMetrics.periodLabel}
                                   />
                                 </motion.div>
                               );

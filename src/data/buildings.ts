@@ -4,6 +4,8 @@ export interface PerformanceMetric {
   red: number;
 }
 
+export type MetricKeys = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
+
 export interface Building {
   name: string;
   address: string;
@@ -11,20 +13,35 @@ export interface Building {
   group: string;
   image: string;
   performance: PerformanceMetric;
-  metrics: {
-    overall: PerformanceMetric;
-    sustainability: PerformanceMetric;
-    comfort: PerformanceMetric;
-    asset_monitoring: PerformanceMetric;
-    tickets: PerformanceMetric;
-    quotations: PerformanceMetric;
-    maintenance: PerformanceMetric;
-    energy: PerformanceMetric;
-    workspace: PerformanceMetric;
-    compliance: PerformanceMetric;
-    water_management: PerformanceMetric;
-    security_systems: PerformanceMetric;
-    access_control: PerformanceMetric;
+  metrics: Record<MetricKeys, PerformanceMetric>;
+  trends: Record<MetricKeys, number>;
+}
+
+// Seeded random for deterministic trend generation (xorshift32 for better distribution)
+function seededRandom(seed: number): () => number {
+  // Mix the seed to avoid clustering with similar inputs
+  let s = seed ^ 0xDEADBEEF;
+  s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+  s = Math.imul(s ^ (s >>> 13), 0x45d9f3b);
+  s = (s ^ (s >>> 16)) >>> 0;
+  if (s === 0) s = 1;
+  return () => {
+    s ^= s << 13;
+    s ^= s >>> 17;
+    s ^= s << 5;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+function genTrends(seed: number): Record<MetricKeys, number> {
+  const rng = seededRandom(seed);
+  // Range centered around 0: roughly -15 to +20, with good spread
+  const gen = () => Math.round((rng() * 35 - 15) * 10) / 10;
+  return {
+    overall: gen(), sustainability: gen(), comfort: gen(), asset_monitoring: gen(),
+    tickets: gen(), quotations: gen(), maintenance: gen(), energy: gen(),
+    workspace: gen(), compliance: gen(), water_management: gen(),
+    security_systems: gen(), access_control: gen(),
   };
 }
 
@@ -37,7 +54,7 @@ function genMetric(baseGreen: number, variance: number = 8): PerformanceMetric {
   return { green, yellow, red };
 }
 
-const buildingsData: Building[] = [
+const buildingsData: Omit<Building, 'trends'>[] = [
   { name: 'Skyline Plaza', address: '123 Main St, Cityville', city: 'Amsterdam', group: 'Noord', image: '/images/Media-1.png', performance: { green: 65, yellow: 20, red: 15 }, metrics: { overall: { green: 65, yellow: 20, red: 15 }, sustainability: { green: 72, yellow: 18, red: 10 }, comfort: { green: 68, yellow: 22, red: 10 }, asset_monitoring: { green: 60, yellow: 25, red: 15 }, tickets: { green: 55, yellow: 30, red: 15 }, quotations: { green: 70, yellow: 20, red: 10 }, maintenance: { green: 45, yellow: 35, red: 20 }, energy: genMetric(68), workspace: genMetric(62), compliance: genMetric(75), water_management: genMetric(58), security_systems: genMetric(70), access_control: genMetric(64) } },
   { name: 'Innovation Hub', address: '45 Tech Drive, Silicon Valley', city: 'Eindhoven', group: 'Noord', image: '/images/Media-2.png', performance: { green: 60, yellow: 25, red: 15 }, metrics: { overall: { green: 60, yellow: 25, red: 15 }, sustainability: { green: 68, yellow: 22, red: 10 }, comfort: { green: 65, yellow: 25, red: 10 }, asset_monitoring: { green: 58, yellow: 27, red: 15 }, tickets: { green: 50, yellow: 30, red: 20 }, quotations: { green: 62, yellow: 23, red: 15 }, maintenance: { green: 57, yellow: 28, red: 15 }, energy: genMetric(64), workspace: genMetric(60), compliance: genMetric(72), water_management: genMetric(55), security_systems: genMetric(66), access_control: genMetric(61) } },
   { name: 'Harmony Estates', address: '789 Serenity Lane, Pleasantville', city: 'Utrecht', group: 'Noord', image: '/images/Media-3.png', performance: { green: 55, yellow: 30, red: 15 }, metrics: { overall: { green: 55, yellow: 30, red: 15 }, sustainability: { green: 80, yellow: 12, red: 8 }, comfort: { green: 75, yellow: 15, red: 10 }, asset_monitoring: { green: 45, yellow: 35, red: 20 }, tickets: { green: 26, yellow: 40, red: 34 }, quotations: { green: 52, yellow: 30, red: 18 }, maintenance: { green: 48, yellow: 32, red: 20 }, energy: genMetric(76), workspace: genMetric(70), compliance: genMetric(82), water_management: genMetric(65), security_systems: genMetric(78), access_control: genMetric(72) } },
@@ -66,16 +83,36 @@ const buildingsData: Building[] = [
   { name: 'Prism Complex', address: '1414 Spectrum Rd, Color District', city: 'Eindhoven', group: 'West', image: '/images/Media-2.png', performance: { green: 75, yellow: 15, red: 10 }, metrics: { overall: { green: 75, yellow: 15, red: 10 }, sustainability: { green: 78, yellow: 14, red: 8 }, comfort: { green: 76, yellow: 14, red: 10 }, asset_monitoring: { green: 73, yellow: 17, red: 10 }, tickets: { green: 74, yellow: 16, red: 10 }, quotations: { green: 75, yellow: 15, red: 10 }, maintenance: { green: 77, yellow: 13, red: 10 }, energy: genMetric(76), workspace: genMetric(74), compliance: genMetric(80), water_management: genMetric(72), security_systems: genMetric(78), access_control: genMetric(75) } },
 ];
 
+// Add deterministic trends to each building
+const buildingsWithTrends: Building[] = buildingsData.map((b, i) => ({
+  ...b,
+  trends: genTrends(i * 137 + 42),
+}));
+
 // Export the raw building data
-export const buildings = buildingsData;
+export const buildings = buildingsWithTrends;
 
 // Sort buildings by a specific metric (worst to best: lower green = worse)
 export const sortBuildingsByMetric = (
   metric: keyof Building['metrics']
 ): Building[] => {
-  return [...buildingsData].sort((a, b) => {
+  return [...buildingsWithTrends].sort((a, b) => {
     const scoreA = a.metrics[metric].green;
     const scoreB = b.metrics[metric].green;
     return scoreA - scoreB; // Ascending order: worst (lowest green) to best (highest green)
+  });
+};
+
+// Sort buildings by trend (most improved or most deteriorated)
+export const sortBuildingsByTrend = (
+  metric: keyof Building['metrics'],
+  direction: 'improved' | 'deteriorated'
+): Building[] => {
+  return [...buildingsWithTrends].sort((a, b) => {
+    const trendA = a.trends[metric];
+    const trendB = b.trends[metric];
+    return direction === 'improved'
+      ? trendB - trendA  // Highest positive trend first
+      : trendA - trendB; // Most negative trend first
   });
 };
