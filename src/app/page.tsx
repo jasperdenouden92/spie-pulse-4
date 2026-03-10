@@ -357,18 +357,14 @@ export default function Home() {
 
   const inlineDropdownSx = {
     display: 'inline-flex',
-    alignItems: 'center',
+    alignItems: 'baseline',
     gap: '2px',
     cursor: 'pointer',
     fontWeight: 600,
-    borderBottom: '1.5px dashed',
-    borderColor: 'text.disabled',
-    pb: '1px',
-    lineHeight: 1.4,
-    transition: 'all 0.2s ease',
+    color: 'primary.main',
+    transition: 'opacity 0.2s ease',
     '&:hover': {
-      borderColor: 'primary.main',
-      color: 'primary.main',
+      opacity: 0.7,
     },
   };
 
@@ -1192,14 +1188,30 @@ export default function Home() {
                   {!selectedBuilding && (
                     <Box sx={{ mb: 3 }}>
                       <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                        Showing
+                        Showing {({
+                          overall: 'overall performance',
+                          themes_group: 'theme KPIs',
+                          operations_group: 'operational KPIs',
+                          sustainability: 'sustainability',
+                          comfort: 'comfort',
+                          asset_monitoring: 'asset monitoring',
+                          tickets: 'tickets',
+                          quotations: 'quotations',
+                          maintenance: 'maintenance',
+                          energy: 'energy',
+                          workspace: 'workspace',
+                          compliance: 'compliance',
+                          water_management: 'water management',
+                          security_systems: 'security systems',
+                          access_control: 'access control',
+                        } as Record<string, string>)[selection] ?? 'overall performance'} of
                         <Box
                           component="span"
                           onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
                           sx={inlineDropdownSx}
                         >
                           {getPeriodDisplayLabel(dateRange)}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 18, ml: '1px' }} />
+                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
                         </Box>
                         for
                         <Box
@@ -1208,7 +1220,7 @@ export default function Home() {
                           sx={inlineDropdownSx}
                         >
                           {getTitleBuildingLabel()}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 18, ml: '1px' }} />
+                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
                         </Box>
                       </Typography>
 
