@@ -364,7 +364,7 @@ const DASHBOARD_THEMES: ThemeGroup[] = [
 ];
 
 interface DashboardsPageProps {
-  onDashboardChange?: (dashboardId: string) => void;
+  onDashboardChange?: (dashboardId: string, dashboardLabel: string) => void;
 }
 
 export default function DashboardsPage({ onDashboardChange }: DashboardsPageProps) {
@@ -375,7 +375,8 @@ export default function DashboardsPage({ onDashboardChange }: DashboardsPageProp
 
   // Notify parent of dashboard selection changes
   useEffect(() => {
-    onDashboardChange?.(selectedId);
+    const dashboard = DASHBOARD_THEMES.flatMap(g => g.dashboards).find(d => d.id === selectedId);
+    onDashboardChange?.(selectedId, dashboard?.label ?? '');
   }, [selectedId, onDashboardChange]);
 
   const toggleGroup = (key: string) => {
