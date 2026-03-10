@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface SearchModalProps {
   open: boolean;
   onClose: () => void;
+  onNavigate?: (page: string, dashboardId?: string) => void;
 }
 
 interface SearchResult {
@@ -144,6 +145,24 @@ const rowSx = (active?: boolean) => ({
 
 const PREVIEW_WIDTH = 400;
 
+const kbdSx = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: 20,
+  height: 20,
+  px: 0.5,
+  fontSize: '0.625rem',
+  fontFamily: 'inherit',
+  fontWeight: 600,
+  color: 'text.secondary',
+  bgcolor: '#fff',
+  border: '1px solid',
+  borderColor: 'divider',
+  borderRadius: '4px',
+  lineHeight: 1,
+};
+
 const typeLabels: Record<string, string> = {
   building: 'Building',
   asset: 'Asset',
@@ -232,6 +251,38 @@ function BuildingPreviewCard({ result }: { result: SearchResult }) {
     </Box>
   );
 }
+
+// Map dashboard titles to DashboardsPage IDs
+const dashboardIdMap: Record<string, string> = {
+  'Gebouwtrend': 'gebouwtrend',
+  'Energieverbruik per gebouw': 'energieverbruik_per_gebouw',
+  'Totaalverbruik en -opwekking': 'totaalverbruik_opwekking',
+  'Kosten en CO\u2082': 'kosten_co2',
+  'Week- en dagprofielen': 'week_dagprofielen',
+  'Prognose en doelstelling': 'prognose_doelstelling',
+  'Metertrend': 'metertrend',
+  'Energie vs buitentemperatuur': 'energie_buitentemperatuur',
+  'Comfort gebouwoverzicht': 'comfort_gebouwoverzicht',
+  'Comforttrend': 'comforttrend',
+  'Adaptieve temperatuurgrenzen': 'adaptieve_temperatuurgrenzen',
+  'Frisse Scholen': 'frisse_scholen',
+  'Instellingniveau overzicht': 'instellingniveau_overzicht',
+  'KPI Comfortniveaus': 'kpi_comfortniveaus_luchtkwaliteit',
+  'Luchtkwaliteit': 'kpi_comfortniveaus_luchtkwaliteit',
+  'KPI Comfortniveaus Ruimtetemperaturen': 'kpi_comfortniveaus_ruimtetemperaturen',
+  'Locatieniveau overzicht': 'locatieniveau_overzicht',
+  'Workspace Pilot': 'workspace_pilot',
+  'Asset trend': 'asset_trend',
+  'Warmte- koudeopslag (WKO)': 'warmte_koudeopslag',
+  'Overzicht benutting': 'overzicht_benutting',
+  'Bijwerkdatum Meetdata': 'bijwerkdatum_meetdata',
+  'CO\u2082-reductie': 'co2_reductie',
+  'KPI CO\u2082-uitstoot': 'kpi_co2_uitstoot',
+  'KPI Gasverbruik per jaar': 'kpi_gasverbruik_jaar',
+  'KPI Gasverbruik per maand': 'kpi_gasverbruik_maand',
+  'Max Vermogen Check': 'max_vermogen_check',
+  'Stroomtangen': 'stroomtangen',
+};
 
 // Mini sparkline data per dashboard (single sparkline each)
 const dashboardSparklines: Record<string, { data: number[]; color: string }> = {
@@ -412,7 +463,7 @@ function PreviewSkeleton() {
   );
 }
 
-export default function SearchModal({ open, onClose }: SearchModalProps) {
+export default function SearchModal({ open, onClose, onNavigate }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filterType, setFilterType] = useState<string>('all');
@@ -530,6 +581,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       const filtered = prev.filter((r) => r.id !== result.id);
       return [{ ...result, searchedAt: new Date() }, ...filtered];
     });
+    if (result.type === 'dashboard') {
+      onNavigate?.('dashboards', dashboardIdMap[result.title]);
+    }
+    handleClose();
   };
 
   const handleClose = () => {
@@ -854,6 +909,42 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             {isAICardActive ? <AISearchPreviewCard query={searchQuery} /> : previewResult ? <PreviewCard result={previewResult} /> : <PreviewSkeleton />}
           </Paper>
         </Box>
+        </Box>
+
+        {/* Keyboard shortcuts bar */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2.5,
+            px: 2.5,
+            py: 1.5,
+            borderTop: 1,
+            borderColor: 'divider',
+            bgcolor: '#fafafa',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Box sx={{ display: 'flex', gap: 0.25 }}>
+              <Box component="kbd" sx={kbdSx}>↑</Box>
+              <Box component="kbd" sx={kbdSx}>↓</Box>
+            </Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>
+              Navigate
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Box component="kbd" sx={kbdSx}>↵</Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>
+              Open
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Box component="kbd" sx={kbdSx}>Esc</Box>
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>
+              Close
+            </Typography>
+          </Box>
         </Box>
       </Paper>
     </Modal>

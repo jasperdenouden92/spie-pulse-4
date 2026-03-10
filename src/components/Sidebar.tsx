@@ -92,6 +92,7 @@ interface SidebarProps {
   notificationsPanelOpen?: boolean;
   onNotificationsPanelToggle?: () => void;
   hasUnreadNotifications?: boolean;
+  onDashboardNavigate?: (dashboardId: string) => void;
 }
 
 interface NavItemProps {
@@ -324,7 +325,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, onDashboardNavigate }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
@@ -1161,7 +1162,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Logout</MenuItem>
       </Popover>
-      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} onNavigate={(page, dashboardId) => { onPageChange?.(page as any); if (dashboardId) onDashboardNavigate?.(dashboardId); }} />
     </Box>
   );
 }

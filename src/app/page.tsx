@@ -238,6 +238,7 @@ export default function Home() {
   const [openedViaInspect, setOpenedViaInspect] = useState(false);
   const [activeDashboardId, setActiveDashboardId] = useState<string>('');
   const [activeDashboardLabel, setActiveDashboardLabel] = useState<string>('');
+  const [pendingDashboardId, setPendingDashboardId] = useState<string | null>(null);
 
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
@@ -737,6 +738,7 @@ export default function Home() {
           onToggleCollapse={handleLeftSidebarToggle}
           currentPage={currentPage}
           onPageChange={handlePageChange}
+          onDashboardNavigate={(id) => setPendingDashboardId(id)}
           onAssetExplorerToggle={() => {
             setIsAssetExplorerOpen(!isAssetExplorerOpen);
             if (!isAssetExplorerOpen && isInspectMode) {
@@ -1114,7 +1116,11 @@ export default function Home() {
 
         {/* Dashboards - full-bleed view with own sidebar */}
         {currentPage === 'dashboards' && (
-          <DashboardsPage onDashboardChange={(id, label) => { setActiveDashboardId(id); setActiveDashboardLabel(label); }} />
+          <DashboardsPage
+            initialDashboardId={pendingDashboardId}
+            onInitialDashboardConsumed={() => setPendingDashboardId(null)}
+            onDashboardChange={(id, label) => { setActiveDashboardId(id); setActiveDashboardLabel(label); }}
+          />
         )}
 
         {/* Page Content */}

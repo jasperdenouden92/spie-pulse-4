@@ -365,13 +365,34 @@ const DASHBOARD_THEMES: ThemeGroup[] = [
 
 interface DashboardsPageProps {
   onDashboardChange?: (dashboardId: string, dashboardLabel: string) => void;
+  initialDashboardId?: string | null;
+  onInitialDashboardConsumed?: () => void;
 }
 
-export default function DashboardsPage({ onDashboardChange }: DashboardsPageProps) {
-  const [selectedId, setSelectedId] = useState<string>(DASHBOARD_THEMES[0].dashboards[0].id);
+export default function DashboardsPage({ onDashboardChange, initialDashboardId, onInitialDashboardConsumed }: DashboardsPageProps) {
+  const [selectedId, setSelectedId] = useState<string>(
+    initialDashboardId ?? DASHBOARD_THEMES[0].dashboards[0].id
+  );
   const [expandedGroups, setExpandedGroups] = useState<string[]>(
     DASHBOARD_THEMES.map(g => g.themeKey)
   );
+
+  // Apply incoming dashboard navigation
+  useEffect(() => {
+    if (initialDashboardId) {
+      const exists = DASHBOARD_THEMES.flatMap(g => g.dashboards).some(d => d.id === initialDashboardId);
+      if (exists) {
+        setSelectedId(initialDashboardId);
+        // Expand the group containing this dashboard
+        const group = DASHBOARD_THEMES.find(g => g.dashboards.some(d => d.id === initialDashboardId));
+        if (group && !expandedGroups.includes(group.themeKey)) {
+          setExpandedGroups(prev => [...prev, group.themeKey]);
+        }
+      }
+      onInitialDashboardConsumed?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDashboardId]);
 
   // Notify parent of dashboard selection changes
   useEffect(() => {
