@@ -48,6 +48,7 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import { buildings, Building } from '@/data/buildings';
 import {
   DndContext,
@@ -82,8 +83,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports') => void;
+  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -756,6 +757,30 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton
+                onClick={() => onPageChange?.('dashboards')}
+                sx={{
+                  height: 40,
+                  paddingLeft: '4px',
+                  gap: 2,
+                  borderRadius: '5px',
+                  backgroundColor: currentPage === 'dashboards' ? '#f0f0f0' : 'transparent',
+                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    backgroundColor: currentPage === 'dashboards' ? '#e8e8e8' : '#f5f5f5'
+                  }
+                }}
+              >
+                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <DashboardOutlinedIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <ListItemText
+                  primary="Dashboards"
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton
                 onClick={() => onPageChange?.('portfolio_overview')}
                 sx={{
                   height: 40,
@@ -1119,6 +1144,15 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'insights' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'insights' ? '#e8e8e8' : '#f5f5f5' } }}
               >
                 <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Dashboards" placement="right">
+              <IconButton
+                onClick={() => onPageChange?.('dashboards')}
+                sx={{ width: 40, height: 40, borderRadius: '5px', bgcolor: currentPage === 'dashboards' ? '#f0f0f0' : 'transparent', '&:hover': { bgcolor: currentPage === 'dashboards' ? '#e8e8e8' : '#f5f5f5' } }}
+              >
+                <DashboardOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
 
