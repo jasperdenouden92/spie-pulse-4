@@ -282,22 +282,23 @@ export default function Home() {
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
-  const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
+  const [titleBuildingNames, setTitleBuildingNames] = useState<string[] | null>(null);
   const [titleBuildingSearch, setTitleBuildingSearch] = useState('');
 
   const titleAllGroups = useMemo(() => [...new Set(allBuildings.map(b => b.group))].sort(), []);
   const titleAllCities = useMemo(() => [...new Set(allBuildings.map(b => b.city))].sort(), []);
-  const titleAllSelected = titleBuildingNames.length === 0;
+  const titleAllSelected = titleBuildingNames === null;
 
   const getTitleBuildingLabel = () => {
     if (titleAllSelected) return 'all buildings';
-    return `${titleBuildingNames.length} building${titleBuildingNames.length !== 1 ? 's' : ''}`;
+    if (titleBuildingNames!.length === 0) return 'no buildings';
+    return `${titleBuildingNames!.length} building${titleBuildingNames!.length !== 1 ? 's' : ''}`;
   };
 
   const getTitleGroupState = (group: string): 'checked' | 'indeterminate' | 'unchecked' => {
     const names = allBuildings.filter(b => b.group === group).map(b => b.name);
     if (titleAllSelected) return 'checked';
-    const n = names.filter(n => titleBuildingNames.includes(n)).length;
+    const n = names.filter(n => titleBuildingNames!.includes(n)).length;
     if (n === names.length) return 'checked';
     if (n > 0) return 'indeterminate';
     return 'unchecked';
@@ -306,7 +307,7 @@ export default function Home() {
   const getTitleCityState = (city: string): 'checked' | 'indeterminate' | 'unchecked' => {
     const names = allBuildings.filter(b => b.city === city).map(b => b.name);
     if (titleAllSelected) return 'checked';
-    const n = names.filter(n => titleBuildingNames.includes(n)).length;
+    const n = names.filter(n => titleBuildingNames!.includes(n)).length;
     if (n === names.length) return 'checked';
     if (n > 0) return 'indeterminate';
     return 'unchecked';
@@ -316,11 +317,12 @@ export default function Home() {
     const groupNames = allBuildings.filter(b => b.group === group).map(b => b.name);
     const state = getTitleGroupState(group);
     if (state === 'checked') {
-      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames;
+      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
       setTitleBuildingNames(base.filter(n => !groupNames.includes(n)));
-    } else if (!titleAllSelected) {
-      const next = [...new Set([...titleBuildingNames, ...groupNames])];
-      setTitleBuildingNames(next.length === allBuildings.length ? [] : next);
+    } else {
+      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
+      const next = [...new Set([...base, ...groupNames])];
+      setTitleBuildingNames(next.length === allBuildings.length ? null : next);
     }
   };
 
@@ -328,22 +330,23 @@ export default function Home() {
     const cityNames = allBuildings.filter(b => b.city === city).map(b => b.name);
     const state = getTitleCityState(city);
     if (state === 'checked') {
-      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames;
+      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
       setTitleBuildingNames(base.filter(n => !cityNames.includes(n)));
-    } else if (!titleAllSelected) {
-      const next = [...new Set([...titleBuildingNames, ...cityNames])];
-      setTitleBuildingNames(next.length === allBuildings.length ? [] : next);
+    } else {
+      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
+      const next = [...new Set([...base, ...cityNames])];
+      setTitleBuildingNames(next.length === allBuildings.length ? null : next);
     }
   };
 
   const titleToggleBuilding = (name: string) => {
     if (titleAllSelected) {
       setTitleBuildingNames(allBuildings.map(b => b.name).filter(n => n !== name));
-    } else if (titleBuildingNames.includes(name)) {
-      setTitleBuildingNames(titleBuildingNames.filter(n => n !== name));
+    } else if (titleBuildingNames!.includes(name)) {
+      setTitleBuildingNames(titleBuildingNames!.filter(n => n !== name));
     } else {
-      const next = [...titleBuildingNames, name];
-      setTitleBuildingNames(next.length === allBuildings.length ? [] : next);
+      const next = [...titleBuildingNames!, name];
+      setTitleBuildingNames(next.length === allBuildings.length ? null : next);
     }
   };
 
@@ -1344,11 +1347,11 @@ export default function Home() {
                           <Typography variant="subtitle2" fontWeight={600}>Filter buildings</Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Typography variant="caption" color="text.secondary">
-                              {!titleAllSelected ? titleBuildingNames.length : allBuildings.length}/{allBuildings.length} selected
+                              {titleAllSelected ? allBuildings.length : titleBuildingNames!.length}/{allBuildings.length} selected
                             </Typography>
-                            {!titleAllSelected && (
-                              <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setTitleBuildingNames([])}>
-                                Clear all
+                            {(
+                              <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setTitleBuildingNames(titleAllSelected ? [] : null)}>
+                                {titleAllSelected ? 'Deselect all' : 'Select all'}
                               </Typography>
                             )}
                           </Box>
@@ -1414,7 +1417,7 @@ export default function Home() {
                             </Box>
                             <Box sx={{ flex: 1, overflowY: 'auto' }}>
                               {titleFilteredBuildings.map(b => {
-                                const isChecked = titleAllSelected || titleBuildingNames.includes(b.name);
+                                const isChecked = titleAllSelected || titleBuildingNames!.includes(b.name);
                                 return (
                                   <Box
                                     key={b.name}
