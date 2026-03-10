@@ -924,7 +924,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Home" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('home')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'home' ? '#e8e8e8' : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? colors.bgActive : 'transparent', color: currentPage === 'home' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'home' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <HomeOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -939,7 +939,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   setCollapsedControlRoomAnchor(e.currentTarget);
                 }}
                 onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'control-room', setCollapsedControlRoomAnchor)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio' ? '#e8e8e8' : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? colors.bgActive : 'transparent', color: currentPage === 'portfolio' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'portfolio' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <MonitorHeartOutlined sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1002,7 +1002,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Insights" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('insights')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'insights' ? '#e8e8e8' : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? colors.bgActive : 'transparent', color: currentPage === 'insights' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'insights' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1011,7 +1011,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Dashboards" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('dashboards')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'dashboards' ? '#e8e8e8' : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? colors.bgActive : 'transparent', color: currentPage === 'dashboards' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'dashboards' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <DashboardOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1020,7 +1020,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Portfolio" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('portfolio_overview')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio_overview' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? '#e8e8e8' : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio_overview' ? colors.bgActive : 'transparent', color: currentPage === 'portfolio_overview' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <ApartmentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1035,7 +1035,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   setCollapsedOperationsAnchor(e.currentTarget);
                 }}
                 onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'operations', setCollapsedOperationsAnchor)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage?.startsWith('operations') ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage?.startsWith('operations') ? '#e8e8e8' : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage?.startsWith('operations') ? colors.bgActive : 'transparent', color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage?.startsWith('operations') ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <HandymanOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1082,7 +1082,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="BMS" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('bms')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: currentPage === 'bms' ? '#e8e8e8' : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? colors.bgActive : 'transparent', color: currentPage === 'bms' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'bms' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <SettingsInputComponentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -1094,7 +1094,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Tooltip title="Notifications" placement="right">
                 <IconButton
                   onClick={() => onNotificationsPanelToggle?.()}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgActive : 'transparent', color: notificationsPanelOpen ? '#1e5a96' : undefined, '&:hover': { bgcolor: notificationsPanelOpen ? colors.bgActiveHover : colors.bgPrimaryHover } }}
                 >
                   <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                     <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
