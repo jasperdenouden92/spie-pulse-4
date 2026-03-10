@@ -232,6 +232,7 @@ export default function Home() {
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
   const [openedViaInspect, setOpenedViaInspect] = useState(false);
   const [activeDashboardId, setActiveDashboardId] = useState<string>('');
+  const [activeDashboardLabel, setActiveDashboardLabel] = useState<string>('');
 
   // ── URL setter helpers ─────────────────────────────────────────────────────
   const setCurrentPage = (page: string) => navigateTo({ page });
@@ -456,15 +457,34 @@ export default function Home() {
   };
 
   // Calculate current page name and favorite status
-  const currentPageName = selectedBuilding ? selectedBuilding.name : 'Buildings & Assets';
+  const getCurrentPageName = () => {
+    if (currentPage === 'dashboards' && activeDashboardLabel) return `Dashboards - ${activeDashboardLabel}`;
+    if (currentPage === 'dashboards') return 'Dashboards';
+    if (currentPage === 'insights') return 'Insights';
+    if (currentPage === 'themes') return 'Themes';
+    if (currentPage === 'workspaces') return 'Workspaces';
+    if (currentPage === 'exports') return 'Exports';
+    if (currentPage === 'portfolio_overview') return 'Portfolio';
+    if (currentPage === 'bms') return 'BMS';
+    if (currentPage === 'operations') return 'Operations';
+    if (selectedBuilding) return selectedBuilding.name;
+    return 'Control Room';
+  };
+  const currentPageName = getCurrentPageName();
   const isCurrentPageFavorited = favorites.some(fav => fav.name === currentPageName);
+
+  const getFavoriteType = () => {
+    if (currentPage === 'dashboards') return 'dashboard';
+    if (selectedBuilding) return 'building';
+    return 'page';
+  };
 
   const handleFavoriteToggle = (pageName: string, isFavorited: boolean) => {
     if (isFavorited) {
       const newFavorite: Favorite = {
         id: Date.now().toString(),
         name: pageName,
-        type: selectedBuilding ? 'building' : 'page'
+        type: getFavoriteType()
       };
       setFavorites([...favorites, newFavorite]);
     } else {
@@ -898,6 +918,7 @@ export default function Home() {
             onToggleCollapse={handleLeftSidebarToggle}
             onExport={handleExport}
             activeDashboardId={activeDashboardId}
+            activeDashboardLabel={activeDashboardLabel}
           />
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
@@ -948,7 +969,7 @@ export default function Home() {
 
         {/* Dashboards - full-bleed view with own sidebar */}
         {currentPage === 'dashboards' && (
-          <DashboardsPage onDashboardChange={setActiveDashboardId} />
+          <DashboardsPage onDashboardChange={(id, label) => { setActiveDashboardId(id); setActiveDashboardLabel(label); }} />
         )}
 
         {/* Page Content */}

@@ -207,6 +207,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
               ) : (
                 favorite.type === 'building' ? <BuildingIcon sx={{ fontSize: 16, color: 'text.secondary' }} /> :
                 favorite.type === 'asset' ? <AccountTreeOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} /> :
+                favorite.type === 'dashboard' ? <DashboardOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} /> :
                 <AssignmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
               )}
             </Box>

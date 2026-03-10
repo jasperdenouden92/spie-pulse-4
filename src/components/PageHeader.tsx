@@ -48,6 +48,7 @@ interface PageHeaderProps {
   onToggleCollapse?: () => void;
   onExport?: () => void;
   activeDashboardId?: string;
+  activeDashboardLabel?: string;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -100,6 +101,7 @@ export default function PageHeader({
   onToggleCollapse,
   onExport,
   activeDashboardId,
+  activeDashboardLabel,
 }: PageHeaderProps) {
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
@@ -112,7 +114,7 @@ export default function PageHeader({
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'dashboards') return 'Dashboards';
+    if (currentPage === 'dashboards') return activeDashboardLabel ? `Dashboards - ${activeDashboardLabel}` : 'Dashboards';
     return selectedAsset?.type === 'asset' ? selectedAsset.name : selectedBuilding ? selectedBuilding.name : 'Control Room';
   };
 
