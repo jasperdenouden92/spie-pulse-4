@@ -60,6 +60,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod } from '@/data/metrics';
@@ -78,6 +79,7 @@ import Alert from '@mui/material/Alert';
 import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
+import RecommendationsInbox from '@/components/RecommendationsInbox';
 import ThemesPage from '@/components/Themes';
 import DashboardsPage from '@/components/DashboardsPage';
 import ChangelogButton from '@/components/ChangelogButton';
@@ -118,7 +120,7 @@ import type { ToggleState } from '@/components/KPIToggle';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
-type BuildingsPanelTab = 'buildings' | 'kpi_analysis';
+type BuildingsPanelTab = 'buildings' | 'kpi_analysis' | 'recommendations';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
 interface Favorite {
@@ -229,7 +231,7 @@ export default function Home() {
     { id: '3', name: 'Reparatie toilet 1e ver', type: 'task' },
   ]);
   const rawPanelTab = searchParams.get('panel') ?? 'buildings';
-  const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis') ? rawPanelTab : 'buildings';
+  const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis' || rawPanelTab === 'recommendations') ? rawPanelTab : 'buildings';
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
@@ -1766,6 +1768,7 @@ export default function Home() {
                         >
                           <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                           <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
+                          <Tab value="recommendations" label="Recommendations" icon={<LightbulbOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                         </Tabs>
 
                         {/* Panel Actions */}
@@ -1964,7 +1967,7 @@ export default function Home() {
                             })}
                             </Box>
                           </>
-                        ) : (
+                        ) : buildingsPanelTab === 'kpi_analysis' ? (
                           /* ===== KPI ANALYSIS VIEW ===== */
                           <KPIAnalysisView
                             selection={selection}
@@ -1974,6 +1977,9 @@ export default function Home() {
                             metricInfo={metricInfo}
                             onMetricSelect={handleMetricSelect}
                           />
+                        ) : (
+                          /* ===== RECOMMENDATIONS VIEW ===== */
+                          <RecommendationsInbox />
                         )}
                       </Box>
                     </Box>
