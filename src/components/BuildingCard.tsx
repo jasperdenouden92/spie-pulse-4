@@ -61,7 +61,7 @@ export default function BuildingCard({
     }}>
       <Box sx={{ position: 'relative' }}>
         {image && (
-          <CardMedia component="img" height="120" image={image} alt={title} />
+          <CardMedia component="img" sx={{ height: 80 }} image={image} alt={title} />
         )}
         <IconButton
           size="small"
