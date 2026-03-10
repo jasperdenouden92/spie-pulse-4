@@ -6,6 +6,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
@@ -50,6 +51,13 @@ interface PageHeaderProps {
   onExport?: () => void;
   activeDashboardId?: string;
   activeDashboardLabel?: string;
+  // Compact filter in header (shown when page title scrolls out of view)
+  isFilterTitleScrolled?: boolean;
+  filterSelectionLabel?: string;
+  filterPeriodLabel?: string;
+  filterBuildingLabel?: string;
+  onFilterDateClick?: (e: React.MouseEvent<HTMLElement>) => void;
+  onFilterBuildingClick?: (e: React.MouseEvent<HTMLElement>) => void;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -103,6 +111,12 @@ export default function PageHeader({
   onExport,
   activeDashboardId,
   activeDashboardLabel,
+  isFilterTitleScrolled = false,
+  filterSelectionLabel,
+  filterPeriodLabel,
+  filterBuildingLabel,
+  onFilterDateClick,
+  onFilterBuildingClick,
 }: PageHeaderProps) {
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
@@ -442,6 +456,74 @@ export default function PageHeader({
           </>
         )}
       </Box>
+
+      {/* Center: Compact filter title (fades in when page title scrolls out of view) */}
+      <AnimatePresence>
+        {isFilterTitleScrolled && filterSelectionLabel && filterPeriodLabel && (
+          <motion.div
+            key="compact-filter"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', zIndex: 1200 }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 600,
+                fontSize: '0.8125rem',
+                color: 'text.secondary',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Showing {filterSelectionLabel} of
+              <Box
+                component="span"
+                onClick={onFilterDateClick}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'baseline',
+                  gap: '1px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  color: 'primary.main',
+                  transition: 'opacity 0.2s ease',
+                  '&:hover': { opacity: 0.7 },
+                }}
+              >
+                {filterPeriodLabel}
+                <KeyboardArrowDownIcon sx={{ fontSize: 14, verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
+              </Box>
+              {filterBuildingLabel && (
+                <>
+                  for
+                  <Box
+                    component="span"
+                    onClick={onFilterBuildingClick}
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'baseline',
+                      gap: '1px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      color: 'primary.main',
+                      transition: 'opacity 0.2s ease',
+                      '&:hover': { opacity: 0.7 },
+                    }}
+                  >
+                    {filterBuildingLabel}
+                    <KeyboardArrowDownIcon sx={{ fontSize: 14, verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
+                  </Box>
+                </>
+              )}
+            </Typography>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Right: Filters + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

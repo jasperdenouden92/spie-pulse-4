@@ -135,6 +135,24 @@ const EXPANDED_THEME_KEYS: MetricType[] = ['energy', 'workspace', 'compliance', 
 const ALL_THEME_KEYS: MetricType[] = [...PRIMARY_THEME_KEYS, ...EXPANDED_THEME_KEYS];
 const OPERATIONS_KEYS: MetricType[] = ['tickets', 'quotations', 'maintenance'];
 
+const SELECTION_LABELS: Record<string, string> = {
+  overall: 'overall performance',
+  themes_group: 'theme KPIs',
+  operations_group: 'operational KPIs',
+  sustainability: 'sustainability',
+  comfort: 'comfort',
+  asset_monitoring: 'asset monitoring',
+  tickets: 'tickets',
+  quotations: 'quotations',
+  maintenance: 'maintenance',
+  energy: 'energy',
+  workspace: 'workspace',
+  compliance: 'compliance',
+  water_management: 'water management',
+  security_systems: 'security systems',
+  access_control: 'access control',
+};
+
 export default function Home() {
   // ── URL state ──────────────────────────────────────────────────────────────
   const router = useRouter();
@@ -240,6 +258,26 @@ export default function Home() {
   const [activeDashboardId, setActiveDashboardId] = useState<string>('');
   const [activeDashboardLabel, setActiveDashboardLabel] = useState<string>('');
   const [pendingDashboardId, setPendingDashboardId] = useState<string | null>(null);
+
+  // Page title scroll tracking — show compact filter in header when scrolled
+  const [isFilterTitleScrolled, setIsFilterTitleScrolled] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const pageTitleRef = React.useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+    if (node) {
+      const obs = new IntersectionObserver(
+        ([entry]) => setIsFilterTitleScrolled(!entry.isIntersecting),
+        { threshold: 0, rootMargin: '-56px 0px 0px 0px' }
+      );
+      obs.observe(node);
+      observerRef.current = obs;
+    } else {
+      setIsFilterTitleScrolled(false);
+    }
+  }, []);
 
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
@@ -1067,6 +1105,12 @@ export default function Home() {
             onExport={handleExport}
             activeDashboardId={activeDashboardId}
             activeDashboardLabel={activeDashboardLabel}
+            isFilterTitleScrolled={isFilterTitleScrolled && currentPage === 'portfolio'}
+            filterSelectionLabel={SELECTION_LABELS[selection] ?? 'overall performance'}
+            filterPeriodLabel={getPeriodDisplayLabel(dateRange)}
+            filterBuildingLabel={selectedBuilding ? undefined : getTitleBuildingLabel()}
+            onFilterDateClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
+            onFilterBuildingClick={selectedBuilding ? undefined : (e) => setTitleBuildingAnchor(e.currentTarget)}
           />
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
@@ -1201,25 +1245,9 @@ export default function Home() {
 
                   {/* ========== PAGE TITLE WITH INLINE FILTERS ========== */}
                   {selectedBuilding && (
-                    <Box sx={{ mb: 3 }}>
+                    <Box ref={pageTitleRef} sx={{ mb: 3 }}>
                       <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                        Showing {({
-                          overall: 'overall performance',
-                          themes_group: 'theme KPIs',
-                          operations_group: 'operational KPIs',
-                          sustainability: 'sustainability',
-                          comfort: 'comfort',
-                          asset_monitoring: 'asset monitoring',
-                          tickets: 'tickets',
-                          quotations: 'quotations',
-                          maintenance: 'maintenance',
-                          energy: 'energy',
-                          workspace: 'workspace',
-                          compliance: 'compliance',
-                          water_management: 'water management',
-                          security_systems: 'security systems',
-                          access_control: 'access control',
-                        } as Record<string, string>)[selection] ?? 'overall performance'} of
+                        Showing {SELECTION_LABELS[selection] ?? 'overall performance'} of
                         <Box
                           component="span"
                           onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
@@ -1256,25 +1284,9 @@ export default function Home() {
                     </Box>
                   )}
                   {!selectedBuilding && (
-                    <Box sx={{ mb: 3 }}>
+                    <Box ref={pageTitleRef} sx={{ mb: 3 }}>
                       <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                        Showing {({
-                          overall: 'overall performance',
-                          themes_group: 'theme KPIs',
-                          operations_group: 'operational KPIs',
-                          sustainability: 'sustainability',
-                          comfort: 'comfort',
-                          asset_monitoring: 'asset monitoring',
-                          tickets: 'tickets',
-                          quotations: 'quotations',
-                          maintenance: 'maintenance',
-                          energy: 'energy',
-                          workspace: 'workspace',
-                          compliance: 'compliance',
-                          water_management: 'water management',
-                          security_systems: 'security systems',
-                          access_control: 'access control',
-                        } as Record<string, string>)[selection] ?? 'overall performance'} of
+                        Showing {SELECTION_LABELS[selection] ?? 'overall performance'} of
                         <Box
                           component="span"
                           onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
