@@ -56,7 +56,6 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
-import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics } from '@/data/metrics';
@@ -76,7 +75,7 @@ import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
 import ThemesPage from '@/components/Themes';
-import DashboardsView from '@/components/DashboardsView';
+import DashboardsPage from '@/components/DashboardsPage';
 import ChangelogButton from '@/components/ChangelogButton';
 import { tickets } from '@/data/tickets';
 import { quotations } from '@/data/quotations';
@@ -115,7 +114,7 @@ import type { ToggleState } from '@/components/KPIToggle';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
-type BuildingsPanelTab = 'buildings' | 'kpi_analysis' | 'dashboards';
+type BuildingsPanelTab = 'buildings' | 'kpi_analysis';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
 interface Favorite {
@@ -184,7 +183,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -225,12 +224,14 @@ export default function Home() {
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
     { id: '3', name: 'Reparatie toilet 1e ver', type: 'task' },
   ]);
-  const buildingsPanelTab = (searchParams.get('panel') ?? 'buildings') as BuildingsPanelTab;
+  const rawPanelTab = searchParams.get('panel') ?? 'buildings';
+  const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis') ? rawPanelTab : 'buildings';
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
   const [openedViaInspect, setOpenedViaInspect] = useState(false);
+  const [activeDashboardId, setActiveDashboardId] = useState<string>('');
 
   // ── URL setter helpers ─────────────────────────────────────────────────────
   const setCurrentPage = (page: string) => navigateTo({ page });
@@ -388,15 +389,6 @@ export default function Home() {
     return buildings;
   }, [selectedMetric, sortOrder]);
 
-  // Handle clicking a child KPI
-  // Auto-switch off Dashboards tab when an ops-only selection is made
-  const OPS_ONLY_SELECTIONS = ['tickets', 'quotations'];
-  React.useEffect(() => {
-    if (buildingsPanelTab === 'dashboards' && OPS_ONLY_SELECTIONS.includes(selection)) {
-      setBuildingsPanelTab('kpi_analysis');
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selection]);
 
   const handleMetricSelect = (metric: MetricType) => {
     if (selection === metric) {
@@ -480,7 +472,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports') => {
+  const handlePageChange = (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
@@ -905,6 +897,7 @@ export default function Home() {
             isCollapsed={leftSidebarCollapsed}
             onToggleCollapse={handleLeftSidebarToggle}
             onExport={handleExport}
+            activeDashboardId={activeDashboardId}
           />
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
@@ -953,8 +946,13 @@ export default function Home() {
           </Box>
         )}
 
+        {/* Dashboards - full-bleed view with own sidebar */}
+        {currentPage === 'dashboards' && (
+          <DashboardsPage onDashboardChange={setActiveDashboardId} />
+        )}
+
         {/* Page Content */}
-        {currentPage !== 'portfolio_overview' && (
+        {currentPage !== 'portfolio_overview' && currentPage !== 'dashboards' && (
         <Container maxWidth="xl" sx={{ pb: 3, flex: 1, mt: '56px', pt: 2 }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
@@ -1373,9 +1371,6 @@ export default function Home() {
                         >
                           <Tab value="buildings" label="Buildings" icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
                           <Tab value="kpi_analysis" label="KPI Analysis" icon={<AutoGraphOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                          {!['tickets', 'quotations'].includes(selection) && (
-                            <Tab value="dashboards" label="Dashboards" icon={<GridViewOutlinedIcon sx={{ fontSize: 16 }} />} iconPosition="start" />
-                          )}
                         </Tabs>
 
                         {/* Panel Actions */}
@@ -1432,13 +1427,8 @@ export default function Home() {
                       </Box>
 
                       {/* Panel Content */}
-                      <Box sx={{ p: buildingsPanelTab === 'dashboards' ? 0 : 2.5, flex: buildingsPanelTab === 'dashboards' ? 1 : 'unset', overflow: buildingsPanelTab === 'dashboards' ? 'hidden' : 'visible', display: buildingsPanelTab === 'dashboards' ? 'flex' : 'block', flexDirection: 'column' }}>
-                        {buildingsPanelTab === 'dashboards' ? (
-                          <DashboardsView
-                            selection={selection}
-                            selectedBuilding={selectedBuilding}
-                          />
-                        ) : buildingsPanelTab === 'buildings' ? (
+                      <Box sx={{ p: 2.5 }}>
+                        {buildingsPanelTab === 'buildings' ? (
                           <>
                             {/* Group Selection Banner */}
                             {(selection === 'themes_group' || selection === 'operations_group') && (

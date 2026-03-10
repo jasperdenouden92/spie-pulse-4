@@ -20,7 +20,7 @@ import ControlRoomFilters from './ControlRoomFilters';
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
 interface PageHeaderProps {
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports';
+  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   selectedBuilding?: { name: string } | null;
   selectedAsset?: AssetNode | null;
   onBack?: () => void;
@@ -43,10 +43,11 @@ interface PageHeaderProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports') => void;
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onExport?: () => void;
+  activeDashboardId?: string;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -98,6 +99,7 @@ export default function PageHeader({
   isCollapsed = false,
   onToggleCollapse,
   onExport,
+  activeDashboardId,
 }: PageHeaderProps) {
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
@@ -110,6 +112,7 @@ export default function PageHeader({
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
+    if (currentPage === 'dashboards') return 'Dashboards';
     return selectedAsset?.type === 'asset' ? selectedAsset.name : selectedBuilding ? selectedBuilding.name : 'Control Room';
   };
 
@@ -227,6 +230,9 @@ export default function PageHeader({
             )}
             {currentPage === 'exports' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Exports</Typography>
+            )}
+            {currentPage === 'dashboards' && (
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Dashboards</Typography>
             )}
             {currentPage === 'operations' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Operations</Typography>
@@ -436,15 +442,16 @@ export default function PageHeader({
 
       {/* Right: Filters + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        {/* Filters — only on Control Room without a building selected */}
-        {currentPage === 'portfolio' && !selectedBuilding && (
+        {/* Filters — on Control Room (no building) and Dashboards */}
+        {((currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards') && (
           <ControlRoomFilters
             selectedDateRange={selectedDateRangeProp}
             onDateRangeChange={onDateRangeChange}
+            activeDashboardId={currentPage === 'dashboards' ? activeDashboardId : undefined}
           />
         )}
-        {/* Export Button — only on Control Room */}
-        {currentPage === 'portfolio' && (
+        {/* Export Button — on Control Room and Dashboards */}
+        {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
           <Button
             variant="contained"
             size="small"
