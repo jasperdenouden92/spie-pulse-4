@@ -528,7 +528,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 ref={newButtonRef as React.Ref<HTMLDivElement>}
                 onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
@@ -551,7 +551,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => setSearchModalOpen(true)}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
@@ -577,23 +577,23 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => onPageChange?.('home')}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
-                  backgroundColor: currentPage === 'home' ? '#f0f0f0' : 'transparent',
+                  backgroundColor: currentPage === 'home' ? '#e3f2fd' : 'transparent',
                   transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: currentPage === 'home' ? '#e8e8e8' : '#f5f5f5'
+                    backgroundColor: currentPage === 'home' ? '#d6ebf9' : '#f8f8f8'
                   }
                 }}
               >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <HomeOutlinedIcon sx={{ fontSize: 16 }} />
+                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'home' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <HomeOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'home' ? '#1e5a96' : undefined }} />
                 </Box>
                 <ListItemText
                   primary="Home"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'home' ? '#1e5a96' : undefined }}
                 />
               </ListItemButton>
             </ListItem>
@@ -601,14 +601,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => { onPageChange?.('portfolio'); setControlRoomExpanded(true); }}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
-                  backgroundColor: currentPage === 'portfolio' ? '#f0f0f0' : 'transparent',
+                  backgroundColor: currentPage === 'portfolio' ? '#e3f2fd' : 'transparent',
                   transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: currentPage === 'portfolio' ? '#e8e8e8' : '#f5f5f5'
+                    backgroundColor: currentPage === 'portfolio' ? '#d6ebf9' : '#f8f8f8'
                   },
                   '&:hover .nav-icon': { opacity: 0 },
                   '&:hover .nav-chevron': { opacity: 1 },
@@ -616,14 +616,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               >
                 <Box
                   onClick={(e) => { e.stopPropagation(); setControlRoomExpanded(!controlRoomExpanded); }}
-                  sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
+                  sx={{ width: 28, height: 28, bgcolor: currentPage === 'portfolio' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
                 >
-                  <MonitorHeartOutlined className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s' }} />
-                  <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 18, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: controlRoomExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
+                  <MonitorHeartOutlined className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage === 'portfolio' ? '#1e5a96' : undefined }} />
+                  <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 18, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: controlRoomExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage === 'portfolio' ? '#1e5a96' : undefined }} />
                 </Box>
                 <ListItemText
                   primary="Control Room"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'portfolio' ? '#1e5a96' : undefined }}
                 />
               </ListItemButton>
             </ListItem>
@@ -639,7 +639,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       gap: 1,
                       borderRadius: '6px',
                       bgcolor: currentPage === 'portfolio' && selection === 'themes_group' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: '#f5f5f5' },
+                      '&:hover': { bgcolor: currentPage === 'portfolio' && selection === 'themes_group' ? '#d6ebf9' : '#f8f8f8' },
                       '&:hover .nav-icon': { opacity: 0 },
                       '&:hover .nav-chevron': { opacity: 1 },
                     }}
@@ -648,10 +648,10 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       onClick={(e) => { e.stopPropagation(); setCrThemesExpanded(!crThemesExpanded); }}
                       sx={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
                     >
-                      <NatureOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s' }} />
-                      <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 16, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: crThemesExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
+                      <NatureOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage === 'portfolio' && selection === 'themes_group' ? '#1e5a96' : undefined }} />
+                      <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 16, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: crThemesExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage === 'portfolio' && selection === 'themes_group' ? '#1e5a96' : undefined }} />
                     </Box>
-                    <ListItemText primary="Themes" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'themes_group' ? 600 : 400 }} />
+                    <ListItemText primary="Themes" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'themes_group' ? 600 : 400, color: currentPage === 'portfolio' && selection === 'themes_group' ? '#1e5a96' : undefined }} />
                   </ListItemButton>
                 </ListItem>
                 {crThemesExpanded && [
@@ -669,18 +669,18 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     <ListItemButton
                       onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
                       sx={{
-                        height: 32,
+                        height: 36,
                         paddingLeft: '4px',
                         gap: 1,
                         borderRadius: '6px',
                         bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
-                        '&:hover': { bgcolor: '#f5f5f5' }
+                        '&:hover': { bgcolor: currentPage === 'portfolio' && selection === item.key ? '#d6ebf9' : '#f8f8f8' }
                       }}
                     >
                       <Box sx={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#bdbdbd' }} />
+                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : '#bdbdbd' }} />
                       </Box>
-                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400 }} />
+                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400, color: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : undefined }} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -695,7 +695,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       gap: 1,
                       borderRadius: '6px',
                       bgcolor: currentPage === 'portfolio' && selection === 'operations_group' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: '#f5f5f5' },
+                      '&:hover': { bgcolor: currentPage === 'portfolio' && selection === 'operations_group' ? '#d6ebf9' : '#f8f8f8' },
                       '&:hover .nav-icon': { opacity: 0 },
                       '&:hover .nav-chevron': { opacity: 1 },
                     }}
@@ -704,10 +704,10 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       onClick={(e) => { e.stopPropagation(); setCrOperationsExpanded(!crOperationsExpanded); }}
                       sx={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
                     >
-                      <HandymanOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s' }} />
-                      <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 16, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: crOperationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
+                      <HandymanOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage === 'portfolio' && selection === 'operations_group' ? '#1e5a96' : undefined }} />
+                      <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 16, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: crOperationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage === 'portfolio' && selection === 'operations_group' ? '#1e5a96' : undefined }} />
                     </Box>
-                    <ListItemText primary="Operations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'operations_group' ? 600 : 400 }} />
+                    <ListItemText primary="Operations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'operations_group' ? 600 : 400, color: currentPage === 'portfolio' && selection === 'operations_group' ? '#1e5a96' : undefined }} />
                   </ListItemButton>
                 </ListItem>
                 {crOperationsExpanded && [
@@ -719,18 +719,18 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     <ListItemButton
                       onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
                       sx={{
-                        height: 32,
+                        height: 36,
                         paddingLeft: '4px',
                         gap: 1,
                         borderRadius: '6px',
                         bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
-                        '&:hover': { bgcolor: '#f5f5f5' }
+                        '&:hover': { bgcolor: currentPage === 'portfolio' && selection === item.key ? '#d6ebf9' : '#f8f8f8' }
                       }}
                     >
                       <Box sx={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#bdbdbd' }} />
+                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : '#bdbdbd' }} />
                       </Box>
-                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400 }} />
+                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400, color: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : undefined }} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -740,23 +740,23 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => onPageChange?.('insights')}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
-                  backgroundColor: currentPage === 'insights' ? '#f0f0f0' : 'transparent',
+                  backgroundColor: currentPage === 'insights' ? '#e3f2fd' : 'transparent',
                   transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: currentPage === 'insights' ? '#e8e8e8' : '#f5f5f5'
+                    backgroundColor: currentPage === 'insights' ? '#d6ebf9' : '#f8f8f8'
                   }
                 }}
               >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />
+                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'insights' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'insights' ? '#1e5a96' : undefined }} />
                 </Box>
                 <ListItemText
                   primary="Insights"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'insights' ? '#1e5a96' : undefined }}
                 />
               </ListItemButton>
             </ListItem>
@@ -764,23 +764,23 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => onPageChange?.('dashboards')}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
-                  backgroundColor: currentPage === 'dashboards' ? '#f0f0f0' : 'transparent',
+                  backgroundColor: currentPage === 'dashboards' ? '#e3f2fd' : 'transparent',
                   transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: currentPage === 'dashboards' ? '#e8e8e8' : '#f5f5f5'
+                    backgroundColor: currentPage === 'dashboards' ? '#d6ebf9' : '#f8f8f8'
                   }
                 }}
               >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <DashboardOutlinedIcon sx={{ fontSize: 16 }} />
+                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'dashboards' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <DashboardOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'dashboards' ? '#1e5a96' : undefined }} />
                 </Box>
                 <ListItemText
                   primary="Dashboards"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'dashboards' ? '#1e5a96' : undefined }}
                 />
               </ListItemButton>
             </ListItem>
@@ -788,23 +788,23 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => onPageChange?.('portfolio_overview')}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
-                  backgroundColor: currentPage === 'portfolio_overview' ? '#f0f0f0' : 'transparent',
+                  backgroundColor: currentPage === 'portfolio_overview' ? '#e3f2fd' : 'transparent',
                   transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: currentPage === 'portfolio_overview' ? '#e8e8e8' : '#f5f5f5'
+                    backgroundColor: currentPage === 'portfolio_overview' ? '#d6ebf9' : '#f8f8f8'
                   }
                 }}
               >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ApartmentOutlinedIcon sx={{ fontSize: 16 }} />
+                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'portfolio_overview' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ApartmentOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'portfolio_overview' ? '#1e5a96' : undefined }} />
                 </Box>
                 <ListItemText
                   primary="Portfolio & Assets"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'portfolio_overview' ? '#1e5a96' : undefined }}
                 />
               </ListItemButton>
             </ListItem>
@@ -812,14 +812,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => { onPageChange?.('operations'); setOperationsExpanded(true); }}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
-                  backgroundColor: currentPage?.startsWith('operations') ? '#f0f0f0' : 'transparent',
+                  backgroundColor: currentPage?.startsWith('operations') ? '#e3f2fd' : 'transparent',
                   transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: currentPage?.startsWith('operations') ? '#e8e8e8' : '#f5f5f5'
+                    backgroundColor: currentPage?.startsWith('operations') ? '#d6ebf9' : '#f8f8f8'
                   },
                   '&:hover .nav-icon': { opacity: 0 },
                   '&:hover .nav-chevron': { opacity: 1 },
@@ -827,14 +827,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               >
                 <Box
                   onClick={(e) => { e.stopPropagation(); setOperationsExpanded(!operationsExpanded); }}
-                  sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
+                  sx={{ width: 28, height: 28, bgcolor: currentPage?.startsWith('operations') ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
                 >
-                  <HandymanOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s' }} />
-                  <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 18, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: operationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
+                  <HandymanOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined }} />
+                  <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 18, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: operationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined }} />
                 </Box>
                 <ListItemText
                   primary="Operations"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined }}
                 />
               </ListItemButton>
             </ListItem>
@@ -849,13 +849,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       gap: 1,
                       borderRadius: '6px',
                       bgcolor: currentPage === 'operations_docs' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_docs' ? '#e3f2fd' : '#f5f5f5' }
+                      '&:hover': { bgcolor: currentPage === 'operations_docs' ? '#d6ebf9' : '#f8f8f8' }
                     }}
                   >
                     <Box sx={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#bdbdbd' }} />
+                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'operations_docs' ? '#1e5a96' : '#bdbdbd' }} />
                     </Box>
-                    <ListItemText primary="Docs" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_docs' ? 600 : 400 }} />
+                    <ListItemText primary="Docs" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_docs' ? 600 : 400, color: currentPage === 'operations_docs' ? '#1e5a96' : undefined }} />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -867,13 +867,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       gap: 1,
                       borderRadius: '6px',
                       bgcolor: currentPage === 'operations_tickets' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_tickets' ? '#e3f2fd' : '#f5f5f5' }
+                      '&:hover': { bgcolor: currentPage === 'operations_tickets' ? '#d6ebf9' : '#f8f8f8' }
                     }}
                   >
                     <Box sx={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#bdbdbd' }} />
+                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'operations_tickets' ? '#1e5a96' : '#bdbdbd' }} />
                     </Box>
-                    <ListItemText primary="Tickets" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_tickets' ? 600 : 400 }} />
+                    <ListItemText primary="Tickets" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_tickets' ? 600 : 400, color: currentPage === 'operations_tickets' ? '#1e5a96' : undefined }} />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -885,13 +885,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       gap: 1,
                       borderRadius: '6px',
                       bgcolor: currentPage === 'operations_quotations' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_quotations' ? '#e3f2fd' : '#f5f5f5' }
+                      '&:hover': { bgcolor: currentPage === 'operations_quotations' ? '#d6ebf9' : '#f8f8f8' }
                     }}
                   >
                     <Box sx={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#bdbdbd' }} />
+                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'operations_quotations' ? '#1e5a96' : '#bdbdbd' }} />
                     </Box>
-                    <ListItemText primary="Quotations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_quotations' ? 600 : 400 }} />
+                    <ListItemText primary="Quotations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_quotations' ? 600 : 400, color: currentPage === 'operations_quotations' ? '#1e5a96' : undefined }} />
                   </ListItemButton>
                 </ListItem>
               </List>
@@ -900,23 +900,23 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <ListItemButton
                 onClick={() => onPageChange?.('bms')}
                 sx={{
-                  height: 40,
+                  height: 36,
                   paddingLeft: '4px',
                   gap: 1,
                   borderRadius: '6px',
-                  backgroundColor: currentPage === 'bms' ? '#f0f0f0' : 'transparent',
+                  backgroundColor: currentPage === 'bms' ? '#e3f2fd' : 'transparent',
                   transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: currentPage === 'bms' ? '#e8e8e8' : '#f5f5f5'
+                    backgroundColor: currentPage === 'bms' ? '#d6ebf9' : '#f8f8f8'
                   }
                 }}
               >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />
+                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'bms' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <SettingsInputComponentOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'bms' ? '#1e5a96' : undefined }} />
                 </Box>
                 <ListItemText
                   primary="BMS"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'bms' ? '#1e5a96' : undefined }}
                 />
               </ListItemButton>
             </ListItem>
@@ -1288,7 +1288,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             sx={{
               display: 'flex', gap: 1, py: 0.75, px: 1.5, mx: 0.5, borderRadius: '6px',
               '&:hover': { backgroundColor: '#f5f5f5' },
-              '&.Mui-selected': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#e3f2fd' } }
+              '&.Mui-selected': { backgroundColor: '#e3f2fd', '&:hover': { backgroundColor: '#d6ebf9' } }
             }}
           >
             <Box sx={{ width: 24, height: 24, bgcolor: '#1e5a96', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
