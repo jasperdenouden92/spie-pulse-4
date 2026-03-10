@@ -314,6 +314,17 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const [hoveredResultIndex, setHoveredResultIndex] = useState<number | null>(null);
   const activeRowRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      // Small delay to ensure the modal has rendered before focusing
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   const isSearching = searchQuery.trim().length > 0;
 
@@ -470,6 +481,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
+            inputRef={inputRef}
             autoFocus
             sx={{
               fontSize: '1.05rem',
