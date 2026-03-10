@@ -1742,8 +1742,7 @@ export default function Home() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        px: 2.5,
-                        py: 1.5,
+                        p: 1.5,
                         borderBottom: 1,
                         borderColor: 'divider',
                         bgcolor: '#fafafa'
@@ -1752,63 +1751,41 @@ export default function Home() {
                           value={buildingsPanelTab}
                           onChange={setBuildingsPanelTab}
                           tabs={[
-                            { value: 'buildings', label: 'Buildings', icon: <ApartmentOutlinedIcon sx={{ fontSize: 16 }} /> },
-                            { value: 'kpi_analysis', label: 'KPI Analysis', icon: <AutoGraphOutlinedIcon sx={{ fontSize: 16 }} /> },
-                            { value: 'recommendations', label: 'Recommendations', icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} /> },
+                            { value: 'buildings', label: 'Buildings' },
+                            { value: 'kpi_analysis', label: 'Analysis' },
+                            { value: 'recommendations', label: 'Recommendations' },
                           ]}
                         />
 
-                        {/* Panel Actions */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          {/* Sort Dropdown — hidden on KPI Analysis */}
-                          {buildingsPanelTab === 'buildings' && (
-                            <>
-                          <Chip
-                            icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
-                            label={sortOrder}
-                            onClick={(e) => setSortAnchorEl(e.currentTarget)}
-                            deleteIcon={<ExpandMoreIcon />}
-                            onDelete={(e) => setSortAnchorEl(e.currentTarget as any)}
-                            sx={{
-                              height: 32,
-                              borderRadius: '6px',
-                              backgroundColor: '#f5f5f5',
-                              '&:hover': { backgroundColor: '#e8e8e8' },
-                              '& .MuiChip-label': { px: 1, fontSize: '0.813rem', fontWeight: 500 }
-                            }}
-                          />
-                          <Menu
-                            anchorEl={sortAnchorEl}
-                            open={Boolean(sortAnchorEl)}
-                            onClose={() => setSortAnchorEl(null)}
-                          >
-                            <MenuItem onClick={() => { setSortOrder('Worst to Best'); setSortAnchorEl(null); }}>Worst to Best</MenuItem>
-                            <MenuItem onClick={() => { setSortOrder('Best to Worst'); setSortAnchorEl(null); }}>Best to Worst</MenuItem>
-                            <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
-                            <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
-                          </Menu>
-                            </>
-                          )}
-                          <Box
-                            component="button"
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: 32,
-                              height: 32,
-                              border: 1,
-                              borderColor: 'divider',
-                              borderRadius: 1,
-                              bgcolor: '#fff',
-                              cursor: 'pointer',
-                              color: 'text.secondary',
-                              '&:hover': { bgcolor: '#f5f5f5' }
-                            }}
-                          >
-                            <SettingsOutlinedIcon sx={{ fontSize: 18 }} />
+                        {/* Sort Dropdown — only on Buildings tab */}
+                        {buildingsPanelTab === 'buildings' && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Chip
+                              icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
+                              label={sortOrder}
+                              onClick={(e) => setSortAnchorEl(e.currentTarget)}
+                              deleteIcon={<ExpandMoreIcon />}
+                              onDelete={(e) => setSortAnchorEl(e.currentTarget as any)}
+                              sx={{
+                                height: 32,
+                                borderRadius: '6px',
+                                backgroundColor: '#f5f5f5',
+                                '&:hover': { backgroundColor: '#e8e8e8' },
+                                '& .MuiChip-label': { px: 1, fontSize: '0.813rem', fontWeight: 500 }
+                              }}
+                            />
+                            <Menu
+                              anchorEl={sortAnchorEl}
+                              open={Boolean(sortAnchorEl)}
+                              onClose={() => setSortAnchorEl(null)}
+                            >
+                              <MenuItem onClick={() => { setSortOrder('Worst to Best'); setSortAnchorEl(null); }}>Worst to Best</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('Best to Worst'); setSortAnchorEl(null); }}>Best to Worst</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
+                              <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
+                            </Menu>
                           </Box>
-                        </Box>
+                        )}
                       </Box>
 
                       {/* Panel Content */}

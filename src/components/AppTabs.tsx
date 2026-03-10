@@ -21,9 +21,9 @@ interface AppTabsProps {
 }
 
 export default function AppTabs({ value, onChange, tabs, size = 'medium', sx, indicatorColor }: AppTabsProps) {
-  const minHeight = size === 'small' ? 36 : 40;
   const fontSize = size === 'small' ? '0.8125rem' : '0.875rem';
-  const activeColor = indicatorColor ?? '#1976d2';
+  const py = size === 'small' ? 0.625 : 1;
+  const px = size === 'small' ? 1.25 : 1.5;
 
   return (
     <MuiTabs
@@ -31,34 +31,29 @@ export default function AppTabs({ value, onChange, tabs, size = 'medium', sx, in
       onChange={(_, v) => onChange(v)}
       TabIndicatorProps={{ style: { display: 'none' } }}
       sx={{
-        minHeight,
+        minHeight: 'unset',
+        '& .MuiTabs-flexContainer': {
+          gap: 0.25,
+        },
         '& .MuiTab-root': {
-          minHeight,
-          py: 0,
-          px: 1.5,
+          minHeight: 'unset',
+          minWidth: 'unset',
+          py,
+          px,
           textTransform: 'none',
           fontWeight: 500,
           fontSize,
-          // The tab content span handles the underline via its own ::after,
-          // positioned at the bottom of the tab by using height: 100% + absolute bottom.
-          '& .tab-inner': {
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            height: '100%',
-            position: 'relative',
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 2,
-              backgroundColor: 'transparent',
-            },
+          borderRadius: '999px',
+          color: 'text.secondary',
+          transition: 'background-color 0.15s ease, color 0.15s ease',
+          '&:hover': {
+            bgcolor: 'rgba(25, 118, 210, 0.08)',
+            color: 'text.primary',
           },
-          '&.Mui-selected .tab-inner::after': {
-            backgroundColor: activeColor,
+          '&.Mui-selected': {
+            bgcolor: 'rgba(25, 118, 210, 0.08)',
+            color: '#1976d2',
+            fontWeight: 600,
           },
         },
         ...sx,
@@ -72,10 +67,12 @@ export default function AppTabs({ value, onChange, tabs, size = 'medium', sx, in
             key={tabValue}
             value={tabValue}
             label={
-              <span className="tab-inner">
-                {tab.icon}
-                {tab.label}
-              </span>
+              tab.icon ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {tab.icon}
+                  {tab.label}
+                </span>
+              ) : tab.label
             }
           />
         );
