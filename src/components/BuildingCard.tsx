@@ -9,6 +9,9 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import Tooltip from '@mui/material/Tooltip';
 
 type OperationalStats = {
   label: string;
@@ -34,6 +37,8 @@ type Props = {
   };
   showOverall?: boolean;
   operationalStats?: OperationalStats[];
+  trend?: number;
+  periodLabel?: string | null;
 };
 
 export default function BuildingCard({
@@ -45,7 +50,9 @@ export default function BuildingCard({
   metricIcon,
   overallPerformance,
   showOverall = false,
-  operationalStats
+  operationalStats,
+  trend,
+  periodLabel
 }: Props) {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -175,6 +182,16 @@ export default function BuildingCard({
                 <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.9375rem', transition: 'all 0.3s ease' }}>
                   {performance.green}%
                 </Typography>
+                {trend !== undefined && periodLabel !== null && (
+                  <Tooltip title={periodLabel ? `Compared to ${periodLabel}` : ''} arrow placement="top">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
+                      {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                      <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.6875rem', lineHeight: 1 }}>
+                        {Math.abs(trend)}%
+                      </Typography>
+                    </Box>
+                  </Tooltip>
+                )}
               </Box>
             </Box>
             <Box sx={{ display: 'flex', height: 8, borderRadius: '2px', overflow: 'hidden', bgcolor: '#f5f5f5', transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
