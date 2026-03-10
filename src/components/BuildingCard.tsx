@@ -56,22 +56,29 @@ export default function BuildingCard({
       transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
       '&:hover': {
         transform: 'translateY(-2px)',
-        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)'
+        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+        '& .more-options-btn': { opacity: 1 }
       }
     }}>
       <Box sx={{ position: 'relative' }}>
         {image && (
-          <CardMedia component="img" height="120" image={image} alt={title} />
+          <CardMedia component="img" sx={{ height: 80 }} image={image} alt={title} />
         )}
         <IconButton
+          className="more-options-btn"
           size="small"
-          onClick={(e) => setMenuAnchorEl(e.currentTarget)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuAnchorEl(e.currentTarget);
+          }}
           sx={{
             position: 'absolute',
             top: 12,
             right: 12,
             borderRadius: '50%',
             aspectRatio: 1,
+            opacity: menuAnchorEl ? 1 : 0,
+            transition: 'opacity 0.2s ease',
             bgcolor: 'rgba(255, 255, 255, 0.9)',
             '&:hover': {
               bgcolor: 'rgba(255, 255, 255, 1)'
@@ -84,18 +91,20 @@ export default function BuildingCard({
           anchorEl={menuAnchorEl}
           open={Boolean(menuAnchorEl)}
           onClose={() => setMenuAnchorEl(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <MenuItem onClick={() => setMenuAnchorEl(null)}>View Details</MenuItem>
           <MenuItem onClick={() => setMenuAnchorEl(null)}>Edit</MenuItem>
           <MenuItem onClick={() => setMenuAnchorEl(null)}>Delete</MenuItem>
         </Menu>
       </Box>
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Typography variant="body1" sx={{ fontWeight: 600, mb: 0, fontSize: '0.9375rem' }}>
           {title}
         </Typography>
         {address && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: '0.75rem' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.75rem' }}>
             {address}
           </Typography>
         )}

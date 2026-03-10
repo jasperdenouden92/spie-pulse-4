@@ -58,22 +58,24 @@ const mockResults: SearchResult[] = [
   { id: '6', type: 'building', title: '45 Keizersgracht', subtitle: 'Amsterdam, NL', date: '2024-11-20', owner: 'Sarah Jansen', image: '/images/Media-3.png' },
 ];
 
-const now = new Date();
-const hoursAgo = (h: number) => new Date(now.getTime() - h * 60 * 60 * 1000);
-const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
+function createInitialRecentItems(): RecentItem[] {
+  const now = new Date();
+  const hoursAgo = (h: number) => new Date(now.getTime() - h * 60 * 60 * 1000);
+  const daysAgo = (d: number) => new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
+  return [
+    { id: 'r1', type: 'building', title: '12 Smith St', subtitle: 'Amsterdam, NL', image: '/images/Media-1.png', searchedAt: hoursAgo(1) },
+    { id: 'r2', type: 'ticket', title: 'HVAC noise complaint - Room 302', subtitle: '12 Smith St - Priority: High', searchedAt: hoursAgo(3) },
+    { id: 'r3', type: 'asset', title: 'AHU-01 Air Handling Unit', subtitle: '12 Smith St - Floor 3', searchedAt: daysAgo(1) },
+    { id: 'r4', type: 'document', title: 'Electrical Safety Procedures', subtitle: '45 Keizersgracht - REF-2025-011', searchedAt: daysAgo(1) },
+    { id: 'r5', type: 'quotation', title: 'Q-2025-0042 Chiller Replacement', subtitle: '12 Smith St - EUR 24,500', searchedAt: daysAgo(3) },
+    { id: 'r6', type: 'building', title: '45 Keizersgracht', subtitle: 'Amsterdam, NL', image: '/images/Media-3.png', searchedAt: daysAgo(5) },
+    { id: 'r7', type: 'document', title: 'Mechanical O&M Manual', subtitle: '12 Smith St - ABC123-CARE-001', searchedAt: daysAgo(8) },
+  ];
+}
 
-const initialRecentItems: RecentItem[] = [
-  { id: 'r1', type: 'building', title: '12 Smith St', subtitle: 'Amsterdam, NL', image: '/images/Media-1.png', searchedAt: hoursAgo(1) },
-  { id: 'r2', type: 'ticket', title: 'HVAC noise complaint - Room 302', subtitle: '12 Smith St - Priority: High', searchedAt: hoursAgo(3) },
-  { id: 'r3', type: 'asset', title: 'AHU-01 Air Handling Unit', subtitle: '12 Smith St - Floor 3', searchedAt: daysAgo(1) },
-  { id: 'r4', type: 'document', title: 'Electrical Safety Procedures', subtitle: '45 Keizersgracht - REF-2025-011', searchedAt: daysAgo(1) },
-  { id: 'r5', type: 'quotation', title: 'Q-2025-0042 Chiller Replacement', subtitle: '12 Smith St - EUR 24,500', searchedAt: daysAgo(3) },
-  { id: 'r6', type: 'building', title: '45 Keizersgracht', subtitle: 'Amsterdam, NL', image: '/images/Media-3.png', searchedAt: daysAgo(5) },
-  { id: 'r7', type: 'document', title: 'Mechanical O&M Manual', subtitle: '12 Smith St - ABC123-CARE-001', searchedAt: daysAgo(8) },
-];
-
-function getRelativeGroup(date: Date): string {
-  const diffMs = now.getTime() - date.getTime();
+function getRelativeGroup(date: Date, now?: Date): string {
+  const ref = now || new Date();
+  const diffMs = ref.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
@@ -310,7 +312,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [filterType, setFilterType] = useState<string>('all');
   const [filterDate, setFilterDate] = useState<string>('any');
   const [filterOwner, setFilterOwner] = useState<string>('all');
-  const [recentItems, setRecentItems] = useState<RecentItem[]>(initialRecentItems);
+  const [recentItems, setRecentItems] = useState<RecentItem[]>(createInitialRecentItems);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [hoveredResultIndex, setHoveredResultIndex] = useState<number | null>(null);
   const activeRowRef = useRef<HTMLDivElement>(null);
