@@ -662,25 +662,29 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   onToggleExpand={() => setCrThemesExpanded(!crThemesExpanded)}
                   size={20}
                 />
-                {crThemesExpanded && [
-                  { key: 'sustainability', label: 'Sustainability' },
-                  { key: 'comfort', label: 'Comfort' },
-                  { key: 'asset_monitoring', label: 'Asset Monitoring' },
-                  { key: 'energy', label: 'Energy' },
-                  { key: 'workspace', label: 'Workspace' },
-                  { key: 'compliance', label: 'Compliance' },
-                  { key: 'water_management', label: 'Water Management' },
-                  { key: 'security_systems', label: 'Security Systems' },
-                  { key: 'access_control', label: 'Access Control' },
-                ].map((item) => (
-                  <NavItem
-                    key={item.key}
-                    label={item.label}
-                    active={currentPage === 'portfolio' && selection === item.key}
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                    size={20}
-                  />
-                ))}
+                {crThemesExpanded && (
+                  <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {[
+                      { key: 'sustainability', label: 'Sustainability' },
+                      { key: 'comfort', label: 'Comfort' },
+                      { key: 'asset_monitoring', label: 'Asset Monitoring' },
+                      { key: 'energy', label: 'Energy' },
+                      { key: 'workspace', label: 'Workspace' },
+                      { key: 'compliance', label: 'Compliance' },
+                      { key: 'water_management', label: 'Water Management' },
+                      { key: 'security_systems', label: 'Security Systems' },
+                      { key: 'access_control', label: 'Access Control' },
+                    ].map((item) => (
+                      <NavItem
+                        key={item.key}
+                        label={item.label}
+                        active={currentPage === 'portfolio' && selection === item.key}
+                        onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                        size={20}
+                      />
+                    ))}
+                  </List>
+                )}
 
                 {/* Operations dropdown */}
                 <NavItem
@@ -692,19 +696,23 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   onToggleExpand={() => setCrOperationsExpanded(!crOperationsExpanded)}
                   size={20}
                 />
-                {crOperationsExpanded && [
-                  { key: 'tickets', label: 'Tickets' },
-                  { key: 'quotations', label: 'Quotations' },
-                  { key: 'maintenance', label: 'Maintenance' },
-                ].map((item) => (
-                  <NavItem
-                    key={item.key}
-                    label={item.label}
-                    active={currentPage === 'portfolio' && selection === item.key}
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                    size={20}
-                  />
-                ))}
+                {crOperationsExpanded && (
+                  <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    {[
+                      { key: 'tickets', label: 'Tickets' },
+                      { key: 'quotations', label: 'Quotations' },
+                      { key: 'maintenance', label: 'Maintenance' },
+                    ].map((item) => (
+                      <NavItem
+                        key={item.key}
+                        label={item.label}
+                        active={currentPage === 'portfolio' && selection === item.key}
+                        onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                        size={20}
+                      />
+                    ))}
+                  </List>
+                )}
               </List>
             )}
             <NavItem
