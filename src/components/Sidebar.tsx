@@ -94,6 +94,103 @@ interface SidebarProps {
   hasUnreadNotifications?: boolean;
 }
 
+interface NavItemProps {
+  label: string;
+  icon?: React.ReactNode;
+  active?: boolean;
+  onClick?: (e?: React.MouseEvent) => void;
+  shortcut?: string;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
+  size?: number;
+  iconBoxBgColor?: string;
+  alwaysAccent?: boolean;
+  buttonRef?: React.Ref<HTMLDivElement>;
+}
+
+function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExpand, size = 28, iconBoxBgColor, alwaysAccent, buttonRef }: NavItemProps) {
+  const hasChevron = onToggleExpand !== undefined;
+  const isDot = !icon && !alwaysAccent;
+  const accentColor = '#1e5a96';
+  const isAccent = active || alwaysAccent;
+
+  return (
+    <ListItem disablePadding>
+      <ListItemButton
+        ref={buttonRef}
+        onClick={onClick}
+        sx={{
+          height: 36,
+          paddingLeft: '4px',
+          gap: 1,
+          borderRadius: '6px',
+          backgroundColor: active ? '#e3f2fd' : 'transparent',
+          transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            backgroundColor: active ? '#d6ebf9' : '#f8f8f8',
+          },
+          ...(hasChevron && {
+            '&:hover .nav-icon': { opacity: 0 },
+            '&:hover .nav-chevron': { opacity: 1 },
+          }),
+        }}
+      >
+        {isDot ? (
+          <Box sx={{ width: size, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: active ? accentColor : '#bdbdbd' }} />
+          </Box>
+        ) : hasChevron ? (
+          <Box
+            onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
+            sx={{
+              width: size, height: size,
+              bgcolor: active ? '#e3f2fd' : (iconBoxBgColor || '#f0f0f0'),
+              borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, position: 'relative', cursor: 'pointer',
+            }}
+          >
+            <Box className="nav-icon" sx={{ display: 'flex', transition: 'opacity 0.2s', color: isAccent ? accentColor : undefined }}>
+              {icon}
+            </Box>
+            <ExpandMoreIcon
+              className="nav-chevron"
+              sx={{
+                fontSize: size === 28 ? 18 : 16,
+                position: 'absolute', opacity: 0,
+                transition: 'opacity 0.2s, transform 0.3s',
+                transform: expanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                color: isAccent ? accentColor : undefined,
+              }}
+            />
+          </Box>
+        ) : (
+          <Box sx={{
+            width: size, height: size,
+            bgcolor: active ? '#e3f2fd' : (iconBoxBgColor || '#f0f0f0'),
+            borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, color: isAccent ? accentColor : undefined,
+          }}>
+            {icon}
+          </Box>
+        )}
+        <ListItemText
+          primary={label}
+          primaryTypographyProps={{
+            variant: 'body2',
+            fontWeight: (icon || active || alwaysAccent) ? 600 : 400,
+            color: isAccent ? accentColor : undefined,
+          }}
+        />
+        {shortcut && (
+          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
+            {shortcut}
+          </Typography>
+        )}
+      </ListItemButton>
+    </ListItem>
+  );
+}
+
 interface SortableFavoriteItemProps {
   favorite: Favorite;
   isHovered: boolean;
@@ -523,137 +620,48 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: 2, pt: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
             <List sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {/* "+ New" action button — opens dropdown menu */}
-            <ListItem disablePadding>
-              <ListItemButton
-                ref={newButtonRef as React.Ref<HTMLDivElement>}
-                onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  '&:hover': { backgroundColor: '#f5f5f5' },
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#eef2ff', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <AddIcon sx={{ fontSize: 16, color: '#1e5a96' }} />
-                </Box>
-                <ListItemText
-                  primary="New"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, sx: { color: '#1e5a96' } }}
-                />
-                <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
-                  N
-                </Typography>
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => setSearchModalOpen(true)}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: '#f5f5f5'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <SearchIcon sx={{ fontSize: 16 }} />
-                </Box>
-                <ListItemText
-                  primary="Search"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
-                />
-                <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: '#f0f0f0', px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
-                  F
-                </Typography>
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="New"
+              icon={<AddIcon sx={{ fontSize: 16 }} />}
+              onClick={(e) => setNewMenuAnchorEl(e?.currentTarget as HTMLElement)}
+              shortcut="N"
+              iconBoxBgColor="#eef2ff"
+              alwaysAccent
+              buttonRef={newButtonRef as React.Ref<HTMLDivElement>}
+            />
+            <NavItem
+              label="Search"
+              icon={<SearchIcon sx={{ fontSize: 16 }} />}
+              onClick={() => setSearchModalOpen(true)}
+              shortcut="F"
+            />
             <Divider sx={{ my: 1.5 }} />
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('home')}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  backgroundColor: currentPage === 'home' ? '#e3f2fd' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'home' ? '#d6ebf9' : '#f8f8f8'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'home' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <HomeOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'home' ? '#1e5a96' : undefined }} />
-                </Box>
-                <ListItemText
-                  primary="Home"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'home' ? '#1e5a96' : undefined }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => { onPageChange?.('portfolio'); setControlRoomExpanded(true); }}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  backgroundColor: currentPage === 'portfolio' ? '#e3f2fd' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'portfolio' ? '#d6ebf9' : '#f8f8f8'
-                  },
-                  '&:hover .nav-icon': { opacity: 0 },
-                  '&:hover .nav-chevron': { opacity: 1 },
-                }}
-              >
-                <Box
-                  onClick={(e) => { e.stopPropagation(); setControlRoomExpanded(!controlRoomExpanded); }}
-                  sx={{ width: 28, height: 28, bgcolor: currentPage === 'portfolio' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
-                >
-                  <MonitorHeartOutlined className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage === 'portfolio' ? '#1e5a96' : undefined }} />
-                  <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 18, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: controlRoomExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage === 'portfolio' ? '#1e5a96' : undefined }} />
-                </Box>
-                <ListItemText
-                  primary="Control Room"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'portfolio' ? '#1e5a96' : undefined }}
-                />
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="Home"
+              icon={<HomeOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'home'}
+              onClick={() => onPageChange?.('home')}
+            />
+            <NavItem
+              label="Control Room"
+              icon={<MonitorHeartOutlined sx={{ fontSize: 16 }} />}
+              active={currentPage === 'portfolio'}
+              onClick={() => { onPageChange?.('portfolio'); setControlRoomExpanded(true); }}
+              expanded={controlRoomExpanded}
+              onToggleExpand={() => setControlRoomExpanded(!controlRoomExpanded)}
+            />
             {controlRoomExpanded && (
               <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {/* Themes dropdown */}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); setCrThemesExpanded(true); }}
-                    sx={{
-                      height: 36,
-                      paddingLeft: '4px',
-                      gap: 1,
-                      borderRadius: '6px',
-                      bgcolor: currentPage === 'portfolio' && selection === 'themes_group' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'portfolio' && selection === 'themes_group' ? '#d6ebf9' : '#f8f8f8' },
-                      '&:hover .nav-icon': { opacity: 0 },
-                      '&:hover .nav-chevron': { opacity: 1 },
-                    }}
-                  >
-                    <Box
-                      onClick={(e) => { e.stopPropagation(); setCrThemesExpanded(!crThemesExpanded); }}
-                      sx={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
-                    >
-                      <NatureOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage === 'portfolio' && selection === 'themes_group' ? '#1e5a96' : undefined }} />
-                      <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 16, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: crThemesExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage === 'portfolio' && selection === 'themes_group' ? '#1e5a96' : undefined }} />
-                    </Box>
-                    <ListItemText primary="Themes" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'themes_group' ? 600 : 400, color: currentPage === 'portfolio' && selection === 'themes_group' ? '#1e5a96' : undefined }} />
-                  </ListItemButton>
-                </ListItem>
+                <NavItem
+                  label="Themes"
+                  icon={<NatureOutlinedIcon sx={{ fontSize: 16 }} />}
+                  active={currentPage === 'portfolio' && selection === 'themes_group'}
+                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); setCrThemesExpanded(true); }}
+                  expanded={crThemesExpanded}
+                  onToggleExpand={() => setCrThemesExpanded(!crThemesExpanded)}
+                  size={20}
+                />
                 {crThemesExpanded && [
                   { key: 'sustainability', label: 'Sustainability' },
                   { key: 'comfort', label: 'Comfort' },
@@ -665,261 +673,79 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   { key: 'security_systems', label: 'Security Systems' },
                   { key: 'access_control', label: 'Access Control' },
                 ].map((item) => (
-                  <ListItem key={item.key} disablePadding>
-                    <ListItemButton
-                      onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                      sx={{
-                        height: 36,
-                        paddingLeft: '4px',
-                        gap: 1,
-                        borderRadius: '6px',
-                        bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
-                        '&:hover': { bgcolor: currentPage === 'portfolio' && selection === item.key ? '#d6ebf9' : '#f8f8f8' }
-                      }}
-                    >
-                      <Box sx={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : '#bdbdbd' }} />
-                      </Box>
-                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400, color: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : undefined }} />
-                    </ListItemButton>
-                  </ListItem>
+                  <NavItem
+                    key={item.key}
+                    label={item.label}
+                    active={currentPage === 'portfolio' && selection === item.key}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                    size={20}
+                  />
                 ))}
 
                 {/* Operations dropdown */}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); setCrOperationsExpanded(true); }}
-                    sx={{
-                      height: 36,
-                      paddingLeft: '4px',
-                      gap: 1,
-                      borderRadius: '6px',
-                      bgcolor: currentPage === 'portfolio' && selection === 'operations_group' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'portfolio' && selection === 'operations_group' ? '#d6ebf9' : '#f8f8f8' },
-                      '&:hover .nav-icon': { opacity: 0 },
-                      '&:hover .nav-chevron': { opacity: 1 },
-                    }}
-                  >
-                    <Box
-                      onClick={(e) => { e.stopPropagation(); setCrOperationsExpanded(!crOperationsExpanded); }}
-                      sx={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
-                    >
-                      <HandymanOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage === 'portfolio' && selection === 'operations_group' ? '#1e5a96' : undefined }} />
-                      <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 16, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: crOperationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage === 'portfolio' && selection === 'operations_group' ? '#1e5a96' : undefined }} />
-                    </Box>
-                    <ListItemText primary="Operations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === 'operations_group' ? 600 : 400, color: currentPage === 'portfolio' && selection === 'operations_group' ? '#1e5a96' : undefined }} />
-                  </ListItemButton>
-                </ListItem>
+                <NavItem
+                  label="Operations"
+                  icon={<HandymanOutlinedIcon sx={{ fontSize: 16 }} />}
+                  active={currentPage === 'portfolio' && selection === 'operations_group'}
+                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); setCrOperationsExpanded(true); }}
+                  expanded={crOperationsExpanded}
+                  onToggleExpand={() => setCrOperationsExpanded(!crOperationsExpanded)}
+                  size={20}
+                />
                 {crOperationsExpanded && [
                   { key: 'tickets', label: 'Tickets' },
                   { key: 'quotations', label: 'Quotations' },
                   { key: 'maintenance', label: 'Maintenance' },
                 ].map((item) => (
-                  <ListItem key={item.key} disablePadding>
-                    <ListItemButton
-                      onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                      sx={{
-                        height: 36,
-                        paddingLeft: '4px',
-                        gap: 1,
-                        borderRadius: '6px',
-                        bgcolor: currentPage === 'portfolio' && selection === item.key ? '#e3f2fd' : 'transparent',
-                        '&:hover': { bgcolor: currentPage === 'portfolio' && selection === item.key ? '#d6ebf9' : '#f8f8f8' }
-                      }}
-                    >
-                      <Box sx={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : '#bdbdbd' }} />
-                      </Box>
-                      <ListItemText primary={item.label} primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'portfolio' && selection === item.key ? 600 : 400, color: currentPage === 'portfolio' && selection === item.key ? '#1e5a96' : undefined }} />
-                    </ListItemButton>
-                  </ListItem>
+                  <NavItem
+                    key={item.key}
+                    label={item.label}
+                    active={currentPage === 'portfolio' && selection === item.key}
+                    onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
+                    size={20}
+                  />
                 ))}
               </List>
             )}
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('insights')}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  backgroundColor: currentPage === 'insights' ? '#e3f2fd' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'insights' ? '#d6ebf9' : '#f8f8f8'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'insights' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'insights' ? '#1e5a96' : undefined }} />
-                </Box>
-                <ListItemText
-                  primary="Insights"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'insights' ? '#1e5a96' : undefined }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('dashboards')}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  backgroundColor: currentPage === 'dashboards' ? '#e3f2fd' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'dashboards' ? '#d6ebf9' : '#f8f8f8'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'dashboards' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <DashboardOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'dashboards' ? '#1e5a96' : undefined }} />
-                </Box>
-                <ListItemText
-                  primary="Dashboards"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'dashboards' ? '#1e5a96' : undefined }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('portfolio_overview')}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  backgroundColor: currentPage === 'portfolio_overview' ? '#e3f2fd' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'portfolio_overview' ? '#d6ebf9' : '#f8f8f8'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'portfolio_overview' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ApartmentOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'portfolio_overview' ? '#1e5a96' : undefined }} />
-                </Box>
-                <ListItemText
-                  primary="Portfolio & Assets"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'portfolio_overview' ? '#1e5a96' : undefined }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => { onPageChange?.('operations'); setOperationsExpanded(true); }}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  backgroundColor: currentPage?.startsWith('operations') ? '#e3f2fd' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage?.startsWith('operations') ? '#d6ebf9' : '#f8f8f8'
-                  },
-                  '&:hover .nav-icon': { opacity: 0 },
-                  '&:hover .nav-chevron': { opacity: 1 },
-                }}
-              >
-                <Box
-                  onClick={(e) => { e.stopPropagation(); setOperationsExpanded(!operationsExpanded); }}
-                  sx={{ width: 28, height: 28, bgcolor: currentPage?.startsWith('operations') ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', cursor: 'pointer' }}
-                >
-                  <HandymanOutlinedIcon className="nav-icon" sx={{ fontSize: 16, transition: 'opacity 0.2s', color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined }} />
-                  <ExpandMoreIcon className="nav-chevron" sx={{ fontSize: 18, position: 'absolute', opacity: 0, transition: 'opacity 0.2s, transform 0.3s', transform: operationsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)', color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined }} />
-                </Box>
-                <ListItemText
-                  primary="Operations"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined }}
-                />
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="Insights"
+              icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'insights'}
+              onClick={() => onPageChange?.('insights')}
+            />
+            <NavItem
+              label="Dashboards"
+              icon={<DashboardOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'dashboards'}
+              onClick={() => onPageChange?.('dashboards')}
+            />
+            <NavItem
+              label="Portfolio & Assets"
+              icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'portfolio_overview'}
+              onClick={() => onPageChange?.('portfolio_overview')}
+            />
+            <NavItem
+              label="Operations"
+              icon={<HandymanOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage?.startsWith('operations')}
+              onClick={() => { onPageChange?.('operations'); setOperationsExpanded(true); }}
+              expanded={operationsExpanded}
+              onToggleExpand={() => setOperationsExpanded(!operationsExpanded)}
+            />
             {operationsExpanded && (
               <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => onPageChange?.('operations_docs')}
-                    sx={{
-                      height: 36,
-                      paddingLeft: '4px',
-                      gap: 1,
-                      borderRadius: '6px',
-                      bgcolor: currentPage === 'operations_docs' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_docs' ? '#d6ebf9' : '#f8f8f8' }
-                    }}
-                  >
-                    <Box sx={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'operations_docs' ? '#1e5a96' : '#bdbdbd' }} />
-                    </Box>
-                    <ListItemText primary="Docs" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_docs' ? 600 : 400, color: currentPage === 'operations_docs' ? '#1e5a96' : undefined }} />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => onPageChange?.('operations_tickets')}
-                    sx={{
-                      height: 36,
-                      paddingLeft: '4px',
-                      gap: 1,
-                      borderRadius: '6px',
-                      bgcolor: currentPage === 'operations_tickets' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_tickets' ? '#d6ebf9' : '#f8f8f8' }
-                    }}
-                  >
-                    <Box sx={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'operations_tickets' ? '#1e5a96' : '#bdbdbd' }} />
-                    </Box>
-                    <ListItemText primary="Tickets" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_tickets' ? 600 : 400, color: currentPage === 'operations_tickets' ? '#1e5a96' : undefined }} />
-                  </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => onPageChange?.('operations_quotations')}
-                    sx={{
-                      height: 36,
-                      paddingLeft: '4px',
-                      gap: 1,
-                      borderRadius: '6px',
-                      bgcolor: currentPage === 'operations_quotations' ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: currentPage === 'operations_quotations' ? '#d6ebf9' : '#f8f8f8' }
-                    }}
-                  >
-                    <Box sx={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: currentPage === 'operations_quotations' ? '#1e5a96' : '#bdbdbd' }} />
-                    </Box>
-                    <ListItemText primary="Quotations" primaryTypographyProps={{ variant: 'body2', fontWeight: currentPage === 'operations_quotations' ? 600 : 400, color: currentPage === 'operations_quotations' ? '#1e5a96' : undefined }} />
-                  </ListItemButton>
-                </ListItem>
+                <NavItem label="Docs" active={currentPage === 'operations_docs'} onClick={() => onPageChange?.('operations_docs')} />
+                <NavItem label="Tickets" active={currentPage === 'operations_tickets'} onClick={() => onPageChange?.('operations_tickets')} />
+                <NavItem label="Quotations" active={currentPage === 'operations_quotations'} onClick={() => onPageChange?.('operations_quotations')} />
               </List>
             )}
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => onPageChange?.('bms')}
-                sx={{
-                  height: 36,
-                  paddingLeft: '4px',
-                  gap: 1,
-                  borderRadius: '6px',
-                  backgroundColor: currentPage === 'bms' ? '#e3f2fd' : 'transparent',
-                  transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    backgroundColor: currentPage === 'bms' ? '#d6ebf9' : '#f8f8f8'
-                  }
-                }}
-              >
-                <Box sx={{ width: 28, height: 28, bgcolor: currentPage === 'bms' ? '#e3f2fd' : '#f0f0f0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <SettingsInputComponentOutlinedIcon sx={{ fontSize: 16, color: currentPage === 'bms' ? '#1e5a96' : undefined }} />
-                </Box>
-                <ListItemText
-                  primary="BMS"
-                  primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: currentPage === 'bms' ? '#1e5a96' : undefined }}
-                />
-              </ListItemButton>
-            </ListItem>
+            <NavItem
+              label="BMS"
+              icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'bms'}
+              onClick={() => onPageChange?.('bms')}
+            />
           </List>
             </Box>
           </Box>
