@@ -38,8 +38,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Popover from '@mui/material/Popover';
 import Avatar from '@mui/material/Avatar';
 import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined';
@@ -390,12 +388,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
       window.removeEventListener('blur', handleBlur);
     };
   }, [newMenuAnchorEl]);
-  const [controlRoomExpanded, setControlRoomExpanded] = useState(currentPage === 'portfolio');
-  const [crThemesExpanded, setCrThemesExpanded] = useState(false);
-  const [crOperationsExpanded, setCrOperationsExpanded] = useState(false);
-  const [operationsExpanded, setOperationsExpanded] = useState(currentPage?.startsWith('operations') ?? false);
-  const [collapsedControlRoomAnchor, setCollapsedControlRoomAnchor] = useState<HTMLElement | null>(null);
-  const [collapsedOperationsAnchor, setCollapsedOperationsAnchor] = useState<HTMLElement | null>(null);
+
   const safeTriangleCleanupRef = useRef<(() => void) | null>(null);
 
   const isPointInTriangle = (px: number, py: number, ax: number, ay: number, bx: number, by: number, cx: number, cy: number) => {
@@ -661,75 +654,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               label="Control Room"
               icon={<MonitorHeartOutlined sx={{ fontSize: 16 }} />}
               active={currentPage === 'portfolio'}
-              onClick={() => { onPageChange?.('portfolio'); setControlRoomExpanded(true); }}
-              expanded={controlRoomExpanded}
-              onToggleExpand={() => setControlRoomExpanded(!controlRoomExpanded)}
+              onClick={() => onPageChange?.('portfolio')}
             />
-            {controlRoomExpanded && (
-              <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                {/* Themes dropdown */}
-                <NavItem
-                  label="Themes"
-                  icon={<NatureOutlinedIcon sx={{ fontSize: 16 }} />}
-                  active={currentPage === 'portfolio' && selection === 'themes_group'}
-                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('themes_group'); setCrThemesExpanded(true); }}
-                  expanded={crThemesExpanded}
-                  onToggleExpand={() => setCrThemesExpanded(!crThemesExpanded)}
-                  size={20}
-                />
-                {crThemesExpanded && (
-                  <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    {[
-                      { key: 'sustainability', label: 'Sustainability' },
-                      { key: 'comfort', label: 'Comfort' },
-                      { key: 'asset_monitoring', label: 'Asset Monitoring' },
-                      { key: 'energy', label: 'Energy' },
-                      { key: 'workspace', label: 'Workspace' },
-                      { key: 'compliance', label: 'Compliance' },
-                      { key: 'water_management', label: 'Water Management' },
-                      { key: 'security_systems', label: 'Security Systems' },
-                      { key: 'access_control', label: 'Access Control' },
-                    ].map((item) => (
-                      <NavItem
-                        key={item.key}
-                        label={item.label}
-                        active={currentPage === 'portfolio' && selection === item.key}
-                        onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                        size={20}
-                      />
-                    ))}
-                  </List>
-                )}
-
-                {/* Operations dropdown */}
-                <NavItem
-                  label="Operations"
-                  icon={<HandymanOutlinedIcon sx={{ fontSize: 16 }} />}
-                  active={currentPage === 'portfolio' && selection === 'operations_group'}
-                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.('operations_group'); setCrOperationsExpanded(true); }}
-                  expanded={crOperationsExpanded}
-                  onToggleExpand={() => setCrOperationsExpanded(!crOperationsExpanded)}
-                  size={20}
-                />
-                {crOperationsExpanded && (
-                  <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    {[
-                      { key: 'tickets', label: 'Tickets' },
-                      { key: 'quotations', label: 'Quotations' },
-                      { key: 'maintenance', label: 'Maintenance' },
-                    ].map((item) => (
-                      <NavItem
-                        key={item.key}
-                        label={item.label}
-                        active={currentPage === 'portfolio' && selection === item.key}
-                        onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); }}
-                        size={20}
-                      />
-                    ))}
-                  </List>
-                )}
-              </List>
-            )}
             <NavItem
               label="Insights"
               icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -748,21 +674,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               active={currentPage === 'portfolio_overview'}
               onClick={() => onPageChange?.('portfolio_overview')}
             />
-            <NavItem
-              label="Operations"
-              icon={<HandymanOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage?.startsWith('operations')}
-              onClick={() => { onPageChange?.('operations'); setOperationsExpanded(true); }}
-              expanded={operationsExpanded}
-              onToggleExpand={() => setOperationsExpanded(!operationsExpanded)}
-            />
-            {operationsExpanded && (
-              <List dense sx={{ pl: 1, py: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <NavItem label="Docs" active={currentPage === 'operations_docs'} onClick={() => onPageChange?.('operations_docs')} />
-                <NavItem label="Tickets" active={currentPage === 'operations_tickets'} onClick={() => onPageChange?.('operations_tickets')} />
-                <NavItem label="Quotations" active={currentPage === 'operations_quotations'} onClick={() => onPageChange?.('operations_quotations')} />
-              </List>
-            )}
             <NavItem
               label="BMS"
               icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -930,74 +841,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </IconButton>
             </Tooltip>
 
-            {/* Control Room with hover submenu */}
-            <Tooltip title={collapsedControlRoomAnchor ? '' : 'Control Room'} placement="right">
+            <Tooltip title="Control Room" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('portfolio')}
-                onMouseEnter={(e) => {
-                  safeTriangleCleanupRef.current?.();
-                  setCollapsedControlRoomAnchor(e.currentTarget);
-                }}
-                onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'control-room', setCollapsedControlRoomAnchor)}
                 sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? colors.bgActive : 'transparent', color: currentPage === 'portfolio' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'portfolio' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
               >
                 <MonitorHeartOutlined sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
-            <Popover
-              open={Boolean(collapsedControlRoomAnchor)}
-              anchorEl={collapsedControlRoomAnchor}
-              onClose={() => setCollapsedControlRoomAnchor(null)}
-              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-              disableRestoreFocus
-              slotProps={{
-                paper: {
-                  'data-popover': 'control-room',
-                  onMouseLeave: () => { safeTriangleCleanupRef.current?.(); setCollapsedControlRoomAnchor(null); },
-                  sx: { ml: 1, p: 1, minWidth: 180, borderRadius: '8px' }
-                } as any
-              }}
-              sx={{ zIndex: 1600, pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
-            >
-              <Typography variant="subtitle2" sx={{ px: 1.5, py: 0.5, fontWeight: 600, color: 'text.secondary' }}>Themes</Typography>
-              {[
-                { key: 'sustainability', label: 'Sustainability' },
-                { key: 'comfort', label: 'Comfort' },
-                { key: 'asset_monitoring', label: 'Asset Monitoring' },
-                { key: 'energy', label: 'Energy' },
-                { key: 'workspace', label: 'Workspace' },
-                { key: 'compliance', label: 'Compliance' },
-                { key: 'water_management', label: 'Water Management' },
-                { key: 'security_systems', label: 'Security Systems' },
-                { key: 'access_control', label: 'Access Control' },
-              ].map((item) => (
-                <MenuItem
-                  key={item.key}
-                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); setCollapsedControlRoomAnchor(null); }}
-                  selected={currentPage === 'portfolio' && selection === item.key}
-                  sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}
-                >
-                  {item.label}
-                </MenuItem>
-              ))}
-              <Divider sx={{ my: 0.5 }} />
-              <Typography variant="subtitle2" sx={{ px: 1.5, py: 0.5, fontWeight: 600, color: 'text.secondary' }}>Operations</Typography>
-              {[
-                { key: 'tickets', label: 'Tickets' },
-                { key: 'quotations', label: 'Quotations' },
-                { key: 'maintenance', label: 'Maintenance' },
-              ].map((item) => (
-                <MenuItem
-                  key={item.key}
-                  onClick={() => { onPageChange?.('portfolio'); onSelectionChange?.(item.key); setCollapsedControlRoomAnchor(null); }}
-                  selected={currentPage === 'portfolio' && selection === item.key}
-                  sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}
-                >
-                  {item.label}
-                </MenuItem>
-              ))}
-            </Popover>
 
             <Tooltip title="Insights" placement="right">
               <IconButton
@@ -1025,59 +876,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <ApartmentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
-
-            {/* Operations with hover submenu */}
-            <Tooltip title={collapsedOperationsAnchor ? '' : 'Operations'} placement="right">
-              <IconButton
-                onClick={() => onPageChange?.('operations')}
-                onMouseEnter={(e) => {
-                  safeTriangleCleanupRef.current?.();
-                  setCollapsedOperationsAnchor(e.currentTarget);
-                }}
-                onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'operations', setCollapsedOperationsAnchor)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage?.startsWith('operations') ? colors.bgActive : 'transparent', color: currentPage?.startsWith('operations') ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage?.startsWith('operations') ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-              >
-                <HandymanOutlinedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-            <Popover
-              open={Boolean(collapsedOperationsAnchor)}
-              anchorEl={collapsedOperationsAnchor}
-              onClose={() => setCollapsedOperationsAnchor(null)}
-              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-              disableRestoreFocus
-              slotProps={{
-                paper: {
-                  'data-popover': 'operations',
-                  onMouseLeave: () => { safeTriangleCleanupRef.current?.(); setCollapsedOperationsAnchor(null); },
-                  sx: { ml: 1, p: 1, minWidth: 160, borderRadius: '8px' }
-                } as any
-              }}
-              sx={{ zIndex: 1600, pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
-            >
-              <MenuItem
-                onClick={() => { onPageChange?.('operations_docs'); setCollapsedOperationsAnchor(null); }}
-                selected={currentPage === 'operations_docs'}
-                sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
-              >
-                <DescriptionOutlinedIcon sx={{ fontSize: 16 }} /> Docs
-              </MenuItem>
-              <MenuItem
-                onClick={() => { onPageChange?.('operations_tickets'); setCollapsedOperationsAnchor(null); }}
-                selected={currentPage === 'operations_tickets'}
-                sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
-              >
-                <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> Tickets
-              </MenuItem>
-              <MenuItem
-                onClick={() => { onPageChange?.('operations_quotations'); setCollapsedOperationsAnchor(null); }}
-                selected={currentPage === 'operations_quotations'}
-                sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32, gap: 1.5 }}
-              >
-                <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} /> Quotations
-              </MenuItem>
-            </Popover>
 
             <Tooltip title="BMS" placement="right">
               <IconButton
