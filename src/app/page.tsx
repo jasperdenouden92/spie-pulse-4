@@ -764,7 +764,7 @@ export default function Home() {
   const isCompact = !!selectedBuilding;
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: colors.bgSecondary }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: colors.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
       {/* Left Sidebar */}
       <Box component="aside" sx={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: leftSidebarWidth, borderRight: 1, borderColor: 'divider', zIndex: 1500, transition: 'width 0.3s ease' }}>
         <Sidebar
@@ -866,8 +866,8 @@ export default function Home() {
         sx={{
           position: 'fixed',
           top: '56px',
-          left: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? `${leftSidebarWidth + 280}px` : `calc(-100vw + ${leftSidebarWidth + 280}px)`,
-          width: `calc(100vw - ${leftSidebarWidth + 280}px)`,
+          left: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? `${leftSidebarWidth + 280}px` : `calc(-100% + ${leftSidebarWidth + 280}px)`,
+          width: `calc(100% - ${leftSidebarWidth + 280}px)`,
           height: 'calc(100vh - 56px)',
           zIndex: 1425,
           transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -934,7 +934,7 @@ export default function Home() {
         </Box>
 
         {/* Asset Detail Content */}
-        <Container maxWidth="xl" sx={{ py: 3, overflowY: 'auto', flex: 1 }}>
+        <Container maxWidth={false} sx={{ py: 3, overflowY: 'auto', flex: 1, px: 3 }}>
           {quickviewAsset && <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />}
         </Container>
       </Box>
@@ -1077,7 +1077,9 @@ export default function Home() {
         position: 'relative',
         zIndex: 1,
         border: '3px dashed',
-        borderColor: isInspectMode ? colors.brand : 'transparent'
+        borderColor: isInspectMode ? colors.brand : 'transparent',
+        minWidth: 0,
+        overflow: 'hidden'
       }}>
         <PageHeader
             currentPage={currentPage}
@@ -1315,7 +1317,7 @@ export default function Home() {
 
         {/* Page Content */}
         {currentPage !== 'portfolio_overview' && currentPage !== 'dashboards' && (
-        <Container maxWidth="xl" sx={{ pb: 3, flex: 1, mt: '56px', pt: 2 }}>
+        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: 3 }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
@@ -1434,7 +1436,7 @@ export default function Home() {
                   {/* ========== KPI METRICS SECTION ========== */}
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
                   <Box sx={{
-                    display: 'flex', gap: 2, mb: 3,
+                    display: 'flex', gap: 2, mb: 3, minWidth: 0,
                     '&:hover > *': {
                       opacity: '0.55 !important',
                       transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1456,7 +1458,8 @@ export default function Home() {
                         borderColor: selection === 'overall' ? '#90caf9' : 'divider',
                         borderRadius: 1,
                         bgcolor: '#fff',
-                        minWidth: isCompact ? 180 : 240,
+                        minWidth: isCompact ? 140 : 180,
+                        flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
                         cursor: 'pointer',
@@ -1496,7 +1499,7 @@ export default function Home() {
 
                     {/* KPI Groups Container — also gets sibling-dimming on hover */}
                     <Box sx={{
-                      flex: 1, display: 'flex', flexDirection: 'column',
+                      flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
                       gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease',
                       '&:hover > .kpi-group-panel': {
                         opacity: '0.55 !important',
@@ -1555,7 +1558,7 @@ export default function Home() {
                         {/* Primary Theme KPIs — only clickable when themes are active */}
                         <Box sx={{
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                           gap: isCompact ? 1.5 : 2,
                           transition: 'gap 0.3s ease'
                         }}>
@@ -1597,7 +1600,7 @@ export default function Home() {
                             >
                               <Box sx={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(3, 1fr)',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                                 gap: isCompact ? 1.5 : 2,
                                 mt: isCompact ? 1.5 : 2,
                                 transition: 'gap 0.3s ease'
@@ -1711,7 +1714,7 @@ export default function Home() {
                         {/* Operations KPIs */}
                         <Box sx={{
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                           gap: isCompact ? 1.5 : 2,
                           transition: 'gap 0.3s ease'
                         }}>
