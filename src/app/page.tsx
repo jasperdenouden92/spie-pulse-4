@@ -1768,7 +1768,7 @@ export default function Home() {
                           onChange={setBuildingsPanelTab}
                           tabs={[
                             { value: 'buildings', label: 'Buildings' },
-                            { value: 'kpi_analysis', label: 'Analysis' },
+                            { value: 'kpi_analysis', label: 'Performance' },
                             { value: 'recommendations', label: 'Recommendations' },
                           ]}
                         />
