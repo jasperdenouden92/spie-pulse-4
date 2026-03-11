@@ -87,7 +87,7 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
       </Box>
 
       {/* Score and trend row with sparkline */}
-      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: isCompact ? 3 : 6, transition: 'gap 0.3s ease' }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease', minWidth: 0, flexWrap: 'wrap' }}>
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: isCompact ? 1 : 1.5, transition: 'gap 0.3s ease' }}>
           <Typography variant="h5" sx={{ fontWeight: 600, fontSize: isCompact ? '1.25rem' : '1.5rem', transition: 'font-size 0.3s ease' }}>
             <AnimatedNumber value={score} />%
