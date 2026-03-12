@@ -173,7 +173,7 @@ export default function RecommendationsInbox() {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-              Recommendations
+              Insights
             </Typography>
             {unreadCount > 0 && (
               <Chip

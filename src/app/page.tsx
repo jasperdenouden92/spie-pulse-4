@@ -130,9 +130,8 @@ interface Favorite {
 }
 
 // All theme metric keys (primary + expanded)
-const PRIMARY_THEME_KEYS: MetricType[] = ['sustainability', 'comfort', 'asset_monitoring'];
-const EXPANDED_THEME_KEYS: MetricType[] = ['energy', 'workspace', 'compliance', 'water_management', 'security_systems', 'access_control'];
-const ALL_THEME_KEYS: MetricType[] = [...PRIMARY_THEME_KEYS, ...EXPANDED_THEME_KEYS];
+const PRIMARY_THEME_KEYS: MetricType[] = ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
+const ALL_THEME_KEYS: MetricType[] = [...PRIMARY_THEME_KEYS];
 const OPERATIONS_KEYS: MetricType[] = ['tickets', 'quotations', 'maintenance'];
 
 const SELECTION_LABELS: Record<string, string> = {
@@ -145,12 +144,7 @@ const SELECTION_LABELS: Record<string, string> = {
   tickets: 'tickets',
   quotations: 'quotations',
   maintenance: 'maintenance',
-  energy: 'energy',
-  workspace: 'workspace',
   compliance: 'compliance',
-  water_management: 'water management',
-  security_systems: 'security systems',
-  access_control: 'access control',
 };
 
 export default function Home() {
@@ -219,7 +213,6 @@ export default function Home() {
   const selectedCity = searchParams.get('city') ?? 'All Cities';
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
-  const showMoreThemes = searchParams.get('themes') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
 
   // URL-based asset (from asset explorer / tree)
@@ -423,7 +416,6 @@ export default function Home() {
   const setSelectedCity = (c: string) => setURLParams({ city: c });
   const setIsInspectMode = (v: boolean) => setURLParams({ inspect: v ? '1' : '0' });
   const setIsAssetExplorerOpen = (v: boolean) => setURLParams({ explorer: v ? '1' : '0' });
-  const setShowMoreThemes = (v: boolean) => setURLParams({ themes: v ? '1' : '0' });
   const setAssetTab = (n: number) => setURLParams({ assetTab: String(n) });
   // Open a URL-serialisable asset (from the tree)
   const setQuickviewAsset = (a: AssetNode | null) => {
@@ -580,8 +572,7 @@ export default function Home() {
     if (selection === metric) {
       setURLParams({ metric: 'overall', themes: '0' });
     } else {
-      const nextThemes = EXPANDED_THEME_KEYS.includes(metric) ? undefined : '0';
-      setURLParams({ metric, ...(nextThemes ? { themes: nextThemes } : {}) });
+      setURLParams({ metric });
     }
   };
 
@@ -1451,7 +1442,7 @@ export default function Home() {
                     {/* Overall Score Card */}
                     <Box
                       component="button"
-                      onClick={() => { setSelection('overall'); setShowMoreThemes(false); }}
+                      onClick={() => { setSelection('overall'); }}
                       sx={{
                         p: isCompact ? 2 : 3,
                         border: '1.5px solid',
@@ -1588,82 +1579,6 @@ export default function Home() {
                           })}
                         </Box>
 
-                        {/* Show More Themes */}
-                        <AnimatePresence>
-                          {showMoreThemes && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                              style={{ overflow: 'hidden' }}
-                            >
-                              <Box sx={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                                gap: isCompact ? 1.5 : 2,
-                                mt: isCompact ? 1.5 : 2,
-                                transition: 'gap 0.3s ease'
-                              }}>
-                                {periodMetrics.expandedThemes.map((metric, index) => {
-                                  const metricKey = EXPANDED_THEME_KEYS[index];
-                                  const score = selectedBuilding
-                                    ? selectedBuilding.metrics[metricKey].green
-                                    : metric.score;
-
-                                  return (
-                                    <KPICard
-                                      key={metric.title}
-                                      title={metric.title}
-                                      icon={themeIcons[metric.title]}
-                                      score={score}
-                                      trend={metric.trend}
-                                      sparklineData={metric.sparklineData}
-                                      periodLabel={periodMetrics.periodLabel}
-                                      onClick={() => handleMetricSelect(metricKey)}
-                                      onToggle={() => handleMetricSelect(metricKey)}
-                                      toggleState={getToggleState(metricKey, 'themes')}
-                                      isSelected={selection === metricKey}
-                                      isDimmed={getToggleState(metricKey, 'themes') === 'off'}
-                                      isCompact={isCompact}
-                                    />
-                                  );
-                                })}
-                              </Box>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        {/* Show More / Show Less button */}
-                        <Box
-                          component="button"
-                          onClick={() => setShowMoreThemes(!showMoreThemes)}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 0.5,
-                            mt: 1.5,
-                            py: 0.5,
-                            width: '100%',
-                            border: 'none',
-                            borderTop: 1,
-                            borderColor: 'divider',
-                            bgcolor: 'transparent',
-                            cursor: 'pointer',
-                            color: 'text.secondary',
-                            fontSize: '0.813rem',
-                            fontWeight: 500,
-                            transition: 'color 0.2s ease',
-                            '&:hover': { color: 'text.primary' }
-                          }}
-                        >
-                          {showMoreThemes ? 'Show fewer themes' : 'Show more themes'}
-                          {showMoreThemes
-                            ? <KeyboardArrowUpIcon sx={{ fontSize: 18 }} />
-                            : <KeyboardArrowDownIcon sx={{ fontSize: 18 }} />
-                          }
-                        </Box>
                       </Box>
 
                       {/* ===== OPERATIONS ROW ===== */}
@@ -1772,7 +1687,7 @@ export default function Home() {
                           tabs={[
                             { value: 'buildings', label: 'Buildings' },
                             { value: 'kpi_analysis', label: 'Performance' },
-                            { value: 'recommendations', label: 'Recommendations' },
+                            { value: 'recommendations', label: 'Insights' },
                           ]}
                         />
 
