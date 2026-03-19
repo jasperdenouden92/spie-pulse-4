@@ -4,6 +4,9 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -57,6 +60,8 @@ interface PageHeaderProps {
   filterBuildingLabel?: string;
   onFilterDateClick?: (e: React.MouseEvent<HTMLElement>) => void;
   onFilterBuildingClick?: (e: React.MouseEvent<HTMLElement>) => void;
+  selectionScore?: number | null;
+  metricItems?: Array<{ key: string; label: string; icon: React.ReactNode; score: number; group: 'themes' | 'operations' }>;
 }
 
 // Mapping from selection values to display names for breadcrumb segments
@@ -116,6 +121,8 @@ export default function PageHeader({
   filterBuildingLabel,
   onFilterDateClick,
   onFilterBuildingClick,
+  selectionScore,
+  metricItems = [],
 }: PageHeaderProps) {
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
@@ -420,34 +427,74 @@ export default function PageHeader({
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <Typography
-                    variant="h6"
-                    sx={{ fontWeight: 600, fontSize: '1rem', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  <Box
                     onClick={(e) => setChildCaretAnchor(e.currentTarget)}
+                    sx={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      cursor: 'pointer', px: 1, py: 0.5, mx: -1, borderRadius: 1,
+                      transition: 'background-color 0.15s ease',
+                      '&:hover': { bgcolor: 'action.hover' },
+                    }}
                   >
-                    {childLabel}
-                  </Typography>
-                  <UnfoldMoreIcon
-                    onClick={(e) => setChildCaretAnchor(e.currentTarget as unknown as HTMLElement)}
-                    sx={{ fontSize: 18, color: 'text.secondary', cursor: 'pointer' }}
-                  />
+                    {(() => {
+                      const currentItem = metricItems.find(m => m.key === selection);
+                      return currentItem ? <Box sx={{ display: 'flex', color: 'text.secondary', fontSize: 20 }}>{currentItem.icon}</Box> : null;
+                    })()}
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                      {childLabel}
+                    </Typography>
+                    {selectionScore != null && (
+                      <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: 'text.secondary' }}>
+                        {selectionScore}%
+                      </Typography>
+                    )}
+                    <UnfoldMoreIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  </Box>
                   <Menu
                     anchorEl={childCaretAnchor}
                     open={Boolean(childCaretAnchor)}
                     onClose={() => setChildCaretAnchor(null)}
+                    slotProps={{ paper: { sx: { minWidth: 240 } } }}
                   >
-                    {siblingEntries.map(([key, label]) => (
-                      <MenuItem
-                        key={key}
-                        selected={selection === key}
-                        onClick={() => {
-                          onSelectionChange?.(key);
-                          setChildCaretAnchor(null);
-                        }}
-                      >
-                        {label}
-                      </MenuItem>
-                    ))}
+                    {metricItems.length > 0 ? (
+                      <>
+                        {metricItems.filter(m => m.group === 'themes').map((item) => (
+                          <MenuItem
+                            key={item.key}
+                            selected={selection === item.key}
+                            onClick={() => { onSelectionChange?.(item.key); setChildCaretAnchor(null); }}
+                            sx={{ py: 1 }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>{item.icon}</ListItemIcon>
+                            <ListItemText>{item.label}</ListItemText>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? '#4caf50' : item.score >= 60 ? '#ff9800' : '#f44336', ml: 2 }}>{item.score}%</Typography>
+                          </MenuItem>
+                        ))}
+                        <Divider />
+                        {metricItems.filter(m => m.group === 'operations').map((item) => (
+                          <MenuItem
+                            key={item.key}
+                            selected={selection === item.key}
+                            onClick={() => { onSelectionChange?.(item.key); setChildCaretAnchor(null); }}
+                            sx={{ py: 1 }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>{item.icon}</ListItemIcon>
+                            <ListItemText>{item.label}</ListItemText>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? '#4caf50' : item.score >= 60 ? '#ff9800' : '#f44336', ml: 2 }}>{item.score}%</Typography>
+                          </MenuItem>
+                        ))}
+                      </>
+                    ) : (
+                      siblingEntries.map(([key, label]) => (
+                        <MenuItem
+                          key={key}
+                          selected={selection === key}
+                          onClick={() => { onSelectionChange?.(key); setChildCaretAnchor(null); }}
+                        >
+                          {label}
+                        </MenuItem>
+                      ))
+                    )}
                   </Menu>
                 </motion.div>
               )}

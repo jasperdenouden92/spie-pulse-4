@@ -245,6 +245,9 @@ export default function Themes() {
                   fullWidth
                   variant="outlined"
                   endIcon={<ArrowForwardIcon />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
                   sx={{
                     mt: 5,
                     borderColor: theme.color,
