@@ -1,41 +1,30 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Popover from '@mui/material/Popover';
+import IconButton from '@mui/material/IconButton';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { colors } from '@/colors';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// ── Constants ────────────────────────────────────────────────────────────────
 
-type ViewSize = 'month' | 'quarter' | 'year';
-
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 const MONTHS_NL = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'] as const;
-const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
 
 const TODAY = new Date();
 TODAY.setHours(0, 0, 0, 0);
 
-/** Timeline origin */
-const TIMELINE_ORIGIN = new Date(2023, 0, 1);
+const MIN_YEAR = 2023;
 
-/** Visible width of the scroll container (dialog 560 - no horizontal padding) */
-const VISIBLE_WIDTH_PX = 560;
+// ── Date helpers ─────────────────────────────────────────────────────────────
 
 function startOfDay(d: Date): Date {
   const r = new Date(d);
   r.setHours(0, 0, 0, 0);
   return r;
-}
-
-function addDays(d: Date, n: number): Date {
-  const r = new Date(d);
-  r.setDate(r.getDate() + n);
-  return r;
-}
-
-function diffDays(a: Date, b: Date): number {
-  return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
 function startOfMonth(d: Date): Date {
@@ -44,6 +33,19 @@ function startOfMonth(d: Date): Date {
 
 function endOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+}
+
+function endOfQuarter(d: Date): Date {
+  const q = Math.floor(d.getMonth() / 3);
+  return new Date(d.getFullYear(), q * 3 + 3, 0);
+}
+
+function startOfYear(d: Date): Date {
+  return new Date(d.getFullYear(), 0, 1);
+}
+
+function endOfYear(d: Date): Date {
+  return new Date(d.getFullYear(), 11, 31);
 }
 
 function startOfWeek(d: Date): Date {
@@ -59,65 +61,11 @@ function endOfWeek(d: Date): Date {
   return r;
 }
 
-function startOfYear(d: Date): Date {
-  return new Date(d.getFullYear(), 0, 1);
+function clampToToday(d: Date): Date {
+  return d > TODAY ? TODAY : d;
 }
 
-function endOfYear(d: Date): Date {
-  return new Date(d.getFullYear(), 11, 31);
-}
-
-function startOfQuarter(d: Date): Date {
-  const q = Math.floor(d.getMonth() / 3);
-  return new Date(d.getFullYear(), q * 3, 1);
-}
-
-function endOfQuarter(d: Date): Date {
-  const q = Math.floor(d.getMonth() / 3);
-  return new Date(d.getFullYear(), q * 3 + 3, 0);
-}
-
-function getISOWeekNumber(d: Date): number {
-  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-  return Math.ceil(((tmp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-}
-
-function clampDate(d: Date, min: Date, max: Date): Date {
-  if (d < min) return min;
-  if (d > max) return max;
-  return d;
-}
-
-function formatDateWithYear(d: Date, forceYear: boolean): string {
-  const base = `${MONTHS_FULL[d.getMonth()]} ${d.getDate()}`;
-  return forceYear ? `${base}, ${d.getFullYear()}` : base;
-}
-
-function formatDateRange(from: Date, to: Date): string {
-  const thisYear = TODAY.getFullYear();
-  const toIsToday = diffDays(to, TODAY) === 0;
-
-  if (from.getFullYear() === to.getFullYear() && from.getMonth() === to.getMonth() && from.getDate() === to.getDate()) {
-    if (toIsToday) return 'Today';
-    return formatDateWithYear(from, from.getFullYear() !== thisYear);
-  }
-
-  const showFromYear = from.getFullYear() !== thisYear || from.getFullYear() !== to.getFullYear();
-  const showToYear = to.getFullYear() !== thisYear || from.getFullYear() !== to.getFullYear();
-  const fromStr = formatDateWithYear(from, showFromYear);
-  const toStr = toIsToday ? 'Today' : formatDateWithYear(to, showToYear);
-  return `${fromStr} – ${toStr}`;
-}
-
-function durationLabel(from: Date, to: Date): string {
-  const days = diffDays(from, to) + 1;
-  if (days <= 1) return '1 Day';
-  return `${days} Days`;
-}
-
-// ── named-range resolution ──────────────────────────────────────────────────
+// ── Public API ───────────────────────────────────────────────────────────────
 
 export function parseDateRange(value: string): { from: Date; to: Date } {
   if (value.includes('|')) {
@@ -140,7 +88,7 @@ export function parseDateRange(value: string): { from: Date; to: Date } {
       return { from: origin, to: now };
     }
     default: {
-      return { from: startOfMonth(now), to: endOfMonth(now) };
+      return { from: startOfMonth(now), to: now };
     }
   }
 }
@@ -152,7 +100,6 @@ export function dateRangeToString(from: Date, to: Date): string {
 }
 
 export function getDateRangeDisplayLabel(value: string): string {
-  // Named presets → relative label
   const RELATIVE_LABELS: Record<string, string> = {
     'Today': 'today',
     'This Week': 'this week',
@@ -162,8 +109,6 @@ export function getDateRangeDisplayLabel(value: string): string {
     'All Time': 'all time',
   };
   if (RELATIVE_LABELS[value]) return RELATIVE_LABELS[value];
-
-  // Custom date ranges → "jan 1 - mar 31"
   const { from, to } = parseDateRange(value);
   const fmt = (d: Date) => `${MONTHS_NL[d.getMonth()]} ${d.getDate()}`;
   if (from.getFullYear() === to.getFullYear() && from.getMonth() === to.getMonth() && from.getDate() === to.getDate()) {
@@ -172,411 +117,471 @@ export function getDateRangeDisplayLabel(value: string): string {
   return `${fmt(from)} - ${fmt(to)}`;
 }
 
-// ── timeline data ───────────────────────────────────────────────────────────
+// ── Drag state type ──────────────────────────────────────────────────────────
 
-interface MonthMark {
-  date: Date;      // 1st of the month
-  label: string;   // e.g. "January"
-  yearLabel: string;
-  offsetPx: number;
-  widthPx: number;
-}
+type DragState = {
+  mode: 'select' | 'resize-left' | 'resize-right';
+  anchor: number;  // linear month index (fixed end)
+  current: number; // linear month index (moving end)
+};
 
-function buildTimelineMonths(timelineStart: Date, timelineEnd: Date, pxPerDay: number): MonthMark[] {
-  const result: MonthMark[] = [];
-  let cursor = new Date(timelineStart.getFullYear(), timelineStart.getMonth(), 1);
-  while (cursor <= timelineEnd) {
-    const monthStart = cursor < timelineStart ? timelineStart : cursor;
-    const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-    const monthEnd = nextMonth > timelineEnd ? timelineEnd : addDays(nextMonth, -1);
-    const offsetPx = diffDays(timelineStart, monthStart) * pxPerDay;
-    const widthPx = (diffDays(monthStart, monthEnd) + 1) * pxPerDay;
-    result.push({
-      date: new Date(cursor),
-      label: MONTHS_FULL[cursor.getMonth()],
-      yearLabel: String(cursor.getFullYear()),
-      offsetPx,
-      widthPx,
-    });
-    cursor = nextMonth;
-  }
-  return result;
-}
-
-// ── clickable period labels below the timeline ──────────────────────────────
-
-interface PeriodLabel {
-  label: string;
-  from: Date;
-  to: Date;
-  offsetPx: number;
-  widthPx: number;
-}
-
-function getPeriodLabels(view: ViewSize, timelineStart: Date, timelineEnd: Date, pxPerDay: number): PeriodLabel[] {
-  const allLabels: PeriodLabel[] = [];
-  switch (view) {
-    case 'month': {
-      let cursor = new Date(timelineStart.getFullYear(), timelineStart.getMonth(), 1);
-      while (cursor <= timelineEnd) {
-        const mStart = cursor < timelineStart ? timelineStart : new Date(cursor);
-        const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-        const mEnd = nextMonth > timelineEnd ? timelineEnd : addDays(nextMonth, -1);
-        allLabels.push({
-          label: MONTHS_FULL[cursor.getMonth()],
-          from: new Date(cursor.getFullYear(), cursor.getMonth(), 1),
-          to: endOfMonth(cursor),
-          offsetPx: diffDays(timelineStart, mStart) * pxPerDay,
-          widthPx: (diffDays(mStart, mEnd) + 1) * pxPerDay,
-        });
-        cursor = nextMonth;
-      }
-      break;
-    }
-    case 'quarter': {
-      let cursor = startOfQuarter(timelineStart);
-      while (cursor <= timelineEnd) {
-        const qStart = cursor < timelineStart ? timelineStart : new Date(cursor);
-        const qEnd = endOfQuarter(cursor) > timelineEnd ? timelineEnd : endOfQuarter(cursor);
-        const qNum = Math.floor(cursor.getMonth() / 3) + 1;
-        allLabels.push({
-          label: `Q${qNum}`,
-          from: new Date(cursor),
-          to: endOfQuarter(cursor),
-          offsetPx: diffDays(timelineStart, qStart) * pxPerDay,
-          widthPx: (diffDays(qStart, qEnd) + 1) * pxPerDay,
-        });
-        cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 3, 1);
-      }
-      break;
-    }
-    case 'year': {
-      let year = timelineStart.getFullYear();
-      while (year <= timelineEnd.getFullYear()) {
-        const yStart = new Date(year, 0, 1) < timelineStart ? timelineStart : new Date(year, 0, 1);
-        const yEnd = new Date(year, 11, 31) > timelineEnd ? timelineEnd : new Date(year, 11, 31);
-        allLabels.push({
-          label: String(year),
-          from: new Date(year, 0, 1),
-          to: new Date(year, 11, 31),
-          offsetPx: diffDays(timelineStart, yStart) * pxPerDay,
-          widthPx: (diffDays(yStart, yEnd) + 1) * pxPerDay,
-        });
-        year++;
-      }
-      break;
-    }
-  }
-  return allLabels;
-}
-
-// ── segmented control ───────────────────────────────────────────────────────
-
-function SegmentedControl({ value, onChange, options }: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { label: string; value: string }[];
-}) {
-  return (
-    <Box sx={{
-      display: 'inline-flex',
-      bgcolor: '#f0f0f0',
-      borderRadius: '8px',
-      p: '3px',
-      gap: '2px',
-    }}>
-      {options.map(opt => {
-        const active = opt.value === value;
-        return (
-          <Box
-            key={opt.value}
-            onClick={() => onChange(opt.value)}
-            sx={{
-              px: 1.5,
-              py: 0.5,
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              userSelect: 'none',
-              bgcolor: active ? '#fff' : 'transparent',
-              color: active ? colors.textPrimary : colors.textSecondary,
-              boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-              transition: 'all 0.15s',
-              '&:hover': { color: colors.textPrimary },
-            }}
-          >
-            {opt.label}
-          </Box>
-        );
-      })}
-    </Box>
-  );
-}
-
-// ── main component ──────────────────────────────────────────────────────────
+// ── Component ────────────────────────────────────────────────────────────────
 
 interface DateRangeSelectorProps {
-  value: string;                          // named preset or "YYYY-MM-DD|YYYY-MM-DD"
+  value: string;
   onChange: (value: string) => void;
   anchorEl: HTMLElement | null;
   onClose: () => void;
 }
 
+const toLinear = (year: number, month: number) => year * 12 + month;
+const fromLinear = (lm: number) => ({ year: Math.floor(lm / 12), month: lm % 12 });
+
 export default function DateRangeSelector({ value, onChange, anchorEl, onClose }: DateRangeSelectorProps) {
   const open = Boolean(anchorEl);
-  const [viewSize, setViewSize] = useState<ViewSize>('month');
+  const currentYear = TODAY.getFullYear();
 
-  // When switching views while "now" is selected, select the new view's "now"
-  const handleViewChange = (v: ViewSize) => {
-    const isNow = diffDays(rangeTo, TODAY) === 0;
-    setViewSize(v);
-    if (isNow) {
-      let newFrom: Date;
-      switch (v) {
-        case 'month': newFrom = startOfMonth(TODAY); break;
-        case 'quarter': newFrom = startOfQuarter(TODAY); break;
-        case 'year': newFrom = startOfYear(TODAY); break;
-      }
-      setRangeFrom(newFrom);
-      setRangeTo(TODAY);
-      onChange(dateRangeToString(newFrom, TODAY));
-    }
-  };
-
-  // Parse current value
   const { from: initialFrom, to: initialTo } = useMemo(() => parseDateRange(value), [value]);
   const [rangeFrom, setRangeFrom] = useState(initialFrom);
   const [rangeTo, setRangeTo] = useState(initialTo);
 
-  // Sync when value changes externally
   useEffect(() => {
     const { from, to } = parseDateRange(value);
     setRangeFrom(from);
     setRangeTo(to);
   }, [value]);
 
-  // Timeline bounds
-  const timelineStart = TIMELINE_ORIGIN;
-  const timelineEnd = TODAY;
-  const totalDays = diffDays(timelineStart, timelineEnd) + 1;
-
-  // Zoom: compute px per day so the visible area fits the target span
-  const pxPerDay = useMemo(() => {
-    let visibleDays: number;
-    switch (viewSize) {
-      case 'month': visibleDays = 3 * 30; break;
-      case 'quarter': visibleDays = 4 * 91; break;
-      case 'year': visibleDays = 4 * 365; break;
-    }
-    return VISIBLE_WIDTH_PX / visibleDays;
-  }, [viewSize]);
-
-  const totalWidthPx = totalDays * pxPerDay;
-
-  // Month markers
-  const monthMarks = useMemo(() => buildTimelineMonths(timelineStart, timelineEnd, pxPerDay), [timelineStart, timelineEnd, pxPerDay]);
-
-  // Period labels below timeline
-  const periodLabels = useMemo(() => getPeriodLabels(viewSize, timelineStart, timelineEnd, pxPerDay), [viewSize, timelineStart, timelineEnd, pxPerDay]);
-
-  // Timeline scroll ref
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Selection position in px
-  const selLeftPx = diffDays(timelineStart, rangeFrom) * pxPerDay;
-  const selWidthPx = (diffDays(rangeFrom, rangeTo) + 1) * pxPerDay;
-
-  // Scroll to show the selection centered (or left-aligned if near the end)
-  useEffect(() => {
-    if (!open || !scrollRef.current) return;
-    const centerPx = selLeftPx + selWidthPx / 2;
-    const maxScroll = totalWidthPx + 32 - VISIBLE_WIDTH_PX;
-    const idealScroll = Math.min(centerPx - VISIBLE_WIDTH_PX / 2, maxScroll);
-    const targetScroll = Math.max(0, idealScroll);
-    setScrollPos(targetScroll);
-    const timer = setTimeout(() => {
-      if (!scrollRef.current) return;
-      scrollRef.current.scrollLeft = targetScroll;
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [open, pxPerDay, totalWidthPx, selLeftPx, selWidthPx]);
-
-  // Track scroll position for selection visibility arrow
-  // Initialize to far right so first render is right-aligned
-  const [scrollPos, setScrollPos] = useState(() => Math.max(0, totalWidthPx + 32 - VISIBLE_WIDTH_PX));
-  const [containerWidth, setContainerWidth] = useState(VISIBLE_WIDTH_PX);
-  const rafRef = useRef(0);
-
-  const selectionDirection = useMemo(() => {
-    const selRight = selLeftPx + selWidthPx;
-    if (selRight < scrollPos) return 'left' as const;
-    if (selLeftPx > scrollPos + containerWidth) return 'right' as const;
-    return null;
-  }, [selLeftPx, selWidthPx, scrollPos, containerWidth]);
+  const [leftYear, setLeftYear] = useState(() => {
+    const y = initialFrom.getFullYear();
+    return Math.max(MIN_YEAR, Math.min(y, currentYear - 1));
+  });
+  const [rightYear, setRightYear] = useState(() => {
+    const y = initialFrom.getFullYear();
+    return Math.max(MIN_YEAR + 1, Math.min(y + 1, currentYear));
+  });
 
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const handler = () => {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        setScrollPos(el.scrollLeft);
-        setContainerWidth(el.clientWidth);
-      });
-    };
-    el.addEventListener('scroll', handler, { passive: true });
-    const timer = setTimeout(handler, 100);
-    return () => { el.removeEventListener('scroll', handler); clearTimeout(timer); cancelAnimationFrame(rafRef.current); };
-  }, [open, pxPerDay]);
-
-  const scrollToSelection = () => {
-    if (!scrollRef.current) return;
-    const centerPx = selLeftPx + selWidthPx / 2;
-    const containerW = scrollRef.current.clientWidth;
-    scrollRef.current.scrollTo({ left: centerPx - containerW / 2, behavior: 'smooth' });
-  };
-
-  // ── drag state ──────────────────────────────────────────────────────────
-
-  const dragState = useRef<{
-    type: 'move' | 'resize-left' | 'resize-right';
-    startX: number;
-    origFrom: Date;
-    origTo: Date;
-  } | null>(null);
-
-  const commit = useCallback((from: Date, to: Date) => {
-    const clampedFrom = clampDate(from, timelineStart, timelineEnd);
-    const clampedTo = clampDate(to, timelineStart, timelineEnd);
-    if (clampedFrom > clampedTo) return;
-    setRangeFrom(clampedFrom);
-    setRangeTo(clampedTo);
-  }, [timelineStart, timelineEnd]);
-
-  const handlePointerDown = useCallback((type: 'move' | 'resize-left' | 'resize-right', e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    dragState.current = {
-      type,
-      startX: e.clientX,
-      origFrom: rangeFrom,
-      origTo: rangeTo,
-    };
-  }, [rangeFrom, rangeTo]);
-
-  // Snap size in days based on view
-  const snapDays = useMemo(() => {
-    switch (viewSize) {
-      case 'month': return 1;
-      case 'quarter':
-      case 'year': return 30;
+    if (open) {
+      const { from } = parseDateRange(value);
+      const y = from.getFullYear();
+      const newLeft = Math.max(MIN_YEAR, Math.min(y, currentYear - 1));
+      const newRight = Math.max(newLeft + 1, Math.min(y + 1, currentYear));
+      setLeftYear(newLeft);
+      setRightYear(newRight);
     }
-  }, [viewSize]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragState.current) return;
-    const dx = e.clientX - dragState.current.startX;
-    const rawDelta = Math.round(dx / pxPerDay);
-    const daysDelta = Math.round(rawDelta / snapDays) * snapDays;
-    const { type, origFrom, origTo } = dragState.current;
+  // ── Refs for year blocks (used for pointer → month hit testing) ─────────
 
-    if (type === 'move') {
-      const newFrom = addDays(origFrom, daysDelta);
-      const newTo = addDays(origTo, daysDelta);
-      if (newFrom < timelineStart) {
-        const shift = diffDays(newFrom, timelineStart);
-        commit(addDays(newFrom, shift), addDays(newTo, shift));
-      } else if (newTo > timelineEnd) {
-        const shift = diffDays(timelineEnd, newTo);
-        commit(addDays(newFrom, shift), addDays(newTo, shift));
-      } else {
-        commit(newFrom, newTo);
+  const leftBlockRef = useRef<HTMLDivElement>(null);
+  const rightBlockRef = useRef<HTMLDivElement>(null);
+
+  // ── Drag state ──────────────────────────────────────────────────────────
+
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const [hovered, setHovered] = useState(false);
+  const showHandles = !!dragState || hovered;
+
+  const getMonthFromClientX = useCallback((clientX: number): number | null => {
+    const blocks = [
+      { ref: leftBlockRef, year: leftYear },
+      { ref: rightBlockRef, year: rightYear },
+    ];
+    for (const { ref, year } of blocks) {
+      const el = ref.current;
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (clientX >= rect.left && clientX <= rect.right) {
+        const col = Math.max(0, Math.min(11, Math.floor(((clientX - rect.left) / rect.width) * 12)));
+        return toLinear(year, col);
       }
-    } else if (type === 'resize-left') {
-      const newFrom = addDays(origFrom, daysDelta);
-      commit(newFrom < origTo ? newFrom : origTo, newFrom < origTo ? origTo : newFrom);
-    } else if (type === 'resize-right') {
-      const newTo = addDays(origTo, daysDelta);
-      commit(newTo > origFrom ? origFrom : newTo, newTo > origFrom ? newTo : origFrom);
     }
-  }, [commit, timelineStart, timelineEnd, snapDays, pxPerDay]);
+    const leftEl = leftBlockRef.current;
+    const rightEl = rightBlockRef.current;
+    if (leftEl && clientX < leftEl.getBoundingClientRect().left) return toLinear(leftYear, 0);
+    if (rightEl && clientX > rightEl.getBoundingClientRect().right) return toLinear(rightYear, 11);
+    return null;
+  }, [leftYear, rightYear]);
 
-  const handlePointerUp = useCallback(() => {
-    if (!dragState.current) return;
-    dragState.current = null;
-    onChange(dateRangeToString(rangeFrom, rangeTo));
-  }, [rangeFrom, rangeTo, onChange]);
+  // Effective range (preview during drag, committed otherwise)
+  const effectiveRange = useMemo(() => {
+    if (dragState) {
+      const minLM = Math.min(dragState.anchor, dragState.current);
+      const maxLM = Math.max(dragState.anchor, dragState.current);
+      const { year: fy, month: fm } = fromLinear(minLM);
+      const { year: ty, month: tm } = fromLinear(maxLM);
+      return {
+        from: new Date(fy, fm, 1),
+        to: clampToToday(endOfMonth(new Date(ty, tm, 1))),
+      };
+    }
+    return { from: rangeFrom, to: rangeTo };
+  }, [dragState, rangeFrom, rangeTo]);
 
-  const handlePeriodClick = (pl: PeriodLabel) => {
-    const from = clampDate(pl.from, timelineStart, timelineEnd);
-    const to = clampDate(pl.to, timelineStart, timelineEnd);
+  const commitRange = useCallback((from: Date, to: Date) => {
     setRangeFrom(from);
     setRangeTo(to);
     onChange(dateRangeToString(from, to));
-  };
+  }, [onChange]);
 
-  // Tick marks — minor (snap steps) and major (preset boundaries)
-  const ticks = useMemo(() => {
-    // Build a set of major tick day-offsets based on actual calendar boundaries
-    const majorOffsets = new Set<number>();
-    switch (viewSize) {
-      case 'month': {
-        // 1st of each month
-        let cursor = new Date(timelineStart.getFullYear(), timelineStart.getMonth() + 1, 1);
-        while (cursor <= timelineEnd) {
-          majorOffsets.add(diffDays(timelineStart, cursor));
-          cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-        }
-        break;
-      }
-      case 'quarter': {
-        // 1st of each quarter
-        let cursor = startOfQuarter(timelineStart);
-        cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 3, 1);
-        while (cursor <= timelineEnd) {
-          majorOffsets.add(diffDays(timelineStart, cursor));
-          cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 3, 1);
-        }
-        break;
-      }
-      case 'year': {
-        // Jan 1st of each year
-        let year = timelineStart.getFullYear() + 1;
-        while (year <= timelineEnd.getFullYear()) {
-          majorOffsets.add(diffDays(timelineStart, new Date(year, 0, 1)));
-          year++;
-        }
-        break;
-      }
-    }
+  // Month cell drag (select mode)
+  const handleMonthDown = useCallback((year: number, month: number) => {
+    if (new Date(year, month, 1) > TODAY) return;
+    const lm = toLinear(year, month);
+    setDragState({ mode: 'select', anchor: lm, current: lm });
+  }, []);
 
-    // For quarter/year views, use actual month boundaries for ticks
-    // For other views, use fixed snap step
-    const result: { offsetPx: number; major: boolean }[] = [];
-    if (viewSize === 'quarter' || viewSize === 'year') {
-      // Generate ticks at 1st of each month
-      let cursor = new Date(timelineStart.getFullYear(), timelineStart.getMonth(), 1);
-      while (cursor <= timelineEnd) {
-        const offset = diffDays(timelineStart, cursor);
-        result.push({ offsetPx: offset * pxPerDay, major: majorOffsets.has(offset) });
-        cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-      }
+  const handleMonthEnter = useCallback((year: number, month: number) => {
+    if (!dragState || dragState.mode !== 'select') return;
+    if (new Date(year, month, 1) > TODAY) return;
+    setDragState(prev => prev ? { ...prev, current: toLinear(year, month) } : null);
+  }, [dragState]);
+
+  // Quarter cell drag (select mode, snaps to quarter boundaries)
+  // We store the original quarter's start+end so we can pick the right anchor edge on enter
+  const quarterOrigin = useRef<{ start: number; end: number } | null>(null);
+
+  const handleQuarterDown = useCallback((year: number, quarter: number) => {
+    const startMonth = quarter * 3;
+    const endMonth = startMonth + 2;
+    if (new Date(year, startMonth, 1) > TODAY) return;
+    const clampedEnd = new Date(year, endMonth, 1) > TODAY ? TODAY.getMonth() : endMonth;
+    quarterOrigin.current = { start: toLinear(year, startMonth), end: toLinear(year, clampedEnd) };
+    setDragState({ mode: 'select', anchor: toLinear(year, startMonth), current: toLinear(year, clampedEnd) });
+  }, []);
+
+  const handleQuarterEnter = useCallback((year: number, quarter: number) => {
+    if (!dragState || dragState.mode !== 'select' || !quarterOrigin.current) return;
+    const startMonth = quarter * 3;
+    const endMonth = startMonth + 2;
+    if (new Date(year, startMonth, 1) > TODAY) return;
+    const clampedEnd = new Date(year, endMonth, 1) > TODAY ? TODAY.getMonth() : endMonth;
+    const qStart = toLinear(year, startMonth);
+    const qEnd = toLinear(year, clampedEnd);
+    const orig = quarterOrigin.current;
+    // Dragging forward: anchor at origin start, current at entered quarter's end
+    // Dragging backward: anchor at origin end, current at entered quarter's start
+    if (qStart >= orig.start) {
+      setDragState({ mode: 'select', anchor: orig.start, current: qEnd });
     } else {
-      for (let d = 0; d <= totalDays; d += snapDays) {
-        let isMajor = false;
-        for (let s = 0; s < snapDays; s++) {
-          if (majorOffsets.has(d + s)) { isMajor = true; break; }
-        }
-        result.push({ offsetPx: d * pxPerDay, major: isMajor });
-      }
+      setDragState({ mode: 'select', anchor: orig.end, current: qStart });
     }
-    return result;
-  }, [viewSize, snapDays, totalDays, pxPerDay, timelineStart, timelineEnd]);
+  }, [dragState]);
 
-  const HANDLE_WIDTH = 10;
+  // Handle resize start
+  const handleResizeStart = useCallback((side: 'left' | 'right', e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const fromLM = toLinear(rangeFrom.getFullYear(), rangeFrom.getMonth());
+    const toLM = toLinear(rangeTo.getFullYear(), rangeTo.getMonth());
+    if (side === 'left') {
+      setDragState({ mode: 'resize-left', anchor: toLM, current: fromLM });
+    } else {
+      setDragState({ mode: 'resize-right', anchor: fromLM, current: toLM });
+    }
+  }, [rangeFrom, rangeTo]);
 
+  // Container pointer move (for resize modes — select uses cell enter)
+  const handleContainerPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragState || dragState.mode === 'select') return;
+    const lm = getMonthFromClientX(e.clientX);
+    if (lm === null) return;
+    const { year: y, month: m } = fromLinear(lm);
+    if (new Date(y, m, 1) > TODAY) return;
+    setDragState(prev => prev ? { ...prev, current: lm } : null);
+  }, [dragState, getMonthFromClientX]);
+
+  // Pointer up — commit
+  const handlePointerUp = useCallback(() => {
+    if (!dragState) return;
+    const from = effectiveRange.from;
+    const to = effectiveRange.to;
+    setDragState(null);
+    quarterOrigin.current = null;
+    commitRange(from, to);
+  }, [dragState, effectiveRange, commitRange]);
+
+  const handleYearClick = useCallback((year: number) => {
+    const from = new Date(year, 0, 1);
+    if (from > TODAY) return;
+    setDragState(null);
+    commitRange(from, clampToToday(endOfYear(from)));
+  }, [commitRange]);
+
+  // ── Highlight calculation ───────────────────────────────────────────────
+
+  const getHighlight = useCallback((year: number) => {
+    const { from, to } = effectiveRange;
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31);
+    if (to < yearStart || from > yearEnd) return null;
+
+    const startCol = from.getFullYear() < year ? 0
+      : from.getFullYear() === year ? from.getMonth() : 12;
+    const endCol = to.getFullYear() > year ? 11
+      : to.getFullYear() === year ? to.getMonth() : -1;
+    if (startCol > 11 || endCol < 0) return null;
+
+    const roundLeft = from.getFullYear() === year;
+    const roundRight = to.getFullYear() === year;
+    return { startCol, endCol, roundLeft, roundRight };
+  }, [effectiveRange]);
+
+  // ── Render year block ───────────────────────────────────────────────────
+
+  const renderYearBlock = (year: number, side: 'left' | 'right') => {
+    const highlight = getHighlight(year);
+    const blockRef = side === 'left' ? leftBlockRef : rightBlockRef;
+    const { from, to } = effectiveRange;
+
+    const leftPct = highlight ? `${(highlight.startCol / 12) * 100}%` : '0%';
+    const widthPct = highlight ? `${((highlight.endCol - highlight.startCol + 1) / 12) * 100}%` : '0%';
+    const rightEdgePct = highlight ? `${((highlight.endCol + 1) / 12) * 100}%` : '0%';
+
+    return (
+      <Box key={year} sx={{ flex: 1, minWidth: 0 }}>
+        {/* Months + quarters wrapper */}
+        <Box ref={blockRef} sx={{ position: 'relative' }}>
+          {/* Highlight background */}
+          {highlight && (
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: leftPct,
+              width: widthPct,
+              height: '100%',
+              bgcolor: colors.bgActive,
+              borderRadius: `${highlight.roundLeft ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundLeft ? 6 : 0}px`,
+              zIndex: 0,
+              pointerEvents: 'none',
+            }} />
+          )}
+
+          {/* Left drag handle */}
+          {highlight?.roundLeft && showHandles && (
+            <Box
+              onPointerDown={(e) => handleResizeStart('left', e)}
+              sx={{
+                position: 'absolute',
+                left: leftPct,
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: 6,
+                height: 28,
+                borderRadius: '3px',
+                bgcolor: colors.brand,
+                opacity: dragState?.mode === 'resize-left' ? 0.9 : 0.5,
+                cursor: 'ew-resize',
+                zIndex: 3,
+                transition: 'opacity 0.15s',
+                '&:hover': { opacity: 0.9 },
+              }}
+            />
+          )}
+
+          {/* Right drag handle */}
+          {highlight?.roundRight && showHandles && (
+            <Box
+              onPointerDown={(e) => handleResizeStart('right', e)}
+              sx={{
+                position: 'absolute',
+                left: rightEdgePct,
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: 6,
+                height: 28,
+                borderRadius: '3px',
+                bgcolor: colors.brand,
+                opacity: dragState?.mode === 'resize-right' ? 0.9 : 0.5,
+                cursor: 'ew-resize',
+                zIndex: 3,
+                transition: 'opacity 0.15s',
+                '&:hover': { opacity: 0.9 },
+              }}
+            />
+          )}
+
+          {/* Month row */}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(12, 1fr)',
+            position: 'relative',
+            zIndex: 1,
+          }}>
+            {MONTHS_SHORT.map((name, i) => {
+              const isFuture = new Date(year, i, 1) > TODAY;
+              const cellStart = new Date(year, i, 1);
+              const cellEnd = endOfMonth(cellStart);
+              const inRange = !isFuture && cellStart <= effectiveRange.to && cellEnd >= effectiveRange.from;
+              return (
+                <Box
+                  key={i}
+                  onPointerDown={() => handleMonthDown(year, i)}
+                  onPointerEnter={() => handleMonthEnter(year, i)}
+                  sx={{
+                    textAlign: 'center',
+                    py: 1.25,
+                    cursor: isFuture ? 'default' : 'pointer',
+                    userSelect: 'none',
+                    transition: 'background-color 0.1s',
+                    borderRadius: '4px',
+                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                  }}
+                >
+                  <Typography sx={{
+                    fontSize: '0.8rem',
+                    fontWeight: inRange ? 600 : 400,
+                    color: isFuture ? colors.textDisabled : inRange ? colors.brand : colors.textSecondary,
+                    transition: 'color 0.1s',
+                  }}>
+                    {name}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+
+          {/* Quarter row */}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            position: 'relative',
+            zIndex: 1,
+            mt: 0.5,
+          }}>
+            {[0, 1, 2, 3].map(q => {
+              const qStart = new Date(year, q * 3, 1);
+              const qEnd = endOfQuarter(qStart);
+              const isFuture = qStart > TODAY;
+              const clampedQEnd = clampToToday(qEnd);
+              const fullyInRange = !isFuture && qStart >= effectiveRange.from && clampedQEnd <= effectiveRange.to;
+              return (
+                <Box
+                  key={q}
+                  onPointerDown={() => handleQuarterDown(year, q)}
+                  onPointerEnter={() => handleQuarterEnter(year, q)}
+                  sx={{
+                    textAlign: 'center',
+                    py: 1,
+                    cursor: isFuture ? 'default' : 'pointer',
+                    userSelect: 'none',
+                    transition: 'background-color 0.1s',
+                    borderRadius: '4px',
+                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                  }}
+                >
+                  <Typography sx={{
+                    fontSize: '0.8rem',
+                    fontWeight: fullyInRange ? 600 : 500,
+                    color: isFuture ? colors.textDisabled : fullyInRange ? colors.brand : colors.textSecondary,
+                    transition: 'color 0.1s',
+                  }}>
+                    Q{q + 1}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+
+        {/* Year navigation row */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          pt: 0.75,
+        }}>
+          {(() => {
+            const canGoBack = side === 'left'
+              ? year > MIN_YEAR
+              : year - 1 > leftYear;
+            const canGoForward = side === 'left'
+              ? year + 1 < rightYear
+              : year < currentYear;
+            // Extend range into the new year, keeping the same month pattern
+            const extendRangeToYear = (newYear: number, direction: 'back' | 'forward') => {
+              const fromMonth = rangeFrom.getMonth();
+              const toMonth = rangeTo.getMonth();
+              let newFrom: Date, newTo: Date;
+              if (direction === 'back') {
+                // Extend start backwards: same from-month in new year, keep existing end
+                newFrom = new Date(newYear, fromMonth, 1);
+                if (newFrom > TODAY) return;
+                newTo = rangeTo;
+              } else {
+                // Extend end forwards: keep existing start, same to-month in new year
+                newFrom = rangeFrom;
+                newTo = clampToToday(endOfMonth(new Date(newYear, toMonth, 1)));
+                if (newTo < newFrom) return;
+              }
+              commitRange(newFrom, newTo);
+            };
+            const goBack = () => {
+              const newYear = year - 1;
+              if (side === 'left') {
+                const clamped = Math.max(MIN_YEAR, newYear);
+                setLeftYear(clamped);
+                extendRangeToYear(clamped, 'back');
+              } else {
+                const clamped = Math.max(leftYear + 1, newYear);
+                setRightYear(clamped);
+                extendRangeToYear(clamped, 'forward');
+              }
+            };
+            const goForward = () => {
+              const newYear = year + 1;
+              if (side === 'left') {
+                const clamped = Math.min(rightYear - 1, newYear);
+                setLeftYear(clamped);
+                extendRangeToYear(clamped, 'back');
+              } else {
+                const clamped = Math.min(currentYear, newYear);
+                setRightYear(clamped);
+                extendRangeToYear(clamped, 'forward');
+              }
+            };
+            return (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={goBack}
+                  disabled={!canGoBack}
+                  sx={{ p: 0.25 }}
+                >
+                  <ChevronLeftIcon sx={{ fontSize: '1rem', color: !canGoBack ? colors.textDisabled : colors.brand }} />
+                </IconButton>
+                <Typography
+                  onClick={() => handleYearClick(year)}
+                  sx={{
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: new Date(year, 0, 1) > TODAY ? 'default' : 'pointer',
+                    color: (from <= new Date(year, 0, 1) && to >= new Date(year, 11, 31))
+                      ? colors.brand : colors.textPrimary,
+                    mx: 0.75,
+                    userSelect: 'none',
+                    '&:hover': new Date(year, 0, 1) <= TODAY ? { color: colors.brand } : {},
+                    transition: 'color 0.1s',
+                  }}
+                >
+                  {year}
+                </Typography>
+                <IconButton
+                  size="small"
+                  onClick={goForward}
+                  disabled={!canGoForward}
+                  sx={{ p: 0.25 }}
+                >
+                  <ChevronRightIcon sx={{ fontSize: '1rem', color: !canGoForward ? colors.textDisabled : colors.brand }} />
+                </IconButton>
+              </>
+            );
+          })()}
+        </Box>
+      </Box>
+    );
+  };
 
   return (
     <Popover
@@ -588,267 +593,37 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose }
       PaperProps={{
         sx: {
           mt: 0.5,
-          width: 560,
+          width: 920,
           borderRadius: '12px',
           boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
           overflow: 'hidden',
         },
       }}
     >
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <Box sx={{
-        px: 2.5,
-        py: 2,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: colors.textPrimary }}>
-          {formatDateRange(rangeFrom, rangeTo)}
-        </Typography>
-        <SegmentedControl
-          value={viewSize}
-          onChange={(v) => handleViewChange(v as ViewSize)}
-          options={[
-            { label: 'Month', value: 'month' },
-            { label: 'Quarter', value: 'quarter' },
-            { label: 'Year', value: 'year' },
-          ]}
-        />
+      <Box
+        onPointerMove={handleContainerPointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={() => { if (dragState) handlePointerUp(); }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        sx={{
+          display: 'flex',
+          px: 3,
+          py: 2.5,
+          gap: 0,
+          userSelect: 'none',
+        }}
+      >
+        {renderYearBlock(leftYear, 'left')}
+        <Box sx={{
+          width: '1px',
+          bgcolor: colors.borderTertiary,
+          mx: '4px',
+          my: 0.5,
+          flexShrink: 0,
+        }} />
+        {renderYearBlock(rightYear, 'right')}
       </Box>
-
-      {/* ── Timeline + period labels ─────────────────────────── */}
-      <Box sx={{ pb: 2, position: 'relative' }}>
-        {/* Arrow indicator: selection is to the left */}
-        {selectionDirection === 'left' && (
-          <Box
-            onClick={scrollToSelection}
-            sx={{
-              position: 'absolute',
-              left: 8,
-              top: 8,
-              zIndex: 10,
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: '#fff',
-              boxShadow: '0 1px 6px rgba(0,0,0,0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              '&:hover': { bgcolor: '#f5f5f5' },
-              transition: 'background-color 0.15s',
-            }}
-          >
-            <Typography sx={{ fontSize: '0.85rem', color: colors.textSecondary, lineHeight: 1 }}>←</Typography>
-          </Box>
-        )}
-        {/* Arrow indicator: selection is to the right */}
-        {selectionDirection === 'right' && (
-          <Box
-            onClick={scrollToSelection}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              zIndex: 10,
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: '#fff',
-              boxShadow: '0 1px 6px rgba(0,0,0,0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              '&:hover': { bgcolor: '#f5f5f5' },
-              transition: 'background-color 0.15s',
-            }}
-          >
-            <Typography sx={{ fontSize: '0.85rem', color: colors.textSecondary, lineHeight: 1 }}>→</Typography>
-          </Box>
-        )}
-        <Box
-          ref={scrollRef}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          sx={{
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            position: 'relative',
-            '&::-webkit-scrollbar': { height: 0, display: 'none' },
-          }}
-        >
-          <Box sx={{ width: totalWidthPx + 32, px: '16px' }}>
-            {/* Timeline track */}
-            <Box sx={{
-              position: 'relative',
-              height: 48,
-              bgcolor: '#f5f5f5',
-              borderRadius: '10px',
-              overflow: 'hidden',
-            }}>
-              {/* Tick marks */}
-              {ticks.map((t, i) => (
-                <Box
-                  key={i}
-                  sx={{
-                    position: 'absolute',
-                    left: t.offsetPx,
-                    top: 8,
-                    bottom: 8,
-                    width: '1px',
-                    bgcolor: t.major ? '#ddd' : '#eee',
-                  }}
-                />
-              ))}
-
-              {/* Selection indicator */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  left: selLeftPx,
-                  width: selWidthPx,
-                  top: 2,
-                  bottom: 2,
-                  borderRadius: '8px',
-                  bgcolor: '#fff',
-                  boxShadow: '0 1px 6px rgba(0,0,0,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 2,
-                  minWidth: 40,
-                }}
-              >
-                {/* Left drag handle */}
-                <Box
-                  onPointerDown={(e) => handlePointerDown('resize-left', e)}
-                  sx={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: HANDLE_WIDTH,
-                    cursor: 'ew-resize',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '8px 0 0 8px',
-                    '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
-                    '&::after': {
-                      content: '""',
-                      display: 'block',
-                      width: '2px',
-                      height: '16px',
-                      borderRadius: '1px',
-                      bgcolor: colors.borderPrimary,
-                    },
-                  }}
-                />
-
-                {/* Center drag area */}
-                <Box
-                  onPointerDown={(e) => handlePointerDown('move', e)}
-                  sx={{
-                    position: 'absolute',
-                    left: HANDLE_WIDTH,
-                    right: HANDLE_WIDTH,
-                    top: 0,
-                    bottom: 0,
-                    cursor: 'grab',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&:active': { cursor: 'grabbing' },
-                  }}
-                >
-                  <Typography sx={{
-                    fontSize: '0.78rem',
-                    fontWeight: 500,
-                    color: colors.textSecondary,
-                    userSelect: 'none',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {durationLabel(rangeFrom, rangeTo)}
-                  </Typography>
-                </Box>
-
-                {/* Right drag handle */}
-                <Box
-                  onPointerDown={(e) => handlePointerDown('resize-right', e)}
-                  sx={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: HANDLE_WIDTH,
-                    cursor: 'ew-resize',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '0 8px 8px 0',
-                    '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
-                    '&::after': {
-                      content: '""',
-                      display: 'block',
-                      width: '2px',
-                      height: '16px',
-                      borderRadius: '1px',
-                      bgcolor: colors.borderPrimary,
-                    },
-                  }}
-                />
-              </Box>
-            </Box>
-
-            {/* Period labels */}
-            <Box sx={{ position: 'relative', height: 28, mt: 0.5 }}>
-              {periodLabels.map((pl, i) => {
-                const isComplete = pl.to <= TODAY;
-                const isCurrent = !isComplete && pl.from <= TODAY;
-                // For "Now" presets, select from period start to today
-                const effectiveTo = isCurrent ? TODAY : pl.to;
-                const isSelected = pl.from >= rangeFrom && effectiveTo <= rangeTo;
-                // Hide future periods that haven't started yet
-                const isFuture = pl.from > TODAY;
-                return (
-                  <Box
-                    key={i}
-                    onClick={!isFuture ? () => handlePeriodClick({ ...pl, to: effectiveTo }) : undefined}
-                    sx={{
-                      position: 'absolute',
-                      left: pl.offsetPx,
-                      width: pl.widthPx,
-                      textAlign: 'center',
-                      cursor: isFuture ? 'default' : 'pointer',
-                      userSelect: 'none',
-                      py: 0.5,
-                      borderRadius: '6px',
-                      bgcolor: 'transparent',
-                      visibility: isFuture ? 'hidden' : 'visible',
-                      '&:hover': { bgcolor: isSelected ? 'transparent' : '#f5f5f5' },
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    <Typography sx={{
-                      fontSize: '0.78rem',
-                      fontWeight: isSelected ? 600 : 400,
-                      color: isSelected ? colors.textPrimary : colors.textTertiary,
-                      '&:hover': { color: colors.textPrimary },
-                      transition: 'color 0.15s',
-                    }}>
-                      {isCurrent ? 'Now' : pl.label}
-                    </Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
     </Popover>
   );
 }
