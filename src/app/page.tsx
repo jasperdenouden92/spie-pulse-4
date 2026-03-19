@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -81,6 +81,7 @@ import InsightsPage from '@/components/Insights';
 import RecommendationsInbox from '@/components/RecommendationsInbox';
 import ThemesPage from '@/components/Themes';
 import DashboardsPage from '@/components/DashboardsPage';
+import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import ComfortPerformancePage from '@/components/ComfortPerformancePage';
 import ChangelogButton from '@/components/ChangelogButton';
 import { tickets } from '@/data/tickets';
@@ -172,7 +173,7 @@ export default function Home() {
     asset: '',
     view: 'dashboard',
     sort: 'Worst to Best',
-    dateRange: 'This Quarter',
+    dateRange: 'This Month',
     group: 'All Groups',
     city: 'All Cities',
     inspect: '0',
@@ -215,7 +216,7 @@ export default function Home() {
   const assetId = searchParams.get('asset') ?? '';
   const viewMode = (searchParams.get('view') ?? 'dashboard') as ViewMode;
   const sortOrder = searchParams.get('sort') ?? 'Worst to Best';
-  const dateRange = searchParams.get('dateRange') ?? 'This Quarter';
+  const dateRange = searchParams.get('dateRange') ?? 'This Month';
   const selectedGroup = searchParams.get('group') ?? 'All Groups';
   const selectedCity = searchParams.get('city') ?? 'All Cities';
   const isInspectMode = searchParams.get('inspect') === '1';
@@ -354,50 +355,7 @@ export default function Home() {
     ? allBuildings.filter(b => b.name.toLowerCase().includes(titleBuildingSearch.toLowerCase()))
     : allBuildings;
 
-  const getPeriodDisplayLabel = (range: string): string => {
-    switch (range) {
-      case 'Today': return 'today';
-      case 'This Week': return 'this week';
-      case 'This Month': return 'this month';
-      case 'This Quarter': return 'this quarter';
-      case 'This Year': return 'this year';
-      case 'All Time': return 'all time';
-      default: return 'this quarter';
-    }
-  };
-
-  const getDateRangeDisplay = (range: string): string => {
-    const now = new Date();
-    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-    const fmt = (d: Date) => `${d.getDate()} ${months[d.getMonth()]}`;
-    const fmtFull = (d: Date) => `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-    switch (range) {
-      case 'Today': return fmtFull(now);
-      case 'This Week': {
-        const day = now.getDay() || 7;
-        const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-        const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-        return `${fmt(mon)} – ${fmtFull(sun)}`;
-      }
-      case 'This Month': {
-        const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      case 'This Quarter': {
-        const q = Math.floor(now.getMonth() / 3);
-        const start = new Date(now.getFullYear(), q * 3, 1);
-        const end = new Date(now.getFullYear(), q * 3 + 3, 0);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      case 'This Year': {
-        const start = new Date(now.getFullYear(), 0, 1);
-        const end = new Date(now.getFullYear(), 11, 31);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      default: return range;
-    }
-  };
+  const getPeriodDisplayLabel = (range: string): string => getDateRangeDisplayLabel(range);
 
   const inlineDropdownSx = {
     display: 'inline-flex',
@@ -654,6 +612,13 @@ export default function Home() {
     return 'Control Room';
   };
   const currentPageName = getCurrentPageName();
+
+  useEffect(() => {
+    document.title = currentPageName === 'Control Room'
+      ? 'Pulse Core 4.0'
+      : `Pulse Core 4.0 - ${currentPageName}`;
+  }, [currentPageName]);
+
   const isCurrentPageFavorited = favorites.some(fav => fav.name === currentPageName);
 
   const getFavoriteType = () => {
@@ -1162,28 +1127,12 @@ export default function Home() {
           />
 
         {/* ========== Shared filter menus (used by inline title & header compact filter) ========== */}
-        <Menu
+        <DateRangeSelector
           anchorEl={titleDateRangeAnchor}
-          open={Boolean(titleDateRangeAnchor)}
           onClose={() => setTitleDateRangeAnchor(null)}
-          PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
-        >
-          {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
-            <MenuItem
-              key={range}
-              selected={dateRange === range}
-              onClick={() => { setDateRange(range); setTitleDateRangeAnchor(null); }}
-              sx={{ fontSize: '0.875rem' }}
-            >
-              <Box>
-                <Typography variant="body2" fontWeight={dateRange === range ? 600 : 400}>{range}</Typography>
-                {range !== 'All Time' && (
-                  <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
-                )}
-              </Box>
-            </MenuItem>
-          ))}
-        </Menu>
+          value={dateRange}
+          onChange={(v) => { setDateRange(v); }}
+        />
 
         <Popover
           anchorEl={titleBuildingAnchor}
