@@ -30,6 +30,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import PageHeader from '@/components/PageHeader';
 import BuildingCard, { TopicScore } from '@/components/BuildingCard';
+import ClusterCard from '@/components/ClusterCard';
 import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
 import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
 import KPICard, { PerformanceRating } from '@/components/KPICard';
@@ -500,6 +501,37 @@ export default function Home() {
     return sortedBuildings.filter(b => b.hasContract === contractFilter);
   }, [sortedBuildings, contractFilter]);
 
+  // Aggregate buildings into clusters for cluster grid view
+  const clusterData = useMemo(() => {
+    const groups = new Map<string, Building[]>();
+    for (const b of filteredBuildings) {
+      const arr = groups.get(b.group) || [];
+      arr.push(b);
+      groups.set(b.group, arr);
+    }
+    return Array.from(groups.entries()).map(([name, buildings]) => {
+      const avg = (fn: (b: Building) => number) =>
+        Math.round(buildings.reduce((s, b) => s + fn(b), 0) / buildings.length);
+      const avgMetric = (key: MetricType) => ({
+        green: avg(b => b.metrics[key].green),
+        yellow: avg(b => b.metrics[key].yellow),
+        red: avg(b => b.metrics[key].red),
+      });
+      const avgTrend = (key: MetricType) =>
+        Math.round(buildings.reduce((s, b) => s + b.trends[key], 0) / buildings.length * 10) / 10;
+      return {
+        name,
+        buildings,
+        images: buildings.map(b => b.image),
+        metrics: Object.fromEntries(
+          (['overall', 'sustainability', 'comfort', 'asset_monitoring', 'tickets', 'quotations', 'maintenance', 'energy', 'workspace', 'compliance', 'water_management', 'security_systems', 'access_control'] as MetricType[]).map(k => [k, avgMetric(k)])
+        ) as Record<MetricType, { green: number; yellow: number; red: number }>,
+        trends: Object.fromEntries(
+          (['overall', 'sustainability', 'comfort', 'asset_monitoring', 'tickets', 'quotations', 'maintenance', 'energy', 'workspace', 'compliance', 'water_management', 'security_systems', 'access_control'] as MetricType[]).map(k => [k, avgTrend(k)])
+        ) as Record<MetricType, number>,
+      };
+    });
+  }, [filteredBuildings]);
 
   const handleMetricSelect = (metric: MetricType) => {
     if (selection === metric) {
@@ -1798,13 +1830,43 @@ export default function Home() {
                               </Box>
                             )}
 
-                            {/* ===== BUILDINGS GRID ===== */}
+                            {/* ===== BUILDINGS / CLUSTERS GRID ===== */}
                             <Box sx={{
                               display: 'grid',
                               gap: 2,
                               gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))'
                             }}>
-                              {filteredBuildings.map((b) => {
+                              {titleBuildingMode === 'clusters' ? (
+                                clusterData.map((cluster) => (
+                                  <motion.div
+                                    key={cluster.name}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{
+                                      layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                                      opacity: { duration: 0.3 },
+                                      scale: { duration: 0.3 }
+                                    }}
+                                    style={{ cursor: 'pointer', borderRadius: '12px' }}
+                                  >
+                                    <ClusterCard
+                                      title={cluster.name}
+                                      buildingCount={cluster.buildings.length}
+                                      images={cluster.images}
+                                      performance={cluster.metrics[selectedMetric]}
+                                      metricTitle={metricInfo[selectedMetric].title}
+                                      metricIcon={metricInfo[selectedMetric].icon}
+                                      overallPerformance={cluster.metrics.overall}
+                                      showOverall={selectedMetric !== 'overall'}
+                                      trend={cluster.trends[selectedMetric]}
+                                      periodLabel={periodMetrics.periodLabel}
+                                      topics={selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : undefined}
+                                    />
+                                  </motion.div>
+                                ))
+                              ) : (
+                                filteredBuildings.map((b) => {
                               const stats = buildingOperationalStats[b.name];
                               let operationalStats;
 
@@ -1878,7 +1940,8 @@ export default function Home() {
                                   />
                                 </motion.div>
                               );
-                            })}
+                            })
+                              )}
                             </Box>
                           </>
                         ) : buildingsPanelTab === 'kpi_analysis' ? (
@@ -1896,6 +1959,7 @@ export default function Home() {
                               setBuildingsPanelTab('buildings');
                               setURLParams({ sort });
                             }}
+                            buildingMode={titleBuildingMode}
                           />
                         ) : (
                           /* ===== RECOMMENDATIONS VIEW ===== */
@@ -2134,6 +2198,7 @@ function KPIAnalysisView({
   periodMetrics,
   onBuildingSelect,
   onViewAllBuildings,
+  buildingMode = 'buildings',
 }: {
   selection: string;
   selectedMetric: MetricType;
@@ -2144,6 +2209,7 @@ function KPIAnalysisView({
   periodMetrics: import('@/data/metrics').PeriodMetrics;
   onBuildingSelect?: (building: import('@/data/buildings').Building) => void;
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
+  buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode;
 }) {
   // Determine which KPIs to show based on toggle state and selection
   const visibleThemes = themesEnabled ? ALL_THEME_KEYS : [];
@@ -2156,7 +2222,7 @@ function KPIAnalysisView({
     : null;
 
   if (focusedMetric) {
-    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} periodMetrics={periodMetrics} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} />;
+    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} periodMetrics={periodMetrics} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
   // Overview: show summary cards for each visible KPI
@@ -2299,7 +2365,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
 }
 
 /* Theme-specific dashboards */
-function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void }) {
+function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void; buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode }) {
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey];
 
@@ -2341,13 +2407,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
   // Sustainability Dashboard — uses dedicated component
   if (metricKey === 'sustainability') {
     const sustainabilityMetric = periodMetrics.themes.find(t => t.title === 'Sustainability');
-    return <SustainabilityPerformancePage themeScore={sustainabilityMetric?.score ?? 72} themeTrend={sustainabilityMetric?.trend ?? 4} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} />;
+    return <SustainabilityPerformancePage themeScore={sustainabilityMetric?.score ?? 72} themeTrend={sustainabilityMetric?.trend ?? 4} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
   // Comfort Dashboard — uses dedicated component
   if (metricKey === 'comfort') {
     const comfortMetric = periodMetrics.themes.find(t => t.title === 'Comfort');
-    return <ComfortPerformancePage themeScore={comfortMetric?.score ?? 92} themeTrend={comfortMetric?.trend ?? 5} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} />;
+    return <ComfortPerformancePage themeScore={comfortMetric?.score ?? 92} themeTrend={comfortMetric?.trend ?? 5} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
   // Asset Monitoring Dashboard

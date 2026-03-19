@@ -29,6 +29,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { colors } from '@/colors';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
+import StackedImages from '@/components/StackedImages';
 import { buildingOperationalStats } from '@/data/buildingOperationalStats';
 
 // ── Threshold gradient ──
@@ -146,6 +147,48 @@ const sortedMostDeteriorated = [...buildings]
   .sort((a, b) => a.trends.sustainability - b.trends.sustainability)
   .slice(0, 7);
 
+// ── Cluster aggregation for sustainability ──
+
+interface ClusterEntry {
+  name: string;
+  image: string;
+  images: string[];
+  metrics: { sustainability: { green: number; yellow: number; red: number } };
+  trends: { sustainability: number };
+}
+
+const clusterEntries: ClusterEntry[] = (() => {
+  const groups = new Map<string, Building[]>();
+  for (const b of buildings) {
+    const arr = groups.get(b.group) || [];
+    arr.push(b);
+    groups.set(b.group, arr);
+  }
+  return Array.from(groups.entries()).map(([name, blds]) => {
+    const avg = (fn: (b: Building) => number) => Math.round(blds.reduce((s, b) => s + fn(b), 0) / blds.length);
+    return {
+      name,
+      image: blds[0].image,
+      images: blds.map(b => b.image),
+      metrics: {
+        sustainability: {
+          green: avg(b => b.metrics.sustainability.green),
+          yellow: avg(b => b.metrics.sustainability.yellow),
+          red: avg(b => b.metrics.sustainability.red),
+        },
+      },
+      trends: {
+        sustainability: Math.round(blds.reduce((s, b) => s + b.trends.sustainability, 0) / blds.length * 10) / 10,
+      },
+    };
+  });
+})();
+
+const clusterSortedBest = [...clusterEntries].sort((a, b) => b.metrics.sustainability.green - a.metrics.sustainability.green);
+const clusterSortedWorst = [...clusterEntries].sort((a, b) => a.metrics.sustainability.green - b.metrics.sustainability.green);
+const clusterSortedMostImproved = [...clusterEntries].sort((a, b) => b.trends.sustainability - a.trends.sustainability);
+const clusterSortedMostDeteriorated = [...clusterEntries].sort((a, b) => a.trends.sustainability - b.trends.sustainability);
+
 // ── KPI over time data ──
 
 type ViewMode = 'theme' | 'all_topics' | 'consumption' | 'generation' | 'emissions' | 'cost';
@@ -219,6 +262,29 @@ function generateWeiiData() {
 }
 
 const weiiChartData = generateWeiiData();
+
+// ── WEii cluster aggregation ──
+
+function generateWeiiClusterData() {
+  const groups = new Map<string, typeof weiiChartData>();
+  for (const entry of weiiChartData) {
+    const building = buildings.find(b => b.name === entry.name);
+    if (!building) continue;
+    const arr = groups.get(building.group) || [];
+    arr.push(entry);
+    groups.set(building.group, arr);
+  }
+  return Array.from(groups.entries()).map(([name, entries]) => {
+    const avgConsumption = Math.round(entries.reduce((s, e) => s + e.consumption, 0) / entries.length);
+    const ratings = entries.map(e => e.rating);
+    const ratingCounts = new Map<string, number>();
+    for (const r of ratings) ratingCounts.set(r, (ratingCounts.get(r) || 0) + 1);
+    const rating = [...ratingCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    return { name, rating, consumption: avgConsumption, image: entries[0].image };
+  });
+}
+
+const weiiClusterData = generateWeiiClusterData();
 
 function getConsumptionColor(value: number): string {
   if (value <= 20) return '#00843d';
@@ -693,9 +759,10 @@ interface SustainabilityPerformancePageProps {
   onNavigateToDashboard?: (dashboardId: string) => void;
   onBuildingSelect?: (building: Building) => void;
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
+  buildingMode?: 'buildings' | 'clusters';
 }
 
-export default function SustainabilityPerformancePage({ themeScore = 72, themeTrend = 4, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings }: SustainabilityPerformancePageProps) {
+export default function SustainabilityPerformancePage({ themeScore = 72, themeTrend = 4, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: SustainabilityPerformancePageProps) {
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -885,14 +952,17 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-              <Typography variant="body2" fontWeight={600}>Top Buildings</Typography>
+              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Best Performing</Box>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? 'white' : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('improved')}>Most Improved</Box>
             </Box>
           </Box>
-          {(leftListMode === 'best' ? sortedBest : sortedMostImproved).map((b, i) => {
+          {(buildingMode === 'clusters'
+            ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
+            : (leftListMode === 'best' ? sortedBest : sortedMostImproved)
+          ).map((b, i) => {
             const score = b.metrics.sustainability.green;
             const trend = b.trends.sustainability;
             const showTrend = leftListMode === 'improved';
@@ -900,15 +970,19 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
             return (
               <Box
                 key={b.name}
-                onClick={() => onBuildingSelect?.(b)}
+                onClick={() => buildingMode === 'buildings' ? onBuildingSelect?.(b as Building) : undefined}
                 sx={{
                   display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
-                  borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s ease',
+                  borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
                   '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
                 <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-                <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                {buildingMode === 'clusters' && 'images' in b ? (
+                  <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
+                ) : (
+                  <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                )}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                     <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
@@ -943,14 +1017,17 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
-              <Typography variant="body2" fontWeight={600}>Worst Buildings</Typography>
+              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst Performing</Box>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? 'white' : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('deteriorated')}>Most Deteriorated</Box>
             </Box>
           </Box>
-          {(rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated).map((b, i) => {
+          {(buildingMode === 'clusters'
+            ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
+            : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated)
+          ).map((b, i) => {
             const score = b.metrics.sustainability.green;
             const trend = b.trends.sustainability;
             const showTrend = rightListMode === 'deteriorated';
@@ -958,15 +1035,19 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
             return (
               <Box
                 key={b.name}
-                onClick={() => onBuildingSelect?.(b)}
+                onClick={() => buildingMode === 'buildings' ? onBuildingSelect?.(b as Building) : undefined}
                 sx={{
                   display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
-                  borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s ease',
+                  borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
                   '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
                 <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-                <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                {buildingMode === 'clusters' && 'images' in b ? (
+                  <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
+                ) : (
+                  <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                )}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                     <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
@@ -1147,11 +1228,11 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                 </Button>
               </Box>
               <Box sx={{ px: 2.5, pb: 0, flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'flex-start' }}>
-                <WeiiScatterChart data={weiiChartData} onBuildingClick={onBuildingSelect} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
+                <WeiiScatterChart data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
               </Box>
             </Box>
             <Box sx={{ borderLeft: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <WeiiSidebar data={weiiChartData} onBuildingClick={onBuildingSelect} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} groupMode={weiiSidebarGroupMode} onGroupModeChange={setWeiiSidebarGroupMode} />
+              <WeiiSidebar data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} groupMode={weiiSidebarGroupMode} onGroupModeChange={setWeiiSidebarGroupMode} />
             </Box>
           </Box>
         </Paper>
