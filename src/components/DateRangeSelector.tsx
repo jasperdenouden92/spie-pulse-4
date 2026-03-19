@@ -7,12 +7,13 @@ import Popover from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import Chip from '@mui/material/Chip';
 import { colors } from '@/colors';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
-const MONTHS_NL = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'] as const;
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
 
 const TODAY = new Date();
 TODAY.setHours(0, 0, 0, 0);
@@ -99,22 +100,89 @@ export function dateRangeToString(from: Date, to: Date): string {
   return `${fmt(from)}|${fmt(to)}`;
 }
 
+// ── Presets ──────────────────────────────────────────────────────────────────
+
+type Preset = { label: string; getRange: () => { from: Date; to: Date } };
+
+const PRESETS: Preset[] = [
+  {
+    label: 'This month',
+    getRange: () => ({ from: startOfMonth(TODAY), to: new Date(TODAY) }),
+  },
+  {
+    label: 'Last month',
+    getRange: () => {
+      const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - 1, 1);
+      return { from: d, to: endOfMonth(d) };
+    },
+  },
+  {
+    label: 'This quarter',
+    getRange: () => {
+      const q = Math.floor(TODAY.getMonth() / 3);
+      return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) };
+    },
+  },
+  {
+    label: 'Last quarter',
+    getRange: () => {
+      const q = Math.floor(TODAY.getMonth() / 3);
+      const start = new Date(TODAY.getFullYear(), (q - 1) * 3, 1);
+      return { from: start, to: endOfQuarter(start) };
+    },
+  },
+  {
+    label: 'This year',
+    getRange: () => ({ from: startOfYear(TODAY), to: new Date(TODAY) }),
+  },
+  {
+    label: 'Last year',
+    getRange: () => {
+      const d = new Date(TODAY.getFullYear() - 1, 0, 1);
+      return { from: d, to: endOfYear(d) };
+    },
+  },
+];
+
 export function getDateRangeDisplayLabel(value: string): string {
-  const RELATIVE_LABELS: Record<string, string> = {
-    'Today': 'today',
-    'This Week': 'this week',
-    'This Month': 'this month',
-    'This Quarter': 'this quarter',
-    'This Year': 'this year',
-    'All Time': 'all time',
-  };
-  if (RELATIVE_LABELS[value]) return RELATIVE_LABELS[value];
   const { from, to } = parseDateRange(value);
-  const fmt = (d: Date) => `${MONTHS_NL[d.getMonth()]} ${d.getDate()}`;
-  if (from.getFullYear() === to.getFullYear() && from.getMonth() === to.getMonth() && from.getDate() === to.getDate()) {
-    return fmt(from);
+
+  // Check if the range matches a preset
+  for (const preset of PRESETS) {
+    const { from: pf, to: pt } = preset.getRange();
+    if (from.getTime() === pf.getTime() && to.getTime() === pt.getTime()) {
+      return preset.label.toLowerCase();
+    }
   }
-  return `${fmt(from)} - ${fmt(to)}`;
+
+  const fy = from.getFullYear();
+  const ty = to.getFullYear();
+  const fm = from.getMonth(); // 0-based
+  const tm = to.getMonth();
+
+  const isQuarterStart = (m: number) => m % 3 === 0;
+  const isQuarterEnd = (m: number) => m % 3 === 2;
+  const shortYear = (y: number) => String(y).slice(-2);
+
+  // Year-aligned: from=Jan, to=Dec
+  if (fm === 0 && tm === 11) {
+    if (fy === ty) return `${fy}`;
+    return `${fy}–${ty}`;
+  }
+
+  // Quarter-aligned: from starts a quarter, to ends a quarter
+  if (isQuarterStart(fm) && isQuarterEnd(tm)) {
+    const fq = Math.floor(fm / 3) + 1;
+    const tq = Math.floor(tm / 3) + 1;
+    if (fy === ty && fq === tq) return `Q${fq} ${fy}`;
+    if (fy === ty) return `Q${fq}–Q${tq} ${fy}`;
+    return `Q${fq} ${shortYear(fy)} – Q${tq} ${shortYear(ty)}`;
+  }
+
+  // Month-aligned
+  if (fy === ty && fm === tm) return `${MONTHS_FULL[fm]} ${fy}`;
+  if (fy === ty) return `${MONTHS_SHORT[fm]}–${MONTHS_SHORT[tm]} ${shortYear(fy)}`;
+  return `${MONTHS_SHORT[fm]} ${shortYear(fy)} – ${MONTHS_SHORT[tm]} ${shortYear(ty)}`;
 }
 
 // ── Drag state type ──────────────────────────────────────────────────────────
@@ -301,6 +369,17 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose }
     quarterOrigin.current = null;
     commitRange(from, to);
   }, [dragState, effectiveRange, commitRange]);
+
+  const handlePresetClick = useCallback((preset: Preset) => {
+    const { from, to } = preset.getRange();
+    setDragState(null);
+    commitRange(from, to);
+    // Update year panels to show the selected range
+    const newLeft = Math.max(MIN_YEAR, Math.min(from.getFullYear(), currentYear - 1));
+    const newRight = Math.max(newLeft + 1, Math.min(from.getFullYear() + 1, currentYear));
+    setLeftYear(newLeft);
+    setRightYear(newRight);
+  }, [commitRange, currentYear]);
 
   const handleYearClick = useCallback((year: number) => {
     const from = new Date(year, 0, 1);
@@ -600,6 +679,27 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose }
         },
       }}
     >
+      {/* Preset pills */}
+      <Box sx={{ display: 'flex', gap: 0.75, px: 3, pt: 2, pb: 0 }}>
+        {PRESETS.map(preset => (
+          <Chip
+            key={preset.label}
+            label={preset.label}
+            size="small"
+            onClick={() => handlePresetClick(preset)}
+            sx={{
+              fontWeight: 500,
+              fontSize: '0.8rem',
+              bgcolor: 'transparent',
+              color: colors.textSecondary,
+              border: `1px solid ${colors.borderSecondary}`,
+              cursor: 'pointer',
+              '&:hover': { bgcolor: colors.bgPrimaryHover },
+            }}
+          />
+        ))}
+      </Box>
+
       <Box
         onPointerMove={handleContainerPointerMove}
         onPointerUp={handlePointerUp}
