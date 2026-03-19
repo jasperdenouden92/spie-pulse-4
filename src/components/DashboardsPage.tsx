@@ -12,7 +12,7 @@ import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
-import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
+import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
 import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
@@ -146,7 +146,7 @@ const DASHBOARD_THEMES: ThemeGroup[] = [
   {
     theme: 'Comfort',
     themeKey: 'comfort',
-    icon: <AirOutlinedIcon sx={{ fontSize: 18 }} />,
+    icon: <SpaOutlinedIcon sx={{ fontSize: 18 }} />,
     dashboards: [
       {
         id: 'comfort_gebouwoverzicht',

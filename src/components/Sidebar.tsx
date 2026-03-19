@@ -23,7 +23,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
-import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
+import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -505,7 +505,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const buildingMenuItems = [
     { label: 'Overview', icon: AssignmentOutlinedIcon, metric: 'overall' },
     { label: 'Sustainability', icon: NatureOutlinedIcon, metric: 'sustainability' },
-    { label: 'Comfort', icon: AirOutlinedIcon, metric: 'comfort' },
+    { label: 'Comfort', icon: SpaOutlinedIcon, metric: 'comfort' },
     { label: 'Asset Monitoring', icon: SecurityOutlinedIcon, metric: 'asset_monitoring' },
     { label: 'Tickets', icon: ShowChartOutlinedIcon, metric: 'tickets' },
     { label: 'Quotations', icon: RequestQuoteOutlinedIcon, metric: 'quotations' },
