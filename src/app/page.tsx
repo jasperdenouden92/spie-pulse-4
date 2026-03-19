@@ -29,7 +29,9 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import PageHeader from '@/components/PageHeader';
-import BuildingCard from '@/components/BuildingCard';
+import BuildingCard, { TopicScore } from '@/components/BuildingCard';
+import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
+import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
 import KPICard, { PerformanceRating } from '@/components/KPICard';
 import KPIToggle from '@/components/KPIToggle';
 import AnimatedNumber from '@/components/AnimatedNumber';
@@ -81,6 +83,10 @@ import ThemesPage from '@/components/Themes';
 import DashboardsPage from '@/components/DashboardsPage';
 import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import ComfortPerformancePage from '@/components/ComfortPerformancePage';
+import SustainabilityPerformancePage from '@/components/SustainabilityPerformancePage';
+import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
+import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
 import ChangelogButton from '@/components/ChangelogButton';
 import { tickets } from '@/data/tickets';
 import { quotations } from '@/data/quotations';
@@ -153,6 +159,23 @@ const SELECTION_LABELS: Record<string, string> = {
   maintenance: 'maintenance',
   compliance: 'compliance',
 };
+
+function getComfortTopics(comfortGreen: number): TopicScore[] {
+  return [
+    { label: 'Temperature', score: Math.max(0, Math.min(100, comfortGreen + 7)), trend: 3, icon: <ThermostatOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
+    { label: 'Humidity', score: Math.max(0, Math.min(100, comfortGreen - 13)), trend: -4, icon: <WaterDropOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: 'Air Quality', score: Math.max(0, Math.min(100, comfortGreen + 6)), trend: 7, icon: <AirOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
+  ];
+}
+
+function getSustainabilityTopics(sustainabilityGreen: number): TopicScore[] {
+  return [
+    { label: 'Consumption', score: Math.max(0, Math.min(100, sustainabilityGreen + 5)), trend: 4, icon: <BoltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#f57c00' },
+    { label: 'Generation', score: Math.max(0, Math.min(100, sustainabilityGreen - 8)), trend: 6, icon: <SolarPowerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#66bb6a' },
+    { label: 'Emissions', score: Math.max(0, Math.min(100, sustainabilityGreen - 3)), trend: -2, icon: <FilterDramaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: 'Cost', score: Math.max(0, Math.min(100, sustainabilityGreen + 6)), trend: 3, icon: <PaidOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
+  ];
+}
 
 export default function Home() {
   // ── URL state ──────────────────────────────────────────────────────────────
@@ -621,8 +644,8 @@ export default function Home() {
   // Map metric types to their display info
   const metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }> = {
     overall: { title: 'Overall Performance', icon: <SpeedOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
-    sustainability: { title: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
-    comfort: { title: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
+    sustainability: { title: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 24 }} /> },
+    comfort: { title: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 24 }} /> },
     asset_monitoring: { title: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
     tickets: { title: 'Tickets', icon: <AssignmentOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
     quotations: { title: 'Quotations', icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
@@ -1296,8 +1319,10 @@ export default function Home() {
                         cursor: 'pointer',
                         textAlign: 'left',
                         boxShadow: selection === 'overall' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
+                        opacity: selection !== 'overall' ? 0.45 : 1,
                         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
+                          opacity: '1 !important',
                           borderColor: '#42a5f5',
                           boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
                           transform: 'translateY(-2px)',
@@ -1680,21 +1705,16 @@ export default function Home() {
                             <Box sx={{
                               display: 'grid',
                               gap: 2,
-                              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))'
                             }}>
                               {filteredBuildings.map((b) => {
                               const stats = buildingOperationalStats[b.name];
                               let operationalStats;
 
                               if (selectedMetric === 'sustainability' && stats) {
-                                operationalStats = [
-                                  { label: 'Alerts', value: stats.sustainability.alerts, icon: <NotificationsActiveOutlinedIcon sx={{ fontSize: 16 }} /> },
-                                  { label: 'WEii Rating', value: stats.sustainability.weiiRating, icon: <StarOutlineIcon sx={{ fontSize: 16 }} /> }
-                                ];
+                                operationalStats = undefined;
                               } else if (selectedMetric === 'comfort' && stats) {
-                                operationalStats = [
-                                  { label: 'Alerts', value: stats.comfort.alerts, icon: <NotificationsActiveOutlinedIcon sx={{ fontSize: 16 }} /> }
-                                ];
+                                operationalStats = undefined;
                               } else if (selectedMetric === 'asset_monitoring' && stats) {
                                 operationalStats = [
                                   { label: 'Alerts', value: stats.assetMonitoring.alerts, icon: <NotificationsActiveOutlinedIcon sx={{ fontSize: 16 }} /> }
@@ -1755,6 +1775,9 @@ export default function Home() {
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
+                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : undefined}
+                                    energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
+                                    alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : undefined}
                                   />
                                 </motion.div>
                               );
@@ -2218,28 +2241,10 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
     );
   }
 
-  // Sustainability Dashboard
+  // Sustainability Dashboard — uses dedicated component
   if (metricKey === 'sustainability') {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {header}
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <SummaryStatCard label="WEii Rating" value="A" subtitle="Average across portfolio" />
-          <SummaryStatCard label="Energy Efficiency" value="87%" trend={4} />
-          <SummaryStatCard label="Water Conservation" value="15%" trend={3} />
-          <SummaryStatCard label="Waste Diversion" value="68%" trend={2} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Sustainability Score Trends" type="line" color="#4caf50" />
-          <IndicatorChart title="Carbon Emissions by Building" type="bar" color="#4caf50" />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Renewable Energy Mix" type="pie" color="#4caf50" />
-          <IndicatorChart title="Top Sustainable Buildings" type="ranking" color="#4caf50" />
-          <IndicatorChart title="Certification Status" type="bar" color="#4caf50" />
-        </Box>
-      </Box>
-    );
+    const sustainabilityMetric = periodMetrics.themes.find(t => t.title === 'Sustainability');
+    return <SustainabilityPerformancePage themeScore={sustainabilityMetric?.score ?? 72} themeTrend={sustainabilityMetric?.trend ?? 4} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} />;
   }
 
   // Comfort Dashboard — uses dedicated component

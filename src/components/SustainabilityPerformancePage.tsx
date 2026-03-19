@@ -1,35 +1,37 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
-import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
-import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
-import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
+import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
+import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
-import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
-import ParkOutlinedIcon from '@mui/icons-material/ParkOutlined';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import SsidChartOutlinedIcon from '@mui/icons-material/SsidChartOutlined';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
+import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
+import Tooltip from '@mui/material/Tooltip';
 import { colors } from '@/colors';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
+import { buildingOperationalStats } from '@/data/buildingOperationalStats';
 
-// ── Threshold gradient (rendered inside LineChart SVG, follows MUI AreaChartFillByValue pattern) ──
+// ── Threshold gradient ──
 
 function ThresholdGradient({ goodAbove, moderateAbove, id }: { goodAbove: number; moderateAbove: number; id: string }) {
   const { left, top, height, bottom } = useDrawingArea();
@@ -49,25 +51,24 @@ function ThresholdGradient({ goodAbove, moderateAbove, id }: { goodAbove: number
           <stop offset={modOff} stopColor="#f44336" stopOpacity={1} />
         </linearGradient>
       </defs>
-      {/* Gradient bar indicator on the left */}
       <rect x={left - 5} y={top} width={5} height={height} fill={`url(#${id})`} rx={2} />
     </>
   );
 }
 
-// ── Topic definitions ────────────────────────────────────────────────────────
+// ── Topic definitions ──
 
 interface TopicDef {
   key: string;
   label: string;
   icon: React.ReactNode;
-  color: string;        // status color (green/orange/red)
-  chartColor: string;   // line color in charts (non-status)
+  color: string;
+  chartColor: string;
   score: number;
   trend: number;
   sparkline: number[];
-  goodAbove: number;    // score >= this = Good
-  moderateAbove: number; // score >= this = Moderate
+  goodAbove: number;
+  moderateAbove: number;
 }
 
 function getStatusColor(score: number, goodAbove: number, moderateAbove: number): string {
@@ -82,13 +83,11 @@ function getStatusLabel(score: number, goodAbove: number, moderateAbove: number)
   return 'Poor';
 }
 
-// Topic definitions — offsets from theme score so they always average to exactly the theme KPI
-// Offsets: temperature +7, humidity -13, air_quality +6 → sum = 0
-// Per-topic thresholds: [good threshold, moderate threshold] — below moderate = poor
 const TOPIC_DEFS = [
-  { key: 'temperature', label: 'Temperature', icon: <ThermostatOutlinedIcon sx={{ fontSize: 20 }} />, offset: 7, trend: 3, chartColor: '#e91e63', goodAbove: 80, moderateAbove: 60 },
-  { key: 'humidity', label: 'Relative Humidity', icon: <WaterDropOutlinedIcon sx={{ fontSize: 20 }} />, offset: -13, trend: -4, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 55 },
-  { key: 'air_quality', label: 'Air Quality', icon: <AirOutlinedIcon sx={{ fontSize: 20 }} />, offset: 6, trend: 7, chartColor: '#00bcd4', goodAbove: 85, moderateAbove: 65 },
+  { key: 'consumption', label: 'Consumption', icon: <BoltOutlinedIcon sx={{ fontSize: 20 }} />, offset: 5, trend: 4, chartColor: '#f57c00', goodAbove: 75, moderateAbove: 55 },
+  { key: 'generation', label: 'Generation', icon: <SolarPowerOutlinedIcon sx={{ fontSize: 20 }} />, offset: -8, trend: 6, chartColor: '#66bb6a', goodAbove: 70, moderateAbove: 50 },
+  { key: 'emissions', label: 'Emissions', icon: <FilterDramaOutlinedIcon sx={{ fontSize: 20 }} />, offset: -3, trend: -2, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
+  { key: 'cost', label: 'Cost', icon: <PaidOutlinedIcon sx={{ fontSize: 20 }} />, offset: 6, trend: 3, chartColor: '#0288d1', goodAbove: 75, moderateAbove: 55 },
 ];
 
 function buildTopics(themeScore: number): TopicDef[] {
@@ -115,7 +114,7 @@ function buildTopics(themeScore: number): TopicDef[] {
   });
 }
 
-// ── Mock data helpers ────────────────────────────────────────────────────────
+// ── Mock data helpers ──
 
 function seededRandom(seed: number): () => number {
   let s = seed ^ 0xDEADBEEF;
@@ -131,30 +130,25 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-function getBuildingComfortScore(name: string): number {
-  const b = buildings.find(b => b.name === name);
-  return b ? b.metrics.comfort.green : 50;
-}
-
 const sortedBest = [...buildings]
-  .sort((a, b) => b.metrics.comfort.green - a.metrics.comfort.green)
+  .sort((a, b) => b.metrics.sustainability.green - a.metrics.sustainability.green)
   .slice(0, 7);
 
 const sortedMostImproved = [...buildings]
-  .sort((a, b) => b.trends.comfort - a.trends.comfort)
+  .sort((a, b) => b.trends.sustainability - a.trends.sustainability)
   .slice(0, 7);
 
 const sortedWorst = [...buildings]
-  .sort((a, b) => a.metrics.comfort.green - b.metrics.comfort.green)
+  .sort((a, b) => a.metrics.sustainability.green - b.metrics.sustainability.green)
   .slice(0, 7);
 
 const sortedMostDeteriorated = [...buildings]
-  .sort((a, b) => a.trends.comfort - b.trends.comfort)
+  .sort((a, b) => a.trends.sustainability - b.trends.sustainability)
   .slice(0, 7);
 
-// ── KPI over time data ───────────────────────────────────────────────────────
+// ── KPI over time data ──
 
-type ViewMode = 'theme' | 'all_topics' | 'temperature' | 'humidity' | 'air_quality';
+type ViewMode = 'theme' | 'all_topics' | 'consumption' | 'generation' | 'emissions' | 'cost';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -169,9 +163,7 @@ function generateKpiTimeSeries(topicKey: string, baseScore: number, volatility =
   });
 }
 
-// Chart series are built inside the component since they depend on props
-
-// ── Thresholds ───────────────────────────────────────────────────────────────
+// ── Thresholds ──
 
 interface ThresholdZone {
   label: string;
@@ -188,11 +180,56 @@ function buildThresholdZones(goodAbove: number, moderateAbove: number): Threshol
   ];
 }
 
-// Theme-level thresholds (used for Comfort KPI view)
-const THEME_GOOD_ABOVE = 80;
-const THEME_MODERATE_ABOVE = 60;
+const THEME_GOOD_ABOVE = 75;
+const THEME_MODERATE_ABOVE = 55;
 
-// ── Comfort dashboard links ──────────────────────────────────────────────────
+// ── WEii chart data ──
+
+const WEII_LABELS = ['G', 'F', 'E', 'D', 'C', 'B', 'A', 'A+'] as const;
+
+const WEII_LABEL_COLORS: Record<string, string> = {
+  'G': '#d0021b',
+  'F': '#e8601c',
+  'E': '#f5a623',
+  'D': '#ffd500',
+  'C': '#d4e34a',
+  'B': '#8cc63f',
+  'A': '#00843d',
+  'A+': '#00602b',
+};
+
+// Expected consumption for the ideal curve (kWh/m2)
+const WEII_EXPECTED: Record<string, number> = {
+  'G': 180, 'F': 145, 'E': 115, 'D': 85, 'C': 60, 'B': 38, 'A': 18, 'A+': 5,
+};
+
+// Generate deterministic mock consumption for each building
+function generateWeiiData() {
+  const rng = seededRandom(42);
+  return buildings.map(b => {
+    const stats = buildingOperationalStats[b.name];
+    const rating = stats?.sustainability.weiiRating || 'C';
+    const baseRating = rating.replace('+', '') as string;
+    const expected = WEII_EXPECTED[baseRating] ?? WEII_EXPECTED[rating] ?? 80;
+    // Actual consumption deviates from expected: some buildings over-perform, some under-perform
+    const offset = (rng() - 0.45) * 50;
+    const consumption = Math.round(Math.max(-10, expected + offset));
+    return { name: b.name, rating, consumption, image: b.image };
+  });
+}
+
+const weiiChartData = generateWeiiData();
+
+function getConsumptionColor(value: number): string {
+  if (value <= 20) return '#00843d';
+  if (value <= 45) return '#4caf50';
+  if (value <= 70) return '#8cc63f';
+  if (value <= 100) return '#ffc107';
+  if (value <= 140) return '#f5a623';
+  return '#f44336';
+}
+
+// ── Sustainability dashboard links ──
 
 interface DashboardLink {
   id: string;
@@ -201,18 +238,387 @@ interface DashboardLink {
   icon: React.ReactNode;
 }
 
-const COMFORT_DASHBOARDS: DashboardLink[] = [
-  { id: 'comfort_building_overview', label: 'Comfort Building Overview', subtitle: 'Heatmap, scores per building and zone', icon: <GridViewOutlinedIcon /> },
-  { id: 'comfort_trend', label: 'Comfort Trend', subtitle: 'Temperature and air quality trends over time', icon: <TimelineOutlinedIcon /> },
-  { id: 'adaptive_temperature_limits', label: 'Adaptive Temperature Limits', subtitle: 'Upper and lower bounds per season', icon: <TuneOutlinedIcon /> },
-  { id: 'fresh_schools', label: 'Fresh Schools', subtitle: 'CO₂, temperature and ventilation per school', icon: <ParkOutlinedIcon /> },
-  { id: 'kpi_air_quality_levels', label: 'KPI Air Quality', subtitle: 'CO₂ levels, ventilation capacity and humidity', icon: <BarChartOutlinedIcon /> },
-  { id: 'kpi_room_temperatures', label: 'KPI Room Temperatures', subtitle: 'Room temperature distribution and deviations', icon: <SsidChartOutlinedIcon /> },
+const SUSTAINABILITY_DASHBOARDS: DashboardLink[] = [
+  { id: 'gebouwtrend', label: 'Building Trend', subtitle: 'Asset trend and energy distribution', icon: <TimelineOutlinedIcon /> },
+  { id: 'energieverbruik_per_gebouw', label: 'Energy Use per Building', subtitle: 'Consumption breakdown by building', icon: <BarChartOutlinedIcon /> },
+  { id: 'totaalverbruik_opwekking', label: 'Consumption & Generation', subtitle: 'Electricity and gas totals', icon: <BoltOutlinedIcon /> },
+  { id: 'kosten_co2', label: 'Costs & CO\u2082', subtitle: 'Energy spend and carbon emissions', icon: <PaidOutlinedIcon /> },
+  { id: 'week_dagprofielen', label: 'Week & Day Profiles', subtitle: 'Power usage patterns', icon: <SsidChartOutlinedIcon /> },
+  { id: 'prognose_doelstelling', label: 'Forecast & Target', subtitle: 'Projected vs target performance', icon: <ShowChartOutlinedIcon /> },
 ];
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── WEii data types ──
 
-interface ComfortPerformancePageProps {
+interface WeiiDataPoint {
+  name: string;
+  rating: string;
+  consumption: number;
+  image?: string;
+}
+
+function getExpectationIcon(rating: string, consumption: number): { icon: '↑' | '↓' | '~'; tooltip: string; color: string } {
+  const baseRating = rating.replace(/\+/g, '');
+  const expected = WEII_EXPECTED[baseRating] ?? WEII_EXPECTED[rating] ?? 80;
+  const diff = consumption - expected;
+  if (diff < -15) return { icon: '↑', tooltip: 'Above expectation', color: '#4caf50' };
+  if (diff > 15) return { icon: '↓', tooltip: 'Below expectation', color: '#f44336' };
+  return { icon: '~', tooltip: 'As expected', color: '#bbb' };
+}
+
+// ── WEii Sidebar ──
+
+function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover }: { data: WeiiDataPoint[]; onBuildingClick?: (building: Building) => void; hoveredName: string | null; onHover: (name: string | null) => void }) {
+  // Group by rating, order by WEII_LABELS (G first = most inefficient)
+  const grouped = useMemo(() => {
+    const groups: Record<string, WeiiDataPoint[]> = {};
+    for (const label of WEII_LABELS) {
+      const items = data.filter(d => d.rating === label);
+      if (items.length > 0) {
+        groups[label] = items.sort((a, b) => a.consumption - b.consumption);
+      }
+    }
+    return groups;
+  }, [data]);
+
+  return (
+    <Box sx={{ overflowY: 'auto', height: '100%', px: 2, pt: 1, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { bgcolor: '#ddd', borderRadius: 2 } }}>
+      {Object.entries(grouped).map(([rating, points]) => (
+        <Box key={rating} sx={{ mb: 2 }}>
+          {/* Rating header */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', position: 'relative', height: 18, minWidth: 28 }}>
+              <svg width="32" height="18" viewBox="0 0 32 18" fill="none">
+                <rect width="22" height="18" rx="2.5" fill={WEII_LABEL_COLORS[rating]} />
+                <polygon points="22,0 32,9 22,18" fill={WEII_LABEL_COLORS[rating]} />
+              </svg>
+              <Typography sx={{ position: 'absolute', left: 0, width: 22, textAlign: 'center', fontWeight: 700, fontSize: '0.7rem', lineHeight: 1, color: 'white' }}>
+                {rating}
+              </Typography>
+            </Box>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
+              {points.length} {points.length === 1 ? 'building' : 'buildings'}
+            </Typography>
+          </Box>
+          {/* Buildings in this group */}
+          {points.map(point => {
+            const expectation = getExpectationIcon(point.rating, point.consumption);
+            const isHovered = hoveredName === point.name;
+            return (
+              <Box
+                key={point.name}
+                onClick={() => {
+                  const building = buildings.find(b => b.name === point.name);
+                  if (building && onBuildingClick) onBuildingClick(building);
+                }}
+                onMouseEnter={() => onHover(point.name)}
+                onMouseLeave={() => onHover(null)}
+                sx={{
+                  display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 2, mx: -2,
+                  borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s',
+                  bgcolor: isHovered ? 'action.hover' : 'transparent',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0, fontWeight: 500, fontSize: '0.8rem' }}>
+                  {point.name}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary' }}>
+                    {point.consumption} kWh
+                  </Typography>
+                  <Tooltip title={expectation.tooltip} arrow placement="left">
+                    <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: expectation.color, width: 16, textAlign: 'center', lineHeight: 1, cursor: 'default' }}>
+                      {expectation.icon}
+                    </Typography>
+                  </Tooltip>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+// ── WEii Scatter Chart ──
+
+function WeiiScatterChart({ data, onBuildingClick, hoveredName, onHover }: { data: WeiiDataPoint[]; onBuildingClick?: (building: Building) => void; hoveredName: string | null; onHover: (name: string | null) => void }) {
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(700);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setContainerWidth(Math.round(entry.contentRect.width));
+      }
+    });
+    ro.observe(el);
+    setContainerWidth(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+
+  const chartWidth = containerWidth;
+  const chartHeight = 440;
+  const margin = { top: 16, right: 16, bottom: 48, left: 48 };
+  const plotW = chartWidth - margin.left - margin.right;
+  const plotH = chartHeight - margin.top - margin.bottom;
+
+  // X-axis: energy consumption (kWh/m2) — dynamic range based on data
+  const dataMax = useMemo(() => Math.max(...data.map(d => d.consumption), ...Object.values(WEII_EXPECTED)), [data]);
+  const xMin = Math.min(-10, Math.min(...data.map(d => d.consumption)) - 10);
+  const xMax = Math.ceil((dataMax + 20) / 25) * 25; // round up to nearest 25
+  const xRange = xMax - xMin;
+
+  const xForValue = (val: number): number => {
+    return margin.left + ((val - xMin) / xRange) * plotW;
+  };
+
+  // Y-axis: WEii labels (G at top = high consumption, A+ at bottom = efficient)
+  const yForRating = (rating: string): number => {
+    const baseRating = rating.replace(/\+/g, '');
+    let idx = WEII_LABELS.indexOf(baseRating as typeof WEII_LABELS[number]);
+    if (idx < 0) idx = WEII_LABELS.indexOf(rating as typeof WEII_LABELS[number]);
+    if (rating === 'A+') idx = 7;
+    if (idx < 0) return margin.top + plotH / 2;
+    return margin.top + (idx / (WEII_LABELS.length - 1)) * plotH;
+  };
+
+  // X-axis grid ticks — dynamic
+  const xTicks = useMemo(() => {
+    const ticks: number[] = [];
+    const step = 25;
+    for (let t = 0; t <= xMax; t += step) ticks.push(t);
+    return ticks;
+  }, [xMax]);
+
+  // Ideal curve points (now x=consumption, y=rating)
+  const idealCurvePoints = WEII_LABELS.map(label => ({
+    x: xForValue(WEII_EXPECTED[label]),
+    y: yForRating(label),
+  }));
+
+  const buildSmoothPath = (points: { x: number; y: number }[]): string => {
+    if (points.length < 2) return '';
+    let d = `M ${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(i - 1, 0)];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[Math.min(i + 2, points.length - 1)];
+      const t = 0.3;
+      d += ` C ${p1.x + (p2.x - p0.x) * t},${p1.y + (p2.y - p0.y) * t} ${p2.x - (p3.x - p1.x) * t},${p2.y - (p3.y - p1.y) * t} ${p2.x},${p2.y}`;
+    }
+    return d;
+  };
+
+  return (
+    <Box ref={containerRef} sx={{ width: '100%', height: '100%', position: 'relative' }}>
+      <svg
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        width={chartWidth}
+        height={chartHeight}
+        style={{ display: 'block' }}
+      >
+        {/* Background gradient: red at top (G) to green at bottom (A+) */}
+        <defs>
+          <linearGradient id="weii-bg-gradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#f44336" stopOpacity={0.04} />
+            <stop offset="50%" stopColor="#ffc107" stopOpacity={0.03} />
+            <stop offset="100%" stopColor="#4caf50" stopOpacity={0.04} />
+          </linearGradient>
+        </defs>
+        <rect
+          x={margin.left}
+          y={margin.top}
+          width={plotW}
+          height={plotH}
+          fill="url(#weii-bg-gradient)"
+        />
+
+        {/* Horizontal grid lines per WEii label */}
+        {WEII_LABELS.map(label => (
+          <line
+            key={label}
+            x1={margin.left}
+            y1={yForRating(label)}
+            x2={chartWidth - margin.right}
+            y2={yForRating(label)}
+            stroke="#e8e8e8"
+            strokeWidth={1}
+          />
+        ))}
+
+        {/* Vertical grid lines for consumption ticks */}
+        {xTicks.map(tick => (
+          <g key={tick}>
+            <line
+              x1={xForValue(tick)}
+              y1={margin.top}
+              x2={xForValue(tick)}
+              y2={margin.top + plotH}
+              stroke="#e8e8e8"
+              strokeWidth={1}
+              strokeDasharray="4 3"
+            />
+            <text
+              x={xForValue(tick)}
+              y={chartHeight - margin.bottom + 16}
+              textAnchor="middle"
+              fill="#888"
+              fontSize={10}
+              fontWeight={500}
+            >
+              {tick}
+            </text>
+          </g>
+        ))}
+
+        {/* X-axis label */}
+        <text
+          x={margin.left + plotW / 2}
+          y={chartHeight - 4}
+          textAnchor="middle"
+          fill="#888"
+          fontSize={10}
+          fontWeight={500}
+        >
+          Energy consumption [kWh/m²]
+        </text>
+
+        {/* Ideal curve - very subtle */}
+        <path
+          d={buildSmoothPath(idealCurvePoints)}
+          fill="none"
+          stroke="#4caf50"
+          strokeWidth={1.5}
+          strokeDasharray="6 4"
+          opacity={0.25}
+        />
+
+        {/* Data points — exact Y on rating line, X varies by consumption */}
+        {data.map((point) => {
+          const cx = xForValue(point.consumption);
+          const cy = yForRating(point.rating);
+          const dotColor = getConsumptionColor(point.consumption);
+          const isHovered = hoveredName === point.name;
+
+          return (
+            <g key={point.name}>
+              {/* Highlight ring when hovered from sidebar */}
+              {isHovered && (
+                <circle cx={cx} cy={cy} r={12} fill="none" stroke={dotColor} strokeWidth={2} opacity={0.4} />
+              )}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={isHovered ? 7 : 5}
+                fill={dotColor}
+                stroke="white"
+                strokeWidth={1.5}
+                opacity={hoveredName && !isHovered ? 0.25 : 0.85}
+                style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
+                onMouseEnter={(e) => {
+                  onHover(point.name);
+                  const svg = e.currentTarget.closest('svg');
+                  if (svg) {
+                    const rect = svg.getBoundingClientRect();
+                    setTooltipPos({
+                      x: rect.left + cx * (rect.width / chartWidth),
+                      y: rect.top + cy * (rect.height / chartHeight),
+                    });
+                  }
+                }}
+                onMouseLeave={() => onHover(null)}
+                onClick={() => {
+                  const building = buildings.find(b => b.name === point.name);
+                  if (building && onBuildingClick) onBuildingClick(building);
+                }}
+              />
+              {/* Label when hovered */}
+              {isHovered && (
+                <text x={cx} y={cy - 14} textAnchor="middle" fill="#333" fontSize={10} fontWeight={600}>
+                  {point.name}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Y-axis energy labels */}
+        {WEII_LABELS.map((label) => {
+          const y = yForRating(label);
+          const x = margin.left - 4;
+          const color = WEII_LABEL_COLORS[label];
+          const labelW = 26;
+          const labelH = 16;
+          return (
+            <g key={label}>
+              <rect
+                x={x - labelW - 8}
+                y={y - labelH / 2}
+                width={labelW}
+                height={labelH}
+                rx={2.5}
+                fill={color}
+              />
+              {/* Arrow point facing right */}
+              <polygon
+                points={`${x - 8},${y - labelH / 2} ${x - 1},${y} ${x - 8},${y + labelH / 2}`}
+                fill={color}
+              />
+              <text
+                x={x - labelW / 2 - 8}
+                y={y + 4}
+                textAnchor="middle"
+                fill="white"
+                fontSize={9}
+                fontWeight={700}
+              >
+                {label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Tooltip - only show when hovering from chart directly */}
+      {hoveredName && tooltipPos.x > 0 && (() => {
+        const hp = data.find(d => d.name === hoveredName);
+        return hp ? (
+          <Box
+            sx={{
+              position: 'fixed',
+              left: tooltipPos.x,
+              top: tooltipPos.y - 44,
+              transform: 'translateX(-50%)',
+              bgcolor: 'rgba(33,33,33,0.92)',
+              color: 'white',
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 1,
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              pointerEvents: 'none',
+              zIndex: 1300,
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            }}
+          >
+            {hp.name} — {hp.consumption} kWh/m²
+          </Box>
+        ) : null;
+      })()}
+    </Box>
+  );
+}
+
+// ── Component ──
+
+interface SustainabilityPerformancePageProps {
   themeScore?: number;
   themeTrend?: number;
   onNavigateToDashboard?: (dashboardId: string) => void;
@@ -220,12 +626,12 @@ interface ComfortPerformancePageProps {
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
 }
 
-export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings }: ComfortPerformancePageProps) {
+export default function SustainabilityPerformancePage({ themeScore = 72, themeTrend = 4, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings }: SustainabilityPerformancePageProps) {
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
+  const [hoveredWeiiBuilding, setHoveredWeiiBuilding] = useState<string | null>(null);
 
-  // Sparkline renderer (smooth Catmull-Rom curves)
   const renderSparkline = (data: number[], color: string, w = 80, h = 28) => {
     const max = Math.max(...data);
     const min = Math.min(...data);
@@ -251,83 +657,83 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
     );
   };
 
-  // Build topics from theme score so averages always match the KPI card
   const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
 
-  // Build chart series from current topics
   const themeSeries = useMemo(() => ({
-    label: 'Comfort KPI',
-    color: colors.brand,
-    data: generateKpiTimeSeries('comfort_theme', themeScore),
+    label: 'Sustainability KPI',
+    color: '#2e7d32',
+    data: generateKpiTimeSeries('sustainability_theme', themeScore),
   }), [themeScore]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
     color: t.chartColor,
-    data: generateKpiTimeSeries(t.key, t.score, t.key === 'humidity' ? 4 : 1),
+    data: generateKpiTimeSeries(t.key, t.score, t.key === 'generation' ? 3 : 1),
     goodAbove: t.goodAbove,
     moderateAbove: t.moderateAbove,
   })), [topics]);
 
-  // Chart series based on view mode
   const chartSeries = useMemo(() => {
     switch (chartView) {
       case 'theme':
         return [themeSeries];
       case 'all_topics':
         return [themeSeries, ...topicSeries];
-      case 'temperature':
+      case 'consumption':
         return [topicSeries[0]];
-      case 'humidity':
+      case 'generation':
         return [topicSeries[1]];
-      case 'air_quality':
+      case 'emissions':
         return [topicSeries[2]];
+      case 'cost':
+        return [topicSeries[3]];
     }
   }, [chartView, themeSeries, topicSeries]);
 
   const showThresholds = chartView !== 'all_topics';
 
-  // Per-view threshold zones
   const activeThresholdZones = useMemo(() => {
     if (!showThresholds) return [];
     switch (chartView) {
       case 'theme':
         return buildThresholdZones(THEME_GOOD_ABOVE, THEME_MODERATE_ABOVE);
-      case 'temperature':
+      case 'consumption':
         return buildThresholdZones(topics[0].goodAbove, topics[0].moderateAbove);
-      case 'humidity':
+      case 'generation':
         return buildThresholdZones(topics[1].goodAbove, topics[1].moderateAbove);
-      case 'air_quality':
+      case 'emissions':
         return buildThresholdZones(topics[2].goodAbove, topics[2].moderateAbove);
+      case 'cost':
+        return buildThresholdZones(topics[3].goodAbove, topics[3].moderateAbove);
       default:
         return [];
     }
   }, [chartView, showThresholds, topics]);
 
-  // Dynamic y-axis range based on data and thresholds
   const yRange = useMemo(() => {
     const allValues = chartSeries.flatMap(s => s.data);
     const dataMin = Math.min(...allValues);
-    const modAbove = activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 60;
+    const modAbove = activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55;
     const relevantMin = showThresholds ? Math.min(dataMin, modAbove) : dataMin;
     const yMin = Math.max(0, Math.floor((relevantMin - 10) / 10) * 10);
     return { min: yMin, max: 100 };
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Comfort KPI', icon: <SpaOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'temperature', label: 'Temperature', icon: <ThermostatOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'humidity', label: 'Relative Humidity', icon: <WaterDropOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'air_quality', label: 'Air Quality', icon: <AirOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: 'Sustainability KPI', icon: <NatureOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'consumption', label: 'Consumption', icon: <BoltOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'generation', label: 'Generation', icon: <SolarPowerOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'emissions', label: 'Emissions', icon: <FilterDramaOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'cost', label: 'Cost', icon: <PaidOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* ═══ SECTION 1: Theme KPI + Topic KPI Cards ═══ */}
+      {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
-            Comfort Performance
+            Sustainability Performance
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
@@ -342,8 +748,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
           </Box>
         </Box>
 
-        {/* Topic cards */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
           {topics.map(topic => (
             <Paper
               key={topic.key}
@@ -358,13 +763,11 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
                 gap: 1.5,
               }}
             >
-              {/* Topic header */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box sx={{ color: 'text.secondary', display: 'flex' }}>{topic.icon}</Box>
                 <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }}>{topic.label}</Typography>
               </Box>
 
-              {/* Score + trend + sparkline */}
               <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
                   <Typography variant="h5" fontWeight={700}>{topic.score}%</Typography>
@@ -378,7 +781,6 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
                 </Box>
               </Box>
 
-              {/* Performance rating */}
               <Chip
                 label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)}
                 size="small"
@@ -392,7 +794,6 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
                   '& .MuiChip-label': { px: 1 },
                 }}
               />
-
             </Paper>
           ))}
         </Box>
@@ -422,10 +823,10 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
             </Box>
           </Box>
           {(leftListMode === 'best' ? sortedBest : sortedMostImproved).map((b, i) => {
-            const score = b.metrics.comfort.green;
-            const trend = b.trends.comfort;
+            const score = b.metrics.sustainability.green;
+            const trend = b.trends.sustainability;
             const showTrend = leftListMode === 'improved';
-            const barColor = getStatusColor(score, 80, 60);
+            const barColor = getStatusColor(score, 75, 55);
             return (
               <Box
                 key={b.name}
@@ -480,10 +881,10 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
             </Box>
           </Box>
           {(rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated).map((b, i) => {
-            const score = b.metrics.comfort.green;
-            const trend = b.trends.comfort;
+            const score = b.metrics.sustainability.green;
+            const trend = b.trends.sustainability;
             const showTrend = rightListMode === 'deteriorated';
-            const barColor = getStatusColor(score, 80, 60);
+            const barColor = getStatusColor(score, 75, 55);
             return (
               <Box
                 key={b.name}
@@ -570,7 +971,6 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
             </Box>
           </Box>
 
-          {/* Chart */}
           <Box sx={{ flex: 1, minHeight: 340 }}>
             <LineChart
               xAxis={[{
@@ -603,7 +1003,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
                   strokeDasharray: 'none !important',
                 },
                 [`& .${lineClasses.area}`]: {
-                  fill: showThresholds ? 'url(#threshold-gradient)' : undefined,
+                  fill: showThresholds ? 'url(#threshold-gradient-sust)' : undefined,
                   filter: 'none',
                   opacity: showThresholds ? 0.2 : 0.08,
                 },
@@ -622,11 +1022,11 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
               {showThresholds && (() => {
                 const good = activeThresholdZones.find(z => z.label === 'Good');
                 const moderate = activeThresholdZones.find(z => z.label === 'Moderate');
-                const goodAbove = good?.min ?? 80;
-                const modAbove = moderate?.min ?? 60;
+                const goodAbove = good?.min ?? 75;
+                const modAbove = moderate?.min ?? 55;
                 return (
                   <>
-                    <ThresholdGradient goodAbove={goodAbove} moderateAbove={modAbove} id="threshold-gradient" />
+                    <ThresholdGradient goodAbove={goodAbove} moderateAbove={modAbove} id="threshold-gradient-sust" />
                     <ChartsReferenceLine
                       y={goodAbove}
                       lineStyle={{ stroke: '#4caf50', strokeWidth: 1.5, strokeDasharray: '6 4', opacity: 0.7 }}
@@ -641,7 +1041,6 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
             </LineChart>
           </Box>
 
-          {/* Threshold legend for single-topic */}
           {showThresholds && (
             <Box sx={{ display: 'flex', gap: 2.5, mt: 0.5, justifyContent: 'center' }}>
               {activeThresholdZones.map(zone => (
@@ -655,13 +1054,53 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
         </Paper>
       </Box>
 
-      {/* ═══ SECTION 3: Comfort Dashboards ═══ */}
+      {/* ═══ SECTION 3: Sustainability Dashboards ═══ */}
+      {/* ═══ Sustainability Key Dashboards ═══ */}
       <Box>
         <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
-          Comfort Dashboards
+          Sustainability Key Dashboards
+        </Typography>
+        <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 360px', height: 480, overflow: 'hidden' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SpeedOutlinedIcon sx={{ fontSize: 18, color: '#2e7d32' }} />
+                  <Typography variant="body2" fontWeight={600}>WEii Energy Performance</Typography>
+                </Box>
+                <Button
+                  size="small"
+                  endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+                  sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+                >
+                  View details
+                </Button>
+              </Box>
+              <Box sx={{ px: 2.5, pb: 1.5, flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+                <WeiiScatterChart data={weiiChartData} onBuildingClick={onBuildingSelect} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
+              </Box>
+            </Box>
+            <Box sx={{ borderLeft: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <Box sx={{ px: 2, py: 1.25, flexShrink: 0, bgcolor: '#f8f8f8' }}>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.65rem' }}>
+                  Buildings by Rating
+                </Typography>
+              </Box>
+              <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                <WeiiSidebar data={weiiChartData} onBuildingClick={onBuildingSelect} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
+              </Box>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
+
+      {/* ═══ Other Sustainability Dashboards ═══ */}
+      <Box>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
+          Other Sustainability Dashboards
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
-          {COMFORT_DASHBOARDS.map(dash => (
+          {SUSTAINABILITY_DASHBOARDS.map(dash => (
             <Paper
               key={dash.id}
               elevation={0}
