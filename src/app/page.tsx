@@ -117,7 +117,7 @@ import {
 } from '@/components/charts';
 import type { ToggleState } from '@/components/KPIToggle';
 import { colors } from '@/colors';
-import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode } from '@/components/BuildingSelector';
+import { BuildingSelectorPopover, BuildingFilterModeToggle, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
@@ -284,6 +284,8 @@ export default function Home() {
   const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
   const [titleBuildingMode, setTitleBuildingMode] = useState<BuildingFilterMode>('buildings');
+
+  const [contractFilter, setContractFilter] = useState<ContractFilter>('all');
 
   const handleBuildingFilterModeChange = (mode: BuildingFilterMode) => {
     setTitleBuildingMode(mode);
@@ -468,6 +470,13 @@ export default function Home() {
 
     return buildings;
   }, [selectedMetric, sortOrder]);
+
+  // Apply contract filter on top of sorted buildings
+  const filteredBuildings = useMemo(() => {
+    if (contractFilter === 'all') return sortedBuildings;
+    const wantContract = contractFilter === 'contract';
+    return sortedBuildings.filter(b => b.hasContract === wantContract);
+  }, [sortedBuildings, contractFilter]);
 
 
   const handleMetricSelect = (metric: MetricType) => {
@@ -1025,7 +1034,7 @@ export default function Home() {
             leftSidebarWidth={leftSidebarWidth}
             rightSidebarWidth={0}
             selection={selection}
-            buildings={sortedBuildings}
+            buildings={filteredBuildings}
             onBuildingSelect={(b) => setSelectedBuilding(b)}
             onSelectionChange={(s) => setSelection(s as Selection)}
             isAssetExplorerOpen={isAssetExplorerOpen}
@@ -1059,8 +1068,8 @@ export default function Home() {
             onFilterBuildingClick={
               (currentPage === 'portfolio' && selectedBuilding) ? undefined : (e) => setTitleBuildingAnchor(e.currentTarget)
             }
-            buildingFilterMode={titleBuildingMode}
-            onBuildingFilterModeChange={handleBuildingFilterModeChange}
+            contractFilter={contractFilter}
+            onContractFilterChange={setContractFilter}
             selectionScore={selectionScore}
             metricItems={metricItems}
           />
@@ -1567,13 +1576,13 @@ export default function Home() {
                           value={buildingsPanelTab}
                           onChange={setBuildingsPanelTab}
                           tabs={[
-                            { value: 'buildings', label: 'Buildings' },
+                            { value: 'buildings', label: 'Portfolio' },
                             { value: 'kpi_analysis', label: 'Performance' },
                             { value: 'recommendations', label: 'Insights' },
                           ]}
                         />
 
-                        {/* Sort Dropdown — only on Buildings tab */}
+                        {/* Sort Dropdown + Building/Cluster toggle — only on Buildings tab */}
                         {buildingsPanelTab === 'buildings' && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Chip
@@ -1602,6 +1611,7 @@ export default function Home() {
                               <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
                               <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
                             </Menu>
+                            <BuildingFilterModeToggle mode={titleBuildingMode} onModeChange={handleBuildingFilterModeChange} />
                           </Box>
                         )}
                       </Box>
@@ -1651,7 +1661,7 @@ export default function Home() {
                                       Buildings Monitored
                                     </Typography>
                                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                                      {sortedBuildings.length}
+                                      {filteredBuildings.length}
                                     </Typography>
                                   </Box>
                                   <Box sx={{ flex: 1, p: 2, bgcolor: '#fff', borderRadius: 1 }}>
@@ -1672,7 +1682,7 @@ export default function Home() {
                               gap: 2,
                               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }
                             }}>
-                              {sortedBuildings.map((b) => {
+                              {filteredBuildings.map((b) => {
                               const stats = buildingOperationalStats[b.name];
                               let operationalStats;
 
