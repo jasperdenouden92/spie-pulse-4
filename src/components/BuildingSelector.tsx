@@ -64,7 +64,7 @@ export function ContractFilterToggle({ value, onChange }: { value: ContractFilte
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${colors.borderTertiary}` }}>
       <Box sx={segmentedControlSx(!value)} onClick={() => onChange(false)}>
-        No contract
+        Overall
       </Box>
       <Box sx={segmentedControlSx(value)} onClick={() => onChange(true)}>
         Contract

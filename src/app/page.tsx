@@ -305,6 +305,7 @@ export default function Home() {
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
+  const [contractMenuAnchor, setContractMenuAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
   const [titleBuildingMode, setTitleBuildingMode] = useState<BuildingFilterMode>('buildings');
 
@@ -1310,7 +1311,7 @@ export default function Home() {
                         borderColor: selection === 'overall' ? '#90caf9' : 'divider',
                         borderRadius: 1,
                         bgcolor: '#fff',
-                        minWidth: isCompact ? 140 : 180,
+                        width: 320,
                         flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
@@ -1331,7 +1332,7 @@ export default function Home() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: isCompact ? 1 : 2 }}>
                         <SpeedOutlinedIcon sx={{ fontSize: isCompact ? 16 : 20, color: 'text.secondary', transition: 'font-size 0.3s ease' }} />
                         <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.875rem' : '1rem', transition: 'font-size 0.3s ease' }}>
-                          Overall Performance
+                          Performance
                         </Typography>
                       </Box>
                       {(() => {
@@ -1402,7 +1403,7 @@ export default function Home() {
                       {/* Contract filter toggle */}
                       <Box
                         onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                        sx={{ mt: 'auto', pt: isCompact ? 1 : 2 }}
+                        sx={{ mt: 'auto', pt: isCompact ? 1 : 2, display: 'flex', justifyContent: 'center' }}
                       >
                         <ContractFilterToggle value={contractFilter} onChange={setContractFilter} />
                       </Box>
