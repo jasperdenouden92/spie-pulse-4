@@ -124,7 +124,7 @@ import {
 } from '@/components/charts';
 import type { ToggleState } from '@/components/KPIToggle';
 import { colors } from '@/colors';
-import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
+import { BuildingSelectorPopover, getBuildingSelectorLabel, ContractFilterToggle, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
@@ -306,10 +306,11 @@ export default function Home() {
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
+  const [contractMenuAnchor, setContractMenuAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
   const [titleBuildingMode, setTitleBuildingMode] = useState<BuildingFilterMode>('buildings');
 
-  const [contractFilter, setContractFilter] = useState<ContractFilter>('all');
+  const [contractFilter, setContractFilter] = useState<ContractFilter>(false);
 
   const handleBuildingFilterModeChange = (mode: BuildingFilterMode) => {
     setTitleBuildingMode(mode);
@@ -497,9 +498,7 @@ export default function Home() {
 
   // Apply contract filter on top of sorted buildings
   const filteredBuildings = useMemo(() => {
-    if (contractFilter === 'all') return sortedBuildings;
-    const wantContract = contractFilter === 'contract';
-    return sortedBuildings.filter(b => b.hasContract === wantContract);
+    return sortedBuildings.filter(b => b.hasContract === contractFilter);
   }, [sortedBuildings, contractFilter]);
 
   // Aggregate buildings into clusters for cluster grid view
@@ -1344,7 +1343,7 @@ export default function Home() {
                         borderColor: selection === 'overall' ? '#90caf9' : 'divider',
                         borderRadius: 1,
                         bgcolor: '#fff',
-                        minWidth: isCompact ? 140 : 180,
+                        width: 320,
                         flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
@@ -1365,7 +1364,7 @@ export default function Home() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: isCompact ? 1 : 2 }}>
                         <SpeedOutlinedIcon sx={{ fontSize: isCompact ? 16 : 20, color: 'text.secondary', transition: 'font-size 0.3s ease' }} />
                         <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.875rem' : '1rem', transition: 'font-size 0.3s ease' }}>
-                          Overall Performance
+                          Performance
                         </Typography>
                       </Box>
                       {(() => {
@@ -1433,181 +1432,279 @@ export default function Home() {
                           </Box>
                         );
                       })()}
+                      {/* Contract filter toggle */}
+                      <Box
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        sx={{ mt: 'auto', pt: isCompact ? 1 : 2, display: 'flex', justifyContent: 'center' }}
+                      >
+                        <ContractFilterToggle value={contractFilter} onChange={setContractFilter} />
+                      </Box>
                     </Box>
 
                     {/* KPI Groups Container — also gets sibling-dimming on hover */}
                     <Box sx={{
                       flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
                       gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease',
-                      '&:hover > .kpi-group-panel': {
-                        opacity: '0.55 !important',
-                        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                      },
-                      '&:hover > .kpi-group-panel:hover': {
-                        opacity: '1 !important',
-                      },
+                      ...(!contractFilter && {
+                        '&:hover > .kpi-group-panel': {
+                          opacity: '0.55 !important',
+                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                        },
+                        '&:hover > .kpi-group-panel:hover': {
+                          opacity: '1 !important',
+                        },
+                      }),
                     }}>
 
-                      {/* ===== THEMES ROW ===== */}
-                      <Box
-                        className="kpi-group-panel"
-                        sx={{
-                          p: isCompact ? 1.5 : 2,
-                          border: '1.5px solid',
-                          borderColor: selection === 'themes_group' ? '#90caf9' : isThemesActive ? 'divider' : colors.borderSecondary,
-                          borderRadius: 1,
-                          bgcolor: '#fff',
-                          opacity: isThemesActive ? 1 : 0.45,
-                          boxShadow: selection === 'themes_group' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
-                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            borderColor: '#42a5f5',
-                            boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
-                            transform: 'translateY(-2px)',
-                          }
-                        }}
-                      >
-                        {/* Themes Header */}
+                      {contractFilter ? (
+                        /* ===== CONTRACT MODE: Combined KPIs in one panel ===== */
                         <Box
-                          component="button"
-                          onClick={() => handleGroupToggle('themes')}
                           sx={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            mb: isCompact ? 1 : 1.5, transition: 'margin 0.3s ease',
-                            width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
+                            p: isCompact ? 1.5 : 2,
+                            border: '1.5px solid',
+                            borderColor: 'divider',
+                            borderRadius: 1,
+                            bgcolor: '#fff',
+                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                           }}
                         >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <StyleOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
-                              Theme KPIs
-                            </Typography>
-                            <KPIToggle
-                              state={getGroupToggleState('themes')}
-                              size="small"
-                            />
-                          </Box>
-                          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
-                            <AnimatedNumber value={themesScore} />%
-                          </Typography>
-                        </Box>
-
-                        {/* Primary Theme KPIs — only clickable when themes are active */}
-                        <Box sx={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                          gap: isCompact ? 1.5 : 2,
-                          transition: 'gap 0.3s ease'
-                        }}>
-                          {periodMetrics.themes.map((metric, index) => {
-                            const metricKey = PRIMARY_THEME_KEYS[index];
-                            const score = selectedBuilding
-                              ? selectedBuilding.metrics[metricKey].green
-                              : metric.score;
-
-                            return (
-                              <KPICard
-                                key={metric.title}
-                                title={metric.title}
-                                icon={themeIcons[metric.title]}
-                                score={score}
-                                trend={metric.trend}
-                                sparklineData={metric.sparklineData}
-                                periodLabel={periodMetrics.periodLabel}
-                                onClick={() => handleMetricSelect(metricKey)}
-                                onToggle={() => handleMetricSelect(metricKey)}
-                                toggleState={getToggleState(metricKey, 'themes')}
-                                isSelected={selection === metricKey}
-                                isDimmed={getToggleState(metricKey, 'themes') === 'off'}
-                                isCompact={isCompact}
-                                performanceRating={getPerformanceRating(score)}
-                              />
-                            );
-                          })}
-                        </Box>
-
-                      </Box>
-
-                      {/* ===== OPERATIONS ROW ===== */}
-                      <Box
-                        className="kpi-group-panel"
-                        sx={{
-                          p: isCompact ? 1.5 : 2,
-                          border: '1.5px solid',
-                          borderColor: selection === 'operations_group' ? '#90caf9' : isOperationsActive ? 'divider' : colors.borderSecondary,
-                          borderRadius: 1,
-                          bgcolor: '#fff',
-                          opacity: isOperationsActive ? 1 : 0.45,
-                          boxShadow: selection === 'operations_group' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
-                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            borderColor: '#42a5f5',
-                            boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
-                            transform: 'translateY(-2px)',
-                          }
-                        }}
-                      >
-                        {/* Operations Header */}
-                        <Box
-                          component="button"
-                          onClick={() => handleGroupToggle('operations')}
-                          sx={{
+                          {/* Contract KPIs Header */}
+                          <Box sx={{
                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                             mb: isCompact ? 1 : 1.5, transition: 'margin 0.3s ease',
-                            width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <EngineeringOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
-                              Operational KPIs
-                            </Typography>
-                            <KPIToggle
-                              state={getGroupToggleState('operations')}
-                              size="small"
-                            />
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <SpeedOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                Contract KPIs
+                              </Typography>
+                            </Box>
                           </Box>
-                          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
-                            <AnimatedNumber value={operationsScore} />%
-                          </Typography>
-                        </Box>
 
-                        {/* Operations KPIs */}
-                        <Box sx={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                          gap: isCompact ? 1.5 : 2,
-                          transition: 'gap 0.3s ease'
-                        }}>
-                          {periodMetrics.operations.map((metric, index) => {
-                            const metricKey = OPERATIONS_KEYS[index];
-                            const score = selectedBuilding
-                              ? selectedBuilding.metrics[metricKey].green
-                              : metric.score;
+                          {/* All KPIs in a single grid */}
+                          <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                            gap: isCompact ? 1.5 : 2,
+                            transition: 'gap 0.3s ease'
+                          }}>
+                            {periodMetrics.themes.map((metric, index) => {
+                              const metricKey = PRIMARY_THEME_KEYS[index];
+                              const score = selectedBuilding
+                                ? selectedBuilding.metrics[metricKey].green
+                                : metric.score;
 
-                            return (
-                              <KPICard
-                                key={metric.title}
-                                title={metric.title}
-                                icon={operationsIcons[metric.title]}
-                                score={score}
-                                trend={metric.trend}
-                                sparklineData={metric.sparklineData}
-                                periodLabel={periodMetrics.periodLabel}
-                                onClick={() => handleMetricSelect(metricKey)}
-                                onToggle={() => handleMetricSelect(metricKey)}
-                                toggleState={getToggleState(metricKey, 'operations')}
-                                isSelected={selection === metricKey}
-                                isDimmed={getToggleState(metricKey, 'operations') === 'off'}
-                                isCompact={isCompact}
-                                performanceRating={getPerformanceRating(score)}
-                              />
-                            );
-                          })}
+                              return (
+                                <KPICard
+                                  key={metric.title}
+                                  title={metric.title}
+                                  icon={themeIcons[metric.title]}
+                                  score={score}
+                                  trend={metric.trend}
+                                  sparklineData={metric.sparklineData}
+                                  periodLabel={periodMetrics.periodLabel}
+                                  onClick={() => handleMetricSelect(metricKey)}
+                                  onToggle={() => handleMetricSelect(metricKey)}
+                                  toggleState={getToggleState(metricKey, 'themes')}
+                                  isSelected={selection === metricKey}
+                                  isDimmed={getToggleState(metricKey, 'themes') === 'off'}
+                                  isCompact={isCompact}
+                                  performanceRating={getPerformanceRating(score)}
+                                />
+                              );
+                            })}
+                            {periodMetrics.operations.map((metric, index) => {
+                              const metricKey = OPERATIONS_KEYS[index];
+                              const score = selectedBuilding
+                                ? selectedBuilding.metrics[metricKey].green
+                                : metric.score;
+
+                              return (
+                                <KPICard
+                                  key={metric.title}
+                                  title={metric.title}
+                                  icon={operationsIcons[metric.title]}
+                                  score={score}
+                                  trend={metric.trend}
+                                  sparklineData={metric.sparklineData}
+                                  periodLabel={periodMetrics.periodLabel}
+                                  onClick={() => handleMetricSelect(metricKey)}
+                                  onToggle={() => handleMetricSelect(metricKey)}
+                                  toggleState={getToggleState(metricKey, 'operations')}
+                                  isSelected={selection === metricKey}
+                                  isDimmed={getToggleState(metricKey, 'operations') === 'off'}
+                                  isCompact={isCompact}
+                                  performanceRating={getPerformanceRating(score)}
+                                />
+                              );
+                            })}
+                          </Box>
                         </Box>
-                      </Box>
+                      ) : (
+                        /* ===== NON-CONTRACT MODE: Separate Theme & Operations panels ===== */
+                        <>
+                          {/* ===== THEMES ROW ===== */}
+                          <Box
+                            className="kpi-group-panel"
+                            sx={{
+                              p: isCompact ? 1.5 : 2,
+                              border: '1.5px solid',
+                              borderColor: selection === 'themes_group' ? '#90caf9' : isThemesActive ? 'divider' : colors.borderSecondary,
+                              borderRadius: 1,
+                              bgcolor: '#fff',
+                              opacity: isThemesActive ? 1 : 0.45,
+                              boxShadow: selection === 'themes_group' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
+                              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                borderColor: '#42a5f5',
+                                boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
+                                transform: 'translateY(-2px)',
+                              }
+                            }}
+                          >
+                            {/* Themes Header */}
+                            <Box
+                              component="button"
+                              onClick={() => handleGroupToggle('themes')}
+                              sx={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                mb: isCompact ? 1 : 1.5, transition: 'margin 0.3s ease',
+                                width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <StyleOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                  Theme KPIs
+                                </Typography>
+                                <KPIToggle
+                                  state={getGroupToggleState('themes')}
+                                  size="small"
+                                />
+                              </Box>
+                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
+                                <AnimatedNumber value={themesScore} />%
+                              </Typography>
+                            </Box>
+
+                            {/* Primary Theme KPIs — only clickable when themes are active */}
+                            <Box sx={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                              gap: isCompact ? 1.5 : 2,
+                              transition: 'gap 0.3s ease'
+                            }}>
+                              {periodMetrics.themes.map((metric, index) => {
+                                const metricKey = PRIMARY_THEME_KEYS[index];
+                                const score = selectedBuilding
+                                  ? selectedBuilding.metrics[metricKey].green
+                                  : metric.score;
+
+                                return (
+                                  <KPICard
+                                    key={metric.title}
+                                    title={metric.title}
+                                    icon={themeIcons[metric.title]}
+                                    score={score}
+                                    trend={metric.trend}
+                                    sparklineData={metric.sparklineData}
+                                    periodLabel={periodMetrics.periodLabel}
+                                    onClick={() => handleMetricSelect(metricKey)}
+                                    onToggle={() => handleMetricSelect(metricKey)}
+                                    toggleState={getToggleState(metricKey, 'themes')}
+                                    isSelected={selection === metricKey}
+                                    isDimmed={getToggleState(metricKey, 'themes') === 'off'}
+                                    isCompact={isCompact}
+                                    performanceRating={getPerformanceRating(score)}
+                                  />
+                                );
+                              })}
+                            </Box>
+
+                          </Box>
+
+                          {/* ===== OPERATIONS ROW ===== */}
+                          <Box
+                            className="kpi-group-panel"
+                            sx={{
+                              p: isCompact ? 1.5 : 2,
+                              border: '1.5px solid',
+                              borderColor: selection === 'operations_group' ? '#90caf9' : isOperationsActive ? 'divider' : colors.borderSecondary,
+                              borderRadius: 1,
+                              bgcolor: '#fff',
+                              opacity: isOperationsActive ? 1 : 0.45,
+                              boxShadow: selection === 'operations_group' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
+                              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                borderColor: '#42a5f5',
+                                boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
+                                transform: 'translateY(-2px)',
+                              }
+                            }}
+                          >
+                            {/* Operations Header */}
+                            <Box
+                              component="button"
+                              onClick={() => handleGroupToggle('operations')}
+                              sx={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                mb: isCompact ? 1 : 1.5, transition: 'margin 0.3s ease',
+                                width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <EngineeringOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                  Operational KPIs
+                                </Typography>
+                                <KPIToggle
+                                  state={getGroupToggleState('operations')}
+                                  size="small"
+                                />
+                              </Box>
+                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
+                                <AnimatedNumber value={operationsScore} />%
+                              </Typography>
+                            </Box>
+
+                            {/* Operations KPIs */}
+                            <Box sx={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                              gap: isCompact ? 1.5 : 2,
+                              transition: 'gap 0.3s ease'
+                            }}>
+                              {periodMetrics.operations.map((metric, index) => {
+                                const metricKey = OPERATIONS_KEYS[index];
+                                const score = selectedBuilding
+                                  ? selectedBuilding.metrics[metricKey].green
+                                  : metric.score;
+
+                                return (
+                                  <KPICard
+                                    key={metric.title}
+                                    title={metric.title}
+                                    icon={operationsIcons[metric.title]}
+                                    score={score}
+                                    trend={metric.trend}
+                                    sparklineData={metric.sparklineData}
+                                    periodLabel={periodMetrics.periodLabel}
+                                    onClick={() => handleMetricSelect(metricKey)}
+                                    onToggle={() => handleMetricSelect(metricKey)}
+                                    toggleState={getToggleState(metricKey, 'operations')}
+                                    isSelected={selection === metricKey}
+                                    isDimmed={getToggleState(metricKey, 'operations') === 'off'}
+                                    isCompact={isCompact}
+                                    performanceRating={getPerformanceRating(score)}
+                                  />
+                                );
+                              })}
+                            </Box>
+                          </Box>
+                        </>
+                      )}
                     </Box>
                   </Box>
 

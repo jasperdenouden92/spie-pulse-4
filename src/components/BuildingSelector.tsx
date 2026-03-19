@@ -16,7 +16,7 @@ import { buildings as allBuildingsData } from '@/data/buildings';
 import { colors } from '@/colors';
 
 export type BuildingFilterMode = 'buildings' | 'clusters';
-export type ContractFilter = 'all' | 'contract' | 'no_contract';
+export type ContractFilter = boolean;
 
 const kbdSx = {
   display: 'inline-flex',
@@ -59,18 +59,15 @@ export function BuildingFilterModeToggle({ mode, onModeChange }: { mode: Buildin
   );
 }
 
-/** Segmented control to filter by contract status */
+/** Toggle to filter by contract status */
 export function ContractFilterToggle({ value, onChange }: { value: ContractFilter; onChange: (value: ContractFilter) => void }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${colors.borderTertiary}` }}>
-      <Box sx={segmentedControlSx(value === 'all')} onClick={() => onChange('all')}>
-        All
+      <Box sx={segmentedControlSx(!value)} onClick={() => onChange(false)}>
+        Overall
       </Box>
-      <Box sx={segmentedControlSx(value === 'contract')} onClick={() => onChange('contract')}>
+      <Box sx={segmentedControlSx(value)} onClick={() => onChange(true)}>
         Contract
-      </Box>
-      <Box sx={segmentedControlSx(value === 'no_contract')} onClick={() => onChange('no_contract')}>
-        No contract
       </Box>
     </Box>
   );

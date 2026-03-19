@@ -124,7 +124,7 @@ export default function PageHeader({
   filterBuildingLabel,
   onFilterDateClick,
   onFilterBuildingClick,
-  contractFilter = 'all',
+  contractFilter = false,
   onContractFilterChange,
   selectionScore,
   metricItems = [],
@@ -581,11 +581,6 @@ export default function PageHeader({
 
       {/* Right: Filters + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        {/* Contract filter toggle */}
-        {(currentPage === 'portfolio' || currentPage === 'dashboards') && onContractFilterChange && (
-          <ContractFilterToggle value={contractFilter} onChange={onContractFilterChange} />
-        )}
-
         {/* Export Button — on Control Room and Dashboards */}
         {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
           <Button
