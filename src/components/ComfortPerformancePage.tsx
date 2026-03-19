@@ -193,12 +193,12 @@ interface DashboardLink {
 }
 
 const COMFORT_DASHBOARDS: DashboardLink[] = [
-  { id: 'comfort_gebouwoverzicht', label: 'Comfort gebouwoverzicht', subtitle: 'Heatmap, scores per gebouw en zone', icon: <GridViewOutlinedIcon /> },
-  { id: 'comforttrend', label: 'Comforttrend', subtitle: 'Temperatuur- en luchtkwaliteittrends over tijd', icon: <TimelineOutlinedIcon /> },
-  { id: 'adaptieve_temperatuurgrenzen', label: 'Adaptieve temperatuurgrenzen', subtitle: 'Boven- en ondergrenzen per seizoen', icon: <TuneOutlinedIcon /> },
-  { id: 'frisse_scholen', label: 'Frisse Scholen', subtitle: 'CO₂, temperatuur en ventilatie per school', icon: <ParkOutlinedIcon /> },
-  { id: 'kpi_comfortniveaus_luchtkwaliteit', label: 'KPI Luchtkwaliteit', subtitle: 'CO₂-niveaus, ventilatiecapaciteit en luchtvochtigheid', icon: <BarChartOutlinedIcon /> },
-  { id: 'kpi_comfortniveaus_ruimtetemperaturen', label: 'KPI Ruimtetemperaturen', subtitle: 'Ruimtetemperatuur verdeling en afwijkingen', icon: <SsidChartOutlinedIcon /> },
+  { id: 'comfort_building_overview', label: 'Comfort Building Overview', subtitle: 'Heatmap, scores per building and zone', icon: <GridViewOutlinedIcon /> },
+  { id: 'comfort_trend', label: 'Comfort Trend', subtitle: 'Temperature and air quality trends over time', icon: <TimelineOutlinedIcon /> },
+  { id: 'adaptive_temperature_limits', label: 'Adaptive Temperature Limits', subtitle: 'Upper and lower bounds per season', icon: <TuneOutlinedIcon /> },
+  { id: 'fresh_schools', label: 'Fresh Schools', subtitle: 'CO₂, temperature and ventilation per school', icon: <ParkOutlinedIcon /> },
+  { id: 'kpi_air_quality_levels', label: 'KPI Air Quality', subtitle: 'CO₂ levels, ventilation capacity and humidity', icon: <BarChartOutlinedIcon /> },
+  { id: 'kpi_room_temperatures', label: 'KPI Room Temperatures', subtitle: 'Room temperature distribution and deviations', icon: <SsidChartOutlinedIcon /> },
 ];
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -323,7 +323,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
             endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
           >
-            Bekijk prestatie-indicatoren
+            View performance indicators
           </Button>
         </Box>
 
