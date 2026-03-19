@@ -82,6 +82,31 @@ interface BuildingSelectorPopoverProps {
   selectedNames: string[];
   onSelectionChange: (names: string[]) => void;
   mode: BuildingFilterMode;
+  onModeChange?: (mode: BuildingFilterMode) => void;
+}
+
+function SelectorListItem({ label, subtitle, selected, highlighted, onClick, innerRef }: {
+  label: string; subtitle: string; selected: boolean; highlighted: boolean;
+  onClick: () => void; innerRef?: (el: HTMLElement | null) => void;
+}) {
+  return (
+    <Box
+      ref={innerRef}
+      sx={{
+        display: 'flex', alignItems: 'center', mx: 1, px: 1.5, py: 1,
+        cursor: 'pointer', borderRadius: '6px',
+        bgcolor: selected ? colors.bgActive : highlighted ? colors.bgPrimaryHover : undefined,
+        '&:hover': { bgcolor: selected ? colors.bgActive : colors.bgPrimaryHover },
+      }}
+      onClick={onClick}
+    >
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography variant="body2" noWrap sx={{ fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.2, m: 0, mb: '4px' }}>{label}</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', lineHeight: 1, display: 'block', m: 0 }}>{subtitle}</Typography>
+      </Box>
+      {selected && <CheckIcon sx={{ fontSize: 18, color: colors.brand, ml: 1, flexShrink: 0 }} />}
+    </Box>
+  );
 }
 
 const allGroups = [...new Set(allBuildingsData.map(b => b.group))].sort();
@@ -93,7 +118,7 @@ const allCities = [...new Set(allBuildingsData.map(b => b.city))].sort();
  * - In buildings mode: ['building1', 'building2'] = filter to these buildings
  * - In clusters mode: ['cluster1', 'cluster2'] = filter to these clusters
  */
-export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSelectionChange, mode }: BuildingSelectorPopoverProps) {
+export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSelectionChange, mode, onModeChange }: BuildingSelectorPopoverProps) {
   const [search, setSearch] = useState('');
   const [filterGroups, setFilterGroups] = useState<string[]>([]);
   const [filterCity, setFilterCity] = useState<string>('all');
@@ -202,8 +227,22 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
         },
       }}
     >
+      {/* Mode toggle */}
+      {onModeChange && (
+        <Box sx={{ px: 1.5, pt: 1.5, pb: 0, flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
+            <Box sx={{ ...segmentedControlSx(mode === 'buildings'), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('buildings')}>
+              Buildings
+            </Box>
+            <Box sx={{ ...segmentedControlSx(mode === 'clusters'), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('clusters')}>
+              Clusters
+            </Box>
+          </Box>
+        </Box>
+      )}
+
       {/* Header: search */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.5, borderBottom: `1px solid ${colors.borderTertiary}`, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.5, flexShrink: 0 }}>
         <TextField
           inputRef={searchRef}
           size="small"
@@ -322,33 +361,28 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
         </Box>
       )}
 
+      {/* List header */}
+      <Typography variant="caption" sx={{ px: 2, pt: 1, pb: 0.5, fontWeight: 600, color: 'text.secondary', fontSize: '0.7rem', display: 'block', flexShrink: 0 }}>
+        {search
+          ? `${mode === 'buildings' ? filteredBuildings.length : filteredClusters.length} results`
+          : mode === 'clusters' ? 'Recent clusters' : 'Recent buildings'}
+      </Typography>
+
       {/* List */}
-      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: '2px', pb: 1 }}>
         {mode === 'buildings' ? (
           filteredBuildings.length > 0 ? (
-            filteredBuildings.map((b, i) => {
-              const selected = selectedNames.includes(b.name);
-              const isHighlighted = i === highlightIndex;
-              return (
-                <Box
-                  key={b.name}
-                  ref={isHighlighted ? (el: HTMLElement | null) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
-                  sx={{
-                    display: 'flex', alignItems: 'center', px: 2, py: 0.75,
-                    cursor: 'pointer',
-                    bgcolor: isHighlighted ? colors.bgPrimaryHover : undefined,
-                    '&:hover': { bgcolor: colors.bgPrimaryHover },
-                  }}
-                  onClick={() => toggleItem(b.name)}
-                >
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography variant="body2" noWrap fontSize="0.85rem">{b.name}</Typography>
-                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem">{b.city} · {b.group}</Typography>
-                  </Box>
-                  {selected && <CheckIcon sx={{ fontSize: 18, color: colors.brand, ml: 1, flexShrink: 0 }} />}
-                </Box>
-              );
-            })
+            filteredBuildings.map((b, i) => (
+              <SelectorListItem
+                key={b.name}
+                label={b.name}
+                subtitle={`${b.city} · ${b.group}`}
+                selected={selectedNames.includes(b.name)}
+                highlighted={i === highlightIndex}
+                onClick={() => toggleItem(b.name)}
+                innerRef={i === highlightIndex ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
+              />
+            ))
           ) : (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">No buildings found</Typography>
@@ -356,32 +390,17 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
           )
         ) : (
           filteredClusters.length > 0 ? (
-            filteredClusters.map(([group], i) => {
-              const selected = selectedNames.includes(group);
-              const count = allBuildingsData.filter(b => b.group === group).length;
-              const isHighlighted = i === highlightIndex;
-              return (
-                <Box
-                  key={group}
-                  ref={isHighlighted ? (el: HTMLElement | null) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
-                  sx={{
-                    display: 'flex', alignItems: 'center', px: 2, py: 1,
-                    cursor: 'pointer',
-                    bgcolor: isHighlighted ? colors.bgPrimaryHover : undefined,
-                    '&:hover': { bgcolor: colors.bgPrimaryHover },
-                  }}
-                  onClick={() => toggleItem(group)}
-                >
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography variant="body2" fontWeight={600} fontSize="0.85rem">{group}</Typography>
-                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                      {count} buildings
-                    </Typography>
-                  </Box>
-                  {selected && <CheckIcon sx={{ fontSize: 18, color: colors.brand, ml: 1, flexShrink: 0 }} />}
-                </Box>
-              );
-            })
+            filteredClusters.map(([group], i) => (
+              <SelectorListItem
+                key={group}
+                label={group}
+                subtitle={`${allBuildingsData.filter(b => b.group === group).length} buildings`}
+                selected={selectedNames.includes(group)}
+                highlighted={i === highlightIndex}
+                onClick={() => toggleItem(group)}
+                innerRef={i === highlightIndex ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
+              />
+            ))
           ) : (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography variant="body2" color="text.secondary">No clusters found</Typography>
@@ -427,10 +446,11 @@ interface BuildingSelectorProps {
   selectedNames: string[];
   onSelectionChange: (names: string[]) => void;
   mode: BuildingFilterMode;
+  onModeChange?: (mode: BuildingFilterMode) => void;
 }
 
 /** Self-contained chip + popover variant */
-export default function BuildingSelector({ selectedNames, onSelectionChange, mode }: BuildingSelectorProps) {
+export default function BuildingSelector({ selectedNames, onSelectionChange, mode, onModeChange }: BuildingSelectorProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const hasFilter = selectedNames.length > 0;
@@ -465,6 +485,7 @@ export default function BuildingSelector({ selectedNames, onSelectionChange, mod
         selectedNames={selectedNames}
         onSelectionChange={onSelectionChange}
         mode={mode}
+        onModeChange={onModeChange}
       />
     </>
   );
