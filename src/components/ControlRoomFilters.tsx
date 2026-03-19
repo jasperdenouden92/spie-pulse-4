@@ -40,6 +40,7 @@ interface ControlRoomFiltersProps {
   onDateRangeChange?: (range: string) => void;
   activeDashboardId?: string;
   buildingFilterMode?: BuildingFilterMode;
+  onBuildingFilterModeChange?: (mode: BuildingFilterMode) => void;
 }
 
 // Recursive tree node renderer for the asset filter
@@ -173,6 +174,7 @@ export default function ControlRoomFilters({
   onDateRangeChange,
   activeDashboardId,
   buildingFilterMode = 'buildings',
+  onBuildingFilterModeChange,
 }: ControlRoomFiltersProps) {
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
   const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState<null | HTMLElement>(null);
@@ -253,6 +255,7 @@ export default function ControlRoomFilters({
         selectedNames={selectedBuildingNames}
         onSelectionChange={setSelectedBuildingNames}
         mode={buildingFilterMode}
+        onModeChange={onBuildingFilterModeChange}
       />
 
       {/* Asset Filter — only for specific dashboards */}

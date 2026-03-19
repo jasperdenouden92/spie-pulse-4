@@ -117,7 +117,7 @@ import {
 } from '@/components/charts';
 import type { ToggleState } from '@/components/KPIToggle';
 import { colors } from '@/colors';
-import { BuildingSelectorPopover, BuildingFilterModeToggle, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
+import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
@@ -1088,6 +1088,7 @@ export default function Home() {
           selectedNames={titleBuildingNames}
           onSelectionChange={setTitleBuildingNames}
           mode={titleBuildingMode}
+          onModeChange={handleBuildingFilterModeChange}
         />
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
@@ -1611,7 +1612,6 @@ export default function Home() {
                               <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
                               <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
                             </Menu>
-                            <BuildingFilterModeToggle mode={titleBuildingMode} onModeChange={handleBuildingFilterModeChange} />
                           </Box>
                         )}
                       </Box>
