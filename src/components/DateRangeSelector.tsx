@@ -181,8 +181,8 @@ export function getDateRangeDisplayLabel(value: string): string {
 
   // Month-aligned
   if (fy === ty && fm === tm) return `${MONTHS_FULL[fm]} ${fy}`;
-  if (fy === ty) return `${MONTHS_SHORT[fm]}–${MONTHS_SHORT[tm]} ${shortYear(fy)}`;
-  return `${MONTHS_SHORT[fm]} ${shortYear(fy)} – ${MONTHS_SHORT[tm]} ${shortYear(ty)}`;
+  if (fy === ty) return `${MONTHS_SHORT[fm]} - ${MONTHS_SHORT[tm]} ${fy}`;
+  return `${MONTHS_SHORT[fm]} ${fy} - ${MONTHS_SHORT[tm]} ${ty}`;
 }
 
 // ── Drag state type ──────────────────────────────────────────────────────────
