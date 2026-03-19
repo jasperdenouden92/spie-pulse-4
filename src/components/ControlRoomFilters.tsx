@@ -2,8 +2,6 @@ import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -14,6 +12,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { buildings as allBuildingsData } from '@/data/buildings';
 import { assetTree, AssetNode } from '@/data/assetTree';
 import { colors } from '@/colors';
+import DateRangeSelector, { getDateRangeDisplayLabel } from './DateRangeSelector';
 
 // Dashboards that show the asset filter
 const DASHBOARDS_WITH_ASSET_FILTER = new Set(['metertrend', 'energie_buitentemperatuur']);
@@ -179,7 +178,7 @@ export default function ControlRoomFilters({
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
   const [buildingSearch, setBuildingSearch] = useState('');
   const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState<null | HTMLElement>(null);
-  const [localDateRange, setLocalDateRange] = useState('This Quarter');
+  const [localDateRange, setLocalDateRange] = useState('This Month');
   const selectedDateRange = selectedDateRangeProp ?? localDateRange;
   const setSelectedDateRange = (v: string) => { setLocalDateRange(v); onDateRangeChange?.(v); };
 
@@ -301,38 +300,7 @@ export default function ControlRoomFilters({
     ? allBuildingsData.filter(b => b.name.toLowerCase().includes(buildingSearch.toLowerCase()))
     : allBuildingsData;
 
-  const getDateRangeDisplay = (range: string): string => {
-    const now = new Date();
-    const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-    const fmt = (d: Date) => `${d.getDate()} ${months[d.getMonth()]}`;
-    const fmtFull = (d: Date) => `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-    switch (range) {
-      case 'Today': return fmtFull(now);
-      case 'This Week': {
-        const day = now.getDay() || 7;
-        const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-        const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-        return `${fmt(mon)} – ${fmtFull(sun)}`;
-      }
-      case 'This Month': {
-        const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      case 'This Quarter': {
-        const q = Math.floor(now.getMonth() / 3);
-        const start = new Date(now.getFullYear(), q * 3, 1);
-        const end = new Date(now.getFullYear(), q * 3 + 3, 0);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      case 'This Year': {
-        const start = new Date(now.getFullYear(), 0, 1);
-        const end = new Date(now.getFullYear(), 11, 31);
-        return `${fmt(start)} – ${fmtFull(end)}`;
-      }
-      default: return range;
-    }
-  };
+  const getDateRangeDisplay = (range: string): string => getDateRangeDisplayLabel(range);
 
   const chipSx = (active: boolean) => ({
     height: 32,
@@ -601,28 +569,12 @@ export default function ControlRoomFilters({
           '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500 }
         }}
       />
-      <Menu
+      <DateRangeSelector
         anchorEl={dateRangeAnchorEl}
-        open={Boolean(dateRangeAnchorEl)}
         onClose={() => setDateRangeAnchorEl(null)}
-        PaperProps={{ sx: { borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.13)', mt: 0.5 } }}
-      >
-        {['Today', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time'].map(range => (
-          <MenuItem
-            key={range}
-            selected={selectedDateRange === range}
-            onClick={() => { setSelectedDateRange(range); setDateRangeAnchorEl(null); }}
-            sx={{ fontSize: '0.875rem' }}
-          >
-            <Box>
-              <Typography variant="body2" fontWeight={selectedDateRange === range ? 600 : 400}>{range}</Typography>
-              {range !== 'All Time' && (
-                <Typography variant="caption" color="text.secondary">{getDateRangeDisplay(range)}</Typography>
-              )}
-            </Box>
-          </MenuItem>
-        ))}
-      </Menu>
+        value={selectedDateRange}
+        onChange={(v) => { setSelectedDateRange(v); }}
+      />
     </Box>
   );
 }

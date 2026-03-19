@@ -7,7 +7,7 @@ import { theme } from '@/theme';
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = { title: 'Dashboard Proto' };
+export const metadata: Metadata = { title: 'Pulse Core 4.0' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
