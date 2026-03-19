@@ -137,11 +137,11 @@ function getBuildingComfortScore(name: string): number {
 
 const sortedBest = [...buildings]
   .sort((a, b) => b.metrics.comfort.green - a.metrics.comfort.green)
-  .slice(0, 5);
+  .slice(0, 7);
 
 const sortedWorst = [...buildings]
   .sort((a, b) => a.metrics.comfort.green - b.metrics.comfort.green)
-  .slice(0, 5);
+  .slice(0, 7);
 
 // ── KPI over time data ───────────────────────────────────────────────────────
 
@@ -391,29 +391,33 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
             <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
             <Typography variant="body2" fontWeight={600}>Best Performing</Typography>
           </Box>
-          {sortedBest.map((b, i) => (
-            <Box
-              key={b.name}
-              onClick={() => onBuildingSelect?.(b)}
-              sx={{
-                display: 'flex', alignItems: 'center', gap: 1.5, py: 0.75, px: 1, mx: -1,
-                borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s ease',
-                '&:hover': { bgcolor: 'action.hover' },
-              }}
-            >
-              <Typography variant="caption" sx={{ width: 16, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-              <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
-              <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                <Typography variant="body2" noWrap fontWeight={500} sx={{ lineHeight: 1.3, mb: 0 }}>{b.name}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.3, mt: 0 }}>{b.city}</Typography>
+          {sortedBest.map((b, i) => {
+            const score = b.metrics.comfort.green;
+            const barColor = getStatusColor(score, 80, 60);
+            return (
+              <Box
+                key={b.name}
+                onClick={() => onBuildingSelect?.(b)}
+                sx={{
+                  display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
+                  borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s ease',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
+                <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
+                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary', flexShrink: 0, ml: 1 }}>{score}%</Typography>
+                  </Box>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                    <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
+                  </Box>
+                </Box>
               </Box>
-              <Chip
-                label={`${b.metrics.comfort.green}%`}
-                size="small"
-                sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', fontWeight: 600, fontSize: '0.75rem', height: 24 }}
-              />
-            </Box>
-          ))}
+            );
+          })}
           <Button
             size="small"
             onClick={() => onViewAllBuildings?.('Best to Worst')}
@@ -429,29 +433,33 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
             <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
             <Typography variant="body2" fontWeight={600}>Worst Performing</Typography>
           </Box>
-          {sortedWorst.map((b, i) => (
-            <Box
-              key={b.name}
-              onClick={() => onBuildingSelect?.(b)}
-              sx={{
-                display: 'flex', alignItems: 'center', gap: 1.5, py: 0.75, px: 1, mx: -1,
-                borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s ease',
-                '&:hover': { bgcolor: 'action.hover' },
-              }}
-            >
-              <Typography variant="caption" sx={{ width: 16, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-              <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
-              <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                <Typography variant="body2" noWrap fontWeight={500} sx={{ lineHeight: 1.3, mb: 0 }}>{b.name}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.3, mt: 0 }}>{b.city}</Typography>
+          {sortedWorst.map((b, i) => {
+            const score = b.metrics.comfort.green;
+            const barColor = getStatusColor(score, 80, 60);
+            return (
+              <Box
+                key={b.name}
+                onClick={() => onBuildingSelect?.(b)}
+                sx={{
+                  display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
+                  borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s ease',
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
+                <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
+                <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
+                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary', flexShrink: 0, ml: 1 }}>{score}%</Typography>
+                  </Box>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                    <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
+                  </Box>
+                </Box>
               </Box>
-              <Chip
-                label={`${b.metrics.comfort.green}%`}
-                size="small"
-                sx={{ bgcolor: '#ffebee', color: '#c62828', fontWeight: 600, fontSize: '0.75rem', height: 24 }}
-              />
-            </Box>
-          ))}
+            );
+          })}
           <Button
             size="small"
             onClick={() => onViewAllBuildings?.('Worst to Best')}
