@@ -221,8 +221,9 @@ export default function PageHeader({
               variant="h6"
               sx={{
                 fontWeight: 600,
-                fontSize: '1rem',
+                fontSize: '0.8rem',
                 cursor: 'pointer',
+                color: (selectedBuilding || selectedAsset || showGroupSegment) ? 'text.secondary' : 'text.primary',
                 '&:hover': { textDecoration: 'underline' }
               }}
               onClick={() => {
@@ -239,43 +240,43 @@ export default function PageHeader({
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {currentPage === 'home' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Home</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Home</Typography>
             )}
             {currentPage === 'insights' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Insights</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Insights</Typography>
             )}
             {currentPage === 'portfolio_overview' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Portfolio</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Portfolio</Typography>
             )}
             {currentPage === 'bms' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>BMS</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>BMS</Typography>
             )}
             {currentPage === 'themes' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Themes</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Themes</Typography>
             )}
             {currentPage === 'workspaces' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Workspaces</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Workspaces</Typography>
             )}
             {currentPage === 'exports' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Exports</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Exports</Typography>
             )}
             {currentPage === 'dashboards' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Dashboards</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Dashboards</Typography>
             )}
             {currentPage === 'operations' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>Operations</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Operations</Typography>
             )}
             {currentPage?.startsWith('operations_') && (
               <>
                 <Typography
                   variant="h6"
-                  sx={{ fontWeight: 600, fontSize: '1rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline', color: 'text.primary' } }}
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => onPageChange?.('operations')}
                 >
                   Operations
                 </Typography>
-                <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>
                   {currentPage === 'operations_docs' ? 'Docs' : currentPage === 'operations_tickets' ? 'Tickets' : 'Quotations'}
                 </Typography>
               </>
@@ -297,13 +298,14 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <ApartmentOutlinedIcon sx={{ fontSize: 20, color: 'text.primary', mr: 0.5 }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <ApartmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
                   <Typography
                     variant="h6"
                     sx={{
                       fontWeight: 600,
-                      fontSize: '1rem',
+                      fontSize: '0.8rem',
+                      color: (selectedAsset?.type === 'asset' || showGroupSegment) ? 'text.secondary' : 'text.primary',
                       cursor: selectedAsset?.type === 'asset' ? 'pointer' : 'default',
                       '&:hover': selectedAsset?.type === 'asset' ? { textDecoration: 'underline' } : {}
                     }}
@@ -355,8 +357,8 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: showGroupSegment ? 'text.secondary' : 'text.primary' }}>
                     {selectedAsset.name}
                   </Typography>
                 </motion.div>
@@ -374,12 +376,13 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
                   <Typography
                     variant="h6"
                     sx={{
                       fontWeight: 600,
-                      fontSize: '1rem',
+                      fontSize: '0.8rem',
+                      color: showChildSegment ? 'text.secondary' : 'text.primary',
                       cursor: 'pointer',
                       '&:hover': { textDecoration: 'underline' }
                     }}
@@ -431,7 +434,7 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
                   <Box
                     onClick={(e) => setChildCaretAnchor(e.currentTarget)}
                     sx={{
@@ -445,11 +448,11 @@ export default function PageHeader({
                       const currentItem = metricItems.find(m => m.key === selection);
                       return currentItem ? <Box sx={{ display: 'flex', color: 'text.secondary', fontSize: 20 }}>{currentItem.icon}</Box> : null;
                     })()}
-                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>
                       {childLabel}
                     </Typography>
                     {selectionScore != null && (
-                      <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: 'text.secondary' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary' }}>
                         {selectionScore}%
                       </Typography>
                     )}
