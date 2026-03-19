@@ -17,8 +17,6 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
 import Popover from '@mui/material/Popover';
 import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import TextField from '@mui/material/TextField';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -119,6 +117,7 @@ import {
 } from '@/components/charts';
 import type { ToggleState } from '@/components/KPIToggle';
 import { colors } from '@/colors';
+import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode } from '@/components/BuildingSelector';
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
@@ -283,77 +282,15 @@ export default function Home() {
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
-  const [titleBuildingNames, setTitleBuildingNames] = useState<string[] | null>(null);
-  const [titleBuildingSearch, setTitleBuildingSearch] = useState('');
+  const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
+  const [titleBuildingMode, setTitleBuildingMode] = useState<BuildingFilterMode>('buildings');
 
-  const titleAllGroups = useMemo(() => [...new Set(allBuildings.map(b => b.group))].sort(), []);
-  const titleAllCities = useMemo(() => [...new Set(allBuildings.map(b => b.city))].sort(), []);
-  const titleAllSelected = titleBuildingNames === null;
-
-  const getTitleBuildingLabel = () => {
-    if (titleAllSelected) return 'all buildings';
-    if (titleBuildingNames!.length === 0) return 'no buildings';
-    return `${titleBuildingNames!.length} building${titleBuildingNames!.length !== 1 ? 's' : ''}`;
+  const handleBuildingFilterModeChange = (mode: BuildingFilterMode) => {
+    setTitleBuildingMode(mode);
+    setTitleBuildingNames([]);
   };
 
-  const getTitleGroupState = (group: string): 'checked' | 'indeterminate' | 'unchecked' => {
-    const names = allBuildings.filter(b => b.group === group).map(b => b.name);
-    if (titleAllSelected) return 'checked';
-    const n = names.filter(n => titleBuildingNames!.includes(n)).length;
-    if (n === names.length) return 'checked';
-    if (n > 0) return 'indeterminate';
-    return 'unchecked';
-  };
-
-  const getTitleCityState = (city: string): 'checked' | 'indeterminate' | 'unchecked' => {
-    const names = allBuildings.filter(b => b.city === city).map(b => b.name);
-    if (titleAllSelected) return 'checked';
-    const n = names.filter(n => titleBuildingNames!.includes(n)).length;
-    if (n === names.length) return 'checked';
-    if (n > 0) return 'indeterminate';
-    return 'unchecked';
-  };
-
-  const titleToggleGroup = (group: string) => {
-    const groupNames = allBuildings.filter(b => b.group === group).map(b => b.name);
-    const state = getTitleGroupState(group);
-    if (state === 'checked') {
-      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
-      setTitleBuildingNames(base.filter(n => !groupNames.includes(n)));
-    } else {
-      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
-      const next = [...new Set([...base, ...groupNames])];
-      setTitleBuildingNames(next.length === allBuildings.length ? null : next);
-    }
-  };
-
-  const titleToggleCity = (city: string) => {
-    const cityNames = allBuildings.filter(b => b.city === city).map(b => b.name);
-    const state = getTitleCityState(city);
-    if (state === 'checked') {
-      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
-      setTitleBuildingNames(base.filter(n => !cityNames.includes(n)));
-    } else {
-      const base = titleAllSelected ? allBuildings.map(b => b.name) : titleBuildingNames!;
-      const next = [...new Set([...base, ...cityNames])];
-      setTitleBuildingNames(next.length === allBuildings.length ? null : next);
-    }
-  };
-
-  const titleToggleBuilding = (name: string) => {
-    if (titleAllSelected) {
-      setTitleBuildingNames(allBuildings.map(b => b.name).filter(n => n !== name));
-    } else if (titleBuildingNames!.includes(name)) {
-      setTitleBuildingNames(titleBuildingNames!.filter(n => n !== name));
-    } else {
-      const next = [...titleBuildingNames!, name];
-      setTitleBuildingNames(next.length === allBuildings.length ? null : next);
-    }
-  };
-
-  const titleFilteredBuildings = titleBuildingSearch
-    ? allBuildings.filter(b => b.name.toLowerCase().includes(titleBuildingSearch.toLowerCase()))
-    : allBuildings;
+  const getTitleBuildingLabel = () => getBuildingSelectorLabel(titleBuildingNames, titleBuildingMode);
 
   const getPeriodDisplayLabel = (range: string): string => getDateRangeDisplayLabel(range);
 
@@ -1122,6 +1059,8 @@ export default function Home() {
             onFilterBuildingClick={
               (currentPage === 'portfolio' && selectedBuilding) ? undefined : (e) => setTitleBuildingAnchor(e.currentTarget)
             }
+            buildingFilterMode={titleBuildingMode}
+            onBuildingFilterModeChange={handleBuildingFilterModeChange}
             selectionScore={selectionScore}
             metricItems={metricItems}
           />
@@ -1134,111 +1073,13 @@ export default function Home() {
           onChange={(v) => { setDateRange(v); }}
         />
 
-        <Popover
+        <BuildingSelectorPopover
           anchorEl={titleBuildingAnchor}
-          open={Boolean(titleBuildingAnchor)}
-          onClose={() => { setTitleBuildingAnchor(null); setTitleBuildingSearch(''); }}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          PaperProps={{ sx: { mt: 0.5, width: 560, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
-        >
-          {/* Header */}
-          <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.borderTertiary}` }}>
-            <Typography variant="subtitle2" fontWeight={600}>Filter buildings</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Typography variant="caption" color="text.secondary">
-                {titleAllSelected ? allBuildings.length : titleBuildingNames!.length}/{allBuildings.length} selected
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setTitleBuildingNames(titleAllSelected ? [] : null)}>
-                {titleAllSelected ? 'Deselect all' : 'Select all'}
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Two-panel body */}
-          <Box sx={{ display: 'flex', height: 340 }}>
-            {/* Left: Quick selects */}
-            <Box sx={{ width: 190, borderRight: `1px solid ${colors.borderTertiary}`, overflowY: 'auto', p: 1.5 }}>
-              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
-                Groups
-              </Typography>
-              {titleAllGroups.map(group => {
-                const state = getTitleGroupState(group);
-                const count = allBuildings.filter(b => b.group === group).length;
-                return (
-                  <Box key={group} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
-                    <FormControlLabel
-                      control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleGroup(group)} sx={{ p: '4px' }} />}
-                      label={<Typography variant="body2">{group}</Typography>}
-                      sx={{ m: 0, flex: 1 }}
-                    />
-                    <Typography variant="caption" color="text.secondary">{count}</Typography>
-                  </Box>
-                );
-              })}
-
-              <Divider sx={{ my: 1.5 }} />
-
-              <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: 'block', mb: 0.5, px: 0.5, textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.68rem' }}>
-                Cities
-              </Typography>
-              {titleAllCities.map(city => {
-                const state = getTitleCityState(city);
-                const count = allBuildings.filter(b => b.city === city).length;
-                return (
-                  <Box key={city} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px', px: 0.5, '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
-                    <FormControlLabel
-                      control={<Checkbox size="small" checked={state === 'checked'} indeterminate={state === 'indeterminate'} onChange={() => titleToggleCity(city)} sx={{ p: '4px' }} />}
-                      label={<Typography variant="body2">{city}</Typography>}
-                      sx={{ m: 0, flex: 1 }}
-                    />
-                    <Typography variant="caption" color="text.secondary">{count}</Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-
-            {/* Right: Individual buildings */}
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <Box sx={{ p: 1, borderBottom: `1px solid ${colors.borderTertiary}` }}>
-                <TextField
-                  size="small"
-                  placeholder="Search building..."
-                  value={titleBuildingSearch}
-                  onChange={(e) => setTitleBuildingSearch(e.target.value)}
-                  fullWidth
-                  sx={{
-                    '& .MuiOutlinedInput-root': { borderRadius: '6px', fontSize: '0.8rem' },
-                    '& .MuiOutlinedInput-input': { py: '5px', px: '10px' }
-                  }}
-                />
-              </Box>
-              <Box sx={{ flex: 1, overflowY: 'auto' }}>
-                {titleFilteredBuildings.map(b => {
-                  const isChecked = titleAllSelected || titleBuildingNames!.includes(b.name);
-                  return (
-                    <Box
-                      key={b.name}
-                      sx={{ display: 'flex', alignItems: 'center', px: 1, py: 0.25, cursor: 'pointer', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
-                      onClick={() => titleToggleBuilding(b.name)}
-                    >
-                      <Checkbox size="small" checked={isChecked} onChange={() => titleToggleBuilding(b.name)} onClick={e => e.stopPropagation()} sx={{ p: '4px' }} />
-                      <Box sx={{ ml: 1, minWidth: 0 }}>
-                        <Typography variant="body2" noWrap>{b.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{b.city} · {b.group}</Typography>
-                      </Box>
-                    </Box>
-                  );
-                })}
-                {titleFilteredBuildings.length === 0 && (
-                  <Box sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">No buildings found</Typography>
-                  </Box>
-                )}
-              </Box>
-            </Box>
-          </Box>
-        </Popover>
+          onClose={() => setTitleBuildingAnchor(null)}
+          selectedNames={titleBuildingNames}
+          onSelectionChange={setTitleBuildingNames}
+          mode={titleBuildingMode}
+        />
 
         {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
         {currentPage === 'portfolio_overview' && (

@@ -20,6 +20,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { AssetNode } from '@/data/assetTree';
 import { colors } from '@/colors';
+import { BuildingFilterModeToggle, type BuildingFilterMode } from '@/components/BuildingSelector';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
@@ -60,6 +61,8 @@ interface PageHeaderProps {
   filterBuildingLabel?: string;
   onFilterDateClick?: (e: React.MouseEvent<HTMLElement>) => void;
   onFilterBuildingClick?: (e: React.MouseEvent<HTMLElement>) => void;
+  buildingFilterMode?: BuildingFilterMode;
+  onBuildingFilterModeChange?: (mode: BuildingFilterMode) => void;
   selectionScore?: number | null;
   metricItems?: Array<{ key: string; label: string; icon: React.ReactNode; score: number; group: 'themes' | 'operations' }>;
 }
@@ -121,6 +124,8 @@ export default function PageHeader({
   filterBuildingLabel,
   onFilterDateClick,
   onFilterBuildingClick,
+  buildingFilterMode = 'buildings',
+  onBuildingFilterModeChange,
   selectionScore,
   metricItems = [],
 }: PageHeaderProps) {
@@ -573,6 +578,11 @@ export default function PageHeader({
 
       {/* Right: Filters + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        {/* Building/Cluster mode toggle */}
+        {(currentPage === 'portfolio' || currentPage === 'dashboards') && onBuildingFilterModeChange && (
+          <BuildingFilterModeToggle mode={buildingFilterMode} onModeChange={onBuildingFilterModeChange} />
+        )}
+
         {/* Export Button — on Control Room and Dashboards */}
         {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
           <Button
