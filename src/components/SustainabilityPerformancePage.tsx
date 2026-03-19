@@ -267,9 +267,26 @@ function getExpectationIcon(rating: string, consumption: number): { icon: '↑' 
 
 // ── WEii Sidebar ──
 
-function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover }: { data: WeiiDataPoint[]; onBuildingClick?: (building: Building) => void; hoveredName: string | null; onHover: (name: string | null) => void }) {
-  // Group by rating, order by WEII_LABELS (G first = most inefficient)
-  const grouped = useMemo(() => {
+type SidebarGroupMode = 'rating' | 'performance';
+
+const EXPECTATION_GROUPS = [
+  { key: 'above', label: 'Above Expectation', icon: '↑', color: '#4caf50' },
+  { key: 'expected', label: 'As Expected', icon: '~', color: '#9e9e9e' },
+  { key: 'below', label: 'Below Expectation', icon: '↓', color: '#f44336' },
+] as const;
+
+function getExpectationKey(rating: string, consumption: number): 'above' | 'expected' | 'below' {
+  const baseRating = rating.replace(/\+/g, '');
+  const expected = WEII_EXPECTED[baseRating] ?? WEII_EXPECTED[rating] ?? 80;
+  const diff = consumption - expected;
+  if (diff < -15) return 'above';
+  if (diff > 15) return 'below';
+  return 'expected';
+}
+
+function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, onGroupModeChange }: { data: WeiiDataPoint[]; onBuildingClick?: (building: Building) => void; hoveredName: string | null; onHover: (name: string | null) => void; groupMode: SidebarGroupMode; onGroupModeChange: (mode: SidebarGroupMode) => void }) {
+  // Group by rating
+  const groupedByRating = useMemo(() => {
     const groups: Record<string, WeiiDataPoint[]> = {};
     for (const label of WEII_LABELS) {
       const items = data.filter(d => d.rating === label);
@@ -280,63 +297,115 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover }: { data: We
     return groups;
   }, [data]);
 
-  return (
-    <Box sx={{ overflowY: 'auto', height: '100%', px: 2, pt: 1, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { bgcolor: '#ddd', borderRadius: 2 } }}>
-      {Object.entries(grouped).map(([rating, points]) => (
-        <Box key={rating} sx={{ mb: 2 }}>
-          {/* Rating header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', position: 'relative', height: 18, minWidth: 28 }}>
-              <svg width="32" height="18" viewBox="0 0 32 18" fill="none">
-                <rect width="22" height="18" rx="2.5" fill={WEII_LABEL_COLORS[rating]} />
-                <polygon points="22,0 32,9 22,18" fill={WEII_LABEL_COLORS[rating]} />
-              </svg>
-              <Typography sx={{ position: 'absolute', left: 0, width: 22, textAlign: 'center', fontWeight: 700, fontSize: '0.7rem', lineHeight: 1, color: 'white' }}>
-                {rating}
-              </Typography>
-            </Box>
-            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
-              {points.length} {points.length === 1 ? 'building' : 'buildings'}
+  // Group by performance expectation
+  const groupedByPerformance = useMemo(() => {
+    const groups: Record<string, WeiiDataPoint[]> = { above: [], expected: [], below: [] };
+    for (const point of data) {
+      const key = getExpectationKey(point.rating, point.consumption);
+      groups[key].push(point);
+    }
+    // Sort: above by lowest consumption first, below by highest consumption first
+    groups.above.sort((a, b) => a.consumption - b.consumption);
+    groups.expected.sort((a, b) => a.consumption - b.consumption);
+    groups.below.sort((a, b) => b.consumption - a.consumption);
+    return groups;
+  }, [data]);
+
+  const renderBuildingRow = (point: WeiiDataPoint) => {
+    const expectation = getExpectationIcon(point.rating, point.consumption);
+    const isHovered = hoveredName === point.name;
+    return (
+      <Box
+        key={point.name}
+        onClick={() => {
+          const building = buildings.find(b => b.name === point.name);
+          if (building && onBuildingClick) onBuildingClick(building);
+        }}
+        onMouseEnter={() => onHover(point.name)}
+        onMouseLeave={() => onHover(null)}
+        sx={{
+          display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 2, mx: -2,
+          borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s',
+          bgcolor: isHovered ? 'action.hover' : 'transparent',
+          '&:hover': { bgcolor: 'action.hover' },
+        }}
+      >
+        <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0, fontWeight: 500, fontSize: '0.8rem' }}>
+          {point.name}
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary' }}>
+            {point.consumption} kWh
+          </Typography>
+          <Tooltip title={expectation.tooltip} arrow placement="left">
+            <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: expectation.color, width: 16, textAlign: 'center', lineHeight: 1, cursor: 'default' }}>
+              {expectation.icon}
             </Typography>
-          </Box>
-          {/* Buildings in this group */}
-          {points.map(point => {
-            const expectation = getExpectationIcon(point.rating, point.consumption);
-            const isHovered = hoveredName === point.name;
-            return (
-              <Box
-                key={point.name}
-                onClick={() => {
-                  const building = buildings.find(b => b.name === point.name);
-                  if (building && onBuildingClick) onBuildingClick(building);
-                }}
-                onMouseEnter={() => onHover(point.name)}
-                onMouseLeave={() => onHover(null)}
-                sx={{
-                  display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 2, mx: -2,
-                  borderRadius: 0.5, cursor: 'pointer', transition: 'background-color 0.15s',
-                  bgcolor: isHovered ? 'action.hover' : 'transparent',
-                  '&:hover': { bgcolor: 'action.hover' },
-                }}
-              >
-                <Typography variant="body2" noWrap sx={{ flex: 1, minWidth: 0, fontWeight: 500, fontSize: '0.8rem' }}>
-                  {point.name}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary' }}>
-                    {point.consumption} kWh
+          </Tooltip>
+        </Box>
+      </Box>
+    );
+  };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* Segmented control header */}
+      <Box sx={{ px: 2, py: 1.25, flexShrink: 0, bgcolor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.65rem', flexShrink: 0 }}>
+          Buildings
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
+          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'rating' ? 'white' : 'transparent', color: groupMode === 'rating' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'rating' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('rating')}>By Label</Box>
+          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'performance' ? 'white' : 'transparent', color: groupMode === 'performance' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'performance' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('performance')}>By Performance</Box>
+        </Box>
+      </Box>
+      {/* Scrollable list */}
+      <Box sx={{ overflowY: 'auto', flex: 1, px: 2, pt: 1, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { bgcolor: '#ddd', borderRadius: 2 } }}>
+        {groupMode === 'rating' ? (
+          // Grouped by WEii rating
+          Object.entries(groupedByRating).map(([rating, points]) => (
+            <Box key={rating} sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
+                <Box sx={{ display: 'inline-flex', alignItems: 'center', position: 'relative', height: 18, minWidth: 28 }}>
+                  <svg width="32" height="18" viewBox="0 0 32 18" fill="none">
+                    <rect width="22" height="18" rx="2.5" fill={WEII_LABEL_COLORS[rating]} />
+                    <polygon points="22,0 32,9 22,18" fill={WEII_LABEL_COLORS[rating]} />
+                  </svg>
+                  <Typography sx={{ position: 'absolute', left: 0, width: 22, textAlign: 'center', fontWeight: 700, fontSize: '0.7rem', lineHeight: 1, color: 'white' }}>
+                    {rating}
                   </Typography>
-                  <Tooltip title={expectation.tooltip} arrow placement="left">
-                    <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: expectation.color, width: 16, textAlign: 'center', lineHeight: 1, cursor: 'default' }}>
-                      {expectation.icon}
-                    </Typography>
-                  </Tooltip>
                 </Box>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
+                  {points.length} {points.length === 1 ? 'building' : 'buildings'}
+                </Typography>
+              </Box>
+              {points.map(renderBuildingRow)}
+            </Box>
+          ))
+        ) : (
+          // Grouped by performance expectation
+          EXPECTATION_GROUPS.map(group => {
+            const points = groupedByPerformance[group.key];
+            if (points.length === 0) return null;
+            return (
+              <Box key={group.key} sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.75 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: group.color, width: 16, textAlign: 'center', lineHeight: 1 }}>
+                    {group.icon}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
+                    {group.label}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.disabled', fontSize: '0.7rem' }}>
+                    ({points.length})
+                  </Typography>
+                </Box>
+                {points.map(renderBuildingRow)}
               </Box>
             );
-          })}
-        </Box>
-      ))}
+          })
+        )}
+      </Box>
     </Box>
   );
 }
@@ -362,8 +431,8 @@ function WeiiScatterChart({ data, onBuildingClick, hoveredName, onHover }: { dat
   }, []);
 
   const chartWidth = containerWidth;
-  const chartHeight = 440;
-  const margin = { top: 16, right: 16, bottom: 48, left: 48 };
+  const chartHeight = 464;
+  const margin = { top: 16, right: 16, bottom: 64, left: 48 };
   const plotW = chartWidth - margin.left - margin.right;
   const plotH = chartHeight - margin.top - margin.bottom;
 
@@ -480,13 +549,13 @@ function WeiiScatterChart({ data, onBuildingClick, hoveredName, onHover }: { dat
         {/* X-axis label */}
         <text
           x={margin.left + plotW / 2}
-          y={chartHeight - 4}
+          y={chartHeight - 12}
           textAnchor="middle"
           fill="#888"
-          fontSize={10}
+          fontSize={11}
           fontWeight={500}
         >
-          Energy consumption [kWh/m²]
+          Totale WEii Energiegebruik (kWh/m²)
         </text>
 
         {/* Ideal curve - very subtle */}
@@ -631,6 +700,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
   const [hoveredWeiiBuilding, setHoveredWeiiBuilding] = useState<string | null>(null);
+  const [weiiSidebarGroupMode, setWeiiSidebarGroupMode] = useState<SidebarGroupMode>('rating');
 
   const renderSparkline = (data: number[], color: string, w = 80, h = 28) => {
     const max = Math.max(...data);
@@ -1061,7 +1131,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
           Sustainability Key Dashboards
         </Typography>
         <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 360px', height: 480, overflow: 'hidden' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 360px', height: 528, overflow: 'hidden' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1076,19 +1146,12 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                   View details
                 </Button>
               </Box>
-              <Box sx={{ px: 2.5, pb: 1.5, flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ px: 2.5, pb: 0, flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'flex-start' }}>
                 <WeiiScatterChart data={weiiChartData} onBuildingClick={onBuildingSelect} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
               </Box>
             </Box>
             <Box sx={{ borderLeft: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <Box sx={{ px: 2, py: 1.25, flexShrink: 0, bgcolor: '#f8f8f8' }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.65rem' }}>
-                  Buildings by Rating
-                </Typography>
-              </Box>
-              <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                <WeiiSidebar data={weiiChartData} onBuildingClick={onBuildingSelect} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
-              </Box>
+              <WeiiSidebar data={weiiChartData} onBuildingClick={onBuildingSelect} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} groupMode={weiiSidebarGroupMode} onGroupModeChange={setWeiiSidebarGroupMode} />
             </Box>
           </Box>
         </Paper>
