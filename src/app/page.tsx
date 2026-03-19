@@ -30,11 +30,11 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import PageHeader from '@/components/PageHeader';
 import BuildingCard from '@/components/BuildingCard';
-import KPICard from '@/components/KPICard';
+import KPICard, { PerformanceRating } from '@/components/KPICard';
 import KPIToggle from '@/components/KPIToggle';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
-import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
+import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
@@ -79,6 +79,7 @@ import InsightsPage from '@/components/Insights';
 import RecommendationsInbox from '@/components/RecommendationsInbox';
 import ThemesPage from '@/components/Themes';
 import DashboardsPage from '@/components/DashboardsPage';
+import ComfortPerformancePage from '@/components/ComfortPerformancePage';
 import ChangelogButton from '@/components/ChangelogButton';
 import { tickets } from '@/data/tickets';
 import { quotations } from '@/data/quotations';
@@ -126,6 +127,12 @@ interface Favorite {
   id: string;
   name: string;
   type: string;
+}
+
+function getPerformanceRating(score: number): PerformanceRating {
+  if (score >= 80) return { label: 'Good', color: '#4caf50' };
+  if (score >= 60) return { label: 'Moderate', color: '#ff9800' };
+  return { label: 'Poor', color: '#f44336' };
 }
 
 // All theme metric keys (primary + expanded)
@@ -648,7 +655,7 @@ export default function Home() {
   const metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }> = {
     overall: { title: 'Overall Performance', icon: <SpeedOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
     sustainability: { title: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
-    comfort: { title: 'Comfort', icon: <AirOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
+    comfort: { title: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
     asset_monitoring: { title: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
     tickets: { title: 'Tickets', icon: <AssignmentOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
     quotations: { title: 'Quotations', icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24, color: 'text.secondary' }} /> },
@@ -664,7 +671,7 @@ export default function Home() {
   // Icons for theme metrics
   const themeIcons: Record<string, React.ReactNode> = {
     'Sustainability': <NatureOutlinedIcon />,
-    'Comfort': <AirOutlinedIcon />,
+    'Comfort': <SpaOutlinedIcon />,
     'Asset Monitoring': <SecurityOutlinedIcon />,
     'Energy': <BoltOutlinedIcon />,
     'Workspace': <WorkspacesOutlinedIcon />,
@@ -691,6 +698,37 @@ export default function Home() {
   const operationsScore = selectedBuilding
     ? Math.round(OPERATIONS_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / OPERATIONS_KEYS.length)
     : Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.score, 0) / periodMetrics.operations.length);
+
+  // Score for the currently selected KPI (shown in breadcrumb)
+  const selectionScore = (() => {
+    const themeIdx = PRIMARY_THEME_KEYS.indexOf(selection as MetricType);
+    if (themeIdx !== -1) {
+      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.themes[themeIdx]?.score ?? null;
+    }
+    const opsIdx = OPERATIONS_KEYS.indexOf(selection as MetricType);
+    if (opsIdx !== -1) {
+      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.operations[opsIdx]?.score ?? null;
+    }
+    return null;
+  })();
+
+  // Metric items for breadcrumb dropdown (all KPIs with icons and scores)
+  const metricItems = useMemo(() => [
+    ...PRIMARY_THEME_KEYS.map((key, i) => ({
+      key,
+      label: periodMetrics.themes[i]?.title ?? key,
+      icon: themeIcons[periodMetrics.themes[i]?.title ?? ''],
+      score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.themes[i]?.score ?? 0,
+      group: 'themes' as const,
+    })),
+    ...OPERATIONS_KEYS.map((key, i) => ({
+      key,
+      label: periodMetrics.operations[i]?.title ?? key,
+      icon: operationsIcons[periodMetrics.operations[i]?.title ?? ''],
+      score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.operations[i]?.score ?? 0,
+      group: 'operations' as const,
+    })),
+  ], [periodMetrics, selectedBuilding, themeIcons, operationsIcons]);
 
   // Calculate sidebar widths
   const leftSidebarWidth = leftSidebarCollapsed ? 64 : 280;
@@ -1065,6 +1103,8 @@ export default function Home() {
             }
             buildingFilterMode={titleBuildingMode}
             onBuildingFilterModeChange={handleBuildingFilterModeChange}
+            selectionScore={selectionScore}
+            metricItems={metricItems}
           />
 
         {/* ========== Shared filter menus (used by inline title & header compact filter) ========== */}
@@ -1319,21 +1359,71 @@ export default function Home() {
                           Overall Performance
                         </Typography>
                       </Box>
-                      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
-                          <AnimatedNumber value={selectedBuilding ? selectedBuilding.metrics.overall.green : periodMetrics.overall.score} />%
-                        </Typography>
-                      </Box>
-                      {periodMetrics.periodLabel !== null && (
-                        <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main', mt: isCompact ? 1 : 2 }}>
-                            {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18, transition: 'font-size 0.3s ease' }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18, transition: 'font-size 0.3s ease' }} />}
-                            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem', transition: 'font-size 0.3s ease' }}>
-                              {Math.abs(periodMetrics.overall.trend)}% from {periodMetrics.periodLabel}
+                      {(() => {
+                        const overallScore = selectedBuilding
+                          ? Math.round([...PRIMARY_THEME_KEYS, ...OPERATIONS_KEYS].reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / (PRIMARY_THEME_KEYS.length + OPERATIONS_KEYS.length))
+                          : Math.round([...periodMetrics.themes, ...periodMetrics.operations].reduce((sum, m) => sum + m.score, 0) / (periodMetrics.themes.length + periodMetrics.operations.length));
+                        const overallRating = getPerformanceRating(overallScore);
+                        // Generate sparkline data based on score
+                        const sparkData = Array.from({ length: 8 }, (_, i) => {
+                          const variation = Math.sin(i * 1.2) * 5 + Math.cos(i * 0.8) * 3;
+                          return Math.round(Math.max(10, Math.min(99, overallScore + variation - 4)));
+                        });
+                        sparkData[sparkData.length - 1] = overallScore;
+                        const sparkW = isCompact ? 100 : 140;
+                        const sparkH = isCompact ? 35 : 45;
+                        const sMax = Math.max(...sparkData);
+                        const sMin = Math.min(...sparkData);
+                        const sRange = sMax - sMin || 1;
+                        const pts = sparkData.map((v, i) => ({
+                          x: (i / (sparkData.length - 1)) * sparkW,
+                          y: sparkH - ((v - sMin) / sRange) * sparkH,
+                        }));
+                        let sparkPath = `M ${pts[0].x},${pts[0].y}`;
+                        for (let i = 0; i < pts.length - 1; i++) {
+                          const p0 = pts[Math.max(i - 1, 0)];
+                          const p1 = pts[i];
+                          const p2 = pts[i + 1];
+                          const p3 = pts[Math.min(i + 2, pts.length - 1)];
+                          const t = 0.3;
+                          sparkPath += ` C ${p1.x + (p2.x - p0.x) * t},${p1.y + (p2.y - p0.y) * t} ${p2.x - (p3.x - p1.x) * t},${p2.y - (p3.y - p1.y) * t} ${p2.x},${p2.y}`;
+                        }
+
+                        return (
+                          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                            <svg width={sparkW} height={sparkH} style={{ overflow: 'visible' }}>
+                              <path d={sparkPath} fill="none" stroke={overallRating.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
+                              <AnimatedNumber value={overallScore} />%
                             </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                              {periodMetrics.periodLabel !== null && (
+                                <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main' }}>
+                                    {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18 }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18 }} />}
+                                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                      {Math.abs(periodMetrics.overall.trend)}%
+                                    </Typography>
+                                  </Box>
+                                </Tooltip>
+                              )}
+                              <Chip
+                                label={overallRating.label}
+                                size="small"
+                                sx={{
+                                  height: 22,
+                                  fontSize: isCompact ? '0.7rem' : '0.75rem',
+                                  fontWeight: 600,
+                                  bgcolor: `${overallRating.color}18`,
+                                  color: overallRating.color,
+                                  '& .MuiChip-label': { px: 1 },
+                                }}
+                              />
+                            </Box>
                           </Box>
-                        </Tooltip>
-                      )}
+                        );
+                      })()}
                     </Box>
 
                     {/* KPI Groups Container — also gets sibling-dimming on hover */}
@@ -1422,6 +1512,7 @@ export default function Home() {
                                 isSelected={selection === metricKey}
                                 isDimmed={getToggleState(metricKey, 'themes') === 'off'}
                                 isCompact={isCompact}
+                                performanceRating={getPerformanceRating(score)}
                               />
                             );
                           })}
@@ -1502,6 +1593,7 @@ export default function Home() {
                                 isSelected={selection === metricKey}
                                 isDimmed={getToggleState(metricKey, 'operations') === 'off'}
                                 isCompact={isCompact}
+                                performanceRating={getPerformanceRating(score)}
                               />
                             );
                           })}
@@ -1726,6 +1818,12 @@ export default function Home() {
                             operationsEnabled={isOperationsActive}
                             metricInfo={metricInfo}
                             onMetricSelect={handleMetricSelect}
+                            periodMetrics={periodMetrics}
+                            onBuildingSelect={setSelectedBuilding}
+                            onViewAllBuildings={(sort) => {
+                              setBuildingsPanelTab('buildings');
+                              setURLParams({ sort });
+                            }}
                           />
                         ) : (
                           /* ===== RECOMMENDATIONS VIEW ===== */
@@ -1961,6 +2059,9 @@ function KPIAnalysisView({
   operationsEnabled,
   metricInfo,
   onMetricSelect,
+  periodMetrics,
+  onBuildingSelect,
+  onViewAllBuildings,
 }: {
   selection: string;
   selectedMetric: MetricType;
@@ -1968,6 +2069,9 @@ function KPIAnalysisView({
   operationsEnabled: boolean;
   metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>;
   onMetricSelect: (metric: MetricType) => void;
+  periodMetrics: import('@/data/metrics').PeriodMetrics;
+  onBuildingSelect?: (building: import('@/data/buildings').Building) => void;
+  onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
 }) {
   // Determine which KPIs to show based on toggle state and selection
   const visibleThemes = themesEnabled ? ALL_THEME_KEYS : [];
@@ -1980,7 +2084,7 @@ function KPIAnalysisView({
     : null;
 
   if (focusedMetric) {
-    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} />;
+    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} periodMetrics={periodMetrics} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} />;
   }
 
   // Overview: show summary cards for each visible KPI
@@ -2123,7 +2227,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
 }
 
 /* Theme-specific dashboards */
-function ThemeSpecificDashboard({ metricKey, metricInfo }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }> }) {
+function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void }) {
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey];
 
@@ -2186,28 +2290,10 @@ function ThemeSpecificDashboard({ metricKey, metricInfo }: { metricKey: MetricTy
     );
   }
 
-  // Comfort Dashboard
+  // Comfort Dashboard — uses dedicated component
   if (metricKey === 'comfort') {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {header}
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <SummaryStatCard label="Avg Temperature" value="21.5°C" subtitle="Target: 21°C" trend={-1} />
-          <SummaryStatCard label="Air Quality Index" value="92" trend={3} />
-          <SummaryStatCard label="Humidity Level" value="45%" subtitle="Optimal range" />
-          <SummaryStatCard label="Comfort Score" value="84%" trend={2} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Temperature Trend (24 hours)" type="line" color="#f44336" />
-          <IndicatorChart title="Air Quality by Zone" type="bar" color="#f44336" />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Comfort Complaints" type="bar" color="#f44336" />
-          <IndicatorChart title="HVAC Performance" type="line" color="#f44336" />
-          <IndicatorChart title="Zone Comfort Ratings" type="ranking" color="#4caf50" />
-        </Box>
-      </Box>
-    );
+    const comfortMetric = periodMetrics.themes.find(t => t.title === 'Comfort');
+    return <ComfortPerformancePage themeScore={comfortMetric?.score ?? 92} themeTrend={comfortMetric?.trend ?? 5} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} />;
   }
 
   // Asset Monitoring Dashboard

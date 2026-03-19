@@ -16,7 +16,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import DescriptionIcon from '@mui/icons-material/Description';
 import BuildIcon from '@mui/icons-material/Build';
 import NorthEastIcon from '@mui/icons-material/NorthEast';
-import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
+import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
@@ -45,7 +45,7 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
   const metrics = [
     {
       label: 'Comfort',
-      icon: <AirOutlinedIcon sx={{ fontSize: 20 }} />,
+      icon: <SpaOutlinedIcon sx={{ fontSize: 20 }} />,
       good: 3,
       poor: 5,
       bad: 2,
