@@ -809,6 +809,9 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                         {t.building}
                       </Typography>
                       <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                        {t.createdDate}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                         {t.assignee}
                       </Typography>
                     </Box>
