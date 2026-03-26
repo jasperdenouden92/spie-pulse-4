@@ -556,9 +556,21 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
         <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
           {selectedDashboard ? (
             <>
+              {/* Dashboard header */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+                  {selectedDashboard.label}
+                </Typography>
+                {selectedGroup && (
+                  <Typography variant="caption" color="text.secondary">
+                    {selectedGroup.theme}
+                  </Typography>
+                )}
+              </Box>
+
               {/* Inline filters: building card + period range card */}
               {dateRange && onDateRangeChange && (
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
                   {/* Building card */}
                   <Box sx={{
                     bgcolor: '#fff',
@@ -587,7 +599,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                       </Typography>
                     </Box>
 
-                    {/* Change button */}
+                    {/* Filter button */}
                     <Button
                       size="small"
                       variant="text"
@@ -601,7 +613,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                         '&:hover': { bgcolor: 'action.hover' },
                       }}
                     >
-                      Change
+                      Filter
                     </Button>
                     <BuildingSelectorPopover
                       anchorEl={buildingAnchor}
@@ -630,23 +642,6 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                   </Box>
                 </Box>
               )}
-
-              {/* Dashboard header */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-                <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-                  {selectedGroup?.icon}
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', lineHeight: 1.3 }}>
-                    {selectedDashboard.label}
-                  </Typography>
-                  {selectedGroup && (
-                    <Typography variant="caption" color="text.secondary">
-                      {selectedGroup.theme}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
 
               {/* Charts grid */}
               <Box sx={{
