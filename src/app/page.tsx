@@ -85,6 +85,7 @@ import DashboardsPage from '@/components/DashboardsPage';
 import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import ComfortPerformancePage from '@/components/ComfortPerformancePage';
 import SustainabilityPerformancePage from '@/components/SustainabilityPerformancePage';
+import MaintenancePerformancePage from '@/components/MaintenancePerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
@@ -99,6 +100,9 @@ import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
+import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import {
   ElectricityConsumptionChart,
@@ -175,6 +179,14 @@ function getSustainabilityTopics(sustainabilityGreen: number): TopicScore[] {
     { label: 'Generation', score: Math.max(0, Math.min(100, sustainabilityGreen - 8)), trend: 6, icon: <SolarPowerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#66bb6a' },
     { label: 'Emissions', score: Math.max(0, Math.min(100, sustainabilityGreen - 3)), trend: -2, icon: <FilterDramaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
     { label: 'Cost', score: Math.max(0, Math.min(100, sustainabilityGreen + 6)), trend: 3, icon: <PaidOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
+  ];
+}
+
+function getMaintenanceTopics(maintenanceGreen: number): TopicScore[] {
+  return [
+    { label: 'Progress', score: Math.max(0, Math.min(100, maintenanceGreen + 4)), trend: 5, icon: <TaskAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: 'Timeliness', score: Math.max(0, Math.min(100, maintenanceGreen - 7)), trend: -2, icon: <ScheduleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: 'Reporting', score: Math.max(0, Math.min(100, maintenanceGreen + 3)), trend: 8, icon: <AssessmentOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
   ];
 }
 
@@ -1861,7 +1873,7 @@ export default function Home() {
                                       showOverall={selectedMetric !== 'overall'}
                                       trend={cluster.trends[selectedMetric]}
                                       periodLabel={periodMetrics.periodLabel}
-                                      topics={selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : undefined}
+                                      topics={selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : undefined}
                                     />
                                   </motion.div>
                                 ))
@@ -1891,11 +1903,7 @@ export default function Home() {
                                   { label: 'Total Amount', value: formatCurrency(stats.quotations.totalAmount), icon: <EuroOutlinedIcon sx={{ fontSize: 16 }} /> }
                                 ];
                               } else if (selectedMetric === 'maintenance' && stats) {
-                                operationalStats = [
-                                  { label: 'Scheduled', value: stats.maintenance.scheduled, icon: <EventAvailableOutlinedIcon sx={{ fontSize: 16 }} /> },
-                                  { label: 'Overdue', value: stats.maintenance.overdue, icon: <EventBusyOutlinedIcon sx={{ fontSize: 16 }} /> },
-                                  { label: 'Completed', value: stats.maintenance.completed, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> }
-                                ];
+                                operationalStats = undefined;
                               }
 
                               return (
@@ -1934,7 +1942,7 @@ export default function Home() {
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
-                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : undefined}
+                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : undefined}
                                     energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
                                     alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : undefined}
                                   />
@@ -2609,28 +2617,10 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
     );
   }
 
-  // Maintenance Dashboard
+  // Maintenance Dashboard — uses dedicated component
   if (metricKey === 'maintenance') {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {header}
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <SummaryStatCard label="Scheduled Tasks" value="89" trend={0} />
-          <SummaryStatCard label="Overdue Tasks" value="7" trend={-30} />
-          <SummaryStatCard label="Completed (30d)" value="234" trend={12} />
-          <SummaryStatCard label="Completion Rate" value="92%" trend={8} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Maintenance Activity Trend" type="line" color="#ed6c02" />
-          <IndicatorChart title="Tasks by Asset Type" type="bar" color="#ed6c02" />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Preventive vs Reactive" type="pie" color="#ed6c02" />
-          <IndicatorChart title="Completion Rate by Building" type="bar" color="#4caf50" />
-          <IndicatorChart title="Critical Maintenance Items" type="ranking" color="#f44336" />
-        </Box>
-      </Box>
-    );
+    const maintenanceMetric = periodMetrics.operations.find(t => t.title === 'Maintenance');
+    return <MaintenancePerformancePage themeScore={maintenanceMetric?.score ?? 78} themeTrend={maintenanceMetric?.trend ?? 3} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
   // Default fallback

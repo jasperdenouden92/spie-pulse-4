@@ -16,6 +16,7 @@ import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
 import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import {
   ElectricityConsumptionChart,
   GasConsumptionChart,
@@ -282,6 +283,45 @@ const DASHBOARD_THEMES: ThemeGroup[] = [
           <>
             <ChartCard span={2}><PerformanceHeatmapChart buildingName={b} /></ChartCard>
             <ChartCard span={2}><AssetTrendChart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    theme: 'Maintenance',
+    themeKey: 'maintenance',
+    icon: <BuildOutlinedIcon sx={{ fontSize: 18 }} />,
+    dashboards: [
+      {
+        id: 'preventief_onderhoud',
+        label: 'Preventive maintenance',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><MaintenanceOverviewTable buildingName={b} title="Preventive maintenance" /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
+      {
+        id: 'process_orders',
+        label: 'Process orders',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><MaintenanceOverviewTable buildingName={b} title="Process orders" /></ChartCard>
+            <ChartCard span={2}><AssetTrendChart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
+      {
+        id: 'mjob',
+        label: 'Multi-year maintenance budget',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><ForecastTargetChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><CostsCO2Chart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
           </>
         ),
       },
