@@ -24,6 +24,10 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import IconButton from '@mui/material/IconButton';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
@@ -215,7 +219,7 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Ticket status data ─────────────────────────────────────────────────────
 
-type TicketStatus = 'Received' | 'In operation' | 'Function restored' | 'Completed' | 'Invoiced';
+type TicketStatus = 'Received' | 'In operation' | 'Function restored' | 'Completed' | 'Invoiced' | 'To approve';
 
 const STATUS_COUNTS: { status: TicketStatus; count: number; color: string }[] = [
   { status: 'Received', count: 8, color: '#2196f3' },
@@ -223,6 +227,7 @@ const STATUS_COUNTS: { status: TicketStatus; count: number; color: string }[] = 
   { status: 'Function restored', count: 4, color: '#7c4dff' },
   { status: 'Completed', count: 12, color: '#4caf50' },
   { status: 'Invoiced', count: 6, color: '#78909c' },
+  { status: 'To approve', count: 3, color: '#e91e63' },
 ];
 
 interface TicketItem {
@@ -254,9 +259,13 @@ const ACTIVE_TICKETS: TicketItem[] = [
   { id: 'T-2026-0029', title: 'Access card system', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '20-02-2026 13:45', assignee: 'M. Neuten', werkbon: '440259', referentie: 'REF-2026-054' },
   { id: 'T-2026-0028', title: 'Solar panel cleaning', building: 'TU Eindhoven', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '18-02-2026 09:00', assignee: 'B. Sevenge', werkbon: '440255', referentie: 'REF-2026-048' },
   { id: 'T-2026-0027', title: 'Sprinkler test report', building: 'De Efteling', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '15-02-2026 11:20', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0026', title: 'Generator load test', building: 'Rijksmuseum', status: 'To approve', category: 'Regie', priority: 'Medium', createdDate: '12-02-2026 10:00', assignee: 'B. Sevenge', werkbon: '440251', referentie: 'REF-2026-042' },
+  { id: 'T-2026-0025', title: 'UPS battery replacement', building: 'Jaarbeurs Utrecht', status: 'To approve', category: 'Storing', priority: 'High', createdDate: '10-02-2026 14:30', assignee: 'M. Neuten', werkbon: '440247', referentie: 'REF-2026-038' },
+  { id: 'T-2026-0024', title: 'Climate control calibration', building: 'TU Eindhoven', status: 'To approve', category: 'Regie', priority: 'Low', createdDate: '08-02-2026 09:15', assignee: 'R.R.H.M. Zij', werkbon: '440243', referentie: 'REF-2026-033' },
 ];
 
-const ACTIVE_STATUSES: TicketStatus[] = ['Received', 'In operation', 'Function restored'];
+const ACTIVE_STATUSES: TicketStatus[] = ['Received', 'In operation', 'Function restored', 'To approve'];
+const ACTION_REQUIRED_STATUSES: TicketStatus[] = ['Received', 'To approve'];
 
 function getTicketStatusColor(status: TicketStatus): string {
   return STATUS_COUNTS.find(s => s.status === status)?.color ?? '#888';
@@ -288,6 +297,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
+  const [ticketsActionFilter, setTicketsActionFilter] = useState(false);
 
   // Sparkline renderer
   const renderSparkline = (data: number[], color: string, w = 80, h = 28) => {
@@ -780,7 +790,23 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
           {/* Card 2: Active tickets list */}
           <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="body2" fontWeight={600}>Active Tickets</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" fontWeight={600}>Active Tickets</Typography>
+                <Chip
+                  icon={<FilterListIcon sx={{ fontSize: 13 }} />}
+                  label="Action required"
+                  size="small"
+                  onClick={() => setTicketsActionFilter(f => !f)}
+                  sx={{
+                    height: 22, fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer',
+                    bgcolor: ticketsActionFilter ? `${colors.brand}14` : 'transparent',
+                    color: ticketsActionFilter ? colors.brand : 'text.secondary',
+                    border: '1px solid', borderColor: ticketsActionFilter ? colors.brand : 'divider',
+                    '& .MuiChip-icon': { ml: 0.5, mr: -0.25, color: ticketsActionFilter ? colors.brand : 'text.secondary' },
+                    '& .MuiChip-label': { px: 0.75 },
+                  }}
+                />
+              </Box>
               <Button
                 size="small"
                 endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
@@ -790,7 +816,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
               </Button>
             </Box>
             <Box sx={{ flex: 1, overflow: 'auto', maxHeight: 320, display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {ACTIVE_TICKETS.filter(t => ACTIVE_STATUSES.includes(t.status)).map(t => (
+              {ACTIVE_TICKETS.filter(t => ticketsActionFilter ? ACTION_REQUIRED_STATUSES.includes(t.status) : ACTIVE_STATUSES.includes(t.status)).map(t => (
                 <Box
                   key={t.id}
                   sx={{
@@ -862,6 +888,24 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                       justifyContent: 'center',
                     }}
                   />
+                  {t.status === 'To approve' && (
+                    <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => { e.stopPropagation(); }}
+                        sx={{ width: 24, height: 24, bgcolor: '#4caf5014', color: '#4caf50', '&:hover': { bgcolor: '#4caf5028' } }}
+                      >
+                        <CheckIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => { e.stopPropagation(); }}
+                        sx={{ width: 24, height: 24, bgcolor: '#ef535014', color: '#ef5350', '&:hover': { bgcolor: '#ef535028' } }}
+                      >
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Box>
+                  )}
                 </Box>
               ))}
             </Box>
