@@ -718,7 +718,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
         <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
           Comfort Dashboards
         </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
           {COMFORT_DASHBOARDS.map(dash => (
             <Paper
               key={dash.id}
@@ -736,6 +736,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 1.5,
+                flex: '0 1 auto',
                 '&:hover': {
                   bgcolor: 'action.hover',
                 },

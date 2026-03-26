@@ -89,6 +89,7 @@ import SustainabilityPerformancePage from '@/components/SustainabilityPerformanc
 import MaintenancePerformancePage from '@/components/MaintenancePerformancePage';
 import QuotationsPerformancePage from '@/components/QuotationsPerformancePage';
 import TicketsPerformancePage from '@/components/TicketsPerformancePage';
+import AssetMonitoringPerformancePage from '@/components/AssetMonitoringPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
@@ -111,6 +112,8 @@ import QuickreplyOutlinedIcon from '@mui/icons-material/QuickreplyOutlined';
 import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
 import SettingsBackupRestoreOutlinedIcon from '@mui/icons-material/SettingsBackupRestoreOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import AcUnitOutlinedIcon from '@mui/icons-material/AcUnitOutlined';
+import ElevatorOutlinedIcon from '@mui/icons-material/ElevatorOutlined';
 import {
   ElectricityConsumptionChart,
   GasConsumptionChart,
@@ -209,6 +212,17 @@ function getTicketsTopics(ticketsGreen: number): TopicScore[] {
   return [
     { label: 'Respond time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
     { label: 'Restore time', score: Math.max(0, Math.min(100, ticketsGreen - 5)), trend: -2, icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+  ];
+}
+
+function getAssetMonitoringTopics(assetMonitoringGreen: number): TopicScore[] {
+  return [
+    { label: 'Heating', score: Math.max(0, Math.min(100, assetMonitoringGreen + 4)), trend: 3, icon: <ThermostatOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
+    { label: 'Cooling', score: Math.max(0, Math.min(100, assetMonitoringGreen - 6)), trend: -2, icon: <AcUnitOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
+    { label: 'Ventilation', score: Math.max(0, Math.min(100, assetMonitoringGreen + 2)), trend: 5, icon: <AirOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: 'Distribution', score: Math.max(0, Math.min(100, assetMonitoringGreen - 3)), trend: -1, icon: <AccountTreeOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: 'Lighting', score: Math.max(0, Math.min(100, assetMonitoringGreen + 7)), trend: 4, icon: <LightbulbOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ffc107' },
+    { label: 'Transport', score: Math.max(0, Math.min(100, assetMonitoringGreen - 8)), trend: -3, icon: <ElevatorOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
   ];
 }
 
@@ -1873,9 +1887,9 @@ export default function Home() {
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
-                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
+                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
                                     energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
-                                    alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : undefined}
+                                    alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : selectedMetric === 'asset_monitoring' && stats ? stats.assetMonitoring.alerts : undefined}
                                   />
                                 </motion.div>
                               );
@@ -2355,29 +2369,10 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
     return <ComfortPerformancePage themeScore={comfortMetric?.score ?? 92} themeTrend={comfortMetric?.trend ?? 5} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
-  // Asset Monitoring Dashboard
+  // Asset Monitoring Dashboard — uses dedicated component
   if (metricKey === 'asset_monitoring') {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {header}
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <SummaryStatCard label="Total Assets" value="2,453" subtitle="Monitored" />
-          <SummaryStatCard label="Health Score" value="78%" trend={-3} />
-          <SummaryStatCard label="Critical Alerts" value="12" subtitle="Requires attention" trend={-15} />
-          <SummaryStatCard label="Uptime" value="99.2%" trend={1} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Asset Health Distribution" type="pie" color={colors.brand} />
-          <IndicatorChart title="Performance by Category" type="bar" color={colors.brand} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Critical Assets" type="ranking" color="#f44336" />
-          <IndicatorChart title="Maintenance Schedule" type="bar" color="#ffc107" />
-          <IndicatorChart title="Asset Age Distribution" type="pie" color={colors.brand} />
-        </Box>
-        <IndicatorChart title="Reliability Trends" type="line" color={colors.brand} />
-      </Box>
-    );
+    const assetMonitoringMetric = periodMetrics.themes.find(t => t.title === 'Asset Monitoring');
+    return <AssetMonitoringPerformancePage themeScore={assetMonitoringMetric?.score ?? 62} themeTrend={assetMonitoringMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
   // Access Control Dashboard
