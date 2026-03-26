@@ -256,7 +256,7 @@ export default function BuildingCard({
         {hasTopics ? (
           <>
             {/* Topic scores - columns side by side, left-aligned */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${topics.length}, 1fr)`, gap: 1.5, mt: 1.5 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${topics.length <= 4 ? topics.length : 3}, 1fr)`, gap: 1.5, mt: 1.5 }}>
               {topics.map((topic) => (
                 <Box key={topic.label}>
                   <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.secondary', mb: 0.25 }}>
