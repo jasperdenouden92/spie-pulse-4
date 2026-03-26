@@ -1135,7 +1135,7 @@ export default function Home() {
             activeDashboardLabel={activeDashboardLabel}
             isFilterTitleScrolled={
               currentPage === 'dashboards'
-                ? true
+                ? false
                 : isFilterTitleScrolled && currentPage === 'portfolio'
             }
             filterSelectionLabel={
@@ -1226,6 +1226,8 @@ export default function Home() {
             initialDashboardId={pendingDashboardId}
             onInitialDashboardConsumed={() => setPendingDashboardId(null)}
             onDashboardChange={(id, label) => { setActiveDashboardId(id); setActiveDashboardLabel(label); }}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
           />
         )}
 

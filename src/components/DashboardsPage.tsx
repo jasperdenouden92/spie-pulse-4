@@ -17,6 +17,8 @@ import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInpu
 import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import InlinePeriodSelector from './InlinePeriodSelector';
+import BuildingSelector from './BuildingSelector';
 import {
   ElectricityConsumptionChart,
   GasConsumptionChart,
@@ -408,15 +410,18 @@ interface DashboardsPageProps {
   onDashboardChange?: (dashboardId: string, dashboardLabel: string) => void;
   initialDashboardId?: string | null;
   onInitialDashboardConsumed?: () => void;
+  dateRange?: string;
+  onDateRangeChange?: (value: string) => void;
 }
 
-export default function DashboardsPage({ onDashboardChange, initialDashboardId, onInitialDashboardConsumed }: DashboardsPageProps) {
+export default function DashboardsPage({ onDashboardChange, initialDashboardId, onInitialDashboardConsumed, dateRange, onDateRangeChange }: DashboardsPageProps) {
   const [selectedId, setSelectedId] = useState<string>(
     initialDashboardId ?? DASHBOARD_THEMES[0].dashboards[0].id
   );
   const [expandedGroups, setExpandedGroups] = useState<string[]>(
     DASHBOARD_THEMES.map(g => g.themeKey)
   );
+  const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
 
   // Apply incoming dashboard navigation
   useEffect(() => {
@@ -547,6 +552,19 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
         <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
           {selectedDashboard ? (
             <>
+              {/* Inline filters: building + period */}
+              {dateRange && onDateRangeChange && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                  <BuildingSelector
+                    selectedNames={selectedBuildingNames}
+                    onSelectionChange={setSelectedBuildingNames}
+                    mode="buildings"
+                  />
+                  <Box sx={{ width: '1px', height: 20, bgcolor: 'divider', flexShrink: 0 }} />
+                  <InlinePeriodSelector value={dateRange} onChange={onDateRangeChange} />
+                </Box>
+              )}
+
               {/* Dashboard header */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
                 <Box sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
