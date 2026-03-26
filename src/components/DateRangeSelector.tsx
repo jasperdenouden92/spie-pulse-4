@@ -486,7 +486,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
           {/* Month row */}
           <Box sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(12, 1fr)',
+            gridTemplateColumns: 'repeat(12, minmax(36px, 1fr))',
             position: 'relative',
             zIndex: 1,
           }}>
