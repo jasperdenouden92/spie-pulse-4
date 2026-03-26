@@ -573,7 +573,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                     flexDirection: 'column',
                   }}>
                     {/* Header */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                       <ApartmentOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                       <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary' }}>
                         Buildings
