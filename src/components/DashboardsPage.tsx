@@ -562,9 +562,10 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                   {/* Building card */}
                   <Box sx={{
                     bgcolor: '#fff',
-                    border: 1,
+                    border: '1px solid',
                     borderColor: 'divider',
-                    borderRadius: 1,
+                    borderRadius: 2,
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                     p: 2,
                     width: 180,
                     flexShrink: 0,
@@ -610,9 +611,10 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                   {/* Period range card */}
                   <Box sx={{
                     bgcolor: '#fff',
-                    border: 1,
+                    border: '1px solid',
                     borderColor: 'divider',
-                    borderRadius: 1,
+                    borderRadius: 2,
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                     p: 2,
                     flexShrink: 0,
                   }}>
