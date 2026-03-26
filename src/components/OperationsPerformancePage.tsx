@@ -312,10 +312,10 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+      {/* ═══ Operational KPIs Combined Score Over Time (card) ═══ */}
+      <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
             Operational KPI Performance
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -331,10 +331,6 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
           </Box>
         </Box>
 
-      </Box>
-
-      {/* ═══ Operational KPIs Combined Score Over Time (full width) ═══ */}
-      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ flex: 1, minHeight: 340 }}>
           <LineChart
             xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
@@ -365,7 +361,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             />
           </LineChart>
         </Box>
-      </Box>
+      </Paper>
 
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
