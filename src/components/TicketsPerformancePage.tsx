@@ -828,10 +828,6 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                         <TagOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.referentie}</Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <PersonOutlineOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.assignee}</Typography>
-                      </Box>
                     </Box>
                   </Box>
                   <Chip
