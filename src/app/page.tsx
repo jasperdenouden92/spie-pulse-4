@@ -858,11 +858,18 @@ export default function Home() {
           onNotificationsPanelToggle={() => {
             const opening = !notificationsPanelOpen;
             setNotificationsPanelOpen(opening);
-            if (opening) setHasUnreadNotifications(false);
+            if (opening) {
+              setHasUnreadNotifications(false);
+              setDataExplorerOpen(false);
+            }
           }}
           hasUnreadNotifications={hasUnreadNotifications}
           dataExplorerOpen={dataExplorerOpen}
-          onDataExplorerToggle={() => setDataExplorerOpen(!dataExplorerOpen)}
+          onDataExplorerToggle={() => {
+            const opening = !dataExplorerOpen;
+            setDataExplorerOpen(opening);
+            if (opening) setNotificationsPanelOpen(false);
+          }}
         />
       </Box>
 
@@ -879,6 +886,20 @@ export default function Home() {
         open={dataExplorerOpen}
         onClose={() => setDataExplorerOpen(false)}
         sidebarWidth={leftSidebarWidth}
+        onAssetSelect={(node) => {
+          if (node) {
+            setLocalQuickviewAsset(null);
+            setURLParams({ asset: node.id, assetTab: '0' });
+          } else {
+            setURLParams({ asset: '' });
+          }
+        }}
+        onOpenInMainApp={(asset) => {
+          if (asset) {
+            setLocalQuickviewAsset(null);
+            setURLParams({ asset: asset.id, assetTab: '0' });
+          }
+        }}
       />
 
       {/* Scrim/Backdrop when Asset Explorer is open */}
