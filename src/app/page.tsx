@@ -94,6 +94,7 @@ import AssetMonitoringPerformancePage from '@/components/AssetMonitoringPerforma
 import CompliancePerformancePage from '@/components/CompliancePerformancePage';
 import ThemesPerformancePage from '@/components/ThemesPerformancePage';
 import OperationsPerformancePage from '@/components/OperationsPerformancePage';
+import OverallPerformancePage from '@/components/OverallPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
@@ -1521,6 +1522,182 @@ export default function Home() {
                       </Box>
                     </Box>
 
+                    {/* KPI Groups Container — also gets sibling-dimming on hover */}
+                    <Box sx={{
+                      flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
+                      gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease',
+                    }}>
+
+                        <>
+                          {/* ===== THEMES ROW ===== */}
+                          <Box
+                            className="kpi-group-panel"
+                            sx={{
+                              p: isCompact ? 1.5 : 2,
+                              border: isThemesSelected ? '2px solid' : '1px solid',
+                              borderColor: isThemesSelected ? colors.brand : colors.borderTertiary,
+                              borderRadius: 2,
+                              bgcolor: colors.bgPrimary,
+                              boxShadow: isThemesSelected
+                                ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                borderColor: isThemesSelected ? colors.brand : colors.borderPrimary,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
+                                transform: 'translateY(-1px)',
+                              }
+                            }}
+                          >
+                            {/* Themes Header */}
+                            <Box
+                              component="button"
+                              onClick={() => handleGroupToggle('themes')}
+                              sx={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                mb: isCompact ? 1 : 1.5, transition: 'margin 0.3s ease',
+                                width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <StyleOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                  Theme KPIs
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
+                                  <AnimatedNumber value={themesScore} />%
+                                </Typography>
+                                {isThemesSelected
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                              </Box>
+                            </Box>
+
+                            {/* Primary Theme KPIs — only clickable when themes are active */}
+                            <Box sx={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                              gap: isCompact ? 1.5 : 2,
+                              transition: 'gap 0.3s ease'
+                            }}>
+                              {periodMetrics.themes.map((metric, index) => {
+                                const metricKey = PRIMARY_THEME_KEYS[index];
+                                if (contractFilter && (metricKey === 'compliance' || metricKey === 'comfort')) return null;
+                                const score = selectedBuilding
+                                  ? selectedBuilding.metrics[metricKey].green
+                                  : metric.score;
+
+                                return (
+                                  <KPICard
+                                    key={metric.title}
+                                    title={metric.title}
+                                    icon={themeIcons[metric.title]}
+                                    score={score}
+                                    trend={metric.trend}
+                                    sparklineData={metric.sparklineData}
+                                    periodLabel={periodMetrics.periodLabel}
+                                    onClick={() => handleMetricSelect(metricKey)}
+                                    onToggle={() => handleMetricSelect(metricKey)}
+                                    toggleState={getToggleState(metricKey, 'themes')}
+                                    isSelected={selection === metricKey}
+                                    isDimmed={getToggleState(metricKey, 'themes') === 'off'}
+                                    isCompact={isCompact}
+                                    performanceRating={getPerformanceRating(score)}
+                                    variant="nested"
+                                  />
+                                );
+                              })}
+                            </Box>
+
+                          </Box>
+
+                          {/* ===== OPERATIONS ROW ===== */}
+                          <Box
+                            className="kpi-group-panel"
+                            sx={{
+                              p: isCompact ? 1.5 : 2,
+                              border: isOperationsSelected ? '2px solid' : '1px solid',
+                              borderColor: isOperationsSelected ? colors.brand : colors.borderTertiary,
+                              borderRadius: 2,
+                              bgcolor: colors.bgPrimary,
+                              boxShadow: isOperationsSelected
+                                ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                borderColor: isOperationsSelected ? colors.brand : colors.borderPrimary,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
+                                transform: 'translateY(-1px)',
+                              }
+                            }}
+                          >
+                            {/* Operations Header */}
+                            <Box
+                              component="button"
+                              onClick={() => handleGroupToggle('operations')}
+                              sx={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                mb: isCompact ? 1 : 1.5, transition: 'margin 0.3s ease',
+                                width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <EngineeringOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                  Operational KPIs
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
+                                  <AnimatedNumber value={operationsScore} />%
+                                </Typography>
+                                {isOperationsSelected
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                              </Box>
+                            </Box>
+
+                            {/* Operations KPIs */}
+                            <Box sx={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                              gap: isCompact ? 1.5 : 2,
+                              transition: 'gap 0.3s ease'
+                            }}>
+                              {periodMetrics.operations.map((metric, index) => {
+                                const metricKey = OPERATIONS_KEYS[index];
+                                const score = selectedBuilding
+                                  ? selectedBuilding.metrics[metricKey].green
+                                  : metric.score;
+
+                                return (
+                                  <KPICard
+                                    key={metric.title}
+                                    title={metric.title}
+                                    icon={operationsIcons[metric.title]}
+                                    score={score}
+                                    trend={metric.trend}
+                                    sparklineData={metric.sparklineData}
+                                    periodLabel={periodMetrics.periodLabel}
+                                    onClick={() => handleMetricSelect(metricKey)}
+                                    onToggle={() => handleMetricSelect(metricKey)}
+                                    toggleState={getToggleState(metricKey, 'operations')}
+                                    isSelected={selection === metricKey}
+                                    isDimmed={getToggleState(metricKey, 'operations') === 'off'}
+                                    isCompact={isCompact}
+                                    performanceRating={getPerformanceRating(score)}
+                                    variant="nested"
+                                  />
+                                );
+                              })}
+                            </Box>
+                          </Box>
+                        </>
+                    </Box>
                   </Box>
 
                   {/* ========== BUILDINGS / PERFORMANCE INDICATORS PANEL ========== */}
@@ -1590,61 +1767,6 @@ export default function Home() {
                         {buildingsPanelTab === 'buildings' ? (
                           <>
                             {/* Group Selection Banner */}
-                            {(selection === 'themes_group' || selection === 'operations_group') && (
-                              <Box sx={{
-                                mb: 3,
-                                p: 3,
-                                borderRadius: 1,
-                                bgcolor: selection === 'themes_group' ? 'rgba(25, 118, 210, 0.08)' : 'rgba(237, 108, 2, 0.08)',
-                                border: '2px solid',
-                                borderColor: selection === 'themes_group' ? 'rgba(25, 118, 210, 0.3)' : 'rgba(237, 108, 2, 0.3)',
-                              }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                  {selection === 'themes_group' ? (
-                                    <StyleOutlinedIcon sx={{ fontSize: 32, color: colors.brand }} />
-                                  ) : (
-                                    <EngineeringOutlinedIcon sx={{ fontSize: 32, color: '#ed6c02' }} />
-                                  )}
-                                  <Box>
-                                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-                                      {selection === 'themes_group' ? 'Theme KPIs' : 'Operational KPIs'}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {selection === 'themes_group'
-                                        ? 'Environmental and facility performance metrics across your portfolio'
-                                        : 'Day-to-day operational efficiency and maintenance metrics'}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                  <Box sx={{ flex: 1, p: 2, bgcolor: '#fff', borderRadius: 1 }}>
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                      Average Score
-                                    </Typography>
-                                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                                      {selection === 'themes_group' ? themesScore : operationsScore}%
-                                    </Typography>
-                                  </Box>
-                                  <Box sx={{ flex: 1, p: 2, bgcolor: '#fff', borderRadius: 1 }}>
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                      Buildings Monitored
-                                    </Typography>
-                                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                                      {filteredBuildings.length}
-                                    </Typography>
-                                  </Box>
-                                  <Box sx={{ flex: 1, p: 2, bgcolor: '#fff', borderRadius: 1 }}>
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                      {selection === 'themes_group' ? 'KPIs' : 'Active Areas'}
-                                    </Typography>
-                                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                                      {selection === 'themes_group' ? PRIMARY_THEME_KEYS.length : OPERATIONS_KEYS.length}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              </Box>
-                            )}
-
                             {/* ===== BUILDINGS / CLUSTERS GRID ===== */}
                             <Box sx={{
                               display: 'grid',
@@ -2080,41 +2202,42 @@ function KPIAnalysisView({
     return <OperationsPerformancePage opsScores={opsScores} opsTrends={opsTrends} overallScore={avgScore} overallTrend={avgTrend} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
-  // Overview: show summary cards for each visible KPI
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-        Performance Indicators Overview
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Select a specific KPI above to see detailed performance breakdowns, or browse the overview below.
-      </Typography>
-
-      {/* Themes indicators - show all 9 theme KPIs */}
-      {themesEnabled && (
-        <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>Themes</Typography>
-          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-            {ALL_THEME_KEYS.map((key) => (
-              <IndicatorSummaryCard key={key} metricKey={key} metricInfo={metricInfo} onClick={() => onMetricSelect(key)} />
-            ))}
-          </Box>
-        </Box>
-      )}
-
-      {/* Operations indicators */}
-      {operationsEnabled && (
-        <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>Operations</Typography>
-          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-            {OPERATIONS_KEYS.map((key) => (
-              <IndicatorSummaryCard key={key} metricKey={key} metricInfo={metricInfo} onClick={() => onMetricSelect(key)} />
-            ))}
-          </Box>
-        </Box>
-      )}
-    </Box>
-  );
+  // Overview: show overall performance page with Theme KPIs / Operational KPIs chart
+  {
+    const themeKeys: MetricType[] = ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
+    const opsKeys: MetricType[] = ['tickets', 'quotations', 'maintenance'];
+    const themesScore = Math.round(themeKeys.reduce((sum, k) => {
+      const m = periodMetrics.themes.find(t => t.title === metricInfo[k]?.title);
+      return sum + (m?.score ?? 0);
+    }, 0) / themeKeys.length);
+    const themesTrend = Math.round(themeKeys.reduce((sum, k) => {
+      const m = periodMetrics.themes.find(t => t.title === metricInfo[k]?.title);
+      return sum + (m?.trend ?? 0);
+    }, 0) / themeKeys.length * 10) / 10;
+    const operationsScore = Math.round(opsKeys.reduce((sum, k) => {
+      const m = periodMetrics.operations.find(t => t.title === metricInfo[k]?.title);
+      return sum + (m?.score ?? 0);
+    }, 0) / opsKeys.length);
+    const operationsTrend = Math.round(opsKeys.reduce((sum, k) => {
+      const m = periodMetrics.operations.find(t => t.title === metricInfo[k]?.title);
+      return sum + (m?.trend ?? 0);
+    }, 0) / opsKeys.length * 10) / 10;
+    const overallScore = Math.round((themesScore + operationsScore) / 2);
+    const overallTrend = Math.round((themesTrend + operationsTrend) / 2 * 10) / 10;
+    return (
+      <OverallPerformancePage
+        themesScore={themesScore}
+        themesTrend={themesTrend}
+        operationsScore={operationsScore}
+        operationsTrend={operationsTrend}
+        overallScore={overallScore}
+        overallTrend={overallTrend}
+        onBuildingSelect={onBuildingSelect}
+        onViewAllBuildings={onViewAllBuildings}
+        buildingMode={buildingMode}
+      />
+    );
+  }
 }
 
 /* Summary stat card for performance indicators */
