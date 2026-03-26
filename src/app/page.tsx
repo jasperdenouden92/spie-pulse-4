@@ -88,6 +88,7 @@ import ComfortPerformancePage from '@/components/ComfortPerformancePage';
 import SustainabilityPerformancePage from '@/components/SustainabilityPerformancePage';
 import MaintenancePerformancePage from '@/components/MaintenancePerformancePage';
 import QuotationsPerformancePage from '@/components/QuotationsPerformancePage';
+import TicketsPerformancePage from '@/components/TicketsPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
@@ -108,6 +109,7 @@ import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
 import QuickreplyOutlinedIcon from '@mui/icons-material/QuickreplyOutlined';
 import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
+import SettingsBackupRestoreOutlinedIcon from '@mui/icons-material/SettingsBackupRestoreOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import {
   ElectricityConsumptionChart,
@@ -200,6 +202,13 @@ function getQuotationsTopics(quotationsGreen: number): TopicScore[] {
     { label: 'Run time', score: Math.max(0, Math.min(100, quotationsGreen + 5)), trend: 3, icon: <TimerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
     { label: 'Response time', score: Math.max(0, Math.min(100, quotationsGreen - 8)), trend: -3, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
     { label: 'Approval time', score: Math.max(0, Math.min(100, quotationsGreen + 3)), trend: 6, icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+  ];
+}
+
+function getTicketsTopics(ticketsGreen: number): TopicScore[] {
+  return [
+    { label: 'Respond time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: 'Restore time', score: Math.max(0, Math.min(100, ticketsGreen - 5)), trend: -2, icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
   ];
 }
 
@@ -1889,7 +1898,7 @@ export default function Home() {
                                       showOverall={selectedMetric !== 'overall'}
                                       trend={cluster.trends[selectedMetric]}
                                       periodLabel={periodMetrics.periodLabel}
-                                      topics={selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : undefined}
+                                      topics={selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(cluster.metrics.tickets.green) : undefined}
                                     />
                                   </motion.div>
                                 ))
@@ -1953,7 +1962,7 @@ export default function Home() {
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
-                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : undefined}
+                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
                                     energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
                                     alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : undefined}
                                   />
@@ -2580,28 +2589,10 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
     );
   }
 
-  // Tickets Dashboard
+  // Tickets Dashboard — uses dedicated component
   if (metricKey === 'tickets') {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {header}
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <SummaryStatCard label="Open Tickets" value="156" trend={-8} />
-          <SummaryStatCard label="Avg Resolution Time" value="4.2 days" trend={-15} />
-          <SummaryStatCard label="SLA Compliance" value="88%" trend={5} />
-          <SummaryStatCard label="Outstanding Cost" value="€45K" trend={-12} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Ticket Volume Trend" type="line" color="#ed6c02" />
-          <IndicatorChart title="Tickets by Category" type="bar" color="#ed6c02" />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Priority Distribution" type="pie" color="#ed6c02" />
-          <IndicatorChart title="Resolution Time by Type" type="bar" color="#ed6c02" />
-          <IndicatorChart title="Top Issues" type="ranking" color="#f44336" />
-        </Box>
-      </Box>
-    );
+    const ticketsMetric = periodMetrics.operations.find(t => t.title === 'Tickets');
+    return <TicketsPerformancePage themeScore={ticketsMetric?.score ?? 71} themeTrend={ticketsMetric?.trend ?? 1} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
   // Quotations Dashboard — uses dedicated component
