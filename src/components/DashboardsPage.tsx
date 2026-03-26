@@ -614,8 +614,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                     borderColor: 'divider',
                     borderRadius: 1,
                     p: 2,
-                    flex: 1,
-                    minWidth: 0,
+                    flexShrink: 0,
                   }}>
                     <DateRangeSelector
                       inline
