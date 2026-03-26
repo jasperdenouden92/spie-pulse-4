@@ -10,6 +10,8 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import QuickreplyOutlinedIcon from '@mui/icons-material/QuickreplyOutlined';
 import SettingsBackupRestoreOutlinedIcon from '@mui/icons-material/SettingsBackupRestoreOutlined';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
@@ -812,15 +814,19 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                     </Box>
                   </Box>
                   <Chip
+                    icon={t.category === 'Storing'
+                      ? <ErrorOutlineIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
+                      : <SupportAgentOutlinedIcon sx={{ fontSize: 13, color: 'text.secondary' }} />}
                     label={t.category}
                     size="small"
                     sx={{
                       height: 20,
                       fontSize: '0.65rem',
-                      fontWeight: 600,
-                      bgcolor: t.category === 'Storing' ? '#ef535014' : '#2196f314',
-                      color: t.category === 'Storing' ? '#ef5350' : '#2196f3',
-                      '& .MuiChip-label': { px: 0.75 },
+                      fontWeight: 500,
+                      bgcolor: 'action.hover',
+                      color: 'text.secondary',
+                      '& .MuiChip-label': { px: 0.5 },
+                      '& .MuiChip-icon': { ml: 0.5 },
                       flexShrink: 0,
                     }}
                   />
