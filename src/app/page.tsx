@@ -1476,96 +1476,6 @@ export default function Home() {
                       gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease',
                     }}>
 
-                      {contractFilter ? (
-                        /* ===== CONTRACT MODE: Combined KPIs in one panel ===== */
-                        <Box
-                          sx={{
-                            p: isCompact ? 1.5 : 2,
-                            border: '1px solid',
-                            borderColor: colors.borderTertiary,
-                            borderRadius: 2,
-                            bgcolor: colors.bgPrimary,
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-                            minHeight: isCompact ? 340 : 420,
-                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                          }}
-                        >
-                          {/* Contract KPIs Header */}
-                          <Box sx={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            mb: isCompact ? 1 : 1.5, transition: 'margin 0.3s ease',
-                          }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <SpeedOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
-                              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
-                                Contract KPIs
-                              </Typography>
-                            </Box>
-                          </Box>
-
-                          {/* All KPIs in a single grid */}
-                          <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                            gap: isCompact ? 1.5 : 2,
-                            transition: 'gap 0.3s ease'
-                          }}>
-                            {periodMetrics.themes.map((metric, index) => {
-                              const metricKey = PRIMARY_THEME_KEYS[index];
-                              const score = selectedBuilding
-                                ? selectedBuilding.metrics[metricKey].green
-                                : metric.score;
-
-                              return (
-                                <KPICard
-                                  key={metric.title}
-                                  title={metric.title}
-                                  icon={themeIcons[metric.title]}
-                                  score={score}
-                                  trend={metric.trend}
-                                  sparklineData={metric.sparklineData}
-                                  periodLabel={periodMetrics.periodLabel}
-                                  onClick={() => handleMetricSelect(metricKey)}
-                                  onToggle={() => handleMetricSelect(metricKey)}
-                                  toggleState={getToggleState(metricKey, 'themes')}
-                                  isSelected={selection === metricKey}
-                                  isDimmed={getToggleState(metricKey, 'themes') === 'off'}
-                                  isCompact={isCompact}
-                                  performanceRating={getPerformanceRating(score)}
-                                  variant="nested"
-                                />
-                              );
-                            })}
-                            {periodMetrics.operations.map((metric, index) => {
-                              const metricKey = OPERATIONS_KEYS[index];
-                              const score = selectedBuilding
-                                ? selectedBuilding.metrics[metricKey].green
-                                : metric.score;
-
-                              return (
-                                <KPICard
-                                  key={metric.title}
-                                  title={metric.title}
-                                  icon={operationsIcons[metric.title]}
-                                  score={score}
-                                  trend={metric.trend}
-                                  sparklineData={metric.sparklineData}
-                                  periodLabel={periodMetrics.periodLabel}
-                                  onClick={() => handleMetricSelect(metricKey)}
-                                  onToggle={() => handleMetricSelect(metricKey)}
-                                  toggleState={getToggleState(metricKey, 'operations')}
-                                  isSelected={selection === metricKey}
-                                  isDimmed={getToggleState(metricKey, 'operations') === 'off'}
-                                  isCompact={isCompact}
-                                  performanceRating={getPerformanceRating(score)}
-                                  variant="nested"
-                                />
-                              );
-                            })}
-                          </Box>
-                        </Box>
-                      ) : (
-                        /* ===== NON-CONTRACT MODE: Separate Theme & Operations panels ===== */
                         <>
                           {/* ===== THEMES ROW ===== */}
                           <Box
@@ -1734,7 +1644,6 @@ export default function Home() {
                             </Box>
                           </Box>
                         </>
-                      )}
                     </Box>
                   </Box>
 
