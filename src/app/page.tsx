@@ -86,6 +86,7 @@ import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRa
 import ComfortPerformancePage from '@/components/ComfortPerformancePage';
 import SustainabilityPerformancePage from '@/components/SustainabilityPerformancePage';
 import MaintenancePerformancePage from '@/components/MaintenancePerformancePage';
+import QuotationsPerformancePage from '@/components/QuotationsPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
@@ -103,6 +104,9 @@ import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsAc
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
+import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
+import QuickreplyOutlinedIcon from '@mui/icons-material/QuickreplyOutlined';
+import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import {
   ElectricityConsumptionChart,
@@ -187,6 +191,14 @@ function getMaintenanceTopics(maintenanceGreen: number): TopicScore[] {
     { label: 'Progress', score: Math.max(0, Math.min(100, maintenanceGreen + 4)), trend: 5, icon: <TaskAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
     { label: 'Timeliness', score: Math.max(0, Math.min(100, maintenanceGreen - 7)), trend: -2, icon: <ScheduleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
     { label: 'Reporting', score: Math.max(0, Math.min(100, maintenanceGreen + 3)), trend: 8, icon: <AssessmentOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+  ];
+}
+
+function getQuotationsTopics(quotationsGreen: number): TopicScore[] {
+  return [
+    { label: 'Run time', score: Math.max(0, Math.min(100, quotationsGreen + 5)), trend: 3, icon: <TimerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: 'Response time', score: Math.max(0, Math.min(100, quotationsGreen - 8)), trend: -3, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: 'Approval time', score: Math.max(0, Math.min(100, quotationsGreen + 3)), trend: 6, icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
   ];
 }
 
@@ -1873,7 +1885,7 @@ export default function Home() {
                                       showOverall={selectedMetric !== 'overall'}
                                       trend={cluster.trends[selectedMetric]}
                                       periodLabel={periodMetrics.periodLabel}
-                                      topics={selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : undefined}
+                                      topics={selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : undefined}
                                     />
                                   </motion.div>
                                 ))
@@ -1896,12 +1908,7 @@ export default function Home() {
                                   { label: 'Outstanding', value: formatCurrency(stats.tickets.outstanding), icon: <EuroOutlinedIcon sx={{ fontSize: 16 }} /> }
                                 ];
                               } else if (selectedMetric === 'quotations' && stats) {
-                                operationalStats = [
-                                  { label: 'Quotes', value: stats.quotations.count, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> },
-                                  { label: 'Due', value: stats.quotations.due, icon: <EventAvailableOutlinedIcon sx={{ fontSize: 16 }} /> },
-                                  { label: 'Overdue', value: stats.quotations.overdue, icon: <EventBusyOutlinedIcon sx={{ fontSize: 16 }} /> },
-                                  { label: 'Total Amount', value: formatCurrency(stats.quotations.totalAmount), icon: <EuroOutlinedIcon sx={{ fontSize: 16 }} /> }
-                                ];
+                                operationalStats = undefined;
                               } else if (selectedMetric === 'maintenance' && stats) {
                                 operationalStats = undefined;
                               }
@@ -1942,7 +1949,7 @@ export default function Home() {
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
-                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : undefined}
+                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : undefined}
                                     energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
                                     alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : undefined}
                                   />
@@ -2593,28 +2600,10 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
     );
   }
 
-  // Quotations Dashboard
+  // Quotations Dashboard — uses dedicated component
   if (metricKey === 'quotations') {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {header}
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <SummaryStatCard label="Pending Quotes" value="23" trend={-5} />
-          <SummaryStatCard label="Total Value" value="€125K" trend={8} />
-          <SummaryStatCard label="Avg Approval Time" value="3.1 days" trend={-10} />
-          <SummaryStatCard label="Overdue Quotes" value="4" trend={-20} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Quote Volume Trend" type="line" color="#ed6c02" />
-          <IndicatorChart title="Quote Value by Category" type="bar" color="#ed6c02" />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Status Distribution" type="pie" color="#ed6c02" />
-          <IndicatorChart title="Approval Time by Value" type="bar" color="#ed6c02" />
-          <IndicatorChart title="Top Vendors" type="ranking" color={colors.brand} />
-        </Box>
-      </Box>
-    );
+    const quotationsMetric = periodMetrics.operations.find(t => t.title === 'Quotations');
+    return <QuotationsPerformancePage themeScore={quotationsMetric?.score ?? 74} themeTrend={quotationsMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
   }
 
   // Maintenance Dashboard — uses dedicated component
