@@ -64,7 +64,7 @@ import AutoGraphOutlinedIcon from '@mui/icons-material/AutoGraphOutlined';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
-import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod } from '@/data/metrics';
+import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { sortBuildingsByMetric, sortBuildingsByTrend, Building, MetricKeys, buildings as allBuildings } from '@/data/buildings';
 import { motion, AnimatePresence } from 'framer-motion';
 import TicketsList from '@/components/TicketsList';
@@ -799,8 +799,11 @@ export default function Home() {
     'Maintenance': <BuildOutlinedIcon />,
   };
 
-  // Period-aware metrics based on selected date range
-  const periodMetrics = useMemo(() => getMetricsForPeriod(dateRange), [dateRange]);
+  // Period-aware metrics based on selected date range (with contract variation when active)
+  const periodMetrics = useMemo(() => {
+    const base = getMetricsForPeriod(dateRange);
+    return contractFilter ? applyContractVariation(base) : base;
+  }, [dateRange, contractFilter]);
 
   // Calculate rolled-up scores for KPI groups
   const themesScore = selectedBuilding
