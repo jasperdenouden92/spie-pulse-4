@@ -200,12 +200,13 @@ interface DateRangeSelectorProps {
   onChange: (value: string) => void;
   anchorEl: HTMLElement | null;
   onClose: () => void;
+  hidePresets?: boolean;
 }
 
 const toLinear = (year: number, month: number) => year * 12 + month;
 const fromLinear = (lm: number) => ({ year: Math.floor(lm / 12), month: lm % 12 });
 
-export default function DateRangeSelector({ value, onChange, anchorEl, onClose }: DateRangeSelectorProps) {
+export default function DateRangeSelector({ value, onChange, anchorEl, onClose, hidePresets = false }: DateRangeSelectorProps) {
   const open = Boolean(anchorEl);
   const currentYear = TODAY.getFullYear();
 
@@ -680,25 +681,27 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose }
       }}
     >
       {/* Preset pills */}
-      <Box sx={{ display: 'flex', gap: 0.75, px: 3, pt: 2, pb: 0 }}>
-        {PRESETS.map(preset => (
-          <Chip
-            key={preset.label}
-            label={preset.label}
-            size="small"
-            onClick={() => handlePresetClick(preset)}
-            sx={{
-              fontWeight: 500,
-              fontSize: '0.8rem',
-              bgcolor: 'transparent',
-              color: colors.textSecondary,
-              border: `1px solid ${colors.borderSecondary}`,
-              cursor: 'pointer',
-              '&:hover': { bgcolor: colors.bgPrimaryHover },
-            }}
-          />
-        ))}
-      </Box>
+      {!hidePresets && (
+        <Box sx={{ display: 'flex', gap: 0.75, px: 3, pt: 2, pb: 0 }}>
+          {PRESETS.map(preset => (
+            <Chip
+              key={preset.label}
+              label={preset.label}
+              size="small"
+              onClick={() => handlePresetClick(preset)}
+              sx={{
+                fontWeight: 500,
+                fontSize: '0.8rem',
+                bgcolor: 'transparent',
+                color: colors.textSecondary,
+                border: `1px solid ${colors.borderSecondary}`,
+                cursor: 'pointer',
+                '&:hover': { bgcolor: colors.bgPrimaryHover },
+              }}
+            />
+          ))}
+        </Box>
+      )}
 
       <Box
         onPointerMove={handleContainerPointerMove}
