@@ -205,23 +205,12 @@ export default function ClusterCard({
             <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${topics.length}, 1fr)`, gap: 1.5 }}>
               {topics.map((topic) => (
                 <Box key={topic.label}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary', mb: 0.25 }}>
-                    {topic.icon}
-                    <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.secondary' }}>
-                      {topic.label}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                      {topic.score}%
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
-                      {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 13 }} /> : <TrendingDownIcon sx={{ fontSize: 13 }} />}
-                      <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.6875rem', lineHeight: 1 }}>
-                        {Math.abs(topic.trend)}%
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.secondary', mb: 0.25 }}>
+                    {topic.label}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+                    {topic.score}%
+                  </Typography>
                 </Box>
               ))}
             </Box>
