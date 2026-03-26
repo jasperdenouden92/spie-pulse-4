@@ -7,20 +7,21 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
-import AcUnitOutlinedIcon from '@mui/icons-material/AcUnitOutlined';
-import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
-import ElevatorOutlinedIcon from '@mui/icons-material/ElevatorOutlined';
-import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
+import DirectionsRunOutlinedIcon from '@mui/icons-material/DirectionsRunOutlined';
+import LocalFireDepartmentOutlinedIcon from '@mui/icons-material/LocalFireDepartmentOutlined';
+import VaccinesOutlinedIcon from '@mui/icons-material/VaccinesOutlined';
+import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
-import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
-import HeatPumpOutlinedIcon from '@mui/icons-material/HeatPumpOutlined';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
@@ -82,12 +83,12 @@ function getStatusLabel(score: number, goodAbove: number, moderateAbove: number)
 }
 
 const TOPIC_DEFS = [
-  { key: 'heating', label: 'Heating', icon: <ThermostatOutlinedIcon sx={{ fontSize: 20 }} />, offset: 4, trend: 3, chartColor: '#e91e63', goodAbove: 75, moderateAbove: 55 },
-  { key: 'cooling', label: 'Cooling', icon: <AcUnitOutlinedIcon sx={{ fontSize: 20 }} />, offset: -6, trend: -2, chartColor: '#00bcd4', goodAbove: 70, moderateAbove: 50 },
-  { key: 'ventilation', label: 'Ventilation', icon: <AirOutlinedIcon sx={{ fontSize: 20 }} />, offset: 2, trend: 5, chartColor: '#9c27b0', goodAbove: 75, moderateAbove: 55 },
-  { key: 'distribution', label: 'Distribution', icon: <AccountTreeOutlinedIcon sx={{ fontSize: 20 }} />, offset: -3, trend: -1, chartColor: '#ff9800', goodAbove: 70, moderateAbove: 50 },
-  { key: 'lighting', label: 'Lighting', icon: <LightbulbOutlinedIcon sx={{ fontSize: 20 }} />, offset: 7, trend: 4, chartColor: '#ffc107', goodAbove: 80, moderateAbove: 60 },
-  { key: 'transport', label: 'Transport', icon: <ElevatorOutlinedIcon sx={{ fontSize: 20 }} />, offset: -8, trend: -3, chartColor: '#0288d1', goodAbove: 70, moderateAbove: 50 },
+  { key: 'bacs', label: 'BACS', icon: <SensorsOutlinedIcon sx={{ fontSize: 20 }} />, offset: 5, trend: 3, chartColor: '#2196f3', goodAbove: 80, moderateAbove: 60 },
+  { key: 'escape_routes', label: 'Escape Routes', icon: <DirectionsRunOutlinedIcon sx={{ fontSize: 20 }} />, offset: -4, trend: -2, chartColor: '#ff9800', goodAbove: 75, moderateAbove: 55 },
+  { key: 'fire_safety', label: 'Fire Safety', icon: <LocalFireDepartmentOutlinedIcon sx={{ fontSize: 20 }} />, offset: 3, trend: 5, chartColor: '#f44336', goodAbove: 80, moderateAbove: 60 },
+  { key: 'legionella_prevention', label: 'Legionella Prevention', icon: <VaccinesOutlinedIcon sx={{ fontSize: 20 }} />, offset: -6, trend: -1, chartColor: '#9c27b0', goodAbove: 75, moderateAbove: 55 },
+  { key: 'maintenance_inspection', label: 'Maintenance & Inspection', icon: <HandymanOutlinedIcon sx={{ fontSize: 20 }} />, offset: 2, trend: 4, chartColor: '#00bcd4', goodAbove: 75, moderateAbove: 55 },
+  { key: 'permits', label: 'Permits', icon: <DescriptionOutlinedIcon sx={{ fontSize: 20 }} />, offset: 7, trend: 2, chartColor: '#4caf50', goodAbove: 80, moderateAbove: 60 },
 ];
 
 function buildTopics(themeScore: number): TopicDef[] {
@@ -131,19 +132,19 @@ function seededRandom(seed: number): () => number {
 }
 
 const sortedBest = [...buildings]
-  .sort((a, b) => b.metrics.asset_monitoring.green - a.metrics.asset_monitoring.green)
+  .sort((a, b) => b.metrics.compliance.green - a.metrics.compliance.green)
   .slice(0, 7);
 
 const sortedMostImproved = [...buildings]
-  .sort((a, b) => b.trends.asset_monitoring - a.trends.asset_monitoring)
+  .sort((a, b) => b.trends.compliance - a.trends.compliance)
   .slice(0, 7);
 
 const sortedWorst = [...buildings]
-  .sort((a, b) => a.metrics.asset_monitoring.green - b.metrics.asset_monitoring.green)
+  .sort((a, b) => a.metrics.compliance.green - b.metrics.compliance.green)
   .slice(0, 7);
 
 const sortedMostDeteriorated = [...buildings]
-  .sort((a, b) => a.trends.asset_monitoring - b.trends.asset_monitoring)
+  .sort((a, b) => a.trends.compliance - b.trends.compliance)
   .slice(0, 7);
 
 // ── Cluster aggregation for asset monitoring ──
@@ -152,8 +153,8 @@ interface ClusterEntry {
   name: string;
   image: string;
   images: string[];
-  metrics: { asset_monitoring: { green: number; yellow: number; red: number } };
-  trends: { asset_monitoring: number };
+  metrics: { compliance: { green: number; yellow: number; red: number } };
+  trends: { compliance: number };
 }
 
 const clusterEntries: ClusterEntry[] = (() => {
@@ -170,27 +171,27 @@ const clusterEntries: ClusterEntry[] = (() => {
       image: blds[0].image,
       images: blds.map(b => b.image),
       metrics: {
-        asset_monitoring: {
-          green: avg(b => b.metrics.asset_monitoring.green),
-          yellow: avg(b => b.metrics.asset_monitoring.yellow),
-          red: avg(b => b.metrics.asset_monitoring.red),
+        compliance: {
+          green: avg(b => b.metrics.compliance.green),
+          yellow: avg(b => b.metrics.compliance.yellow),
+          red: avg(b => b.metrics.compliance.red),
         },
       },
       trends: {
-        asset_monitoring: Math.round(blds.reduce((s, b) => s + b.trends.asset_monitoring, 0) / blds.length * 10) / 10,
+        compliance: Math.round(blds.reduce((s, b) => s + b.trends.compliance, 0) / blds.length * 10) / 10,
       },
     };
   });
 })();
 
-const clusterSortedBest = [...clusterEntries].sort((a, b) => b.metrics.asset_monitoring.green - a.metrics.asset_monitoring.green);
-const clusterSortedWorst = [...clusterEntries].sort((a, b) => a.metrics.asset_monitoring.green - b.metrics.asset_monitoring.green);
-const clusterSortedMostImproved = [...clusterEntries].sort((a, b) => b.trends.asset_monitoring - a.trends.asset_monitoring);
-const clusterSortedMostDeteriorated = [...clusterEntries].sort((a, b) => a.trends.asset_monitoring - b.trends.asset_monitoring);
+const clusterSortedBest = [...clusterEntries].sort((a, b) => b.metrics.compliance.green - a.metrics.compliance.green);
+const clusterSortedWorst = [...clusterEntries].sort((a, b) => a.metrics.compliance.green - b.metrics.compliance.green);
+const clusterSortedMostImproved = [...clusterEntries].sort((a, b) => b.trends.compliance - a.trends.compliance);
+const clusterSortedMostDeteriorated = [...clusterEntries].sort((a, b) => a.trends.compliance - b.trends.compliance);
 
 // ── KPI over time data ──
 
-type ViewMode = 'theme' | 'all_topics' | 'heating' | 'cooling' | 'ventilation' | 'distribution' | 'lighting' | 'transport';
+type ViewMode = 'theme' | 'all_topics' | 'bacs' | 'escape_routes' | 'fire_safety' | 'legionella_prevention' | 'maintenance_inspection' | 'permits';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -234,14 +235,15 @@ interface DashboardLink {
   icon: React.ReactNode;
 }
 
-const ASSET_MONITORING_DASHBOARDS: DashboardLink[] = [
-  { id: 'asset_trend', label: 'Asset Trend', subtitle: 'Asset health and performance over time', icon: <TimelineOutlinedIcon /> },
-  { id: 'warmte_koudeopslag', label: 'Warmte- Koudeopslag (WKO)', subtitle: 'Thermal energy storage performance', icon: <HeatPumpOutlinedIcon /> },
+const COMPLIANCE_DASHBOARDS: DashboardLink[] = [
+  { id: 'preventief_onderhoud', label: 'Preventive Maintenance', subtitle: 'Scheduled maintenance compliance and status', icon: <BuildOutlinedIcon /> },
+  { id: 'process_orders', label: 'Process Orders', subtitle: 'Work order tracking and completion rates', icon: <AssignmentOutlinedIcon /> },
+  { id: 'mjob', label: 'Multi-year Maintenance Budget', subtitle: 'Long-term maintenance planning and spend', icon: <DateRangeOutlinedIcon /> },
 ];
 
 // ── Component ──
 
-interface AssetMonitoringPerformancePageProps {
+interface CompliancePerformancePageProps {
   themeScore?: number;
   themeTrend?: number;
   onNavigateToDashboard?: (dashboardId: string) => void;
@@ -250,7 +252,7 @@ interface AssetMonitoringPerformancePageProps {
   buildingMode?: 'buildings' | 'clusters';
 }
 
-export default function AssetMonitoringPerformancePage({ themeScore = 62, themeTrend = 2, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: AssetMonitoringPerformancePageProps) {
+export default function CompliancePerformancePage({ themeScore = 88, themeTrend = 6, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: CompliancePerformancePageProps) {
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -283,9 +285,9 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
   const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Asset Monitoring KPI',
+    label: 'Compliance KPI',
     color: colors.brand,
-    data: generateKpiTimeSeries('asset_monitoring_theme', themeScore),
+    data: generateKpiTimeSeries('compliance_theme', themeScore),
   }), [themeScore]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
@@ -302,17 +304,17 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
         return [themeSeries];
       case 'all_topics':
         return [themeSeries, ...topicSeries];
-      case 'heating':
+      case 'bacs':
         return [topicSeries[0]];
-      case 'cooling':
+      case 'escape_routes':
         return [topicSeries[1]];
-      case 'ventilation':
+      case 'fire_safety':
         return [topicSeries[2]];
-      case 'distribution':
+      case 'legionella_prevention':
         return [topicSeries[3]];
-      case 'lighting':
+      case 'maintenance_inspection':
         return [topicSeries[4]];
-      case 'transport':
+      case 'permits':
         return [topicSeries[5]];
     }
   }, [chartView, themeSeries, topicSeries]);
@@ -324,17 +326,17 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
     switch (chartView) {
       case 'theme':
         return buildThresholdZones(THEME_GOOD_ABOVE, THEME_MODERATE_ABOVE);
-      case 'heating':
+      case 'bacs':
         return buildThresholdZones(topics[0].goodAbove, topics[0].moderateAbove);
-      case 'cooling':
+      case 'escape_routes':
         return buildThresholdZones(topics[1].goodAbove, topics[1].moderateAbove);
-      case 'ventilation':
+      case 'fire_safety':
         return buildThresholdZones(topics[2].goodAbove, topics[2].moderateAbove);
-      case 'distribution':
+      case 'legionella_prevention':
         return buildThresholdZones(topics[3].goodAbove, topics[3].moderateAbove);
-      case 'lighting':
+      case 'maintenance_inspection':
         return buildThresholdZones(topics[4].goodAbove, topics[4].moderateAbove);
-      case 'transport':
+      case 'permits':
         return buildThresholdZones(topics[5].goodAbove, topics[5].moderateAbove);
       default:
         return [];
@@ -351,13 +353,13 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Asset Monitoring KPI', icon: <MonitorHeartOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'heating', label: 'Heating', icon: <ThermostatOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'cooling', label: 'Cooling', icon: <AcUnitOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'ventilation', label: 'Ventilation', icon: <AirOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'distribution', label: 'Distribution', icon: <AccountTreeOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'lighting', label: 'Lighting', icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'transport', label: 'Transport', icon: <ElevatorOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: 'Compliance KPI', icon: <GavelOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'bacs', label: 'BACS', icon: <SensorsOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'escape_routes', label: 'Escape Routes', icon: <DirectionsRunOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'fire_safety', label: 'Fire Safety', icon: <LocalFireDepartmentOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'legionella_prevention', label: 'Legionella Prevention', icon: <VaccinesOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'maintenance_inspection', label: 'Maintenance & Inspection', icon: <HandymanOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'permits', label: 'Permits', icon: <DescriptionOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   return (
@@ -366,7 +368,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
-            Asset Monitoring Performance
+            Compliance Performance
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
@@ -459,8 +461,8 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
             ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
             : (leftListMode === 'best' ? sortedBest : sortedMostImproved)
           ).map((b, i) => {
-            const score = b.metrics.asset_monitoring.green;
-            const trend = b.trends.asset_monitoring;
+            const score = b.metrics.compliance.green;
+            const trend = b.trends.compliance;
             const showTrend = leftListMode === 'improved';
             const barColor = getStatusColor(score, 75, 55);
             return (
@@ -524,8 +526,8 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
             ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
             : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated)
           ).map((b, i) => {
-            const score = b.metrics.asset_monitoring.green;
-            const trend = b.trends.asset_monitoring;
+            const score = b.metrics.compliance.green;
+            const trend = b.trends.compliance;
             const showTrend = rightListMode === 'deteriorated';
             const barColor = getStatusColor(score, 75, 55);
             return (
@@ -650,7 +652,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
                   strokeDasharray: 'none !important',
                 },
                 [`& .${lineClasses.area}`]: {
-                  fill: showThresholds ? 'url(#threshold-gradient-am)' : undefined,
+                  fill: showThresholds ? 'url(#threshold-gradient-comp)' : undefined,
                   filter: 'none',
                   opacity: showThresholds ? 0.2 : 0.08,
                 },
@@ -673,7 +675,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
                 const modAbove = moderate?.min ?? 55;
                 return (
                   <>
-                    <ThresholdGradient goodAbove={goodAbove} moderateAbove={modAbove} id="threshold-gradient-am" />
+                    <ThresholdGradient goodAbove={goodAbove} moderateAbove={modAbove} id="threshold-gradient-comp" />
                     <ChartsReferenceLine
                       y={goodAbove}
                       lineStyle={{ stroke: '#4caf50', strokeWidth: 1.5, strokeDasharray: '6 4', opacity: 0.7 }}
@@ -704,10 +706,10 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
       {/* ═══ SECTION 3: Related Dashboards ═══ */}
       <Box>
         <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
-          Asset Monitoring Dashboards
+          Compliance Dashboards
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-          {ASSET_MONITORING_DASHBOARDS.map(dash => (
+          {COMPLIANCE_DASHBOARDS.map(dash => (
             <Paper
               key={dash.id}
               elevation={0}

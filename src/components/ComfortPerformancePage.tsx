@@ -245,12 +245,12 @@ interface DashboardLink {
 }
 
 const COMFORT_DASHBOARDS: DashboardLink[] = [
-  { id: 'comfort_building_overview', label: 'Comfort Building Overview', subtitle: 'Heatmap, scores per building and zone', icon: <GridViewOutlinedIcon /> },
-  { id: 'comfort_trend', label: 'Comfort Trend', subtitle: 'Temperature and air quality trends over time', icon: <TimelineOutlinedIcon /> },
-  { id: 'adaptive_temperature_limits', label: 'Adaptive Temperature Limits', subtitle: 'Upper and lower bounds per season', icon: <TuneOutlinedIcon /> },
-  { id: 'fresh_schools', label: 'Fresh Schools', subtitle: 'CO₂, temperature and ventilation per school', icon: <ParkOutlinedIcon /> },
-  { id: 'kpi_air_quality_levels', label: 'KPI Air Quality', subtitle: 'CO₂ levels, ventilation capacity and humidity', icon: <BarChartOutlinedIcon /> },
-  { id: 'kpi_room_temperatures', label: 'KPI Room Temperatures', subtitle: 'Room temperature distribution and deviations', icon: <SsidChartOutlinedIcon /> },
+  { id: 'comfort_gebouwoverzicht', label: 'Comfort Building Overview', subtitle: 'Heatmap, scores per building and zone', icon: <GridViewOutlinedIcon /> },
+  { id: 'comforttrend', label: 'Comfort Trend', subtitle: 'Temperature and air quality trends over time', icon: <TimelineOutlinedIcon /> },
+  { id: 'adaptieve_temperatuurgrenzen', label: 'Adaptive Temperature Limits', subtitle: 'Upper and lower bounds per season', icon: <TuneOutlinedIcon /> },
+  { id: 'frisse_scholen', label: 'Fresh Schools', subtitle: 'CO₂, temperature and ventilation per school', icon: <ParkOutlinedIcon /> },
+  { id: 'kpi_comfortniveaus_luchtkwaliteit', label: 'KPI Air Quality', subtitle: 'CO₂ levels, ventilation capacity and humidity', icon: <BarChartOutlinedIcon /> },
+  { id: 'kpi_comfortniveaus_ruimtetemperaturen', label: 'KPI Room Temperatures', subtitle: 'Room temperature distribution and deviations', icon: <SsidChartOutlinedIcon /> },
 ];
 
 // ── Component ────────────────────────────────────────────────────────────────

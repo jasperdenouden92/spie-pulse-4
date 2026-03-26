@@ -90,6 +90,7 @@ import MaintenancePerformancePage from '@/components/MaintenancePerformancePage'
 import QuotationsPerformancePage from '@/components/QuotationsPerformancePage';
 import TicketsPerformancePage from '@/components/TicketsPerformancePage';
 import AssetMonitoringPerformancePage from '@/components/AssetMonitoringPerformancePage';
+import CompliancePerformancePage from '@/components/CompliancePerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
 import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
@@ -114,6 +115,12 @@ import SettingsBackupRestoreOutlinedIcon from '@mui/icons-material/SettingsBacku
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import AcUnitOutlinedIcon from '@mui/icons-material/AcUnitOutlined';
 import ElevatorOutlinedIcon from '@mui/icons-material/ElevatorOutlined';
+import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
+import DirectionsRunOutlinedIcon from '@mui/icons-material/DirectionsRunOutlined';
+import LocalFireDepartmentOutlinedIcon from '@mui/icons-material/LocalFireDepartmentOutlined';
+import VaccinesOutlinedIcon from '@mui/icons-material/VaccinesOutlined';
+import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import {
   ElectricityConsumptionChart,
   GasConsumptionChart,
@@ -223,6 +230,17 @@ function getAssetMonitoringTopics(assetMonitoringGreen: number): TopicScore[] {
     { label: 'Distribution', score: Math.max(0, Math.min(100, assetMonitoringGreen - 3)), trend: -1, icon: <AccountTreeOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
     { label: 'Lighting', score: Math.max(0, Math.min(100, assetMonitoringGreen + 7)), trend: 4, icon: <LightbulbOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ffc107' },
     { label: 'Transport', score: Math.max(0, Math.min(100, assetMonitoringGreen - 8)), trend: -3, icon: <ElevatorOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
+  ];
+}
+
+function getComplianceTopics(complianceGreen: number): TopicScore[] {
+  return [
+    { label: 'BACS', score: Math.max(0, Math.min(100, complianceGreen + 5)), trend: 3, icon: <SensorsOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: 'Escape Routes', score: Math.max(0, Math.min(100, complianceGreen - 4)), trend: -2, icon: <DirectionsRunOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: 'Fire Safety', score: Math.max(0, Math.min(100, complianceGreen + 3)), trend: 5, icon: <LocalFireDepartmentOutlinedIcon sx={{ fontSize: 14 }} />, color: '#f44336' },
+    { label: 'Legionella Prevention', score: Math.max(0, Math.min(100, complianceGreen - 6)), trend: -1, icon: <VaccinesOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: 'Maintenance & Inspection', score: Math.max(0, Math.min(100, complianceGreen + 2)), trend: 4, icon: <HandymanOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
+    { label: 'Permits', score: Math.max(0, Math.min(100, complianceGreen + 7)), trend: 2, icon: <DescriptionOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
   ];
 }
 
@@ -1887,7 +1905,7 @@ export default function Home() {
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
-                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
+                                    topics={selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(b.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
                                     energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
                                     alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : selectedMetric === 'asset_monitoring' && stats ? stats.assetMonitoring.alerts : undefined}
                                   />
@@ -1913,6 +1931,10 @@ export default function Home() {
                               setURLParams({ sort });
                             }}
                             buildingMode={titleBuildingMode}
+                            onNavigateToDashboard={(id) => {
+                              setPendingDashboardId(id);
+                              handlePageChange('dashboards');
+                            }}
                           />
                         ) : (
                           /* ===== RECOMMENDATIONS VIEW ===== */
@@ -2152,6 +2174,7 @@ function KPIAnalysisView({
   onBuildingSelect,
   onViewAllBuildings,
   buildingMode = 'buildings',
+  onNavigateToDashboard,
 }: {
   selection: string;
   selectedMetric: MetricType;
@@ -2163,6 +2186,7 @@ function KPIAnalysisView({
   onBuildingSelect?: (building: import('@/data/buildings').Building) => void;
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode;
+  onNavigateToDashboard?: (dashboardId: string) => void;
 }) {
   // Determine which KPIs to show based on toggle state and selection
   const visibleThemes = themesEnabled ? ALL_THEME_KEYS : [];
@@ -2175,7 +2199,7 @@ function KPIAnalysisView({
     : null;
 
   if (focusedMetric) {
-    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} periodMetrics={periodMetrics} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
+    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} periodMetrics={periodMetrics} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Overview: show summary cards for each visible KPI
@@ -2318,7 +2342,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
 }
 
 /* Theme-specific dashboards */
-function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void; buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode }) {
+function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings', onNavigateToDashboard }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void; buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode; onNavigateToDashboard?: (dashboardId: string) => void }) {
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey];
 
@@ -2360,19 +2384,19 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
   // Sustainability Dashboard — uses dedicated component
   if (metricKey === 'sustainability') {
     const sustainabilityMetric = periodMetrics.themes.find(t => t.title === 'Sustainability');
-    return <SustainabilityPerformancePage themeScore={sustainabilityMetric?.score ?? 72} themeTrend={sustainabilityMetric?.trend ?? 4} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
+    return <SustainabilityPerformancePage themeScore={sustainabilityMetric?.score ?? 72} themeTrend={sustainabilityMetric?.trend ?? 4} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Comfort Dashboard — uses dedicated component
   if (metricKey === 'comfort') {
     const comfortMetric = periodMetrics.themes.find(t => t.title === 'Comfort');
-    return <ComfortPerformancePage themeScore={comfortMetric?.score ?? 92} themeTrend={comfortMetric?.trend ?? 5} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
+    return <ComfortPerformancePage themeScore={comfortMetric?.score ?? 92} themeTrend={comfortMetric?.trend ?? 5} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Asset Monitoring Dashboard — uses dedicated component
   if (metricKey === 'asset_monitoring') {
     const assetMonitoringMetric = periodMetrics.themes.find(t => t.title === 'Asset Monitoring');
-    return <AssetMonitoringPerformancePage themeScore={assetMonitoringMetric?.score ?? 62} themeTrend={assetMonitoringMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
+    return <AssetMonitoringPerformancePage themeScore={assetMonitoringMetric?.score ?? 62} themeTrend={assetMonitoringMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Access Control Dashboard
@@ -2472,45 +2496,28 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
   }
 
   // Compliance Dashboard
+  // Compliance Dashboard — uses dedicated component
   if (metricKey === 'compliance') {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {header}
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-          <SummaryStatCard label="Compliance Score" value="94%" trend={3} />
-          <SummaryStatCard label="Active Certifications" value="8" subtitle="ISO, LEED, BREEAM" />
-          <SummaryStatCard label="Pending Actions" value="3" subtitle="Due in 30 days" trend={-25} />
-          <SummaryStatCard label="Audit Score" value="92%" trend={4} />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Compliance Trends" type="line" color="#4caf50" />
-          <IndicatorChart title="Compliance by Area" type="bar" color="#4caf50" />
-        </Box>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Certification Status" type="pie" color="#4caf50" />
-          <IndicatorChart title="Audit Results History" type="line" color="#4caf50" />
-          <IndicatorChart title="Action Items" type="ranking" color="#ffc107" />
-        </Box>
-      </Box>
-    );
+    const complianceMetric = periodMetrics.themes.find(t => t.title === 'Compliance');
+    return <CompliancePerformancePage themeScore={complianceMetric?.score ?? 88} themeTrend={complianceMetric?.trend ?? 6} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Tickets Dashboard — uses dedicated component
   if (metricKey === 'tickets') {
     const ticketsMetric = periodMetrics.operations.find(t => t.title === 'Tickets');
-    return <TicketsPerformancePage themeScore={ticketsMetric?.score ?? 71} themeTrend={ticketsMetric?.trend ?? 1} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
+    return <TicketsPerformancePage themeScore={ticketsMetric?.score ?? 71} themeTrend={ticketsMetric?.trend ?? 1} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Quotations Dashboard — uses dedicated component
   if (metricKey === 'quotations') {
     const quotationsMetric = periodMetrics.operations.find(t => t.title === 'Quotations');
-    return <QuotationsPerformancePage themeScore={quotationsMetric?.score ?? 74} themeTrend={quotationsMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
+    return <QuotationsPerformancePage themeScore={quotationsMetric?.score ?? 74} themeTrend={quotationsMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Maintenance Dashboard — uses dedicated component
   if (metricKey === 'maintenance') {
     const maintenanceMetric = periodMetrics.operations.find(t => t.title === 'Maintenance');
-    return <MaintenancePerformancePage themeScore={maintenanceMetric?.score ?? 78} themeTrend={maintenanceMetric?.trend ?? 3} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} />;
+    return <MaintenancePerformancePage themeScore={maintenanceMetric?.score ?? 78} themeTrend={maintenanceMetric?.trend ?? 3} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
   }
 
   // Default fallback
