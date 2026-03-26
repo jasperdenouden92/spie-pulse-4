@@ -138,6 +138,25 @@ export interface PeriodMetrics {
   periodLabel: string | null;
 }
 
+/** Keys hidden from the nested KPI cards when contract mode is active */
+export const CONTRACT_HIDDEN_THEME_KEYS = ['asset_monitoring'];
+export const CONTRACT_HIDDEN_OPERATIONS_KEYS = ['quotations'];
+
+/** Apply a deterministic contract-mode variation to metrics */
+export function applyContractVariation(metrics: PeriodMetrics): PeriodMetrics {
+  const vary = (m: MetricData): MetricData => varyMetric(m, 'contract');
+  return {
+    overall: {
+      score: Math.max(10, Math.min(99, metrics.overall.score - 4)),
+      trend: metrics.overall.trend + 3,
+    },
+    themes: metrics.themes.map(vary),
+    expandedThemes: metrics.expandedThemes.map(vary),
+    operations: metrics.operations.map(vary),
+    periodLabel: metrics.periodLabel,
+  };
+}
+
 export function getMetricsForPeriod(dateRange: string): PeriodMetrics {
   if (dateRange === 'This Quarter') {
     // Default period — return original data as-is

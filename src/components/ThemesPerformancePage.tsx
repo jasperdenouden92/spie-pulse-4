@@ -7,53 +7,42 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
-import AcUnitOutlinedIcon from '@mui/icons-material/AcUnitOutlined';
-import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
-import ElevatorOutlinedIcon from '@mui/icons-material/ElevatorOutlined';
-import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
+import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
+import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
+import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import SsidChartOutlinedIcon from '@mui/icons-material/SsidChartOutlined';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
+import ParkOutlinedIcon from '@mui/icons-material/ParkOutlined';
 import HeatPumpOutlinedIcon from '@mui/icons-material/HeatPumpOutlined';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
+import DirectionsRunOutlinedIcon from '@mui/icons-material/DirectionsRunOutlined';
+import LocalFireDepartmentOutlinedIcon from '@mui/icons-material/LocalFireDepartmentOutlined';
+import VaccinesOutlinedIcon from '@mui/icons-material/VaccinesOutlined';
+import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
-import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
-import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
 import { colors } from '@/colors';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
-
-// ── Threshold gradient ──
-
-function ThresholdGradient({ goodAbove, moderateAbove, id }: { goodAbove: number; moderateAbove: number; id: string }) {
-  const { left, top, height, bottom } = useDrawingArea();
-  const svgHeight = top + height + bottom;
-  const scale = useYScale() as import('@mui/x-charts-vendor/d3-scale').ScaleLinear<number, number>;
-
-  const goodOff = (scale(goodAbove) as number) / svgHeight;
-  const modOff = (scale(moderateAbove) as number) / svgHeight;
-
-  return (
-    <>
-      <defs>
-        <linearGradient id={id} x1="0" x2="0" y1="0" y2={`${svgHeight}px`} gradientUnits="userSpaceOnUse">
-          <stop offset={goodOff} stopColor="#4caf50" stopOpacity={1} />
-          <stop offset={goodOff} stopColor="#ff9800" stopOpacity={1} />
-          <stop offset={modOff} stopColor="#ff9800" stopOpacity={1} />
-          <stop offset={modOff} stopColor="#f44336" stopOpacity={1} />
-        </linearGradient>
-      </defs>
-      <rect x={left - 5} y={top} width={5} height={height} fill={`url(#${id})`} rx={2} />
-    </>
-  );
-}
 
 // ── Topic definitions ──
 
@@ -82,18 +71,15 @@ function getStatusLabel(score: number, goodAbove: number, moderateAbove: number)
   return 'Poor';
 }
 
-const TOPIC_DEFS = [
-  { key: 'heating', label: 'Heating', icon: <ThermostatOutlinedIcon sx={{ fontSize: 20 }} />, offset: 4, trend: 3, chartColor: '#e91e63', goodAbove: 75, moderateAbove: 55 },
-  { key: 'cooling', label: 'Cooling', icon: <AcUnitOutlinedIcon sx={{ fontSize: 20 }} />, offset: -6, trend: -2, chartColor: '#00bcd4', goodAbove: 70, moderateAbove: 50 },
-  { key: 'ventilation', label: 'Ventilation', icon: <AirOutlinedIcon sx={{ fontSize: 20 }} />, offset: 2, trend: 5, chartColor: '#9c27b0', goodAbove: 75, moderateAbove: 55 },
-  { key: 'distribution', label: 'Distribution', icon: <AccountTreeOutlinedIcon sx={{ fontSize: 20 }} />, offset: -3, trend: -1, chartColor: '#ff9800', goodAbove: 70, moderateAbove: 50 },
-  { key: 'lighting', label: 'Lighting', icon: <LightbulbOutlinedIcon sx={{ fontSize: 20 }} />, offset: 7, trend: 4, chartColor: '#ffc107', goodAbove: 80, moderateAbove: 60 },
-  { key: 'transport', label: 'Transport', icon: <ElevatorOutlinedIcon sx={{ fontSize: 20 }} />, offset: -8, trend: -3, chartColor: '#0288d1', goodAbove: 70, moderateAbove: 50 },
-];
-
-function buildTopics(themeScore: number): TopicDef[] {
-  return TOPIC_DEFS.map(d => {
-    const score = Math.max(0, Math.min(100, themeScore + d.offset));
+function buildTopics(themeScores: { sustainability: number; comfort: number; asset_monitoring: number; compliance: number }, themesTrends: { sustainability: number; comfort: number; asset_monitoring: number; compliance: number }): TopicDef[] {
+  const defs = [
+    { key: 'sustainability', label: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 20 }} />, score: themeScores.sustainability, trend: themesTrends.sustainability, chartColor: '#4caf50', goodAbove: 75, moderateAbove: 55 },
+    { key: 'comfort', label: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 20 }} />, score: themeScores.comfort, trend: themesTrends.comfort, chartColor: '#2196f3', goodAbove: 75, moderateAbove: 55 },
+    { key: 'asset_monitoring', label: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 20 }} />, score: themeScores.asset_monitoring, trend: themesTrends.asset_monitoring, chartColor: '#ff9800', goodAbove: 70, moderateAbove: 50 },
+    { key: 'compliance', label: 'Compliance', icon: <GavelOutlinedIcon sx={{ fontSize: 20 }} />, score: themeScores.compliance, trend: themesTrends.compliance, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
+  ];
+  return defs.map(d => {
+    const score = Math.max(0, Math.min(100, d.score));
     const sparkline = Array.from({ length: 10 }, (_, i) => {
       const progress = i / 9;
       const start = score - Math.abs(d.trend) * (d.trend >= 0 ? 1 : -1);
@@ -131,30 +117,39 @@ function seededRandom(seed: number): () => number {
   };
 }
 
+// Compute average theme score for each building
+function getAvgThemeScore(b: Building): number {
+  return Math.round((b.metrics.sustainability.green + b.metrics.comfort.green + b.metrics.asset_monitoring.green + b.metrics.compliance.green) / 4);
+}
+
+function getAvgThemeTrend(b: Building): number {
+  return Math.round((b.trends.sustainability + b.trends.comfort + b.trends.asset_monitoring + b.trends.compliance) / 4 * 10) / 10;
+}
+
 const sortedBest = [...buildings]
-  .sort((a, b) => b.metrics.asset_monitoring.green - a.metrics.asset_monitoring.green)
+  .sort((a, b) => getAvgThemeScore(b) - getAvgThemeScore(a))
   .slice(0, 7);
 
 const sortedMostImproved = [...buildings]
-  .sort((a, b) => b.trends.asset_monitoring - a.trends.asset_monitoring)
+  .sort((a, b) => getAvgThemeTrend(b) - getAvgThemeTrend(a))
   .slice(0, 7);
 
 const sortedWorst = [...buildings]
-  .sort((a, b) => a.metrics.asset_monitoring.green - b.metrics.asset_monitoring.green)
+  .sort((a, b) => getAvgThemeScore(a) - getAvgThemeScore(b))
   .slice(0, 7);
 
 const sortedMostDeteriorated = [...buildings]
-  .sort((a, b) => a.trends.asset_monitoring - b.trends.asset_monitoring)
+  .sort((a, b) => getAvgThemeTrend(a) - getAvgThemeTrend(b))
   .slice(0, 7);
 
-// ── Cluster aggregation for asset monitoring ──
+// ── Cluster aggregation ──
 
 interface ClusterEntry {
   name: string;
   image: string;
   images: string[];
-  metrics: { asset_monitoring: { green: number; yellow: number; red: number } };
-  trends: { asset_monitoring: number };
+  score: number;
+  trend: number;
 }
 
 const clusterEntries: ClusterEntry[] = (() => {
@@ -164,34 +159,23 @@ const clusterEntries: ClusterEntry[] = (() => {
     arr.push(b);
     groups.set(b.group, arr);
   }
-  return Array.from(groups.entries()).map(([name, blds]) => {
-    const avg = (fn: (b: Building) => number) => Math.round(blds.reduce((s, b) => s + fn(b), 0) / blds.length);
-    return {
-      name,
-      image: blds[0].image,
-      images: blds.map(b => b.image),
-      metrics: {
-        asset_monitoring: {
-          green: avg(b => b.metrics.asset_monitoring.green),
-          yellow: avg(b => b.metrics.asset_monitoring.yellow),
-          red: avg(b => b.metrics.asset_monitoring.red),
-        },
-      },
-      trends: {
-        asset_monitoring: Math.round(blds.reduce((s, b) => s + b.trends.asset_monitoring, 0) / blds.length * 10) / 10,
-      },
-    };
-  });
+  return Array.from(groups.entries()).map(([name, blds]) => ({
+    name,
+    image: blds[0].image,
+    images: blds.map(b => b.image),
+    score: Math.round(blds.reduce((s, b) => s + getAvgThemeScore(b), 0) / blds.length),
+    trend: Math.round(blds.reduce((s, b) => s + getAvgThemeTrend(b), 0) / blds.length * 10) / 10,
+  }));
 })();
 
-const clusterSortedBest = [...clusterEntries].sort((a, b) => b.metrics.asset_monitoring.green - a.metrics.asset_monitoring.green);
-const clusterSortedWorst = [...clusterEntries].sort((a, b) => a.metrics.asset_monitoring.green - b.metrics.asset_monitoring.green);
-const clusterSortedMostImproved = [...clusterEntries].sort((a, b) => b.trends.asset_monitoring - a.trends.asset_monitoring);
-const clusterSortedMostDeteriorated = [...clusterEntries].sort((a, b) => a.trends.asset_monitoring - b.trends.asset_monitoring);
+const clusterSortedBest = [...clusterEntries].sort((a, b) => b.score - a.score);
+const clusterSortedWorst = [...clusterEntries].sort((a, b) => a.score - b.score);
+const clusterSortedMostImproved = [...clusterEntries].sort((a, b) => b.trend - a.trend);
+const clusterSortedMostDeteriorated = [...clusterEntries].sort((a, b) => a.trend - b.trend);
 
 // ── KPI over time data ──
 
-type ViewMode = 'theme' | 'all_topics' | 'heating' | 'cooling' | 'ventilation' | 'distribution' | 'lighting' | 'transport';
+type ViewMode = 'theme' | 'all_topics' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'compliance';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -208,12 +192,7 @@ function generateKpiTimeSeries(topicKey: string, baseScore: number, volatility =
 
 // ── Thresholds ──
 
-interface ThresholdZone {
-  label: string;
-  min: number;
-  max: number;
-  color: string;
-}
+interface ThresholdZone { label: string; min: number; max: number; color: string; }
 
 function buildThresholdZones(goodAbove: number, moderateAbove: number): ThresholdZone[] {
   return [
@@ -226,33 +205,55 @@ function buildThresholdZones(goodAbove: number, moderateAbove: number): Threshol
 const THEME_GOOD_ABOVE = 75;
 const THEME_MODERATE_ABOVE = 55;
 
-// ── Dashboard links ──
+// ── All theme dashboards combined ──
 
 interface DashboardLink {
   id: string;
   label: string;
   subtitle: string;
   icon: React.ReactNode;
+  theme: string;
 }
 
-const ASSET_MONITORING_DASHBOARDS: DashboardLink[] = [
-  { id: 'asset_trend', label: 'Asset Trend', subtitle: 'Asset health and performance over time', icon: <TimelineOutlinedIcon /> },
-  { id: 'warmte_koudeopslag', label: 'Warmte- Koudeopslag (WKO)', subtitle: 'Thermal energy storage performance', icon: <HeatPumpOutlinedIcon /> },
+const ALL_THEME_DASHBOARDS: DashboardLink[] = [
+  // Sustainability
+  { id: 'gebouwtrend', label: 'Building Trend', subtitle: 'Asset trend and energy distribution', icon: <TimelineOutlinedIcon />, theme: 'Sustainability' },
+  { id: 'energieverbruik_per_gebouw', label: 'Energy Use per Building', subtitle: 'Consumption breakdown by building', icon: <BarChartOutlinedIcon />, theme: 'Sustainability' },
+  { id: 'totaalverbruik_opwekking', label: 'Consumption & Generation', subtitle: 'Electricity and gas totals', icon: <BoltOutlinedIcon />, theme: 'Sustainability' },
+  { id: 'kosten_co2', label: 'Costs & CO\u2082', subtitle: 'Energy spend and carbon emissions', icon: <PaidOutlinedIcon />, theme: 'Sustainability' },
+  { id: 'week_dagprofielen', label: 'Week & Day Profiles', subtitle: 'Power usage patterns', icon: <SsidChartOutlinedIcon />, theme: 'Sustainability' },
+  { id: 'prognose_doelstelling', label: 'Forecast & Target', subtitle: 'Projected vs target performance', icon: <ShowChartIcon />, theme: 'Sustainability' },
+  // Comfort
+  { id: 'comfort_gebouwoverzicht', label: 'Comfort Building Overview', subtitle: 'Heatmap, scores per building and zone', icon: <GridViewOutlinedIcon />, theme: 'Comfort' },
+  { id: 'comforttrend', label: 'Comfort Trend', subtitle: 'Temperature and air quality trends', icon: <TimelineOutlinedIcon />, theme: 'Comfort' },
+  { id: 'adaptieve_temperatuurgrenzen', label: 'Adaptive Temperature Limits', subtitle: 'Upper and lower bounds per season', icon: <TuneOutlinedIcon />, theme: 'Comfort' },
+  { id: 'frisse_scholen', label: 'Fresh Schools', subtitle: 'CO₂, temperature and ventilation', icon: <ParkOutlinedIcon />, theme: 'Comfort' },
+  { id: 'kpi_comfortniveaus_luchtkwaliteit', label: 'KPI Air Quality', subtitle: 'CO₂ levels, ventilation and humidity', icon: <BarChartOutlinedIcon />, theme: 'Comfort' },
+  { id: 'kpi_comfortniveaus_ruimtetemperaturen', label: 'KPI Room Temperatures', subtitle: 'Room temperature distribution', icon: <SsidChartOutlinedIcon />, theme: 'Comfort' },
+  // Asset Monitoring
+  { id: 'asset_trend', label: 'Asset Trend', subtitle: 'Asset health and performance over time', icon: <TimelineOutlinedIcon />, theme: 'Asset Monitoring' },
+  { id: 'warmte_koudeopslag', label: 'Warmte- Koudeopslag (WKO)', subtitle: 'Thermal energy storage performance', icon: <HeatPumpOutlinedIcon />, theme: 'Asset Monitoring' },
+  // Compliance
+  { id: 'preventief_onderhoud', label: 'Preventive Maintenance', subtitle: 'Scheduled maintenance compliance', icon: <BuildOutlinedIcon />, theme: 'Compliance' },
+  { id: 'process_orders', label: 'Process Orders', subtitle: 'Work order tracking and completion', icon: <AssignmentOutlinedIcon />, theme: 'Compliance' },
+  { id: 'mjob', label: 'Multi-year Maintenance Budget', subtitle: 'Long-term maintenance planning', icon: <DateRangeOutlinedIcon />, theme: 'Compliance' },
 ];
 
 // ── Component ──
 
-interface AssetMonitoringPerformancePageProps {
-  themeScore?: number;
-  themeTrend?: number;
+interface ThemesPerformancePageProps {
+  themeScores: { sustainability: number; comfort: number; asset_monitoring: number; compliance: number };
+  themeTrends: { sustainability: number; comfort: number; asset_monitoring: number; compliance: number };
+  overallScore?: number;
+  overallTrend?: number;
   onNavigateToDashboard?: (dashboardId: string) => void;
   onBuildingSelect?: (building: Building) => void;
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   buildingMode?: 'buildings' | 'clusters';
 }
 
-export default function AssetMonitoringPerformancePage({ themeScore = 62, themeTrend = 2, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: AssetMonitoringPerformancePageProps) {
-  const [chartView, setChartView] = useState<ViewMode>('theme');
+export default function ThemesPerformancePage({ themeScores, themeTrends, overallScore = 75, overallTrend = 3, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: ThemesPerformancePageProps) {
+  const [chartView, setChartView] = useState<ViewMode>('sustainability');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
 
@@ -281,13 +282,13 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
     );
   }, []);
 
-  const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
+  const topics = useMemo(() => buildTopics(themeScores, themeTrends), [themeScores, themeTrends]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Asset Monitoring KPI',
+    label: 'Theme KPIs',
     color: colors.brand,
-    data: generateKpiTimeSeries('asset_monitoring_theme', themeScore),
-  }), [themeScore]);
+    data: [48, 52, 58, 54, 45, 56, 64, 70, 76, 73, 78, overallScore],
+  }), [overallScore]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -303,18 +304,14 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
         return [themeSeries];
       case 'all_topics':
         return [themeSeries, ...topicSeries];
-      case 'heating':
+      case 'sustainability':
         return [topicSeries[0]];
-      case 'cooling':
+      case 'comfort':
         return [topicSeries[1]];
-      case 'ventilation':
+      case 'asset_monitoring':
         return [topicSeries[2]];
-      case 'distribution':
+      case 'compliance':
         return [topicSeries[3]];
-      case 'lighting':
-        return [topicSeries[4]];
-      case 'transport':
-        return [topicSeries[5]];
     }
   }, [chartView, themeSeries, topicSeries]);
 
@@ -325,18 +322,14 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
     switch (chartView) {
       case 'theme':
         return buildThresholdZones(THEME_GOOD_ABOVE, THEME_MODERATE_ABOVE);
-      case 'heating':
+      case 'sustainability':
         return buildThresholdZones(topics[0].goodAbove, topics[0].moderateAbove);
-      case 'cooling':
+      case 'comfort':
         return buildThresholdZones(topics[1].goodAbove, topics[1].moderateAbove);
-      case 'ventilation':
+      case 'asset_monitoring':
         return buildThresholdZones(topics[2].goodAbove, topics[2].moderateAbove);
-      case 'distribution':
+      case 'compliance':
         return buildThresholdZones(topics[3].goodAbove, topics[3].moderateAbove);
-      case 'lighting':
-        return buildThresholdZones(topics[4].goodAbove, topics[4].moderateAbove);
-      case 'transport':
-        return buildThresholdZones(topics[5].goodAbove, topics[5].moderateAbove);
       default:
         return [];
     }
@@ -352,95 +345,74 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Asset Monitoring KPI', icon: <MonitorHeartOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'heating', label: 'Heating', icon: <ThermostatOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'cooling', label: 'Cooling', icon: <AcUnitOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'ventilation', label: 'Ventilation', icon: <AirOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'distribution', label: 'Distribution', icon: <AccountTreeOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'lighting', label: 'Lighting', icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'transport', label: 'Transport', icon: <ElevatorOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'sustainability', label: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'comfort', label: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'asset_monitoring', label: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'compliance', label: 'Compliance', icon: <GavelOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
+
+  // Group dashboards by theme
+  const dashboardsByTheme = useMemo(() => {
+    const groups: Record<string, DashboardLink[]> = {};
+    for (const d of ALL_THEME_DASHBOARDS) {
+      if (!groups[d.theme]) groups[d.theme] = [];
+      groups[d.theme].push(d);
+    }
+    return groups;
+  }, []);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
-            Asset Monitoring Performance
+      {/* ═══ Theme KPIs Combined Score Over Time (card) ═══ */}
+      <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+            Theme KPI Performance
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {themeScore}%
+              {overallScore}%
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themeTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {themeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: overallTrend >= 0 ? 'success.main' : 'error.main' }}>
+              {overallTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
               <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(themeTrend)}%
+                {Math.abs(overallTrend)}%
               </Typography>
             </Box>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 2 }}>
-          {topics.map(topic => (
-            <Paper
-              key={topic.key}
-              elevation={0}
-              sx={{
-                p: 2.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ color: 'text.secondary', display: 'flex' }}>{topic.icon}</Box>
-                <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1 }}>{topic.label}</Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  <Typography variant="h5" fontWeight={700}>{topic.score}%</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
-                    {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
-                    <Typography variant="caption" fontWeight={600}>{Math.abs(topic.trend)}%</Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ ml: 'auto' }}>
-                  {renderSparkline(topic.sparkline, getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove))}
-                </Box>
-              </Box>
-
-              <Chip
-                label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)}
-                size="small"
-                sx={{
-                  alignSelf: 'flex-start',
-                  height: 20,
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`,
-                  color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove),
-                  '& .MuiChip-label': { px: 1 },
-                }}
-              />
-            </Paper>
-          ))}
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-          <Button
-            size="small"
-            endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+        <Box sx={{ flex: 1, minHeight: 340 }}>
+          <LineChart
+            xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
+            yAxis={[{ min: Math.max(0, Math.floor((Math.min(...themeSeries.data, THEME_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
+            series={[{ data: themeSeries.data, label: 'Theme KPIs', color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
+            height={370}
+            margin={{ top: 48, right: 80, bottom: 28, left: 80 }}
+            grid={{ horizontal: true }}
+            hideLegend
+            slotProps={{ tooltip: { trigger: 'none' } }}
+            axisHighlight={{ x: 'none', y: 'none' }}
+            sx={{
+              '& .MuiLineElement-root': { stroke: 'url(#threshold-gradient-themes-line)', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
+              [`& .${lineClasses.area}`]: { fill: 'url(#threshold-gradient-themes-combined)', filter: 'none', opacity: 0.15 },
+              '& .MuiChartsGrid-line': { stroke: '#e8e8e8', strokeWidth: 1 },
+              '& .MuiChartsAxis-line': { stroke: 'transparent' },
+              '& .MuiChartsAxis-tick': { stroke: 'transparent' },
+            }}
           >
-            View performance indicators
-          </Button>
+            <HorizontalThresholdGradient data={themeSeries.data} goodAbove={THEME_GOOD_ABOVE} moderateAbove={THEME_MODERATE_ABOVE} id="threshold-gradient-themes-combined" />
+            <HorizontalThresholdGradient data={themeSeries.data} goodAbove={THEME_GOOD_ABOVE} moderateAbove={THEME_MODERATE_ABOVE} id="threshold-gradient-themes-line" goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
+            <InteractiveThresholdLine y={THEME_GOOD_ABOVE} label={`Good: ${THEME_GOOD_ABOVE}–100%`} />
+            <InteractiveThresholdLine y={THEME_MODERATE_ABOVE} label={`Moderate: ${THEME_MODERATE_ABOVE}–${THEME_GOOD_ABOVE}%`} />
+            <ChartHoverOverlay
+              data={themeSeries.data}
+              labels={MONTHS}
+              getColor={(v) => v >= THEME_GOOD_ABOVE ? '#66bb6a' : v >= THEME_MODERATE_ABOVE ? '#ffa726' : '#ef5350'}
+            />
+          </LineChart>
         </Box>
-      </Box>
+      </Paper>
 
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
@@ -449,7 +421,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-              <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
+              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Best Performing</Box>
@@ -460,14 +432,14 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
             ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
             : (leftListMode === 'best' ? sortedBest : sortedMostImproved)
           ).map((b, i) => {
-            const score = b.metrics.asset_monitoring.green;
-            const trend = b.trends.asset_monitoring;
+            const score = 'metrics' in b ? getAvgThemeScore(b as Building) : (b as ClusterEntry).score;
+            const trend = 'trends' in b ? getAvgThemeTrend(b as Building) : (b as ClusterEntry).trend;
             const showTrend = leftListMode === 'improved';
             const barColor = getStatusColor(score, 75, 55);
             return (
               <Box
                 key={b.name}
-                onClick={() => buildingMode === 'buildings' ? onBuildingSelect?.(b as Building) : undefined}
+                onClick={() => buildingMode === 'buildings' && 'metrics' in b ? onBuildingSelect?.(b as Building) : undefined}
                 sx={{
                   display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
                   borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
@@ -478,7 +450,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
                 {buildingMode === 'clusters' && 'images' in b ? (
                   <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
                 ) : (
-                  <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                  <Avatar src={(b as Building).image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
                 )}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -500,13 +472,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
               </Box>
             );
           })}
-          <Button
-            size="small"
-            onClick={() => onViewAllBuildings?.('Best to Worst')}
-            sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-          >
-            View all
-          </Button>
+          <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
@@ -514,7 +480,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
-              <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
+              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst Performing</Box>
@@ -525,14 +491,14 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
             ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
             : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated)
           ).map((b, i) => {
-            const score = b.metrics.asset_monitoring.green;
-            const trend = b.trends.asset_monitoring;
+            const score = 'metrics' in b ? getAvgThemeScore(b as Building) : (b as ClusterEntry).score;
+            const trend = 'trends' in b ? getAvgThemeTrend(b as Building) : (b as ClusterEntry).trend;
             const showTrend = rightListMode === 'deteriorated';
             const barColor = getStatusColor(score, 75, 55);
             return (
               <Box
                 key={b.name}
-                onClick={() => buildingMode === 'buildings' ? onBuildingSelect?.(b as Building) : undefined}
+                onClick={() => buildingMode === 'buildings' && 'metrics' in b ? onBuildingSelect?.(b as Building) : undefined}
                 sx={{
                   display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
                   borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
@@ -543,7 +509,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
                 {buildingMode === 'clusters' && 'images' in b ? (
                   <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
                 ) : (
-                  <Avatar src={b.image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                  <Avatar src={(b as Building).image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
                 )}
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -565,13 +531,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
               </Box>
             );
           })}
-          <Button
-            size="small"
-            onClick={() => onViewAllBuildings?.('Worst to Best')}
-            sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-          >
-            View all
-          </Button>
+          <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
         </Paper>
 
         {/* KPI Score over time */}
@@ -579,9 +539,8 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ShowChartOutlinedIcon sx={{ fontSize: 18, color: colors.brand }} />
-              <Typography variant="subtitle2" fontWeight={600}>KPI Score Over Time</Typography>
+              <Typography variant="body2" fontWeight={600}>KPI Score Over Time</Typography>
             </Box>
-            {/* View selector */}
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
               {menuItems.map(item => {
                 const isActive = chartView === item.key;
@@ -598,21 +557,8 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
                       '&:hover': { bgcolor: isActive ? `${colors.brand}20` : 'action.hover' },
                     }}
                   >
-                    <Box sx={{
-                      display: 'flex',
-                      color: isActive ? colors.brand : 'text.disabled',
-                      transition: 'color 0.15s ease',
-                    }}>
-                      {item.icon}
-                    </Box>
-                    <Typography variant="body2" sx={{
-                      fontSize: '0.8rem',
-                      fontWeight: isActive ? 600 : 400,
-                      color: isActive ? colors.brand : 'text.secondary',
-                      transition: 'all 0.15s ease',
-                    }}>
-                      {item.label}
-                    </Typography>
+                    <Box sx={{ display: 'flex', color: isActive ? colors.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
+                    <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? colors.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
                   </Box>
                 );
               })}
@@ -623,8 +569,8 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
             const currentData = chartSeries.length === 1 ? chartSeries[0].data : chartSeries[0].data;
             const goodAbove = showThresholds ? (activeThresholdZones.find(z => z.label === 'Good')?.min ?? 75) : 75;
             const modAbove = showThresholds ? (activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55) : 55;
-            const gradientId = `threshold-gradient-am-area`;
-            const lineGradientId = `threshold-gradient-am-line`;
+            const gradientId = `threshold-gradient-sub-${chartView}`;
+            const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
                 <LineChart
@@ -667,46 +613,6 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
         </Paper>
       </Box>
 
-      {/* ═══ SECTION 3: Related Dashboards ═══ */}
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
-          Asset Monitoring Dashboards
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-          {ASSET_MONITORING_DASHBOARDS.map(dash => (
-            <Paper
-              key={dash.id}
-              elevation={0}
-              onClick={() => onNavigateToDashboard?.(dash.id)}
-              sx={{
-                py: 1.5,
-                px: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 1.5,
-                flex: '0 1 auto',
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-              }}
-            >
-              <Box sx={{ color: 'text.secondary', display: 'flex', flexShrink: 0 }}>
-                {dash.icon}
-              </Box>
-              <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <Typography variant="body2" fontWeight={500} sx={{ lineHeight: 1.3, fontSize: '0.8rem', mb: 0 }}>{dash.label}</Typography>
-                <Typography variant="caption" sx={{ lineHeight: 1.3, fontSize: '0.7rem', color: 'text.secondary', mt: 0 }}>{dash.subtitle}</Typography>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-      </Box>
     </Box>
   );
 }

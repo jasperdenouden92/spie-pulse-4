@@ -33,6 +33,7 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
 import { colors } from '@/colors';
+import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
@@ -656,86 +657,51 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
             </Box>
           </Box>
 
-          <Box sx={{ flex: 1, minHeight: 340 }}>
-            <LineChart
-              xAxis={[{
-                data: MONTHS,
-                scaleType: 'point',
-                tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 },
-              }]}
-              yAxis={[{
-                min: yRange.min,
-                max: yRange.max,
-                tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 },
-                valueFormatter: (v: number | null) => `${v}%`,
-              }]}
-              series={chartSeries.map(s => ({
-                data: s.data,
-                label: s.label,
-                color: colors.brand,
-                curve: 'catmullRom' as const,
-                showMark: false,
-                area: showThresholds,
-              }))}
-              height={340}
-              margin={{ top: 8, right: 8, bottom: 28, left: 10 }}
-              grid={{ horizontal: true }}
-              hideLegend
-              sx={{
-                '& .MuiLineElement-root': {
-                  strokeWidth: 2.5,
-                  strokeLinecap: 'round',
-                  strokeDasharray: 'none !important',
-                },
-                [`& .${lineClasses.area}`]: {
-                  fill: showThresholds ? 'url(#threshold-gradient-tickets)' : undefined,
-                  filter: 'none',
-                  opacity: showThresholds ? 0.2 : 0.08,
-                },
-                '& .MuiChartsGrid-line': {
-                  stroke: '#e8e8e8',
-                  strokeWidth: 1,
-                },
-                '& .MuiChartsAxis-line': {
-                  stroke: '#ccc',
-                },
-                '& .MuiChartsAxis-tick': {
-                  stroke: 'transparent',
-                },
-              }}
-            >
-              {showThresholds && (() => {
-                const good = activeThresholdZones.find(z => z.label === 'Good');
-                const moderate = activeThresholdZones.find(z => z.label === 'Moderate');
-                const goodAbove = good?.min ?? 80;
-                const modAbove = moderate?.min ?? 60;
-                return (
-                  <>
-                    <ThresholdGradient goodAbove={goodAbove} moderateAbove={modAbove} id="threshold-gradient-tickets" />
-                    <ChartsReferenceLine
-                      y={goodAbove}
-                      lineStyle={{ stroke: '#4caf50', strokeWidth: 1.5, strokeDasharray: '6 4', opacity: 0.7 }}
+          {(() => {
+            const currentData = chartSeries.length === 1 ? chartSeries[0].data : chartSeries[0].data;
+            const goodAbove = showThresholds ? (activeThresholdZones.find(z => z.label === 'Good')?.min ?? 80) : 80;
+            const modAbove = showThresholds ? (activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 60) : 60;
+            const gradientId = `threshold-gradient-tickets-area`;
+            const lineGradientId = `threshold-gradient-tickets-line`;
+            return (
+              <Box sx={{ flex: 1, minHeight: 370 }}>
+                <LineChart
+                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
+                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
+                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
+                  height={370}
+                  margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
+                  grid={{ horizontal: true }}
+                  hideLegend
+                  slotProps={{ tooltip: { trigger: 'none' } }}
+                  axisHighlight={{ x: 'none', y: 'none' }}
+                  sx={{
+                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : colors.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
+                    [`& .${lineClasses.area}`]: { fill: showThresholds ? `url(#${gradientId})` : undefined, filter: 'none', opacity: 0.15 },
+                    '& .MuiChartsGrid-line': { stroke: '#e8e8e8', strokeWidth: 1 },
+                    '& .MuiChartsAxis-line': { stroke: 'transparent' },
+                    '& .MuiChartsAxis-tick': { stroke: 'transparent' },
+                  }}
+                >
+                  {showThresholds && (
+                    <>
+                      <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={gradientId} />
+                      <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
+                      <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
+                      <InteractiveThresholdLine y={modAbove} label={`Moderate: ${modAbove}–${goodAbove}%`} />
+                    </>
+                  )}
+                  {showThresholds && (
+                    <ChartHoverOverlay
+                      data={currentData}
+                      labels={MONTHS}
+                      getColor={(v) => v >= goodAbove ? '#66bb6a' : v >= modAbove ? '#ffa726' : '#ef5350'}
                     />
-                    <ChartsReferenceLine
-                      y={modAbove}
-                      lineStyle={{ stroke: '#f44336', strokeWidth: 1.5, strokeDasharray: '6 4', opacity: 0.7 }}
-                    />
-                  </>
-                );
-              })()}
-            </LineChart>
-          </Box>
-
-          {showThresholds && (
-            <Box sx={{ display: 'flex', gap: 2.5, mt: 0.5, justifyContent: 'center' }}>
-              {activeThresholdZones.map(zone => (
-                <Box key={zone.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: zone.color.replace('0.10', '0.5').replace('0.08', '0.5') }} />
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{zone.label} ({zone.min}–{zone.max}%)</Typography>
-                </Box>
-              ))}
-            </Box>
-          )}
+                  )}
+                </LineChart>
+              </Box>
+            );
+          })()}
         </Paper>
       </Box>
 
