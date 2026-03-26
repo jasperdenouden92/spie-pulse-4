@@ -18,7 +18,10 @@ import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import DateRangeSelector from './DateRangeSelector';
-import BuildingSelector from './BuildingSelector';
+import { BuildingSelectorPopover } from './BuildingSelector';
+import { buildings as allBuildingsData } from '@/data/buildings';
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import Button from '@mui/material/Button';
 import {
   ElectricityConsumptionChart,
   GasConsumptionChart,
@@ -422,6 +425,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
     DASHBOARD_THEMES.map(g => g.themeKey)
   );
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
+  const [buildingAnchor, setBuildingAnchor] = useState<null | HTMLElement>(null);
 
   // Apply incoming dashboard navigation
   useEffect(() => {
@@ -552,28 +556,73 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
         <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
           {selectedDashboard ? (
             <>
-              {/* Inline filters: period range + building */}
+              {/* Inline filters: building card + period range card */}
               {dateRange && onDateRangeChange && (
-                <Box sx={{
-                  mb: 2,
-                  bgcolor: '#fff',
-                  border: 1,
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                  p: 2,
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-                    <BuildingSelector
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  {/* Building card */}
+                  <Box sx={{
+                    bgcolor: '#fff',
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    p: 2,
+                    width: 180,
+                    flexShrink: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 1,
+                  }}>
+                    <ApartmentOutlinedIcon sx={{ fontSize: 28, color: 'text.secondary' }} />
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.2 }}>
+                        {selectedBuildingNames.length === 0 ? allBuildingsData.length : selectedBuildingNames.length}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }}>
+                        {selectedBuildingNames.length === 0 ? 'All buildings' : `of ${allBuildingsData.length} buildings`}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={(e) => setBuildingAnchor(e.currentTarget)}
+                      sx={{
+                        fontSize: '0.75rem',
+                        textTransform: 'none',
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        px: 1.5,
+                        '&:hover': { bgcolor: 'action.hover' },
+                      }}
+                    >
+                      Change
+                    </Button>
+                    <BuildingSelectorPopover
+                      anchorEl={buildingAnchor}
+                      onClose={() => setBuildingAnchor(null)}
                       selectedNames={selectedBuildingNames}
                       onSelectionChange={setSelectedBuildingNames}
                       mode="buildings"
                     />
                   </Box>
-                  <DateRangeSelector
-                    inline
-                    value={dateRange}
-                    onChange={onDateRangeChange}
-                  />
+
+                  {/* Period range card */}
+                  <Box sx={{
+                    bgcolor: '#fff',
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    p: 2,
+                    flex: 1,
+                    minWidth: 0,
+                  }}>
+                    <DateRangeSelector
+                      inline
+                      value={dateRange}
+                      onChange={onDateRangeChange}
+                    />
+                  </Box>
                 </Box>
               )}
 
