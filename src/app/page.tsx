@@ -34,7 +34,8 @@ import ClusterCard from '@/components/ClusterCard';
 import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
 import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
 import KPICard, { PerformanceRating } from '@/components/KPICard';
-import KPIToggle from '@/components/KPIToggle';
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
 import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
@@ -578,6 +579,10 @@ export default function Home() {
   // Determine if a group is "active" (either the group itself or one of its children is selected)
   const isThemesActive = selection === 'overall' || selection === 'themes_group' || ALL_THEME_KEYS.includes(selection as MetricType);
   const isOperationsActive = selection === 'overall' || selection === 'operations_group' || OPERATIONS_KEYS.includes(selection as MetricType);
+
+  // Visual-only: highlight only the exact level that is selected (not ancestors/descendants)
+  const isThemesSelected = selection === 'themes_group';
+  const isOperationsSelected = selection === 'operations_group';
 
   // Get toggle state for a parent group header
   const getGroupToggleState = (group: 'themes' | 'operations'): ToggleState => {
@@ -1346,13 +1351,6 @@ export default function Home() {
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
                   <Box sx={{
                     display: 'flex', gap: 2, mb: 3, minWidth: 0,
-                    '&:hover > *': {
-                      opacity: '0.55 !important',
-                      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    },
-                    '&:hover > *:hover': {
-                      opacity: '1 !important',
-                    },
                     '& > *': {
                       transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                     },
@@ -1363,33 +1361,38 @@ export default function Home() {
                       onClick={() => { setSelection('overall'); }}
                       sx={{
                         p: isCompact ? 2 : 3,
-                        border: '1.5px solid',
-                        borderColor: selection === 'overall' ? '#90caf9' : 'divider',
-                        borderRadius: 1,
-                        bgcolor: '#fff',
+                        border: selection === 'overall' ? '2px solid' : '1px solid',
+                        borderColor: selection === 'overall' ? colors.brand : colors.borderTertiary,
+                        borderRadius: 2,
+                        bgcolor: colors.bgPrimary,
                         width: 320,
+                        minHeight: isCompact ? 340 : 420,
                         flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
                         cursor: 'pointer',
                         textAlign: 'left',
-                        boxShadow: selection === 'overall' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
-                        opacity: selection !== 'overall' ? 0.45 : 1,
+                        boxShadow: selection === 'overall'
+                          ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                          : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          opacity: '1 !important',
-                          borderColor: '#42a5f5',
-                          boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
-                          transform: 'translateY(-2px)',
-                          bgcolor: '#fff',
+                          borderColor: selection === 'overall' ? colors.brand : colors.borderPrimary,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
+                          transform: 'translateY(-1px)',
                         }
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: isCompact ? 1 : 2 }}>
-                        <SpeedOutlinedIcon sx={{ fontSize: isCompact ? 16 : 20, color: 'text.secondary', transition: 'font-size 0.3s ease' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.875rem' : '1rem', transition: 'font-size 0.3s ease' }}>
-                          Performance
-                        </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: isCompact ? 1 : 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <SpeedOutlinedIcon sx={{ fontSize: isCompact ? 16 : 20, color: 'text.secondary', transition: 'font-size 0.3s ease' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.875rem' : '1rem', transition: 'font-size 0.3s ease' }}>
+                            Performance
+                          </Typography>
+                        </Box>
+                        {selection === 'overall'
+                          ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
+                          : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
                       </Box>
                       {(() => {
                         const overallScore = selectedBuilding
@@ -1469,15 +1472,6 @@ export default function Home() {
                     <Box sx={{
                       flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
                       gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease',
-                      ...(!contractFilter && {
-                        '&:hover > .kpi-group-panel': {
-                          opacity: '0.55 !important',
-                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                        },
-                        '&:hover > .kpi-group-panel:hover': {
-                          opacity: '1 !important',
-                        },
-                      }),
                     }}>
 
                       {contractFilter ? (
@@ -1485,10 +1479,12 @@ export default function Home() {
                         <Box
                           sx={{
                             p: isCompact ? 1.5 : 2,
-                            border: '1.5px solid',
-                            borderColor: 'divider',
-                            borderRadius: 1,
-                            bgcolor: '#fff',
+                            border: '1px solid',
+                            borderColor: colors.borderTertiary,
+                            borderRadius: 2,
+                            bgcolor: colors.bgPrimary,
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                            minHeight: isCompact ? 340 : 420,
                             transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                           }}
                         >
@@ -1508,7 +1504,7 @@ export default function Home() {
                           {/* All KPIs in a single grid */}
                           <Box sx={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
                             gap: isCompact ? 1.5 : 2,
                             transition: 'gap 0.3s ease'
                           }}>
@@ -1534,6 +1530,7 @@ export default function Home() {
                                   isDimmed={getToggleState(metricKey, 'themes') === 'off'}
                                   isCompact={isCompact}
                                   performanceRating={getPerformanceRating(score)}
+                                  variant="nested"
                                 />
                               );
                             })}
@@ -1559,6 +1556,7 @@ export default function Home() {
                                   isDimmed={getToggleState(metricKey, 'operations') === 'off'}
                                   isCompact={isCompact}
                                   performanceRating={getPerformanceRating(score)}
+                                  variant="nested"
                                 />
                               );
                             })}
@@ -1572,18 +1570,19 @@ export default function Home() {
                             className="kpi-group-panel"
                             sx={{
                               p: isCompact ? 1.5 : 2,
-                              border: '1.5px solid',
-                              borderColor: selection === 'themes_group' ? '#90caf9' : isThemesActive ? 'divider' : colors.borderSecondary,
-                              borderRadius: 1,
-                              bgcolor: '#fff',
-                              opacity: isThemesActive ? 1 : 0.45,
-                              boxShadow: selection === 'themes_group' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
+                              border: isThemesSelected ? '2px solid' : '1px solid',
+                              borderColor: isThemesSelected ? colors.brand : colors.borderTertiary,
+                              borderRadius: 2,
+                              bgcolor: colors.bgPrimary,
+                              boxShadow: isThemesSelected
+                                ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',
                               '&:hover': {
-                                borderColor: '#42a5f5',
-                                boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
-                                transform: 'translateY(-2px)',
+                                borderColor: isThemesSelected ? colors.brand : colors.borderPrimary,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
+                                transform: 'translateY(-1px)',
                               }
                             }}
                           >
@@ -1602,20 +1601,21 @@ export default function Home() {
                                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
                                   Theme KPIs
                                 </Typography>
-                                <KPIToggle
-                                  state={getGroupToggleState('themes')}
-                                  size="small"
-                                />
                               </Box>
-                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
-                                <AnimatedNumber value={themesScore} />%
-                              </Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
+                                  <AnimatedNumber value={themesScore} />%
+                                </Typography>
+                                {isThemesSelected
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                              </Box>
                             </Box>
 
                             {/* Primary Theme KPIs — only clickable when themes are active */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
@@ -1641,6 +1641,7 @@ export default function Home() {
                                     isDimmed={getToggleState(metricKey, 'themes') === 'off'}
                                     isCompact={isCompact}
                                     performanceRating={getPerformanceRating(score)}
+                                    variant="nested"
                                   />
                                 );
                               })}
@@ -1653,18 +1654,19 @@ export default function Home() {
                             className="kpi-group-panel"
                             sx={{
                               p: isCompact ? 1.5 : 2,
-                              border: '1.5px solid',
-                              borderColor: selection === 'operations_group' ? '#90caf9' : isOperationsActive ? 'divider' : colors.borderSecondary,
-                              borderRadius: 1,
-                              bgcolor: '#fff',
-                              opacity: isOperationsActive ? 1 : 0.45,
-                              boxShadow: selection === 'operations_group' ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
+                              border: isOperationsSelected ? '2px solid' : '1px solid',
+                              borderColor: isOperationsSelected ? colors.brand : colors.borderTertiary,
+                              borderRadius: 2,
+                              bgcolor: colors.bgPrimary,
+                              boxShadow: isOperationsSelected
+                                ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',
                               '&:hover': {
-                                borderColor: '#42a5f5',
-                                boxShadow: '0 4px 20px rgba(25,118,210,0.15), 0 0 0 1px rgba(25,118,210,0.1)',
-                                transform: 'translateY(-2px)',
+                                borderColor: isOperationsSelected ? colors.brand : colors.borderPrimary,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
+                                transform: 'translateY(-1px)',
                               }
                             }}
                           >
@@ -1683,20 +1685,21 @@ export default function Home() {
                                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
                                   Operational KPIs
                                 </Typography>
-                                <KPIToggle
-                                  state={getGroupToggleState('operations')}
-                                  size="small"
-                                />
                               </Box>
-                              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
-                                <AnimatedNumber value={operationsScore} />%
-                              </Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
+                                  <AnimatedNumber value={operationsScore} />%
+                                </Typography>
+                                {isOperationsSelected
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                              </Box>
                             </Box>
 
                             {/* Operations KPIs */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
@@ -1722,6 +1725,7 @@ export default function Home() {
                                     isDimmed={getToggleState(metricKey, 'operations') === 'off'}
                                     isCompact={isCompact}
                                     performanceRating={getPerformanceRating(score)}
+                                    variant="nested"
                                   />
                                 );
                               })}
