@@ -9,7 +9,7 @@ import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import AnimatedNumber from './AnimatedNumber';
 import { ToggleState } from './KPIToggle';
-import { colors } from '@/colors';
+import { colors, brandAlpha } from '@/colors';
 
 export interface PerformanceRating {
   label: string;   // 'Good' | 'Moderate' | 'Poor'
@@ -81,7 +81,7 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
         border: isSelected ? '2px solid' : '1px solid',
         borderColor: isSelected ? colors.brand : colors.borderTertiary,
         boxShadow: isSelected
-          ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+          ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
           : variant === 'nested' ? '0 1px 2px rgba(0,0,0,0.04)' : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
         cursor: 'pointer',
         textAlign: 'left',
@@ -100,7 +100,7 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
           <Box sx={{ color: 'text.secondary', display: 'flex', fontSize: isCompact ? '1rem' : '1.25rem', transition: 'font-size 0.3s ease', flexShrink: 0 }}>
             {icon}
           </Box>
-          <Typography variant="body2" noWrap sx={{ fontWeight: 600, color: 'text.primary', fontSize: isCompact ? '0.75rem' : '0.875rem', transition: 'font-size 0.3s ease' }}>
+          <Typography variant="body2" noWrap sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.primary', fontSize: isCompact ? '0.75rem' : '0.875rem', transition: 'font-size 0.3s ease' }}>
             {title}
           </Typography>
         </Box>

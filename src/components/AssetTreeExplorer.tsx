@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -139,9 +139,9 @@ export default function AssetTreeExplorer({
                 bgcolor: 'rgba(0, 0, 0, 0.04)'
               },
               '&.Mui-selected': {
-                bgcolor: node.type === 'asset' ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                bgcolor: node.type === 'asset' ? secondaryAlpha(0.08) : 'transparent',
                 '&:hover': {
-                  bgcolor: node.type === 'asset' ? 'rgba(25, 118, 210, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+                  bgcolor: node.type === 'asset' ? secondaryAlpha(0.12) : 'rgba(0, 0, 0, 0.04)'
                 }
               }
             }

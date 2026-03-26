@@ -343,9 +343,9 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                             pl: 4.5,
                             pr: 2,
                             py: 0.625,
-                            bgcolor: isActive ? '#eef2ff' : 'transparent',
-                            borderRight: isActive ? '2px solid #1e5a96' : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? '#eef2ff' : colors.bgSecondaryHover },
+                            bgcolor: isActive ? colors.bgActive : 'transparent',
+                            borderRight: isActive ? `2px solid ${colors.brand}` : '2px solid transparent',
+                            '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgSecondaryHover },
                           }}
                         >
                           <ListItemText
@@ -354,7 +354,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                               variant: 'body2',
                               fontSize: '0.8125rem',
                               fontWeight: isActive ? 600 : 400,
-                              color: isActive ? '#1e5a96' : 'text.primary',
+                              color: isActive ? colors.brand : 'text.primary',
                               sx: { lineHeight: 1.4 },
                             }}
                           />

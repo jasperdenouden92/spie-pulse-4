@@ -51,7 +51,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { AssetNode, assetTree, filterTreeByBuilding } from '@/data/assetTree';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 
 type ViewMode = 'dashboard' | 'list' | 'tree';
 
@@ -322,9 +322,9 @@ export default function FloatingToolbar({
                   bgcolor: 'rgba(0, 0, 0, 0.04)'
                 },
                 '&.Mui-selected': {
-                  bgcolor: 'rgba(25, 118, 210, 0.08)',
+                  bgcolor: secondaryAlpha(0.08),
                   '&:hover': {
-                    bgcolor: 'rgba(25, 118, 210, 0.12)'
+                    bgcolor: secondaryAlpha(0.12)
                   }
                 }
               }

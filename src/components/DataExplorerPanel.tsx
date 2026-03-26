@@ -48,7 +48,7 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { AssetNode, assetTree } from '@/data/assetTree';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 
 interface DataExplorerPanelProps {
   open: boolean;
@@ -210,7 +210,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
               px: '4px',
               borderRadius: '3px',
               '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' },
-              '&.Mui-selected': { bgcolor: 'rgba(25, 118, 210, 0.08)', '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.12)' } }
+              '&.Mui-selected': { bgcolor: secondaryAlpha(0.08), '&:hover': { bgcolor: secondaryAlpha(0.12) } }
             }
           }}
         >

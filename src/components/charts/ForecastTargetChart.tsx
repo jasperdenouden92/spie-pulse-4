@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -75,9 +75,9 @@ export default function ForecastTargetChart({ buildingName }: ForecastTargetChar
             textTransform: 'none',
             fontSize: '0.813rem',
             color: degreeDayCorrection ? 'primary.main' : 'text.secondary',
-            bgcolor: degreeDayCorrection ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+            bgcolor: degreeDayCorrection ? secondaryAlpha(0.08) : 'transparent',
             '&:hover': {
-              bgcolor: degreeDayCorrection ? 'rgba(25, 118, 210, 0.12)' : 'rgba(0, 0, 0, 0.04)'
+              bgcolor: degreeDayCorrection ? secondaryAlpha(0.12) : 'rgba(0, 0, 0, 0.04)'
             }
           }}
         >

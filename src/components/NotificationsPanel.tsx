@@ -8,7 +8,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import Tooltip from '@mui/material/Tooltip';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 
 export interface Notification {
   id: string;
@@ -174,8 +174,8 @@ function NotificationRow({ notification, onRead }: { notification: Notification;
         py: 1.5,
         cursor: n.read ? 'default' : 'pointer',
         borderBottom: `1px solid ${colors.bgPrimaryHover}`,
-        bgcolor: n.read ? 'transparent' : 'rgba(25, 118, 210, 0.03)',
-        '&:hover': { bgcolor: n.read ? colors.bgSecondary : 'rgba(25, 118, 210, 0.06)' },
+        bgcolor: n.read ? 'transparent' : secondaryAlpha(0.03),
+        '&:hover': { bgcolor: n.read ? colors.bgSecondary : secondaryAlpha(0.06) },
         transition: 'background-color 0.15s ease',
       }}
     >

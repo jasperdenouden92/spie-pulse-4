@@ -489,7 +489,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                     onClick={() => toggleGroup(group.themeKey)}
                     sx={{ py: 0.75, px: 2, gap: 1.5 }}
                   >
-                    <Box sx={{ color: hasActiveChild ? '#1e5a96' : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <Box sx={{ color: hasActiveChild ? colors.brand : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                       {group.icon}
                     </Box>
                     <ListItemText
@@ -498,7 +498,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                         variant: 'body2',
                         fontWeight: 600,
                         fontSize: '0.8125rem',
-                        color: hasActiveChild ? '#1e5a96' : 'text.primary',
+                        color: hasActiveChild ? colors.brand : 'text.primary',
                       }}
                     />
                     <ExpandMoreIcon sx={{
@@ -523,9 +523,9 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                             pl: 5.5,
                             pr: 2,
                             py: 0.5,
-                            bgcolor: isActive ? '#eef2ff' : 'transparent',
-                            borderRight: isActive ? '2px solid #1e5a96' : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? '#eef2ff' : colors.bgSecondaryHover },
+                            bgcolor: isActive ? colors.bgActive : 'transparent',
+                            borderRight: isActive ? `2px solid ${colors.brand}` : '2px solid transparent',
+                            '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgSecondaryHover },
                           }}
                         >
                           <ListItemText
@@ -534,7 +534,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                               variant: 'body2',
                               fontSize: '0.8125rem',
                               fontWeight: isActive ? 600 : 400,
-                              color: isActive ? '#1e5a96' : 'text.primary',
+                              color: isActive ? colors.brand : 'text.primary',
                               sx: { lineHeight: 1.4 },
                             }}
                           />

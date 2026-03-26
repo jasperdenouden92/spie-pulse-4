@@ -19,7 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { AssetNode } from '@/data/assetTree';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 import { ContractFilterToggle, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
@@ -240,31 +240,31 @@ export default function PageHeader({
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {currentPage === 'home' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Home</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Home</Typography>
             )}
             {currentPage === 'insights' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Insights</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Insights</Typography>
             )}
             {currentPage === 'portfolio_overview' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Portfolio</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Portfolio</Typography>
             )}
             {currentPage === 'bms' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>BMS</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>BMS</Typography>
             )}
             {currentPage === 'themes' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Themes</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Themes</Typography>
             )}
             {currentPage === 'workspaces' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Workspaces</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Workspaces</Typography>
             )}
             {currentPage === 'exports' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Exports</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Exports</Typography>
             )}
             {currentPage === 'dashboards' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Dashboards</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Dashboards</Typography>
             )}
             {currentPage === 'operations' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>Operations</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Operations</Typography>
             )}
             {currentPage?.startsWith('operations_') && (
               <>
@@ -276,7 +276,7 @@ export default function PageHeader({
                   Operations
                 </Typography>
                 <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
                   {currentPage === 'operations_docs' ? 'Docs' : currentPage === 'operations_tickets' ? 'Tickets' : 'Quotations'}
                 </Typography>
               </>
@@ -448,7 +448,7 @@ export default function PageHeader({
                       const currentItem = metricItems.find(m => m.key === selection);
                       return currentItem ? <Box sx={{ display: 'flex', color: 'text.secondary', fontSize: 20 }}>{currentItem.icon}</Box> : null;
                     })()}
-                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
                       {childLabel}
                     </Typography>
                     {selectionScore != null && (
@@ -610,7 +610,7 @@ export default function PageHeader({
           sx={{
             color: isFavorited ? 'primary.main' : 'text.secondary',
             '&:hover': {
-              bgcolor: isFavorited ? 'rgba(25, 118, 210, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+              bgcolor: isFavorited ? secondaryAlpha(0.08) : 'rgba(0, 0, 0, 0.04)'
             }
           }}
         >

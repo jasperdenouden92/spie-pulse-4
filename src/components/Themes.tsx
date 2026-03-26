@@ -16,7 +16,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import NatureIcon from '@mui/icons-material/Nature';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 
 interface Theme {
   id: string;
@@ -275,7 +275,7 @@ export default function Themes() {
             bgcolor: 'rgba(250, 250, 250, 0.5)',
             '&:hover': {
               borderColor: colors.brand,
-              bgcolor: 'rgba(25, 118, 210, 0.02)',
+              bgcolor: secondaryAlpha(0.02),
               transform: 'translateY(-4px)',
             }
           }}
