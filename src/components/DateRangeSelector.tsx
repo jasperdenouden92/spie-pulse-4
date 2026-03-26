@@ -198,16 +198,17 @@ type DragState = {
 interface DateRangeSelectorProps {
   value: string;
   onChange: (value: string) => void;
-  anchorEl: HTMLElement | null;
-  onClose: () => void;
+  anchorEl?: HTMLElement | null;
+  onClose?: () => void;
   hidePresets?: boolean;
+  inline?: boolean;
 }
 
 const toLinear = (year: number, month: number) => year * 12 + month;
 const fromLinear = (lm: number) => ({ year: Math.floor(lm / 12), month: lm % 12 });
 
-export default function DateRangeSelector({ value, onChange, anchorEl, onClose, hidePresets = false }: DateRangeSelectorProps) {
-  const open = Boolean(anchorEl);
+export default function DateRangeSelector({ value, onChange, anchorEl, onClose, hidePresets = false, inline = false }: DateRangeSelectorProps) {
+  const open = inline || Boolean(anchorEl);
   const currentYear = TODAY.getFullYear();
 
   const { from: initialFrom, to: initialTo } = useMemo(() => parseDateRange(value), [value]);
@@ -663,6 +664,67 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     );
   };
 
+  const content = (
+    <>
+      {/* Preset pills */}
+      {!hidePresets && (
+        <Box sx={{ display: 'flex', gap: 0.75, px: inline ? 0 : 3, pt: inline ? 0 : 2, pb: 0 }}>
+          {PRESETS.map(preset => {
+            const { from: pf, to: pt } = preset.getRange();
+            const isActive = rangeFrom.getTime() === pf.getTime() && rangeTo.getTime() === pt.getTime();
+            return (
+              <Chip
+                key={preset.label}
+                label={preset.label}
+                size="small"
+                onClick={() => handlePresetClick(preset)}
+                sx={{
+                  fontWeight: isActive ? 600 : 500,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  bgcolor: isActive ? colors.bgActive : 'transparent',
+                  color: isActive ? colors.brand : colors.textSecondary,
+                  border: '1px solid',
+                  borderColor: isActive ? colors.brand : colors.borderSecondary,
+                  '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgPrimaryHover },
+                }}
+              />
+            );
+          })}
+        </Box>
+      )}
+
+      <Box
+        onPointerMove={handleContainerPointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={() => { if (dragState) handlePointerUp(); }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        sx={{
+          display: 'flex',
+          px: inline ? 0 : 3,
+          py: inline ? 1.5 : 2.5,
+          gap: 0,
+          userSelect: 'none',
+        }}
+      >
+        {renderYearBlock(leftYear, 'left')}
+        <Box sx={{
+          width: '1px',
+          bgcolor: colors.borderTertiary,
+          mx: '4px',
+          my: 0.5,
+          flexShrink: 0,
+        }} />
+        {renderYearBlock(rightYear, 'right')}
+      </Box>
+    </>
+  );
+
+  if (inline) {
+    return <Box sx={{ maxWidth: 920 }}>{content}</Box>;
+  }
+
   return (
     <Popover
       anchorEl={anchorEl}
@@ -680,53 +742,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
         },
       }}
     >
-      {/* Preset pills */}
-      {!hidePresets && (
-        <Box sx={{ display: 'flex', gap: 0.75, px: 3, pt: 2, pb: 0 }}>
-          {PRESETS.map(preset => (
-            <Chip
-              key={preset.label}
-              label={preset.label}
-              size="small"
-              onClick={() => handlePresetClick(preset)}
-              sx={{
-                fontWeight: 500,
-                fontSize: '0.8rem',
-                bgcolor: 'transparent',
-                color: colors.textSecondary,
-                border: `1px solid ${colors.borderSecondary}`,
-                cursor: 'pointer',
-                '&:hover': { bgcolor: colors.bgPrimaryHover },
-              }}
-            />
-          ))}
-        </Box>
-      )}
-
-      <Box
-        onPointerMove={handleContainerPointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={() => { if (dragState) handlePointerUp(); }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        sx={{
-          display: 'flex',
-          px: 3,
-          py: 2.5,
-          gap: 0,
-          userSelect: 'none',
-        }}
-      >
-        {renderYearBlock(leftYear, 'left')}
-        <Box sx={{
-          width: '1px',
-          bgcolor: colors.borderTertiary,
-          mx: '4px',
-          my: 0.5,
-          flexShrink: 0,
-        }} />
-        {renderYearBlock(rightYear, 'right')}
-      </Box>
+      {content}
     </Popover>
   );
 }

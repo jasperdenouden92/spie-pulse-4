@@ -1163,7 +1163,6 @@ export default function Home() {
           onClose={() => setTitleDateRangeAnchor(null)}
           value={dateRange}
           onChange={(v) => { setDateRange(v); }}
-          hidePresets={currentPage === 'dashboards'}
         />
 
         <BuildingSelectorPopover

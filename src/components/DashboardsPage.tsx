@@ -17,7 +17,7 @@ import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInpu
 import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
-import InlinePeriodSelector from './InlinePeriodSelector';
+import DateRangeSelector from './DateRangeSelector';
 import BuildingSelector from './BuildingSelector';
 import {
   ElectricityConsumptionChart,
@@ -552,16 +552,21 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
         <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
           {selectedDashboard ? (
             <>
-              {/* Inline filters: building + period */}
+              {/* Inline filters: period range + building */}
               {dateRange && onDateRangeChange && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                  <BuildingSelector
-                    selectedNames={selectedBuildingNames}
-                    onSelectionChange={setSelectedBuildingNames}
-                    mode="buildings"
+                <Box sx={{ mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+                    <BuildingSelector
+                      selectedNames={selectedBuildingNames}
+                      onSelectionChange={setSelectedBuildingNames}
+                      mode="buildings"
+                    />
+                  </Box>
+                  <DateRangeSelector
+                    inline
+                    value={dateRange}
+                    onChange={onDateRangeChange}
                   />
-                  <Box sx={{ width: '1px', height: 20, bgcolor: 'divider', flexShrink: 0 }} />
-                  <InlinePeriodSelector value={dateRange} onChange={onDateRangeChange} />
                 </Box>
               )}
 
