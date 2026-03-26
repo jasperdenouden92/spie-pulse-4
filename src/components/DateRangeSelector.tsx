@@ -102,9 +102,9 @@ export function dateRangeToString(from: Date, to: Date): string {
 
 // ── Presets ──────────────────────────────────────────────────────────────────
 
-type Preset = { label: string; getRange: () => { from: Date; to: Date } };
+export type Preset = { label: string; getRange: () => { from: Date; to: Date } };
 
-const PRESETS: Preset[] = [
+export const PRESETS: Preset[] = [
   {
     label: 'This month',
     getRange: () => ({ from: startOfMonth(TODAY), to: new Date(TODAY) }),
