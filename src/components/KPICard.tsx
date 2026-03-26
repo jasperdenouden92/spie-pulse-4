@@ -5,8 +5,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import AnimatedNumber from './AnimatedNumber';
-import KPIToggle, { ToggleState } from './KPIToggle';
+import { ToggleState } from './KPIToggle';
 import { colors } from '@/colors';
 
 export interface PerformanceRating {
@@ -28,9 +30,10 @@ interface KPICardProps {
   isDimmed?: boolean;
   isCompact?: boolean;
   performanceRating?: PerformanceRating;
+  variant?: 'default' | 'nested';
 }
 
-export default function KPICard({ title, icon, score, trend, sparklineData, periodLabel, onClick, onToggle, toggleState = 'on', isSelected = false, isDimmed = false, isCompact = false, performanceRating }: KPICardProps) {
+export default function KPICard({ title, icon, score, trend, sparklineData, periodLabel, onClick, onToggle, toggleState = 'on', isSelected = false, isDimmed = false, isCompact = false, performanceRating, variant = 'default' }: KPICardProps) {
   const generateSparkline = (data: number[]) => {
     const width = isCompact ? 70 : 100;
     const height = isCompact ? 30 : 40;
@@ -70,23 +73,23 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
       onClick={onClick}
       sx={{
         p: isCompact ? 1.5 : 2.5,
-        borderRadius: 1,
-        bgcolor: colors.bgPrimary,
+        borderRadius: variant === 'nested' ? 1.5 : 2,
+        bgcolor: variant === 'nested' ? colors.bgSecondary : colors.bgPrimary,
         display: 'flex',
         flexDirection: 'column',
         gap: isCompact ? 1 : 1.5,
-        border: '1.5px solid',
-        borderColor: isSelected ? '#90caf9' : 'transparent',
-        boxShadow: isSelected ? '0 0 0 1px rgba(25,118,210,0.12)' : 'none',
+        border: isSelected ? '2px solid' : '1px solid',
+        borderColor: isSelected ? colors.brand : colors.borderTertiary,
+        boxShadow: isSelected
+          ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+          : variant === 'nested' ? '0 1px 2px rgba(0,0,0,0.04)' : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
         cursor: 'pointer',
         textAlign: 'left',
-        opacity: isOff ? 0.35 : isDimmed ? 0.5 : 1,
         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          bgcolor: colors.bgSecondary,
-          borderColor: isSelected ? '#42a5f5' : colors.borderPrimary,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          opacity: 1,
+          bgcolor: variant === 'nested' ? colors.bgSecondaryHover : colors.bgSecondary,
+          borderColor: isSelected ? colors.brand : colors.borderPrimary,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
           transform: 'translateY(-1px)',
         }
       }}
@@ -101,11 +104,17 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
             {title}
           </Typography>
         </Box>
-        <KPIToggle
-          state={toggleState}
-          size={isCompact ? 'small' : 'medium'}
-          onClick={onToggle ? (e) => { e.stopPropagation(); onToggle(); } : undefined}
-        />
+        {onToggle && (
+          <Box
+            component="span"
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onToggle(); }}
+            sx={{ display: 'inline-flex', cursor: 'pointer', color: isSelected ? colors.brand : '#bdbdbd', transition: 'color 0.2s ease', flexShrink: 0, '&:hover': { color: isSelected ? '#1565c0' : '#9e9e9e' } }}
+          >
+            {isSelected
+              ? <RadioButtonCheckedIcon sx={{ fontSize: isCompact ? 18 : 20 }} />
+              : <RadioButtonUncheckedIcon sx={{ fontSize: isCompact ? 18 : 20 }} />}
+          </Box>
+        )}
       </Box>
 
       {/* Score and trend row with sparkline */}
