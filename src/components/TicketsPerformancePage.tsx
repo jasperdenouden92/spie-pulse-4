@@ -12,6 +12,11 @@ import SettingsBackupRestoreOutlinedIcon from '@mui/icons-material/SettingsBacku
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import TagOutlinedIcon from '@mui/icons-material/TagOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
@@ -229,24 +234,26 @@ interface TicketItem {
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   createdDate: string;
   assignee: string;
+  werkbon: string;
+  referentie: string;
 }
 
 const ACTIVE_TICKETS: TicketItem[] = [
-  { id: 'T-2026-0041', title: 'Test', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026', assignee: 'M. Neuten' },
-  { id: 'T-2026-0040', title: 'Kapotte band', building: 'Efteling/Carnaval Festival', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '24-03-2026', assignee: 'B. Sevenge' },
-  { id: 'T-2026-0039', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026', assignee: 'H.C.M. Mond' },
-  { id: 'T-2026-0038', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026', assignee: 'R.R.H.M. Zij' },
-  { id: 'T-2026-0037', title: '.', building: '0413 Z - B&O Son', status: 'In operation', category: 'Storing', priority: 'Medium', createdDate: '11-03-2026', assignee: 'M. Neuten' },
-  { id: 'T-2026-0036', title: 'HVAC system failure', building: 'Rijksmuseum', status: 'In operation', category: 'Storing', priority: 'Critical', createdDate: '09-03-2026', assignee: 'B. Sevenge' },
-  { id: 'T-2026-0035', title: 'Emergency lighting fault', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Storing', priority: 'High', createdDate: '07-03-2026', assignee: 'H.C.M. Mond' },
-  { id: 'T-2026-0034', title: 'Elevator maintenance', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Medium', createdDate: '05-03-2026', assignee: 'R.R.H.M. Zij' },
-  { id: 'T-2026-0033', title: 'Fire alarm inspection', building: 'TU Eindhoven', status: 'In operation', category: 'Regie', priority: 'High', createdDate: '03-03-2026', assignee: 'M. Neuten' },
-  { id: 'T-2026-0032', title: 'Cooling tower service', building: 'De Efteling', status: 'Function restored', category: 'Storing', priority: 'Medium', createdDate: '28-02-2026', assignee: 'B. Sevenge' },
-  { id: 'T-2026-0031', title: 'BMS controller reset', building: 'Rijksmuseum', status: 'Received', category: 'Storing', priority: 'High', createdDate: '25-02-2026', assignee: 'H.C.M. Mond' },
-  { id: 'T-2026-0030', title: 'Water leak in basement', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Storing', priority: 'Critical', createdDate: '22-02-2026', assignee: 'R.R.H.M. Zij' },
-  { id: 'T-2026-0029', title: 'Access card system', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '20-02-2026', assignee: 'M. Neuten' },
-  { id: 'T-2026-0028', title: 'Solar panel cleaning', building: 'TU Eindhoven', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '18-02-2026', assignee: 'B. Sevenge' },
-  { id: 'T-2026-0027', title: 'Sprinkler test report', building: 'De Efteling', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '15-02-2026', assignee: 'H.C.M. Mond' },
+  { id: 'T-2026-0041', title: 'Test', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026 10:45', assignee: 'M. Neuten', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0040', title: 'Kapotte band', building: 'Efteling/Carnaval Festival', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '24-03-2026 15:30', assignee: 'B. Sevenge', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0039', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026 14:32', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0038', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026 14:50', assignee: 'R.R.H.M. Zij', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0037', title: '.', building: '0413 Z - B&O Son', status: 'In operation', category: 'Storing', priority: 'Medium', createdDate: '11-03-2026 11:52', assignee: 'M. Neuten', werkbon: '440291', referentie: 'REF-2026-112' },
+  { id: 'T-2026-0036', title: 'HVAC system failure', building: 'Rijksmuseum', status: 'In operation', category: 'Storing', priority: 'Critical', createdDate: '09-03-2026 08:15', assignee: 'B. Sevenge', werkbon: '440287', referentie: 'REF-2026-098' },
+  { id: 'T-2026-0035', title: 'Emergency lighting fault', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Storing', priority: 'High', createdDate: '07-03-2026 16:20', assignee: 'H.C.M. Mond', werkbon: '440283', referentie: '-' },
+  { id: 'T-2026-0034', title: 'Elevator maintenance', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Medium', createdDate: '05-03-2026 09:45', assignee: 'R.R.H.M. Zij', werkbon: '440279', referentie: 'REF-2026-085' },
+  { id: 'T-2026-0033', title: 'Fire alarm inspection', building: 'TU Eindhoven', status: 'In operation', category: 'Regie', priority: 'High', createdDate: '03-03-2026 11:00', assignee: 'M. Neuten', werkbon: '440275', referentie: '-' },
+  { id: 'T-2026-0032', title: 'Cooling tower service', building: 'De Efteling', status: 'Function restored', category: 'Storing', priority: 'Medium', createdDate: '28-02-2026 14:30', assignee: 'B. Sevenge', werkbon: '440271', referentie: 'REF-2026-074' },
+  { id: 'T-2026-0031', title: 'BMS controller reset', building: 'Rijksmuseum', status: 'Received', category: 'Storing', priority: 'High', createdDate: '25-02-2026 10:10', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0030', title: 'Water leak in basement', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Storing', priority: 'Critical', createdDate: '22-02-2026 07:30', assignee: 'R.R.H.M. Zij', werkbon: '440263', referentie: 'REF-2026-061' },
+  { id: 'T-2026-0029', title: 'Access card system', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '20-02-2026 13:45', assignee: 'M. Neuten', werkbon: '440259', referentie: '-' },
+  { id: 'T-2026-0028', title: 'Solar panel cleaning', building: 'TU Eindhoven', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '18-02-2026 09:00', assignee: 'B. Sevenge', werkbon: '440255', referentie: 'REF-2026-048' },
+  { id: 'T-2026-0027', title: 'Sprinkler test report', building: 'De Efteling', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '15-02-2026 11:20', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
 ];
 
 const ACTIVE_STATUSES: TicketStatus[] = ['Received', 'In operation', 'Function restored'];
@@ -804,16 +811,27 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                         {t.title}
                       </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                        {t.building}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                        {t.createdDate}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                        {t.assignee}
-                      </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <LocationOnOutlinedIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.building}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <CalendarTodayOutlinedIcon sx={{ fontSize: 11, color: 'text.disabled' }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.createdDate}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <ReceiptLongOutlinedIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.werkbon}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <TagOutlinedIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.referentie}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <PersonOutlineOutlinedIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.assignee}</Typography>
+                      </Box>
                     </Box>
                   </Box>
                   <Chip
