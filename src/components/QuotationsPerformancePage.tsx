@@ -18,6 +18,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
@@ -256,9 +257,28 @@ const ACTIVE_QUOTATIONS: QuotationItem[] = [
 ];
 
 const ACTIVE_STATUSES: QuotationStatus[] = ['In progress', 'Open', 'Assigned', 'Received'];
+const ACTION_REQUIRED_STATUSES: QuotationStatus[] = ['Open', 'Assigned'];
 
 function getQuotationStatusColor(status: QuotationStatus): string {
   return STATUS_COUNTS.find(s => s.status === status)?.color ?? '#888';
+}
+
+function formatDeadline(ddmmyyyy: string): string {
+  const [d, m, y] = ddmmyyyy.split('-').map(Number);
+  const target = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return `${Math.abs(diff)}d overdue`;
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'In 1 day';
+  return `In ${diff} days`;
+}
+
+function formatCreationDate(ddmmyyyy: string): string {
+  const [d, m, y] = ddmmyyyy.split('-').map(Number);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${d} ${months[m - 1]} ${y}`;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -277,6 +297,7 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
+  const [quotationsActionFilter, setQuotationsActionFilter] = useState(false);
 
   // Sparkline renderer
   const renderSparkline = (data: number[], color: string, w = 80, h = 28) => {
@@ -774,7 +795,23 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
           {/* Card 2: Active quotations list */}
           <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="body2" fontWeight={600}>Active Quotations</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" fontWeight={600}>Active Quotations</Typography>
+                <Chip
+                  icon={<FilterListIcon sx={{ fontSize: 13 }} />}
+                  label="Action required"
+                  size="small"
+                  onClick={() => setQuotationsActionFilter(f => !f)}
+                  sx={{
+                    height: 22, fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer',
+                    bgcolor: quotationsActionFilter ? `${colors.brand}14` : 'transparent',
+                    color: quotationsActionFilter ? colors.brand : 'text.secondary',
+                    border: '1px solid', borderColor: quotationsActionFilter ? colors.brand : 'divider',
+                    '& .MuiChip-icon': { ml: 0.5, mr: -0.25, color: quotationsActionFilter ? colors.brand : 'text.secondary' },
+                    '& .MuiChip-label': { px: 0.75 },
+                  }}
+                />
+              </Box>
               <Button
                 size="small"
                 endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
@@ -784,7 +821,7 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
               </Button>
             </Box>
             <Box sx={{ flex: 1, overflow: 'auto', maxHeight: 320, display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {ACTIVE_QUOTATIONS.filter(q => ACTIVE_STATUSES.includes(q.status)).map(q => (
+              {ACTIVE_QUOTATIONS.filter(q => quotationsActionFilter ? ACTION_REQUIRED_STATUSES.includes(q.status) : ACTIVE_STATUSES.includes(q.status)).map(q => (
                 <Box
                   key={q.id}
                   sx={{
@@ -810,7 +847,13 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
                         {q.building}
                       </Typography>
                       <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                        {q.assignee}
+                        {formatCreationDate(q.validFrom)}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                        •
+                      </Typography>
+                      <Typography variant="caption" fontWeight={500} sx={{ fontSize: '0.7rem', color: formatDeadline(q.validUntil).includes('overdue') ? '#ef5350' : 'text.secondary' }}>
+                        {formatDeadline(q.validUntil)}
                       </Typography>
                     </Box>
                   </Box>

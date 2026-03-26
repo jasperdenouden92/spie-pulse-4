@@ -75,6 +75,7 @@ import AssetDetail from '@/components/AssetDetail';
 import ExportsPage from '@/components/ExportsPage';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import type { NotificationsPanelHandle } from '@/components/NotificationsPanel';
+import DataExplorerPanel from '@/components/DataExplorerPanel';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import AssetBreadcrumb from '@/components/AssetBreadcrumb';
@@ -331,6 +332,7 @@ export default function Home() {
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const notificationsRef = useRef<NotificationsPanelHandle>(null);
+  const [dataExplorerOpen, setDataExplorerOpen] = useState(false);
   const [exportToast, setExportToast] = useState<{ open: boolean; message: string; severity: 'info' | 'success' }>({ open: false, message: '', severity: 'info' });
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [favorites, setFavorites] = useState<Favorite[]>([
@@ -675,7 +677,7 @@ export default function Home() {
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'portfolio_overview') return 'Portfolio';
+    if (currentPage === 'portfolio_overview') return 'Data Explorer';
     if (currentPage === 'bms') return 'BMS';
     if (currentPage === 'operations') return 'Operations';
     if (selectedBuilding) return selectedBuilding.name;
@@ -859,6 +861,8 @@ export default function Home() {
             if (opening) setHasUnreadNotifications(false);
           }}
           hasUnreadNotifications={hasUnreadNotifications}
+          dataExplorerOpen={dataExplorerOpen}
+          onDataExplorerToggle={() => setDataExplorerOpen(!dataExplorerOpen)}
         />
       </Box>
 
@@ -867,6 +871,13 @@ export default function Home() {
         ref={notificationsRef}
         open={notificationsPanelOpen}
         onClose={() => setNotificationsPanelOpen(false)}
+        sidebarWidth={leftSidebarWidth}
+      />
+
+      {/* Data Explorer Panel */}
+      <DataExplorerPanel
+        open={dataExplorerOpen}
+        onClose={() => setDataExplorerOpen(false)}
         sidebarWidth={leftSidebarWidth}
       />
 
@@ -1215,51 +1226,7 @@ export default function Home() {
           onModeChange={handleBuildingFilterModeChange}
         />
 
-        {/* Portfolio & Assets - full-bleed split-view (outside Container) */}
-        {currentPage === 'portfolio_overview' && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', mt: '56px' }}>
-            {/* Page title */}
-            <Box sx={{ px: 3, py: 1.5, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>Portfolio & Assets</Typography>
-            </Box>
-            <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-              {/* Asset Tree */}
-              <Box sx={{ width: 320, flexShrink: 0, borderRight: 1, borderColor: 'divider' }}>
-                <FloatingToolbar
-                  selectedView="tree"
-                  onViewChange={setViewMode}
-                  visible={true}
-                  buildingName={undefined}
-                  onAssetSelect={(node) => {
-                    if (node) {
-                      setLocalQuickviewAsset(null);
-                      setURLParams({ asset: node.id, assetTab: '0' });
-                    } else {
-                      setURLParams({ asset: '' });
-                    }
-                  }}
-                  onOpenInMainApp={(asset) => {
-                    setLocalQuickviewAsset(null);
-                    setURLParams({ asset: asset.id, assetTab: '0' });
-                  }}
-                  inLeftPanel={true}
-                  onClose={() => setCurrentPage('home')}
-                  large={true}
-                />
-              </Box>
-              {/* Asset Detail */}
-              <Box sx={{ flex: 1, overflow: 'auto', p: 4 }}>
-                {quickviewAsset ? (
-                  <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />
-                ) : (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.secondary' }}>
-                    <Typography variant="body2">Select an item from the tree to view details</Typography>
-                  </Box>
-                )}
-              </Box>
-            </Box>
-          </Box>
-        )}
+
 
         {/* Dashboards - full-bleed view with own sidebar */}
         {currentPage === 'dashboards' && (
@@ -1273,7 +1240,7 @@ export default function Home() {
         )}
 
         {/* Page Content */}
-        {currentPage !== 'portfolio_overview' && currentPage !== 'dashboards' && (
+        {currentPage !== 'dashboards' && (
         <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: 3 }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}

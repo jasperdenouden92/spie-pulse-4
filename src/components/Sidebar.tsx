@@ -29,6 +29,7 @@ import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import ExploreOutlinedIcon from '@mui/icons-material/ExploreOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchModal from '@/components/SearchModal';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
@@ -91,6 +92,8 @@ interface SidebarProps {
   notificationsPanelOpen?: boolean;
   onNotificationsPanelToggle?: () => void;
   hasUnreadNotifications?: boolean;
+  dataExplorerOpen?: boolean;
+  onDataExplorerToggle?: () => void;
   onDashboardNavigate?: (dashboardId: string) => void;
 }
 
@@ -324,7 +327,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, onDashboardNavigate }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, dataExplorerOpen = false, onDataExplorerToggle, onDashboardNavigate }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [modifierHeld, setModifierHeld] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -669,12 +672,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               onClick={() => onPageChange?.('dashboards')}
             />
             <NavItem
-              label="Portfolio & Assets"
-              icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'portfolio_overview'}
-              onClick={() => onPageChange?.('portfolio_overview')}
-            />
-            <NavItem
               label="BMS"
               icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={currentPage === 'bms'}
@@ -717,6 +714,17 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Box sx={{ flexShrink: 0, px: 2, pt: 1, pb: 2 }}>
               <Divider sx={{ mb: 1 }} />
               <List dense sx={{ py: 0 }}>
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={() => onDataExplorerToggle?.()}
+                    sx={{ height: 36, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: dataExplorerOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+                  >
+                    <Box sx={{ width: 28, height: 28, bgcolor: dataExplorerOpen ? colors.borderSecondary : colors.bgSecondaryHover, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <ExploreOutlinedIcon sx={{ fontSize: 16 }} />
+                    </Box>
+                    <ListItemText primary="Data Explorer" primaryTypographyProps={{ variant: 'body2' }} />
+                  </ListItemButton>
+                </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onNotificationsPanelToggle?.()}
@@ -868,15 +876,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Portfolio" placement="right">
-              <IconButton
-                onClick={() => onPageChange?.('portfolio_overview')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio_overview' ? colors.bgActive : 'transparent', color: currentPage === 'portfolio_overview' ? '#1e5a96' : undefined, '&:hover': { bgcolor: currentPage === 'portfolio_overview' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-              >
-                <ApartmentOutlinedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-
             <Tooltip title="BMS" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('bms')}
@@ -889,6 +888,14 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             {/* Bottom section */}
             <Box sx={{ mt: 'auto', pb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
               <Divider sx={{ width: 40, mb: 0.5 }} />
+              <Tooltip title="Data Explorer" placement="right">
+                <IconButton
+                  onClick={() => onDataExplorerToggle?.()}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: dataExplorerOpen ? colors.bgActive : 'transparent', color: dataExplorerOpen ? '#1e5a96' : undefined, '&:hover': { bgcolor: dataExplorerOpen ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                >
+                  <ExploreOutlinedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Notifications" placement="right">
                 <IconButton
                   onClick={() => onNotificationsPanelToggle?.()}
