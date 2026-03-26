@@ -826,7 +826,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                       bgcolor: 'action.hover',
                       color: 'text.secondary',
                       '& .MuiChip-label': { px: 0.5 },
-                      '& .MuiChip-icon': { ml: 0.5, mr: '-2px' },
+                      '& .MuiChip-icon': { ml: 0.5, mr: 0 },
                       flexShrink: 0,
                     }}
                   />
