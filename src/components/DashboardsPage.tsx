@@ -571,29 +571,33 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                     flexShrink: 0,
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 1,
                   }}>
-                    <ApartmentOutlinedIcon sx={{ fontSize: 28, color: 'text.secondary' }} />
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.2 }}>
-                        {selectedBuildingNames.length === 0 ? allBuildingsData.length : selectedBuildingNames.length}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }}>
-                        {selectedBuildingNames.length === 0 ? 'All buildings' : `of ${allBuildingsData.length} buildings`}
+                    {/* Header */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ApartmentOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary' }}>
+                        Buildings
                       </Typography>
                     </Box>
+
+                    {/* Count */}
+                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography sx={{ fontSize: '2rem', fontWeight: 700, lineHeight: 1 }}>
+                        {selectedBuildingNames.length === 0 ? 'All' : selectedBuildingNames.length}
+                      </Typography>
+                    </Box>
+
+                    {/* Change button */}
                     <Button
                       size="small"
                       variant="text"
+                      fullWidth
                       onClick={(e) => setBuildingAnchor(e.currentTarget)}
                       sx={{
                         fontSize: '0.75rem',
                         textTransform: 'none',
                         color: 'text.secondary',
                         fontWeight: 500,
-                        px: 1.5,
                         '&:hover': { bgcolor: 'action.hover' },
                       }}
                     >
