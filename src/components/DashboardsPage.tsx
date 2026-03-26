@@ -554,7 +554,14 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
             <>
               {/* Inline filters: period range + building */}
               {dateRange && onDateRangeChange && (
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{
+                  mb: 2,
+                  bgcolor: '#fff',
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 2,
+                }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
                     <BuildingSelector
                       selectedNames={selectedBuildingNames}
