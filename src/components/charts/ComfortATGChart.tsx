@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -78,7 +78,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
               fontSize: '0.813rem',
               color: 'primary.main',
               '&:hover': {
-                bgcolor: 'rgba(25, 118, 210, 0.08)'
+                bgcolor: secondaryAlpha(0.08)
               }
             }}
           >

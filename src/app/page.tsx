@@ -148,7 +148,7 @@ import {
   AssetListPanel
 } from '@/components/charts';
 import type { ToggleState } from '@/components/KPIToggle';
-import { colors } from '@/colors';
+import { colors, brandAlpha, secondaryAlpha } from '@/colors';
 import { BuildingSelectorPopover, getBuildingSelectorLabel, ContractFilterToggle, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = keyof Building['metrics'];
@@ -1427,7 +1427,7 @@ export default function Home() {
                         cursor: 'pointer',
                         textAlign: 'left',
                         boxShadow: selection === 'overall'
-                          ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                          ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
                           : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
@@ -1440,7 +1440,7 @@ export default function Home() {
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: isCompact ? 1 : 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <SpeedOutlinedIcon sx={{ fontSize: isCompact ? 16 : 20, color: 'text.secondary', transition: 'font-size 0.3s ease' }} />
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.875rem' : '1rem', transition: 'font-size 0.3s ease' }}>
+                          <Typography variant="body2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, fontSize: isCompact ? '0.875rem' : '1rem', transition: 'font-size 0.3s ease' }}>
                             Performance
                           </Typography>
                         </Box>
@@ -1539,7 +1539,7 @@ export default function Home() {
                               borderRadius: 2,
                               bgcolor: colors.bgPrimary,
                               boxShadow: isThemesSelected
-                                ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                                ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
                                 : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',
@@ -1562,7 +1562,7 @@ export default function Home() {
                             >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <StyleOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
                                   Theme KPIs
                                 </Typography>
                               </Box>
@@ -1624,7 +1624,7 @@ export default function Home() {
                               borderRadius: 2,
                               bgcolor: colors.bgPrimary,
                               boxShadow: isOperationsSelected
-                                ? '0 2px 8px rgba(25,118,210,0.15), 0 1px 4px rgba(0,0,0,0.06)'
+                                ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
                                 : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',

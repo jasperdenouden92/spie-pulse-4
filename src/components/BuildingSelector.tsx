@@ -13,7 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { buildings as allBuildingsData } from '@/data/buildings';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 
 export type BuildingFilterMode = 'buildings' | 'clusters';
 export type ContractFilter = boolean;
@@ -204,7 +204,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
   const filterSelectSx = (active: boolean) => ({
     fontSize: '0.813rem', borderRadius: 1,
     ...(active
-      ? { color: 'primary.main', bgcolor: 'rgba(25, 118, 210, 0.08)', '& .MuiSvgIcon-root': { color: 'primary.main' } }
+      ? { color: 'primary.main', bgcolor: secondaryAlpha(0.08), '& .MuiSvgIcon-root': { color: 'primary.main' } }
       : { color: 'text.secondary' }),
     '& .MuiSelect-select': { py: 0.5, px: 1.5 },
   });

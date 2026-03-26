@@ -22,7 +22,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 
 interface SearchModalProps {
   open: boolean;
@@ -670,8 +670,8 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
             onClick={() => setShowFilters((v) => !v)}
             sx={{
               color: showFilters || hasActiveFilters ? 'primary.main' : 'text.secondary',
-              bgcolor: showFilters || hasActiveFilters ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
-              '&:hover': { bgcolor: showFilters || hasActiveFilters ? 'rgba(25, 118, 210, 0.12)' : 'action.hover' },
+              bgcolor: showFilters || hasActiveFilters ? secondaryAlpha(0.08) : 'transparent',
+              '&:hover': { bgcolor: showFilters || hasActiveFilters ? secondaryAlpha(0.12) : 'action.hover' },
             }}
           >
             <FilterListIcon fontSize="small" />
@@ -710,7 +710,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
                       ...(filterType !== 'all'
                         ? {
                             color: 'primary.main',
-                            bgcolor: 'rgba(25, 118, 210, 0.08)',
+                            bgcolor: secondaryAlpha(0.08),
                             '& .MuiSvgIcon-root': { color: 'primary.main' },
                           }
                         : {
@@ -742,7 +742,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
                       ...(filterDate !== 'any'
                         ? {
                             color: 'primary.main',
-                            bgcolor: 'rgba(25, 118, 210, 0.08)',
+                            bgcolor: secondaryAlpha(0.08),
                             '& .MuiSvgIcon-root': { color: 'primary.main' },
                           }
                         : {
@@ -772,7 +772,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
                       ...(filterOwner !== 'all'
                         ? {
                             color: 'primary.main',
-                            bgcolor: 'rgba(25, 118, 210, 0.08)',
+                            bgcolor: secondaryAlpha(0.08),
                             '& .MuiSvgIcon-root': { color: 'primary.main' },
                           }
                         : {

@@ -26,7 +26,7 @@ export default function AssetBreadcrumb({ asset, onAssetSelect }: AssetBreadcrum
   // Fallback if asset isn't found in the tree (e.g. system-view duplicate)
   if (!path || path.length === 0) {
     return (
-      <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+      <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', fontFamily: '"Inter", sans-serif' }}>
         {asset.name}
       </Typography>
     );
@@ -92,6 +92,7 @@ export default function AssetBreadcrumb({ asset, onAssetSelect }: AssetBreadcrum
                 variant={isLastSegment(i) ? 'h6' : 'body2'}
                 component="span"
                 sx={{
+                  fontFamily: '"Inter", sans-serif',
                   fontWeight: isLastSegment(i) ? 600 : 400,
                   fontSize: isLastSegment(i) ? '0.8rem' : '0.7rem',
                   color: isLastSegment(i) ? 'text.primary' : 'text.secondary',

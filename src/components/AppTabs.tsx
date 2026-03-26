@@ -1,5 +1,5 @@
 'use client';
-import { colors } from '@/colors';
+import { colors, secondaryAlpha } from '@/colors';
 
 import React from 'react';
 import MuiTabs from '@mui/material/Tabs';
@@ -48,11 +48,11 @@ export default function AppTabs({ value, onChange, tabs, size = 'medium', sx, in
           color: 'text.secondary',
           transition: 'background-color 0.15s ease, color 0.15s ease',
           '&:hover': {
-            bgcolor: 'rgba(25, 118, 210, 0.08)',
+            bgcolor: secondaryAlpha(0.08),
             color: 'text.primary',
           },
           '&.Mui-selected': {
-            bgcolor: 'rgba(25, 118, 210, 0.08)',
+            bgcolor: secondaryAlpha(0.08),
             color: colors.brand,
             fontWeight: 600,
           },

@@ -225,10 +225,10 @@ type TicketStatus = 'Received' | 'In operation' | 'Function restored' | 'Complet
 const STATUS_COUNTS: { status: TicketStatus; count: number; color: string }[] = [
   { status: 'Received', count: 8, color: '#2196f3' },
   { status: 'In operation', count: 5, color: '#ff9800' },
+  { status: 'To approve', count: 3, color: '#e91e63' },
   { status: 'Function restored', count: 4, color: '#7c4dff' },
   { status: 'Completed', count: 12, color: '#4caf50' },
   { status: 'Invoiced', count: 6, color: '#78909c' },
-  { status: 'To approve', count: 3, color: '#e91e63' },
 ];
 
 interface TicketItem {
@@ -242,6 +242,7 @@ interface TicketItem {
   assignee: string;
   werkbon: string;
   referentie: string;
+  amount?: number;
 }
 
 const ACTIVE_TICKETS: TicketItem[] = [
@@ -260,13 +261,17 @@ const ACTIVE_TICKETS: TicketItem[] = [
   { id: 'T-2026-0029', title: 'Access card system', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '20-02-2026 13:45', assignee: 'M. Neuten', werkbon: '440259', referentie: 'REF-2026-054' },
   { id: 'T-2026-0028', title: 'Solar panel cleaning', building: 'TU Eindhoven', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '18-02-2026 09:00', assignee: 'B. Sevenge', werkbon: '440255', referentie: 'REF-2026-048' },
   { id: 'T-2026-0027', title: 'Sprinkler test report', building: 'De Efteling', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '15-02-2026 11:20', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
-  { id: 'T-2026-0026', title: 'Generator load test', building: 'Rijksmuseum', status: 'To approve', category: 'Regie', priority: 'Medium', createdDate: '12-02-2026 10:00', assignee: 'B. Sevenge', werkbon: '440251', referentie: 'REF-2026-042' },
-  { id: 'T-2026-0025', title: 'UPS battery replacement', building: 'Jaarbeurs Utrecht', status: 'To approve', category: 'Storing', priority: 'High', createdDate: '10-02-2026 14:30', assignee: 'M. Neuten', werkbon: '440247', referentie: 'REF-2026-038' },
-  { id: 'T-2026-0024', title: 'Climate control calibration', building: 'TU Eindhoven', status: 'To approve', category: 'Regie', priority: 'Low', createdDate: '08-02-2026 09:15', assignee: 'R.R.H.M. Zij', werkbon: '440243', referentie: 'REF-2026-033' },
+  { id: 'T-2026-0026', title: 'Generator load test', building: 'Rijksmuseum', status: 'To approve', category: 'Regie', priority: 'Medium', createdDate: '12-02-2026 10:00', assignee: 'B. Sevenge', werkbon: '440251', referentie: 'REF-2026-042', amount: 3250 },
+  { id: 'T-2026-0025', title: 'UPS battery replacement', building: 'Jaarbeurs Utrecht', status: 'To approve', category: 'Storing', priority: 'High', createdDate: '10-02-2026 14:30', assignee: 'M. Neuten', werkbon: '440247', referentie: 'REF-2026-038', amount: 8750 },
+  { id: 'T-2026-0024', title: 'Climate control calibration', building: 'TU Eindhoven', status: 'To approve', category: 'Regie', priority: 'Low', createdDate: '08-02-2026 09:15', assignee: 'R.R.H.M. Zij', werkbon: '440243', referentie: 'REF-2026-033', amount: 1480 },
+  { id: 'T-2026-0023', title: 'Ventilation overhaul', building: 'De Efteling', status: 'Completed', category: 'Regie', priority: 'Medium', createdDate: '05-02-2026 08:30', assignee: 'M. Neuten', werkbon: '440239', referentie: 'REF-2026-028', amount: 4200 },
+  { id: 'T-2026-0022', title: 'Electrical panel upgrade', building: 'Rijksmuseum', status: 'Completed', category: 'Storing', priority: 'High', createdDate: '01-02-2026 11:00', assignee: 'B. Sevenge', werkbon: '440235', referentie: 'REF-2026-022', amount: 12500 },
+  { id: 'T-2026-0021', title: 'Boiler replacement', building: 'Gemeentehuis Meierijstad', status: 'Invoiced', category: 'Storing', priority: 'High', createdDate: '28-01-2026 09:45', assignee: 'H.C.M. Mond', werkbon: '440231', referentie: 'REF-2026-018', amount: 18900 },
+  { id: 'T-2026-0020', title: 'Air handling unit service', building: 'TU Eindhoven', status: 'Invoiced', category: 'Regie', priority: 'Medium', createdDate: '25-01-2026 14:15', assignee: 'R.R.H.M. Zij', werkbon: '440227', referentie: 'REF-2026-014', amount: 6350 },
 ];
 
-const ACTIVE_STATUSES: TicketStatus[] = ['Received', 'In operation', 'Function restored', 'To approve'];
-const ACTION_REQUIRED_STATUSES: TicketStatus[] = ['Received', 'To approve'];
+const ACTIVE_STATUSES: TicketStatus[] = ['Received', 'In operation', 'To approve', 'Function restored'];
+const ACTION_REQUIRED_STATUSES: TicketStatus[] = ['To approve'];
 
 function getTicketStatusColor(status: TicketStatus): string {
   return STATUS_COUNTS.find(s => s.status === status)?.color ?? '#888';
@@ -433,7 +438,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Box sx={{ color: 'text.secondary', display: 'flex' }}>{topic.icon}</Box>
-                <Typography variant="body2" fontWeight={600} sx={{ flex: 1 }}>{topic.label}</Typography>
+                <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1 }}>{topic.label}</Typography>
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
@@ -483,7 +488,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
+              <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Best Performing</Box>
@@ -548,7 +553,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
+              <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst Performing</Box>
@@ -613,7 +618,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ShowChartOutlinedIcon sx={{ fontSize: 18, color: colors.brand }} />
-              <Typography variant="body2" fontWeight={600}>KPI Score Over Time</Typography>
+              <Typography variant="subtitle2" fontWeight={600}>KPI Score Over Time</Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
               {menuItems.map(item => {
@@ -708,7 +713,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
         <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 7fr', gap: 2 }}>
           {/* Card 1: Status distribution donut */}
           <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Status Overview</Typography>
+            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>Status Overview</Typography>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
               <PieChart
@@ -757,7 +762,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
           <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" fontWeight={600}>Active Tickets</Typography>
+                <Typography variant="subtitle2" fontWeight={600}>Active Tickets</Typography>
                 <Chip
                   icon={<FilterListIcon sx={{ fontSize: 13 }} />}
                   label="Action required"
@@ -839,6 +844,11 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                       flexShrink: 0,
                     }}
                   />
+                  {t.amount != null && (
+                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', flexShrink: 0, minWidth: 70, textAlign: 'right', color: 'text.secondary' }}>
+                      €{t.amount.toLocaleString('nl-NL')}
+                    </Typography>
+                  )}
                   <Chip
                     label={t.status}
                     size="small"
@@ -854,24 +864,26 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                       justifyContent: 'center',
                     }}
                   />
-                  {t.status === 'To approve' && (
-                    <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => { e.stopPropagation(); }}
-                        sx={{ width: 24, height: 24, bgcolor: '#4caf5014', color: '#4caf50', '&:hover': { bgcolor: '#4caf5028' } }}
-                      >
-                        <CheckIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => { e.stopPropagation(); }}
-                        sx={{ width: 24, height: 24, bgcolor: '#ef535014', color: '#ef5350', '&:hover': { bgcolor: '#ef535028' } }}
-                      >
-                        <CloseIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-                    </Box>
-                  )}
+                  <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0, width: 56, justifyContent: 'center' }}>
+                    {t.status === 'To approve' ? (
+                      <>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => { e.stopPropagation(); }}
+                          sx={{ width: 24, height: 24, bgcolor: '#4caf5014', color: '#4caf50', '&:hover': { bgcolor: '#4caf5028' } }}
+                        >
+                          <CheckIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => { e.stopPropagation(); }}
+                          sx={{ width: 24, height: 24, bgcolor: '#ef535014', color: '#ef5350', '&:hover': { bgcolor: '#ef535028' } }}
+                        >
+                          <CloseIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </>
+                    ) : null}
+                  </Box>
                 </Box>
               ))}
             </Box>

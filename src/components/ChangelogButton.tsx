@@ -40,7 +40,7 @@ interface HighlightsData {
 }
 
 const TYPE_CONFIG: Record<ChangeType, { label: string; color: string; bg: string; border: string }> = {
-  feature:     { label: 'New',         color: '#1e5a96', bg: '#eef2ff', border: '#c7d7f5' },
+  feature:     { label: 'New',         color: colors.brand, bg: colors.bgActive, border: '#c7d7f5' },
   improvement: { label: 'Improved',    color: '#7c3aed', bg: '#f3e8ff', border: '#d8b4fe' },
   fix:         { label: 'Fixed',       color: '#b45309', bg: '#fef3c7', border: '#fcd34d' },
   design:      { label: 'Design',      color: '#0f766e', bg: '#f0fdfa', border: '#99f6e4' },
@@ -249,7 +249,7 @@ export default function ChangelogButton() {
                       return (
                         <Box key={entry.sha} sx={{ display: 'flex', gap: 1.5 }}>
                           <Avatar src={entry.authorAvatar ?? undefined}
-                            sx={{ width: 28, height: 28, fontSize: '0.6rem', fontWeight: 700, bgcolor: '#1e5a96', flexShrink: 0, mt: 0.25 }}>
+                            sx={{ width: 28, height: 28, fontSize: '0.6rem', fontWeight: 700, bgcolor: colors.brand, flexShrink: 0, mt: 0.25 }}>
                             {entry.author.slice(0, 2).toUpperCase()}
                           </Avatar>
                           <Box sx={{ flex: 1, minWidth: 0 }}>

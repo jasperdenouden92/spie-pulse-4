@@ -202,7 +202,7 @@ export default function CriticalAssetsCard({
               borderColor: 'divider',
               borderRadius: 1,
               bgcolor: colors.bgSecondary,
-              outline: isInspectMode && hoveredAssetId === asset.id ? '3px dashed #1976d2' : 'none',
+              outline: isInspectMode && hoveredAssetId === asset.id ? `3px dashed ${colors.brandSecondary}` : 'none',
               outlineOffset: '4px',
               transition: 'outline 0.2s ease, background-color 0.2s ease',
               position: 'relative',
