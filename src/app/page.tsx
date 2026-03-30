@@ -1714,21 +1714,15 @@ export default function Home() {
                   {/* ========== BUILDINGS / PERFORMANCE INDICATORS PANEL ========== */}
                   {!selectedBuilding ? (
                     <Box sx={{
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      bgcolor: '#fff',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      mt: 4
                     }}>
                       {/* Panel Header with Tabs */}
                       <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        p: 1.5,
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        bgcolor: colors.bgSecondary
+                        px: 0,
                       }}>
                         <AppTabs
                           value={buildingsPanelTab}
@@ -1774,7 +1768,7 @@ export default function Home() {
                       </Box>
 
                       {/* Panel Content */}
-                      <Box sx={{ p: 2.5 }}>
+                      <Box sx={{ pt: 2 }}>
                         {buildingsPanelTab === 'buildings' ? (
                           <>
                             {/* Group Selection Banner */}
