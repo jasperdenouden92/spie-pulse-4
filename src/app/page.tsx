@@ -26,10 +26,12 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import PageHeader from '@/components/PageHeader';
-import PropertyCard, { TopicScore } from '@/components/PropertyCard';
+import PropertyCard, { TopicScore, EnergyLabel } from '@/components/PropertyCard';
 import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
 import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
 import KPICard, { PerformanceRating } from '@/components/KPICard';
@@ -221,7 +223,7 @@ function getQuotationsTopics(quotationsGreen: number): TopicScore[] {
 
 function getTicketsTopics(ticketsGreen: number): TopicScore[] {
   return [
-    { label: 'Respond time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: 'Response time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
     { label: 'Restore time', score: Math.max(0, Math.min(100, ticketsGreen - 5)), trend: -2, icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
   ];
 }
@@ -377,6 +379,8 @@ export default function Home() {
   const rawPanelTab = searchParams.get('panel') ?? 'buildings';
   const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis' || rawPanelTab === 'recommendations') ? rawPanelTab : 'buildings';
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
+  const buildingsViewMode = (searchParams.get('bview') ?? 'cards') as 'cards' | 'list';
+  const setBuildingsViewMode = (v: 'cards' | 'list') => setURLParams({ bview: v });
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
@@ -385,25 +389,6 @@ export default function Home() {
   const [activeDashboardLabel, setActiveDashboardLabel] = useState<string>('');
   const [pendingDashboardId, setPendingDashboardId] = useState<string | null>(null);
 
-  // Page title scroll tracking — show compact filter in header when scrolled
-  const [isFilterTitleScrolled, setIsFilterTitleScrolled] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const pageTitleRef = React.useCallback((node: HTMLDivElement | null) => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-      observerRef.current = null;
-    }
-    if (node) {
-      const obs = new IntersectionObserver(
-        ([entry]) => setIsFilterTitleScrolled(!entry.isIntersecting),
-        { threshold: 0, rootMargin: '-56px 0px 0px 0px' }
-      );
-      obs.observe(node);
-      observerRef.current = obs;
-    } else {
-      setIsFilterTitleScrolled(false);
-    }
-  }, []);
 
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
@@ -423,18 +408,6 @@ export default function Home() {
 
   const getPeriodDisplayLabel = (range: string): string => getDateRangeDisplayLabel(range);
 
-  const inlineDropdownSx = {
-    display: 'inline-flex',
-    alignItems: 'baseline',
-    gap: '2px',
-    cursor: 'pointer',
-    fontWeight: 600,
-    color: 'primary.main',
-    transition: 'opacity 0.2s ease',
-    '&:hover': {
-      opacity: 0.7,
-    },
-  };
 
   // ── URL setter helpers ─────────────────────────────────────────────────────
   const setCurrentPage = (page: string) => navigateTo({ page });
@@ -1248,23 +1221,15 @@ export default function Home() {
             onExport={handleExport}
             activeDashboardId={activeDashboardId}
             activeDashboardLabel={activeDashboardLabel}
-            isFilterTitleScrolled={
-              currentPage === 'dashboards'
-                ? false
-                : isFilterTitleScrolled && currentPage === 'portfolio'
-            }
-            filterSelectionLabel={
-              currentPage === 'dashboards'
-                ? undefined
-                : (SELECTION_LABELS[selection] ?? 'overall performance')
-            }
-            filterPeriodLabel={getPeriodDisplayLabel(dateRange)}
+            filterPeriodLabel={currentPage === 'portfolio' ? getPeriodDisplayLabel(dateRange) : undefined}
             filterBuildingLabel={
-              (currentPage === 'portfolio' && selectedBuilding) ? undefined : getTitleBuildingLabel()
+              (currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards'
+                ? getTitleBuildingLabel() : undefined
             }
-            onFilterDateClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
+            onFilterDateClick={currentPage === 'portfolio' ? (e) => setTitleDateRangeAnchor(e.currentTarget) : undefined}
             onFilterBuildingClick={
-              (currentPage === 'portfolio' && selectedBuilding) ? undefined : (e) => setTitleBuildingAnchor(e.currentTarget)
+              ((currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards')
+                ? (e) => setTitleBuildingAnchor(e.currentTarget) : undefined
             }
             contractFilter={contractFilter}
             onContractFilterChange={setContractFilter}
@@ -1299,6 +1264,7 @@ export default function Home() {
             onDashboardChange={(id, label) => { setActiveDashboardId(id); setActiveDashboardLabel(label); }}
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
+            selectedBuildingNames={titleBuildingNames}
           />
         )}
 
@@ -1382,48 +1348,7 @@ export default function Home() {
                     </Box>
                   )}
 
-                  {/* ========== PAGE TITLE WITH INLINE FILTERS ========== */}
-                  {selectedBuilding && (
-                    <Box ref={pageTitleRef} sx={{ mb: 3 }}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                        Showing {SELECTION_LABELS[selection] ?? 'overall performance'} of
-                        <Box
-                          component="span"
-                          onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
-                          sx={inlineDropdownSx}
-                        >
-                          {getPeriodDisplayLabel(dateRange)}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                        </Box>
-                      </Typography>
-
-                    </Box>
-                  )}
-                  {!selectedBuilding && (
-                    <Box ref={pageTitleRef} sx={{ mb: 3 }}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                        Showing {SELECTION_LABELS[selection] ?? 'overall performance'} of
-                        <Box
-                          component="span"
-                          onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
-                          sx={inlineDropdownSx}
-                        >
-                          {getPeriodDisplayLabel(dateRange)}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                        </Box>
-                        for
-                        <Box
-                          component="span"
-                          onClick={(e) => setTitleBuildingAnchor(e.currentTarget)}
-                          sx={inlineDropdownSx}
-                        >
-                          {getTitleBuildingLabel()}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                        </Box>
-                      </Typography>
-
-                    </Box>
-                  )}
+                  {/* Spacer — filters are now in the sticky PageHeader */}
 
                   {/* ========== KPI METRICS SECTION ========== */}
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
@@ -1761,7 +1686,8 @@ export default function Home() {
                   {/* ========== BUILDINGS / PERFORMANCE INDICATORS PANEL ========== */}
                   {!selectedBuilding ? (
                     <Box sx={{
-                      border: '1px solid rgba(0,0,0,0.04)',
+                      border: 1,
+                      borderColor: 'divider',
                       borderRadius: '12px',
                       bgcolor: '#fff',
                       overflow: 'hidden'
@@ -1772,7 +1698,8 @@ export default function Home() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         p: 1.5,
-                        borderBottom: '1px solid rgba(0,0,0,0.04)',
+                        borderBottom: 1,
+                        borderColor: 'divider',
                         bgcolor: colors.bgSecondary
                       }}>
                         <AppTabs
@@ -1785,7 +1712,7 @@ export default function Home() {
                           ]}
                         />
 
-                        {/* Sort Dropdown + Building/Cluster toggle — only on Buildings tab */}
+                        {/* Sort Dropdown + View Toggle — only on Buildings tab */}
                         {buildingsPanelTab === 'buildings' && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Chip
@@ -1814,16 +1741,214 @@ export default function Home() {
                               <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
                               <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
                             </Menu>
+                            <IconButton
+                              onClick={() => setBuildingsViewMode(buildingsViewMode === 'cards' ? 'list' : 'cards')}
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: '6px',
+                                bgcolor: colors.bgPrimaryHover,
+                                color: 'text.secondary',
+                                '&:hover': { bgcolor: '#e8e8e8' },
+                              }}
+                            >
+                              {buildingsViewMode === 'cards'
+                                ? <FormatListBulletedIcon sx={{ fontSize: 18 }} />
+                                : <GridViewOutlinedIcon sx={{ fontSize: 18 }} />}
+                            </IconButton>
                           </Box>
                         )}
                       </Box>
 
                       {/* Panel Content */}
-                      <Box sx={{ p: 2.5 }}>
+                      <Box sx={{ p: buildingsPanelTab === 'buildings' && buildingsViewMode === 'list' ? '12px 0 0 0' : 2.5 }}>
                         {buildingsPanelTab === 'buildings' ? (
                           <>
-                            {/* Group Selection Banner */}
-                            {/* ===== BUILDINGS / CLUSTERS GRID ===== */}
+                            {buildingsViewMode === 'list' ? (
+                              /* ===== LIST VIEW ===== */
+                              (() => {
+                                // Compute topic headers from first item
+                                const firstItem = titleBuildingMode === 'clusters' ? clusterData[0] : filteredBuildings[0];
+                                const firstMetrics = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).metrics : (firstItem as typeof filteredBuildings[0]).metrics) : undefined;
+                                const firstTrends = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).trends : (firstItem as typeof filteredBuildings[0]).trends) : undefined;
+                                const topicHeaders = firstMetrics && firstTrends ? (
+                                  selection === 'themes_group' ? getThemesTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
+                                  : selection === 'operations_group' ? getOperationsTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
+                                  : selectedMetric === 'overall' ? getOverallTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
+                                  : selectedMetric === 'comfort' ? getComfortTopics(firstMetrics.comfort.green)
+                                  : selectedMetric === 'sustainability' ? getSustainabilityTopics(firstMetrics.sustainability.green)
+                                  : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(firstMetrics.asset_monitoring.green)
+                                  : selectedMetric === 'compliance' ? getComplianceTopics(firstMetrics.compliance.green)
+                                  : selectedMetric === 'maintenance' ? getMaintenanceTopics(firstMetrics.maintenance.green)
+                                  : selectedMetric === 'quotations' ? getQuotationsTopics(firstMetrics.quotations.green)
+                                  : selectedMetric === 'tickets' ? getTicketsTopics(firstMetrics.tickets.green)
+                                  : undefined
+                                ) : undefined;
+                                const colHeaderSx = { fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase' as const, fontSize: '0.7rem', letterSpacing: '0.05em' };
+
+                                return (
+                              <Box>
+                                {/* Table header */}
+                                <Box sx={{
+                                  display: 'flex',
+                                  gap: 1.5,
+                                  px: 2.5,
+                                  pb: 1,
+                                  borderBottom: 1,
+                                  borderColor: 'divider',
+                                }}>
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, flex: 2 }}>Building</Typography>
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, width: 90, flexShrink: 0 }}>Score</Typography>
+                                  {selectedMetric !== 'overall' && (
+                                    <Typography variant="caption" sx={{ ...colHeaderSx, width: 75, flexShrink: 0 }}>Overall</Typography>
+                                  )}
+                                  {topicHeaders?.map(t => (
+                                    <Typography key={t.label} variant="caption" sx={{ ...colHeaderSx, width: 105, flexShrink: 0, textAlign: 'center' }}>
+                                      {t.label}
+                                    </Typography>
+                                  ))}
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, width: 75, flexShrink: 0, textAlign: 'center' }}>Alerts</Typography>
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, width: 80, flexShrink: 0, textAlign: 'right' }}>Trend</Typography>
+                                </Box>
+                                {/* Rows */}
+                                {(titleBuildingMode === 'clusters' ? clusterData : filteredBuildings).map((item) => {
+                                  const isCluster = titleBuildingMode === 'clusters';
+                                  const b = item as typeof filteredBuildings[0];
+                                  const c = item as typeof clusterData[0];
+                                  const name = isCluster ? c.name : b.name;
+                                  const subtitle = isCluster ? `${c.buildings.length} buildings` : b.address;
+                                  const image = isCluster ? c.images[0] : b.image;
+                                  const score = (isCluster ? c.metrics : b.metrics)[selectedMetric].green;
+                                  const overallScore = (isCluster ? c.metrics : b.metrics).overall.green;
+                                  const trend = (isCluster ? c.trends : b.trends)[selectedMetric];
+                                  const stats = !isCluster ? buildingOperationalStats[b.name] : undefined;
+                                  const rating = getPerformanceRating(score);
+                                  const overallRating = getPerformanceRating(overallScore);
+
+                                  const metrics = isCluster ? c.metrics : b.metrics;
+                                  const trends = isCluster ? c.trends : b.trends;
+                                  const topics = selection === 'themes_group' ? getThemesTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
+                                    : selection === 'operations_group' ? getOperationsTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
+                                    : selectedMetric === 'overall' ? getOverallTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
+                                    : selectedMetric === 'comfort' ? getComfortTopics(metrics.comfort.green)
+                                    : selectedMetric === 'sustainability' ? getSustainabilityTopics(metrics.sustainability.green)
+                                    : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(metrics.asset_monitoring.green)
+                                    : selectedMetric === 'compliance' ? getComplianceTopics(metrics.compliance.green)
+                                    : selectedMetric === 'maintenance' ? getMaintenanceTopics(metrics.maintenance.green)
+                                    : selectedMetric === 'quotations' ? getQuotationsTopics(metrics.quotations.green)
+                                    : selectedMetric === 'tickets' ? getTicketsTopics(metrics.tickets.green)
+                                    : undefined;
+
+                                  const energyRating = selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined;
+                                  const alertCount = selectedMetric === 'comfort' && stats ? stats.comfort.alerts
+                                    : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts
+                                    : selectedMetric === 'asset_monitoring' && stats ? stats.assetMonitoring.alerts
+                                    : undefined;
+
+                                  return (
+                                    <Box
+                                      key={name}
+                                      onClick={() => !isCluster && (isInspectMode ? undefined : setSelectedBuilding(b))}
+                                      sx={{
+                                        display: 'flex',
+                                        gap: 1.5,
+                                        px: 2.5,
+                                        py: 1.5,
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        borderBottom: 1,
+                                        borderColor: 'divider',
+                                        transition: 'background-color 0.15s ease',
+                                        '&:hover': { bgcolor: colors.bgPrimaryHover },
+                                        '&:last-child': { borderBottom: 'none' },
+                                      }}
+                                    >
+                                      {/* Name + address + WEII */}
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 2 }}>
+                                        <Box
+                                          component="img"
+                                          src={image}
+                                          alt={name}
+                                          sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover', flexShrink: 0 }}
+                                        />
+                                        <Box sx={{ minWidth: 0 }}>
+                                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                              {name}
+                                            </Typography>
+                                            {energyRating && <EnergyLabel rating={energyRating} size="small" />}
+                                          </Box>
+                                          <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                                            {subtitle}
+                                          </Typography>
+                                        </Box>
+                                      </Box>
+
+                                      {/* Score with color-matched icon */}
+                                      <Box sx={{ width: 90, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Box sx={{ display: 'flex', color: rating.color, '& .MuiSvgIcon-root': { fontSize: 16, color: `${rating.color} !important` } }}>
+                                          {metricInfo[selectedMetric].icon}
+                                        </Box>
+                                        <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: rating.color }}>
+                                          {score}%
+                                        </Typography>
+                                      </Box>
+
+                                      {/* Overall score — hidden when viewing overall */}
+                                      {selectedMetric !== 'overall' && (
+                                        <Box sx={{ width: 75, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                          <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                          <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary' }}>
+                                            {overallScore}%
+                                          </Typography>
+                                        </Box>
+                                      )}
+
+                                      {/* Topic scores — each in own column, gray */}
+                                      {topics?.map(t => (
+                                        <Box key={t.label} sx={{ width: 105, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                          <Box sx={{ display: 'flex', color: 'text.secondary', '& .MuiSvgIcon-root': { fontSize: 16 } }}>{t.icon}</Box>
+                                          <Typography sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.8rem' }}>
+                                            {t.score}%
+                                          </Typography>
+                                        </Box>
+                                      ))}
+
+                                      {/* Alerts */}
+                                      <Box sx={{ width: 75, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                        {alertCount != null && alertCount > 0 ? (
+                                          <>
+                                            <NotificationsActiveOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                            <Typography sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.8rem' }}>
+                                              {alertCount}
+                                            </Typography>
+                                          </>
+                                        ) : (
+                                          <Typography sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>—</Typography>
+                                        )}
+                                      </Box>
+
+                                      {/* Trend */}
+                                      <Box sx={{ width: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                                        {trend >= 0
+                                          ? <TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+                                          : <TrendingDownIcon sx={{ fontSize: 16, color: '#f44336' }} />}
+                                        <Typography sx={{
+                                          fontWeight: 600,
+                                          fontSize: '0.8rem',
+                                          color: trend >= 0 ? '#4caf50' : '#f44336',
+                                        }}>
+                                          {trend >= 0 ? '+' : ''}{trend}%
+                                        </Typography>
+                                      </Box>
+                                    </Box>
+                                  );
+                                })}
+                              </Box>
+                                );
+                              })()
+                            ) : (
+                            /* ===== CARDS VIEW ===== */
                             <Box sx={{
                               display: 'grid',
                               gap: 2,
@@ -1851,7 +1976,7 @@ export default function Home() {
                                       performance={cluster.metrics[selectedMetric]}
                                       metricTitle={metricInfo[selectedMetric].title}
                                       metricIcon={metricInfo[selectedMetric].icon}
-                                      overallPerformance={cluster.metrics.overall}
+                                      overallPerformance={selectedMetric !== 'overall' ? cluster.metrics.overall : undefined}
                                       showOverall={selectedMetric !== 'overall'}
                                       trend={cluster.trends[selectedMetric]}
                                       periodLabel={periodMetrics.periodLabel}
@@ -1915,7 +2040,7 @@ export default function Home() {
                                     performance={b.metrics[selectedMetric]}
                                     metricTitle={metricInfo[selectedMetric].title}
                                     metricIcon={metricInfo[selectedMetric].icon}
-                                    overallPerformance={b.metrics.overall}
+                                    overallPerformance={selectedMetric !== 'overall' ? b.metrics.overall : undefined}
                                     showOverall={selectedMetric !== 'overall'}
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
@@ -1929,6 +2054,7 @@ export default function Home() {
                             })
                               )}
                             </Box>
+                            )}
                           </>
                         ) : buildingsPanelTab === 'kpi_analysis' ? (
                           /* ===== KPI ANALYSIS VIEW ===== */

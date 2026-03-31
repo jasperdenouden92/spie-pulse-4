@@ -227,16 +227,13 @@ const ALL_THEME_DASHBOARDS: DashboardLink[] = [
   { id: 'comfort_gebouwoverzicht', label: 'Comfort Building Overview', subtitle: 'Heatmap, scores per building and zone', icon: <GridViewOutlinedIcon />, theme: 'Comfort' },
   { id: 'comforttrend', label: 'Comfort Trend', subtitle: 'Temperature and air quality trends', icon: <TimelineOutlinedIcon />, theme: 'Comfort' },
   { id: 'adaptieve_temperatuurgrenzen', label: 'Adaptive Temperature Limits', subtitle: 'Upper and lower bounds per season', icon: <TuneOutlinedIcon />, theme: 'Comfort' },
-  { id: 'frisse_scholen', label: 'Fresh Schools', subtitle: 'CO₂, temperature and ventilation', icon: <ParkOutlinedIcon />, theme: 'Comfort' },
-  { id: 'kpi_comfortniveaus_luchtkwaliteit', label: 'KPI Air Quality', subtitle: 'CO₂ levels, ventilation and humidity', icon: <BarChartOutlinedIcon />, theme: 'Comfort' },
-  { id: 'kpi_comfortniveaus_ruimtetemperaturen', label: 'KPI Room Temperatures', subtitle: 'Room temperature distribution', icon: <SsidChartOutlinedIcon />, theme: 'Comfort' },
+  { id: 'frisse_scholen', label: 'Frisse Scholen', subtitle: 'CO₂, temperature and ventilation', icon: <ParkOutlinedIcon />, theme: 'Comfort' },
   // Asset Monitoring
   { id: 'asset_trend', label: 'Asset Trend', subtitle: 'Asset health and performance over time', icon: <TimelineOutlinedIcon />, theme: 'Asset Monitoring' },
   { id: 'warmte_koudeopslag', label: 'Warmte- Koudeopslag (WKO)', subtitle: 'Thermal energy storage performance', icon: <HeatPumpOutlinedIcon />, theme: 'Asset Monitoring' },
   // Compliance
-  { id: 'preventief_onderhoud', label: 'Preventive Maintenance', subtitle: 'Scheduled maintenance compliance', icon: <BuildOutlinedIcon />, theme: 'Compliance' },
-  { id: 'process_orders', label: 'Process Orders', subtitle: 'Work order tracking and completion', icon: <AssignmentOutlinedIcon />, theme: 'Compliance' },
-  { id: 'mjob', label: 'Multi-year Maintenance Budget', subtitle: 'Long-term maintenance planning', icon: <DateRangeOutlinedIcon />, theme: 'Compliance' },
+  { id: 'compliance_dashboard', label: 'Compliance Dashboard', subtitle: 'Regulatory compliance overview and status', icon: <GavelOutlinedIcon />, theme: 'Compliance' },
+  { id: 'bacs_overview', label: 'BACS Overview', subtitle: 'Building automation and control systems', icon: <SensorsOutlinedIcon />, theme: 'Compliance' },
 ];
 
 // ── Component ──

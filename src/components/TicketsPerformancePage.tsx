@@ -92,7 +92,7 @@ function getStatusLabel(score: number, goodAbove: number, moderateAbove: number)
 
 // Topics: respond time, restore time
 const TOPIC_DEFS = [
-  { key: 'respond_time', label: 'Respond time', icon: <QuickreplyOutlinedIcon sx={{ fontSize: 20 }} />, offset: 3, trend: 4, chartColor: '#2196f3', goodAbove: 80, moderateAbove: 60 },
+  { key: 'respond_time', label: 'Response time', icon: <QuickreplyOutlinedIcon sx={{ fontSize: 20 }} />, offset: 3, trend: 4, chartColor: '#2196f3', goodAbove: 80, moderateAbove: 60 },
   { key: 'restore_time', label: 'Restore time', icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 20 }} />, offset: -5, trend: -2, chartColor: '#ff9800', goodAbove: 75, moderateAbove: 55 },
 ];
 
@@ -387,7 +387,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
     { key: 'theme', label: 'Tickets KPI', icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'respond_time', label: 'Respond time', icon: <QuickreplyOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'respond_time', label: 'Response time', icon: <QuickreplyOutlinedIcon sx={{ fontSize: 16 }} /> },
     { key: 'restore_time', label: 'Restore time', icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 

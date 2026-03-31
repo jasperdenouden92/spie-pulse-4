@@ -434,7 +434,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
 
 /** Helper to get the chip/inline label for the current selection */
 export function getBuildingSelectorLabel(selectedNames: string[], mode: BuildingFilterMode = 'buildings'): string {
-  if (selectedNames.length === 0) return mode === 'clusters' ? 'all clusters' : 'all buildings';
+  if (selectedNames.length === 0) return mode === 'clusters' ? 'All Clusters' : 'All Buildings';
   if (selectedNames.length === 1) return selectedNames[0];
   return `${selectedNames.length} ${mode === 'clusters' ? 'clusters' : 'buildings'}`;
 }
