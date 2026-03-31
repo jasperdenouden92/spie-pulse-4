@@ -31,20 +31,10 @@ export const STAFF_POOL = [
   'Matthew Harris'
 ];
 
-export const BUILDING_POOL = [
-  'Skyline Plaza',
-  'Urban Tower',
-  'Metro Heights',
-  'Innovation Hub',
-  'Riverside Complex',
-  'Gateway Center',
-  'Parkside Office',
-  'Harbor Point',
-  'Crystal Tower',
-  'Green Park Office',
-  'Sunset Plaza',
-  'Metro Central'
-];
+import { locations } from './locations';
+
+// Use all location names as the building pool
+export const BUILDING_POOL = locations.map(l => l.name);
 
 export const VENDOR_POOL = [
   'Climate Control Systems',

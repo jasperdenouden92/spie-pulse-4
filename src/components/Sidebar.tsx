@@ -48,7 +48,7 @@ import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import { buildings, Building } from '@/data/buildings';
+import { buildings, Building, tenants, tenantLogos } from '@/data/buildings';
 import {
   DndContext,
   closestCenter,
@@ -95,6 +95,8 @@ interface SidebarProps {
   dataExplorerOpen?: boolean;
   onDataExplorerToggle?: () => void;
   onDashboardNavigate?: (dashboardId: string) => void;
+  selectedTenant?: string;
+  onTenantChange?: (tenant: string) => void;
 }
 
 interface NavItemProps {
@@ -325,12 +327,13 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, dataExplorerOpen = false, onDataExplorerToggle, onDashboardNavigate }: SidebarProps) {
+export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, dataExplorerOpen = false, onDataExplorerToggle, onDashboardNavigate, selectedTenant, onTenantChange }: SidebarProps) {
+  const selectedCustomer = selectedTenant ?? tenants[0];
+  const setSelectedCustomer = (t: string) => onTenantChange?.(t);
   const [searchQuery, setSearchQuery] = useState('');
   const [modifierHeld, setModifierHeld] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [filteredBuildings, setFilteredBuildings] = useState(buildings);
-  const [selectedCustomer, setSelectedCustomer] = useState('ACME Corporation');
   const [customerAnchorEl, setCustomerAnchorEl] = useState<null | HTMLElement>(null);
   const [newMenuAnchorEl, setNewMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -475,25 +478,20 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
     })
   );
 
-  const customers = [
-    { name: 'ACME Corporation' },
-    { name: 'TechVision Inc' },
-    { name: 'Global Solutions' },
-    { name: 'Nexus Group' },
-    { name: 'Pulse Dynamics' },
-    { name: 'Summit Enterprises' },
-  ];
+  const customers = tenants.map(name => ({ name }));
+
+  const tenantBuildings = buildings.filter(b => b.tenant === selectedCustomer);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
-      setFilteredBuildings(buildings);
+      setFilteredBuildings(tenantBuildings);
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     const timer = setTimeout(() => {
-      const filtered = buildings.filter(b =>
+      const filtered = tenantBuildings.filter(b =>
         b.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredBuildings(filtered);
@@ -501,7 +499,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, selectedCustomer]);
 
   const buildingMenuItems = [
     { label: 'Overview', icon: AssignmentOutlinedIcon, metric: 'overall' },
@@ -603,10 +601,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Box
                 sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}
               >
-                <Box sx={{ width: 24, height: 24, bgcolor: colors.brand, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
-                    {selectedCustomer.slice(0, 2)}
-                  </Typography>
+                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+                  <img src={tenantLogos[selectedCustomer]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 </Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {selectedCustomer}
@@ -812,10 +808,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
                 sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
               >
-                <Box sx={{ width: 24, height: 24, bgcolor: colors.brand, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
-                    {selectedCustomer.slice(0, 2)}
-                  </Typography>
+                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+                  <img src={tenantLogos[selectedCustomer]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 </Box>
               </IconButton>
             </Tooltip>
@@ -951,10 +945,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               '&.Mui-selected': { backgroundColor: colors.bgActive, '&:hover': { backgroundColor: colors.bgActiveHover } }
             }}
           >
-            <Box sx={{ width: 24, height: 24, bgcolor: colors.brand, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, fontSize: '0.6rem', textTransform: 'uppercase' }}>
-                {customer.name.slice(0, 2)}
-              </Typography>
+            <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+              <img src={tenantLogos[customer.name]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
             </Box>
             <Typography variant="body2" sx={{ fontWeight: 500 }}>{customer.name}</Typography>
           </MenuItem>
