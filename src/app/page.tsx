@@ -237,14 +237,15 @@ function getAssetMonitoringTopics(assetMonitoringGreen: number): TopicScore[] {
 }
 
 function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
+  const themeKeys: MetricKeys[] = ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
+  const opsKeys: MetricKeys[] = ['tickets', 'quotations', 'maintenance'];
+  const themeScore = Math.round(themeKeys.reduce((sum, k) => sum + metrics[k].green, 0) / themeKeys.length);
+  const themeTrend = Math.round(themeKeys.reduce((sum, k) => sum + trends[k], 0) / themeKeys.length * 10) / 10;
+  const opsScore = Math.round(opsKeys.reduce((sum, k) => sum + metrics[k].green, 0) / opsKeys.length);
+  const opsTrend = Math.round(opsKeys.reduce((sum, k) => sum + trends[k], 0) / opsKeys.length * 10) / 10;
   return [
-    { label: 'Sustainability', score: metrics.sustainability.green, trend: trends.sustainability, icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
-    { label: 'Comfort', score: metrics.comfort.green, trend: trends.comfort, icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Asset Monitoring', score: metrics.asset_monitoring.green, trend: trends.asset_monitoring, icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Compliance', score: metrics.compliance.green, trend: trends.compliance, icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-    { label: 'Tickets', score: metrics.tickets.green, trend: trends.tickets, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
-    { label: 'Quotations', score: metrics.quotations.green, trend: trends.quotations, icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
-    { label: 'Maintenance', score: metrics.maintenance.green, trend: trends.maintenance, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#795548' },
+    { label: 'Theme KPIs', score: themeScore, trend: themeTrend, icon: <StyleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
+    { label: 'Operational KPIs', score: opsScore, trend: opsTrend, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
   ];
 }
 
