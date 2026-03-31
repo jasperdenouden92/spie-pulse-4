@@ -82,6 +82,7 @@ import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
 import RecommendationsInbox from '@/components/RecommendationsInbox';
 import ThemesPage from '@/components/Themes';
+import BmsPage from '@/components/BmsPage';
 import DashboardsPage from '@/components/DashboardsPage';
 import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import ComfortPerformancePage from '@/components/ComfortPerformancePage';
@@ -1308,6 +1309,11 @@ export default function Home() {
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
           {currentPage === 'exports' && <ExportsPage />}
+
+          {/* BMS Page */}
+          {currentPage === 'bms' && (
+            <BmsPage />
+          )}
 
           {/* Portfolio Page */}
           {currentPage === 'portfolio' && (
