@@ -14,11 +14,12 @@ import { colors } from '@/colors';
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
-
 const TODAY = new Date();
 TODAY.setHours(0, 0, 0, 0);
 
 const MIN_YEAR = 2023;
+
+export type ViewMode = 'standard' | 'granular';
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
 
@@ -66,6 +67,37 @@ function clampToToday(d: Date): Date {
   return d > TODAY ? TODAY : d;
 }
 
+type WeekInfo = {
+  label: string;
+  startDay: number; // 1-based
+  endDay: number;   // 1-based
+  startDate: Date;
+  endDate: Date;
+};
+
+function getMonthWeeks(year: number, month: number): WeekInfo[] {
+  const lastDay = endOfMonth(new Date(year, month, 1)).getDate();
+  const weeks: WeekInfo[] = [];
+  let day = 1;
+  let weekNum = 1;
+  while (day <= lastDay) {
+    const date = new Date(year, month, day);
+    const dow = (date.getDay() + 6) % 7; // Mon=0
+    const daysUntilSunday = 6 - dow;
+    const end = Math.min(day + daysUntilSunday, lastDay);
+    weeks.push({
+      label: `W${weekNum}`,
+      startDay: day,
+      endDay: end,
+      startDate: new Date(year, month, day),
+      endDate: new Date(year, month, end),
+    });
+    weekNum++;
+    day = end + 1;
+  }
+  return weeks;
+}
+
 // ── Public API ───────────────────────────────────────────────────────────────
 
 export function parseDateRange(value: string): { from: Date; to: Date } {
@@ -77,7 +109,17 @@ export function parseDateRange(value: string): { from: Date; to: Date } {
   now.setHours(0, 0, 0, 0);
   switch (value) {
     case 'Today': return { from: now, to: now };
-    case 'This Week': return { from: startOfWeek(now), to: endOfWeek(now) };
+    case 'Yesterday': {
+      const y = new Date(now);
+      y.setDate(y.getDate() - 1);
+      return { from: startOfDay(y), to: startOfDay(y) };
+    }
+    case 'This Week': return { from: startOfWeek(now), to: clampToToday(endOfWeek(now)) };
+    case 'Last Week': {
+      const prevWeek = new Date(now);
+      prevWeek.setDate(prevWeek.getDate() - 7);
+      return { from: startOfWeek(prevWeek), to: endOfWeek(prevWeek) };
+    }
     case 'This Month': return { from: startOfMonth(now), to: now };
     case 'This Quarter': {
       const q = Math.floor(now.getMonth() / 3);
@@ -144,11 +186,55 @@ export const PRESETS: Preset[] = [
   },
 ];
 
+export const GRANULAR_PRESETS: Preset[] = [
+  {
+    label: 'Today',
+    getRange: () => ({ from: new Date(TODAY), to: new Date(TODAY) }),
+  },
+  {
+    label: 'Yesterday',
+    getRange: () => {
+      const y = new Date(TODAY);
+      y.setDate(y.getDate() - 1);
+      return { from: startOfDay(y), to: startOfDay(y) };
+    },
+  },
+  {
+    label: 'This week',
+    getRange: () => ({ from: startOfWeek(TODAY), to: clampToToday(endOfWeek(TODAY)) }),
+  },
+  {
+    label: 'Last week',
+    getRange: () => {
+      const prev = new Date(TODAY);
+      prev.setDate(prev.getDate() - 7);
+      return { from: startOfWeek(prev), to: endOfWeek(prev) };
+    },
+  },
+  {
+    label: 'This quarter',
+    getRange: () => {
+      const q = Math.floor(TODAY.getMonth() / 3);
+      return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) };
+    },
+  },
+  {
+    label: 'Last quarter',
+    getRange: () => {
+      const q = Math.floor(TODAY.getMonth() / 3);
+      const start = new Date(TODAY.getFullYear(), (q - 1) * 3, 1);
+      return { from: start, to: endOfQuarter(start) };
+    },
+  },
+];
+
+const ALL_PRESETS = [...PRESETS, ...GRANULAR_PRESETS];
+
 export function getDateRangeDisplayLabel(value: string): string {
   const { from, to } = parseDateRange(value);
 
-  // Check if the range matches a preset
-  for (const preset of PRESETS) {
+  // Check if the range matches any preset
+  for (const preset of ALL_PRESETS) {
     const { from: pf, to: pt } = preset.getRange();
     if (from.getTime() === pf.getTime() && to.getTime() === pt.getTime()) {
       return preset.label;
@@ -179,10 +265,22 @@ export function getDateRangeDisplayLabel(value: string): string {
     return `Q${fq} ${shortYear(fy)} – Q${tq} ${shortYear(ty)}`;
   }
 
-  // Month-aligned
-  if (fy === ty && fm === tm) return `${MONTHS_FULL[fm]} ${fy}`;
-  if (fy === ty) return `${MONTHS_SHORT[fm]} - ${MONTHS_SHORT[tm]} ${fy}`;
-  return `${MONTHS_SHORT[fm]} ${fy} - ${MONTHS_SHORT[tm]} ${ty}`;
+  // Single day
+  if (from.getTime() === to.getTime()) {
+    return `${from.getDate()} ${MONTHS_SHORT[fm]} ${fy}`;
+  }
+
+  // Day-level range within same month
+  if (fy === ty && fm === tm) {
+    if (from.getDate() === 1 && to.getDate() === endOfMonth(from).getDate()) {
+      return `${MONTHS_FULL[fm]} ${fy}`;
+    }
+    return `${from.getDate()}–${to.getDate()} ${MONTHS_SHORT[fm]} ${fy}`;
+  }
+
+  // Day-level range across months
+  if (fy === ty) return `${from.getDate()} ${MONTHS_SHORT[fm]} – ${to.getDate()} ${MONTHS_SHORT[tm]} ${fy}`;
+  return `${from.getDate()} ${MONTHS_SHORT[fm]} ${fy} – ${to.getDate()} ${MONTHS_SHORT[tm]} ${ty}`;
 }
 
 // ── Drag state type ──────────────────────────────────────────────────────────
@@ -191,6 +289,11 @@ type DragState = {
   mode: 'select' | 'resize-left' | 'resize-right';
   anchor: number;  // linear month index (fixed end)
   current: number; // linear month index (moving end)
+};
+
+type DayDragState = {
+  anchor: Date;
+  current: Date;
 };
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -221,6 +324,10 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     setRangeTo(to);
   }, [value]);
 
+  // ── View mode ────────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>('standard');
+
+  // ── Standard mode state ──────────────────────────────────────────────────
   const [leftYear, setLeftYear] = useState(() => {
     const y = initialFrom.getFullYear();
     return Math.max(MIN_YEAR, Math.min(y, currentYear - 1));
@@ -241,6 +348,18 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // ── Granular mode state ──────────────────────────────────────────────────
+  const [displayMonth, setDisplayMonth] = useState(() => {
+    return new Date(initialFrom.getFullYear(), initialFrom.getMonth(), 1);
+  });
+  const [dayDrag, setDayDrag] = useState<DayDragState | null>(null);
+
+  // Keep displayMonth in sync when value changes
+  useEffect(() => {
+    const { from } = parseDateRange(value);
+    setDisplayMonth(new Date(from.getFullYear(), from.getMonth(), 1));
+  }, [value]);
 
   // ── Refs for year blocks (used for pointer → month hit testing) ─────────
 
@@ -274,7 +393,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     return null;
   }, [leftYear, rightYear]);
 
-  // Effective range (preview during drag, committed otherwise)
+  // Effective range for standard mode (preview during drag, committed otherwise)
   const effectiveRange = useMemo(() => {
     if (dragState) {
       const minLM = Math.min(dragState.anchor, dragState.current);
@@ -289,11 +408,23 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     return { from: rangeFrom, to: rangeTo };
   }, [dragState, rangeFrom, rangeTo]);
 
+  // Effective range for granular mode
+  const effectiveRangeGranular = useMemo(() => {
+    if (dayDrag) {
+      const from = dayDrag.anchor <= dayDrag.current ? dayDrag.anchor : dayDrag.current;
+      const to = dayDrag.anchor <= dayDrag.current ? dayDrag.current : dayDrag.anchor;
+      return { from: startOfDay(from), to: clampToToday(startOfDay(to)) };
+    }
+    return { from: rangeFrom, to: rangeTo };
+  }, [dayDrag, rangeFrom, rangeTo]);
+
   const commitRange = useCallback((from: Date, to: Date) => {
     setRangeFrom(from);
     setRangeTo(to);
     onChange(dateRangeToString(from, to));
   }, [onChange]);
+
+  // ── Standard mode handlers ─────────────────────────────────────────────
 
   // Month cell drag (select mode)
   const handleMonthDown = useCallback((year: number, month: number) => {
@@ -309,7 +440,6 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   }, [dragState]);
 
   // Quarter cell drag (select mode, snaps to quarter boundaries)
-  // We store the original quarter's start+end so we can pick the right anchor edge on enter
   const quarterOrigin = useRef<{ start: number; end: number } | null>(null);
 
   const handleQuarterDown = useCallback((year: number, quarter: number) => {
@@ -330,8 +460,6 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     const qStart = toLinear(year, startMonth);
     const qEnd = toLinear(year, clampedEnd);
     const orig = quarterOrigin.current;
-    // Dragging forward: anchor at origin start, current at entered quarter's end
-    // Dragging backward: anchor at origin end, current at entered quarter's start
     if (qStart >= orig.start) {
       setDragState({ mode: 'select', anchor: orig.start, current: qEnd });
     } else {
@@ -375,13 +503,18 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   const handlePresetClick = useCallback((preset: Preset) => {
     const { from, to } = preset.getRange();
     setDragState(null);
+    setDayDrag(null);
     commitRange(from, to);
-    // Update year panels to show the selected range
-    const newLeft = Math.max(MIN_YEAR, Math.min(from.getFullYear(), currentYear - 1));
-    const newRight = Math.max(newLeft + 1, Math.min(from.getFullYear() + 1, currentYear));
-    setLeftYear(newLeft);
-    setRightYear(newRight);
-  }, [commitRange, currentYear]);
+    // Update panels to show the selected range
+    if (viewMode === 'standard') {
+      const newLeft = Math.max(MIN_YEAR, Math.min(from.getFullYear(), currentYear - 1));
+      const newRight = Math.max(newLeft + 1, Math.min(from.getFullYear() + 1, currentYear));
+      setLeftYear(newLeft);
+      setRightYear(newRight);
+    } else {
+      setDisplayMonth(new Date(from.getFullYear(), from.getMonth(), 1));
+    }
+  }, [commitRange, currentYear, viewMode]);
 
   const handleYearClick = useCallback((year: number) => {
     const from = new Date(year, 0, 1);
@@ -389,6 +522,66 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     setDragState(null);
     commitRange(from, clampToToday(endOfYear(from)));
   }, [commitRange]);
+
+  // ── Granular mode handlers ─────────────────────────────────────────────
+
+  const handleDayDown = useCallback((date: Date) => {
+    const d = startOfDay(date);
+    if (d > TODAY) return;
+    setDayDrag({ anchor: d, current: d });
+  }, []);
+
+  const handleDayEnter = useCallback((date: Date) => {
+    if (!dayDrag) return;
+    const d = startOfDay(date);
+    if (d > TODAY) return;
+    setDayDrag(prev => prev ? { ...prev, current: d } : null);
+  }, [dayDrag]);
+
+  // Week cell drag (snaps to week boundaries, like quarter drag in standard mode)
+  const weekOriginRef = useRef<{ start: Date; end: Date } | null>(null);
+
+  const handleWeekDown = useCallback((week: WeekInfo) => {
+    if (week.startDate > TODAY) return;
+    const clampedEnd = clampToToday(week.endDate);
+    weekOriginRef.current = { start: week.startDate, end: clampedEnd };
+    setDayDrag({ anchor: week.startDate, current: clampedEnd });
+  }, []);
+
+  const handleWeekEnter = useCallback((week: WeekInfo) => {
+    if (!dayDrag || !weekOriginRef.current) return;
+    if (week.startDate > TODAY) return;
+    const clampedEnd = clampToToday(week.endDate);
+    const orig = weekOriginRef.current;
+    if (week.startDate >= orig.start) {
+      setDayDrag({ anchor: orig.start, current: clampedEnd });
+    } else {
+      setDayDrag({ anchor: orig.end, current: week.startDate });
+    }
+  }, [dayDrag]);
+
+  const handleMonthClick = useCallback((monthDate: Date) => {
+    const from = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    if (from > TODAY) return;
+    setDayDrag(null);
+    commitRange(from, clampToToday(endOfMonth(from)));
+  }, [commitRange]);
+
+  const handleDayPointerUp = useCallback(() => {
+    if (!dayDrag) return;
+    weekOriginRef.current = null;
+    const from = effectiveRangeGranular.from;
+    const to = effectiveRangeGranular.to;
+    setDayDrag(null);
+    commitRange(from, to);
+  }, [dayDrag, effectiveRangeGranular, commitRange]);
+
+  const granularCanGoBack = displayMonth > new Date(MIN_YEAR, 0, 1);
+  const granularCanGoForward = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 2, 1) <= TODAY;
+
+  const handleGranularNav = useCallback((dir: -1 | 1) => {
+    setDisplayMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + dir, 1));
+  }, []);
 
   // ── Highlight calculation ───────────────────────────────────────────────
 
@@ -409,7 +602,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     return { startCol, endCol, roundLeft, roundRight };
   }, [effectiveRange]);
 
-  // ── Render year block ───────────────────────────────────────────────────
+  // ── Render year block (standard mode) ─────────────────────────────────
 
   const renderYearBlock = (year: number, side: 'left' | 'right') => {
     const highlight = getHighlight(year);
@@ -586,12 +779,10 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
               const toMonth = rangeTo.getMonth();
               let newFrom: Date, newTo: Date;
               if (direction === 'back') {
-                // Extend start backwards: same from-month in new year, keep existing end
                 newFrom = new Date(newYear, fromMonth, 1);
                 if (newFrom > TODAY) return;
                 newTo = rangeTo;
               } else {
-                // Extend end forwards: keep existing start, same to-month in new year
                 newFrom = rangeFrom;
                 newTo = clampToToday(endOfMonth(new Date(newYear, toMonth, 1)));
                 if (newTo < newFrom) return;
@@ -664,12 +855,224 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
     );
   };
 
+  // ── Render month block (granular mode) ──────────────────────────────
+  // Mirrors renderYearBlock: days row → week row → month nav
+
+  const renderMonthBlock = (monthDate: Date, side: 'left' | 'right') => {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const daysInMonth = endOfMonth(monthDate).getDate();
+    const range = effectiveRangeGranular;
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = endOfMonth(monthStart);
+    const weeks = getMonthWeeks(year, month);
+
+    // Highlight calculation (day-level, like getHighlight for months)
+    let highlight: { startDay: number; endDay: number; roundLeft: boolean; roundRight: boolean } | null = null;
+    if (range.to >= monthStart && range.from <= monthEnd) {
+      const sd = range.from < monthStart ? 1 : range.from.getDate();
+      const ed = range.to > monthEnd ? daysInMonth : range.to.getDate();
+      highlight = { startDay: sd, endDay: ed, roundLeft: range.from >= monthStart, roundRight: range.to <= monthEnd };
+    }
+
+    const leftPct = highlight ? `${((highlight.startDay - 1) / daysInMonth) * 100}%` : '0%';
+    const widthPct = highlight ? `${((highlight.endDay - highlight.startDay + 1) / daysInMonth) * 100}%` : '0%';
+
+    return (
+      <Box key={`${year}-${month}`} sx={{ flex: 1, minWidth: 0 }}>
+        {/* Days + weeks wrapper */}
+        <Box sx={{ position: 'relative' }}>
+          {/* Highlight background */}
+          {highlight && (
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: leftPct,
+              width: widthPct,
+              height: '100%',
+              bgcolor: colors.bgActive,
+              borderRadius: `${highlight.roundLeft ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundLeft ? 6 : 0}px`,
+              zIndex: 0,
+              pointerEvents: 'none',
+            }} />
+          )}
+
+          {/* Day row */}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${daysInMonth}, 1fr)`,
+            position: 'relative',
+            zIndex: 1,
+          }}>
+            {Array.from({ length: daysInMonth }, (_, i) => {
+              const day = i + 1;
+              const date = new Date(year, month, day);
+              const isFuture = date > TODAY;
+              const d = startOfDay(date);
+              const inRange = !isFuture && d >= range.from && d <= range.to;
+              return (
+                <Box
+                  key={day}
+                  onPointerDown={() => !isFuture && handleDayDown(date)}
+                  onPointerEnter={() => !isFuture && handleDayEnter(date)}
+                  sx={{
+                    textAlign: 'center',
+                    py: 1,
+                    cursor: isFuture ? 'default' : 'pointer',
+                    userSelect: 'none',
+                    transition: 'background-color 0.1s',
+                    borderRadius: '3px',
+                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                  }}
+                >
+                  <Typography sx={{
+                    fontSize: '0.65rem',
+                    fontWeight: inRange ? 600 : 400,
+                    color: isFuture ? colors.textDisabled : inRange ? colors.brand : colors.textSecondary,
+                    transition: 'color 0.1s',
+                  }}>
+                    {day}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+
+          {/* Week row */}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${daysInMonth}, 1fr)`,
+            position: 'relative',
+            zIndex: 1,
+            mt: 0.5,
+          }}>
+            {weeks.map((w) => {
+              const isFuture = w.startDate > TODAY;
+              const clampedEnd = clampToToday(w.endDate);
+              const fullyInRange = !isFuture && w.startDate >= range.from && clampedEnd <= range.to;
+              return (
+                <Box
+                  key={w.label}
+                  onPointerDown={() => handleWeekDown(w)}
+                  onPointerEnter={() => handleWeekEnter(w)}
+                  sx={{
+                    gridColumn: `${w.startDay} / ${w.endDay + 1}`,
+                    textAlign: 'center',
+                    py: 0.75,
+                    cursor: isFuture ? 'default' : 'pointer',
+                    userSelect: 'none',
+                    transition: 'background-color 0.1s',
+                    borderRadius: '3px',
+                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                  }}
+                >
+                  <Typography sx={{
+                    fontSize: '0.7rem',
+                    fontWeight: fullyInRange ? 600 : 500,
+                    color: isFuture ? colors.textDisabled : fullyInRange ? colors.brand : colors.textSecondary,
+                    transition: 'color 0.1s',
+                  }}>
+                    {w.label}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+
+        {/* Month navigation row */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          pt: 0.75,
+        }}>
+          {(() => {
+            const canGoBack = side === 'left'
+              ? granularCanGoBack
+              : new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) > new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1);
+            const canGoForward = side === 'left'
+              ? new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) < new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1)
+              : granularCanGoForward;
+
+            return (
+              <>
+                {side === 'left' && (
+                  <IconButton
+                    size="small"
+                    onClick={() => handleGranularNav(-1)}
+                    disabled={!granularCanGoBack}
+                    sx={{ p: 0.25 }}
+                  >
+                    <ChevronLeftIcon sx={{ fontSize: '1rem', color: !granularCanGoBack ? colors.textDisabled : colors.brand }} />
+                  </IconButton>
+                )}
+                <Typography
+                  onClick={() => handleMonthClick(monthDate)}
+                  sx={{
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: monthStart > TODAY ? 'default' : 'pointer',
+                    color: (range.from <= monthStart && range.to >= monthEnd)
+                      ? colors.brand : colors.textPrimary,
+                    mx: 0.75,
+                    userSelect: 'none',
+                    '&:hover': monthStart <= TODAY ? { color: colors.brand } : {},
+                    transition: 'color 0.1s',
+                  }}
+                >
+                  {MONTHS_SHORT[month]} {year}
+                </Typography>
+                {side === 'right' && (
+                  <IconButton
+                    size="small"
+                    onClick={() => handleGranularNav(1)}
+                    disabled={!granularCanGoForward}
+                    sx={{ p: 0.25 }}
+                  >
+                    <ChevronRightIcon sx={{ fontSize: '1rem', color: !granularCanGoForward ? colors.textDisabled : colors.brand }} />
+                  </IconButton>
+                )}
+              </>
+            );
+          })()}
+        </Box>
+      </Box>
+    );
+  };
+
+  // ── Segmented control ─────────────────────────────────────────────────
+
+  const segmentSx = (active: boolean) => ({
+    px: 1.5, py: 0.5, fontSize: '0.75rem', fontWeight: 600, borderRadius: '6px',
+    cursor: 'pointer', transition: 'all 0.15s',
+    bgcolor: active ? 'white' : 'transparent',
+    color: active ? colors.brand : 'text.secondary',
+    boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+    '&:hover': { color: active ? colors.brand : 'text.primary' },
+  });
+
+  const segmentedControl = (
+    <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${colors.borderTertiary}` }}>
+      <Box sx={segmentSx(viewMode === 'standard')} onClick={() => setViewMode('standard')}>
+        Monthly
+      </Box>
+      <Box sx={segmentSx(viewMode === 'granular')} onClick={() => setViewMode('granular')}>
+        Daily
+      </Box>
+    </Box>
+  );
+
+  // ── Content ───────────────────────────────────────────────────────────
+
+  const currentPresets = viewMode === 'standard' ? PRESETS : GRANULAR_PRESETS;
+
   const content = (
     <>
-      {/* Preset pills */}
+      {/* Preset pills + segmented control */}
       {!hidePresets && (
-        <Box sx={{ display: 'flex', gap: 0.75, px: inline ? 0 : 3, pt: inline ? 0 : 2, pb: 0 }}>
-          {PRESETS.map(preset => {
+        <Box sx={{ display: 'flex', gap: 0.75, px: inline ? 0 : 3, pt: inline ? 0 : 2, pb: 0, alignItems: 'center' }}>
+          {currentPresets.map(preset => {
             const { from: pf, to: pt } = preset.getRange();
             const isActive = rangeFrom.getTime() === pf.getTime() && rangeTo.getTime() === pt.getTime();
             return (
@@ -691,33 +1094,61 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
               />
             );
           })}
+          <Box sx={{ flex: 1 }} />
+          {segmentedControl}
         </Box>
       )}
 
-      <Box
-        onPointerMove={handleContainerPointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={() => { if (dragState) handlePointerUp(); }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        sx={{
-          display: 'flex',
-          px: inline ? 0 : 3,
-          py: inline ? 1.5 : 2.5,
-          gap: 0,
-          userSelect: 'none',
-        }}
-      >
-        {renderYearBlock(leftYear, 'left')}
-        <Box sx={{
-          width: '1px',
-          bgcolor: colors.borderTertiary,
-          mx: '4px',
-          my: 0.5,
-          flexShrink: 0,
-        }} />
-        {renderYearBlock(rightYear, 'right')}
-      </Box>
+      {/* Calendar view */}
+      {viewMode === 'standard' ? (
+        <Box
+          onPointerMove={handleContainerPointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={() => { if (dragState) handlePointerUp(); }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          sx={{
+            display: 'flex',
+            px: inline ? 0 : 3,
+            py: inline ? 1.5 : 2.5,
+            gap: 0,
+            userSelect: 'none',
+          }}
+        >
+          {renderYearBlock(leftYear, 'left')}
+          <Box sx={{
+            width: '1px',
+            bgcolor: colors.borderTertiary,
+            mx: '4px',
+            my: 0.5,
+            flexShrink: 0,
+          }} />
+          {renderYearBlock(rightYear, 'right')}
+        </Box>
+      ) : (
+        <Box
+          onPointerUp={handleDayPointerUp}
+          onPointerLeave={() => { if (dayDrag) handleDayPointerUp(); }}
+          sx={{
+            display: 'flex',
+            px: inline ? 0 : 3,
+            py: inline ? 1.5 : 2.5,
+            gap: 2,
+            userSelect: 'none',
+          }}
+        >
+          {renderMonthBlock(displayMonth, 'left')}
+          <Box sx={{
+            width: '1px',
+            bgcolor: colors.borderTertiary,
+            flexShrink: 0,
+          }} />
+          {renderMonthBlock(
+            new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1),
+            'right',
+          )}
+        </Box>
+      )}
     </>
   );
 
