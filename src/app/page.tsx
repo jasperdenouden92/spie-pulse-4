@@ -364,6 +364,7 @@ export default function Home() {
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const notificationsRef = useRef<NotificationsPanelHandle>(null);
   const [dataExplorerOpen, setDataExplorerOpen] = useState(false);
+  const [dataExplorerWidth, setDataExplorerWidth] = useState(0);
   const [exportToast, setExportToast] = useState<{ open: boolean; message: string; severity: 'info' | 'success' }>({ open: false, message: '', severity: 'info' });
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [favorites, setFavorites] = useState<Favorite[]>([
@@ -918,7 +919,7 @@ export default function Home() {
       {/* Data Explorer Panel */}
       <DataExplorerPanel
         open={dataExplorerOpen}
-        onClose={() => setDataExplorerOpen(false)}
+        onClose={() => { setDataExplorerOpen(false); setLocalQuickviewAsset(null); setURLParams({ asset: '', assetTab: '0' }); }}
         sidebarWidth={leftSidebarWidth}
         onAssetSelect={(node) => {
           if (node) {
@@ -934,6 +935,7 @@ export default function Home() {
             setURLParams({ asset: asset.id, assetTab: '0' });
           }
         }}
+        onWidthChange={setDataExplorerWidth}
       />
 
       {/* Scrim/Backdrop when Asset Explorer is open */}
@@ -995,12 +997,13 @@ export default function Home() {
       <Box
         sx={{
           position: 'fixed',
-          top: '56px',
-          left: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? `${leftSidebarWidth + 280}px` : `calc(-100% + ${leftSidebarWidth + 280}px)`,
-          width: `calc(100% - ${leftSidebarWidth + 280}px)`,
-          height: 'calc(100vh - 56px)',
+          top: 0,
+          left: `${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px`,
+          width: `calc(100% - ${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px)`,
+          height: '100vh',
           zIndex: 1425,
-          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          clipPath: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
+          transition: 'clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           bgcolor: '#fff',
           display: 'flex',
           flexDirection: 'column',
@@ -1202,7 +1205,7 @@ export default function Home() {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        ml: (isAssetExplorerOpen && viewingAssetDetail) ? `${leftSidebarWidth + 280}px` : `${leftSidebarWidth}px`,
+        ml: viewingAssetDetail ? `${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px` : `${leftSidebarWidth}px`,
         transition: 'margin-left 0.3s ease, border-color 0.3s ease',
         position: 'relative',
         zIndex: 1,
@@ -2303,17 +2306,17 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
         {type === 'bar' && Array.from({ length: 12 }).map((_, i) => (
           <Box key={i} sx={{
             flex: 1,
-            height: `${30 + Math.random() * 60}%`,
+            height: `${30 + ((i * 37 + 13) % 60)}%`,
             bgcolor: color,
             borderRadius: '2px 2px 0 0',
-            opacity: 0.3 + Math.random() * 0.7,
+            opacity: 0.3 + ((i * 23 + 7) % 70) / 100,
             transition: 'height 0.3s ease',
           }} />
         ))}
         {type === 'line' && (
           <svg width="100%" height="100%" viewBox="0 0 200 100" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
             <path
-              d={`M 0,${70 - Math.random() * 30} ${Array.from({ length: 10 }).map((_, i) => `L ${(i + 1) * 20},${30 + Math.random() * 50}`).join(' ')}`}
+              d={`M 0,${70 - ((3 * 37 + 13) % 30)} ${Array.from({ length: 10 }).map((_, i) => `L ${(i + 1) * 20},${30 + ((i * 41 + 17) % 50)}`).join(' ')}`}
               fill="none"
               stroke={color}
               strokeWidth="2"

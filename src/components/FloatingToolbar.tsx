@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -158,7 +159,8 @@ export default function FloatingToolbar({
     if (node.metadata?.status) return node.metadata.status;
     if (node.type === 'asset') {
       const statuses = ['operational', 'operational', 'operational', 'maintenance', 'offline'];
-      return statuses[Math.floor(Math.random() * statuses.length)];
+      const hash = node.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+      return statuses[hash % statuses.length];
     }
     return 'operational';
   };

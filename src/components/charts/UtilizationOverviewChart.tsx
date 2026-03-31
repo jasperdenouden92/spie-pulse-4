@@ -1,4 +1,5 @@
 import { colors } from '@/colors';
+
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -30,13 +31,13 @@ const generateMockData = (): AssetUtilization[] => {
       Array.from({ length: hours }, (_, hourIndex) => {
         // Business hours have higher utilization
         if (hourIndex >= 8 && hourIndex <= 17) {
-          const rand = Math.random();
-          if (rand < 0.3) return (intensity + 1) as UtilizationLevel;
-          if (rand < 0.7) return intensity as UtilizationLevel;
+          const hash = (dayIndex * 37 + hourIndex * 53 + intensity * 17) % 10;
+          if (hash < 3) return (Math.min(5, intensity + 1)) as UtilizationLevel;
+          if (hash < 7) return intensity as UtilizationLevel;
           return Math.max(0, intensity - 1) as UtilizationLevel;
         }
         // Off hours have lower utilization
-        return Math.floor(Math.random() * 2) as UtilizationLevel;
+        return ((dayIndex * 41 + hourIndex * 29) % 2) as UtilizationLevel;
       })
     );
   };

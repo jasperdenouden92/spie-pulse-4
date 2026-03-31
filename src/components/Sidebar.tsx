@@ -147,8 +147,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
             onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
             sx={{
               width: size, height: size,
-              bgcolor: active ? colors.bgActive : (iconBoxBgColor || colors.bgSecondaryHover),
-              borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0, position: 'relative', cursor: 'pointer',
             }}
           >
@@ -169,8 +168,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
         ) : (
           <Box sx={{
             width: size, height: size,
-            bgcolor: active ? colors.bgActive : (iconBoxBgColor || colors.bgSecondaryHover),
-            borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0, color: isAccent ? accentColor : undefined,
           }}>
             {icon}
@@ -596,10 +594,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
       {!isCollapsed && (
         <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          {/* Logo */}
-          <Box sx={{ px: 2.5, pt: 2, pb: 0.5, flexShrink: 0 }}>
-            <img src="/images/pulse-core-logo.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5 }} />
-          </Box>
           {/* ACME Corp section - aligns with PageHeader breadcrumb */}
           <Box sx={{ height: 56, display: 'flex', alignItems: 'center', px: 2, flexShrink: 0 }}>
             <Box
@@ -715,7 +709,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </DndContext>
             </Box>
             {/* Bottom sticky: Notifications, Help, Account */}
-            <Box sx={{ flexShrink: 0, px: 2, pt: 1, pb: 2 }}>
+            <Box sx={{ flexShrink: 0, px: 2, pt: 1, pb: 0.5 }}>
               <Divider sx={{ mb: 1 }} />
               <List dense sx={{ py: 0 }}>
                 <ListItem disablePadding>
@@ -723,7 +717,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     onClick={() => onDataExplorerToggle?.()}
                     sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: dataExplorerOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
                   >
-                    <Box sx={{ width: 28, height: 28, bgcolor: dataExplorerOpen ? colors.borderSecondary : colors.bgSecondaryHover, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <ExploreOutlinedIcon sx={{ fontSize: 16 }} />
                     </Box>
                     <ListItemText primary="Data Explorer" primaryTypographyProps={{ variant: 'body2' }} />
@@ -734,7 +728,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     onClick={() => onNotificationsPanelToggle?.()}
                     sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
                   >
-                    <Box sx={{ width: 28, height: 28, bgcolor: notificationsPanelOpen ? colors.borderSecondary : colors.bgSecondaryHover, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                         <NotificationsOutlinedIcon sx={{ fontSize: 16 }} />
                       </Badge>
@@ -744,7 +738,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}>
-                    <Box sx={{ width: 28, height: 28, bgcolor: colors.bgSecondaryHover, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <HelpOutlineIcon sx={{ fontSize: 16 }} />
                     </Box>
                     <ListItemText primary="Help" primaryTypographyProps={{ variant: 'body2' }} />
@@ -764,6 +758,10 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   </ListItemButton>
                 </ListItem>
               </List>
+            </Box>
+            {/* Logo */}
+            <Box sx={{ px: 2.5, pt: 0.5, pb: 1.5, flexShrink: 0 }}>
+              <img src="/images/pulse-core-logo.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5 }} />
             </Box>
         </Box>
       )}
@@ -807,10 +805,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
       {/* Collapsed View - Icon Only */}
       {isCollapsed && (
         <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          {/* Logo */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2, pb: 0.5, flexShrink: 0 }}>
-            <img src="/images/pulse-core-icon.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5 }} />
-          </Box>
           {/* Tenant switcher */}
           <Box sx={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Tooltip title={selectedCustomer} placement="right">
@@ -932,6 +926,10 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </IconButton>
               </Tooltip>
             </Box>
+          </Box>
+          {/* Logo */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5, flexShrink: 0 }}>
+            <img src="/images/pulse-core-icon.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5 }} />
           </Box>
         </Box>
       )}

@@ -1,3 +1,5 @@
+import { seededRandom } from './generators';
+
 export interface AssetNode {
   id: string;
   name: string;
@@ -61,28 +63,28 @@ const manufacturers = {
 
 // Helper to generate a random manufacturer
 const getManufacturer = (category: keyof typeof manufacturers) =>
-  manufacturers[category][Math.floor(Math.random() * manufacturers[category].length)];
+  manufacturers[category][Math.floor(seededRandom() * manufacturers[category].length)];
 
 // Helper to generate install dates (2015-2023)
 const getInstallDate = () => {
-  const year = 2015 + Math.floor(Math.random() * 9);
-  const month = 1 + Math.floor(Math.random() * 12);
-  const day = 1 + Math.floor(Math.random() * 28);
+  const year = 2015 + Math.floor(seededRandom() * 9);
+  const month = 1 + Math.floor(seededRandom() * 12);
+  const day = 1 + Math.floor(seededRandom() * 28);
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 };
 
 // Helper to generate maintenance dates (2023-2024)
 const getMaintenanceDate = () => {
-  const year = 2023 + Math.floor(Math.random() * 2);
-  const month = 1 + Math.floor(Math.random() * 12);
-  const day = 1 + Math.floor(Math.random() * 28);
+  const year = 2023 + Math.floor(seededRandom() * 2);
+  const month = 1 + Math.floor(seededRandom() * 12);
+  const day = 1 + Math.floor(seededRandom() * 28);
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 };
 
 // Helper to generate asset status
 const getStatus = () => {
   const statuses = ['operational', 'operational', 'operational', 'operational', 'maintenance', 'offline'];
-  return statuses[Math.floor(Math.random() * statuses.length)];
+  return statuses[Math.floor(seededRandom() * statuses.length)];
 };
 
 // Helper to create a building ID
@@ -103,9 +105,9 @@ const generateZoneAssets = (buildingId: string, floorNum: number, zone: string):
     metadata: {
       category: 'HVAC',
       manufacturer: hvacManuf,
-      model: `${hvacManuf}-${Math.floor(Math.random() * 900 + 100)}`,
-      serialNumber: `${hvacManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(Math.random() * 99 + 1)).padStart(2, '0')}`,
-      capacity: `${15 + Math.floor(Math.random() * 35)} kW`,
+      model: `${hvacManuf}-${Math.floor(seededRandom() * 900 + 100)}`,
+      serialNumber: `${hvacManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(seededRandom() * 99 + 1)).padStart(2, '0')}`,
+      capacity: `${15 + Math.floor(seededRandom() * 35)} kW`,
       installDate: getInstallDate(),
       lastMaintenance: getMaintenanceDate(),
       floor: `Floor ${floorNum}`,
@@ -123,8 +125,8 @@ const generateZoneAssets = (buildingId: string, floorNum: number, zone: string):
     metadata: {
       category: 'Lighting',
       manufacturer: lightManuf,
-      model: `${lightManuf} ${['Pro', 'Elite', 'Quantum'][Math.floor(Math.random() * 3)]}`,
-      serialNumber: `${lightManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(Math.random() * 99 + 1)).padStart(2, '0')}`,
+      model: `${lightManuf} ${['Pro', 'Elite', 'Quantum'][Math.floor(seededRandom() * 3)]}`,
+      serialNumber: `${lightManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(seededRandom() * 99 + 1)).padStart(2, '0')}`,
       installDate: getInstallDate(),
       lastMaintenance: getMaintenanceDate(),
       floor: `Floor ${floorNum}`,
@@ -143,8 +145,8 @@ const generateZoneAssets = (buildingId: string, floorNum: number, zone: string):
       metadata: {
         category: 'Fire Safety',
         manufacturer: fireManuf,
-        model: `${fireManuf}-${Math.floor(Math.random() * 9000 + 1000)}`,
-        serialNumber: `${fireManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(Math.random() * 99 + 1)).padStart(2, '0')}`,
+        model: `${fireManuf}-${Math.floor(seededRandom() * 9000 + 1000)}`,
+        serialNumber: `${fireManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(seededRandom() * 99 + 1)).padStart(2, '0')}`,
         installDate: getInstallDate(),
         lastMaintenance: getMaintenanceDate(),
         floor: `Floor ${floorNum}`,
@@ -164,9 +166,9 @@ const generateZoneAssets = (buildingId: string, floorNum: number, zone: string):
       metadata: {
         category: 'Electrical',
         manufacturer: elecManuf,
-        model: `${elecManuf}-${Math.floor(Math.random() * 900 + 100)}`,
-        serialNumber: `${elecManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(Math.random() * 99 + 1)).padStart(2, '0')}`,
-        capacity: `${200 + Math.floor(Math.random() * 400)}A`,
+        model: `${elecManuf}-${Math.floor(seededRandom() * 900 + 100)}`,
+        serialNumber: `${elecManuf.substring(0, 3).toUpperCase()}-${floorNum}${zone.charAt(0).toUpperCase()}${String(Math.floor(seededRandom() * 99 + 1)).padStart(2, '0')}`,
+        capacity: `${200 + Math.floor(seededRandom() * 400)}A`,
         installDate: getInstallDate(),
         lastMaintenance: getMaintenanceDate(),
         floor: `Floor ${floorNum}`,

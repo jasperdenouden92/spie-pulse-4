@@ -1,4 +1,5 @@
 import { colors } from '@/colors';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -16,17 +17,17 @@ const generateMockData = () => {
     {
       id: 'Peak demand',
       color: '#2196f3',
-      data: months.map((month) => ({
+      data: months.map((month, i) => ({
         x: month,
-        y: 30 + Math.random() * 30
+        y: 30 + ((i * 37 + 13) % 30)
       }))
     },
     {
       id: 'Average load',
       color: '#64b5f6',
-      data: months.map((month) => ({
+      data: months.map((month, i) => ({
         x: month,
-        y: 28 + Math.random() * 28
+        y: 28 + ((i * 41 + 7) % 28)
       }))
     }
   ];

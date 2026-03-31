@@ -1,4 +1,5 @@
 import { colors } from '@/colors';
+
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -19,9 +20,9 @@ const generateMockData = () => {
 
   // Generate clustered points showing correlation between temperature and energy
   for (let i = 0; i < 25; i++) {
-    const temp = 10 + Math.random() * 15; // Temperature range 10-25
+    const temp = 10 + ((i * 37 + 13) % 15); // Temperature range 10-25
     const baseEnergy = 62 + (25 - temp) * 0.4; // Inverse correlation
-    const energy = baseEnergy + (Math.random() - 0.5) * 2; // Add some variance
+    const energy = baseEnergy + (((i * 41 + 7) % 20) - 10) / 10; // Add some variance
 
     points.push({
       x: temp,
