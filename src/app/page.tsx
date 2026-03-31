@@ -827,6 +827,9 @@ export default function Home() {
     ? Math.round(OPERATIONS_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / OPERATIONS_KEYS.length)
     : Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.score, 0) / periodMetrics.operations.length);
 
+  const themesTrend = Math.round(periodMetrics.themes.reduce((sum, m) => sum + m.trend, 0) / periodMetrics.themes.length * 10) / 10;
+  const operationsTrend = Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.trend, 0) / periodMetrics.operations.length * 10) / 10;
+
   // Score for the currently selected KPI (shown in breadcrumb)
   const selectionScore = (() => {
     const themeIdx = PRIMARY_THEME_KEYS.indexOf(selection as MetricType);
@@ -1417,37 +1420,38 @@ export default function Home() {
 
                   {/* ========== KPI METRICS SECTION ========== */}
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
-                  <Box sx={{
-                    display: 'flex', gap: 2, mb: 3, minWidth: 0,
+                  <Box className="kpi-metrics-section" sx={{
+                    display: 'flex', gap: 0, mb: 3, minWidth: 0,
                     '& > *': {
                       transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
+                    '&:has(.performance-card:hover) .bracket-arrow polygon': {
+                      fill: '#eef0f3',
                     },
                   }}>
                     {/* Overall Score Card */}
                     <Box
+                      className="performance-card"
                       component="button"
                       onClick={() => { setSelection('overall'); }}
                       sx={{
                         p: isCompact ? 2 : 3,
-                        border: selection === 'overall' ? '2px solid' : '1px solid',
-                        borderColor: selection === 'overall' ? colors.brand : colors.borderTertiary,
-                        borderRadius: 2,
-                        bgcolor: colors.bgPrimary,
-                        width: 320,
-                        minHeight: isCompact ? 340 : 420,
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRight: 'none',
+                        borderRadius: '8px 0 0 8px',
+                        bgcolor: selection === 'overall' ? '#f5f6f8' : colors.bgPrimary,
+                        width: 280,
+                        alignSelf: 'stretch',
                         flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
                         cursor: 'pointer',
                         textAlign: 'left',
-                        boxShadow: selection === 'overall'
-                          ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
-                          : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                        boxShadow: 'none',
                         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          borderColor: selection === 'overall' ? colors.brand : colors.borderPrimary,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
-                          transform: 'translateY(-1px)',
+                          bgcolor: '#eef0f3',
                         }
                       }}
                     >
@@ -1536,34 +1540,45 @@ export default function Home() {
                       </Box>
                     </Box>
 
+
                     {/* KPI Groups Container — also gets sibling-dimming on hover */}
                     <Box sx={{
                       flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
-                      gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease',
+                      gap: 0, transition: 'gap 0.3s ease',
                     }}>
 
                         <>
                           {/* ===== THEMES ROW ===== */}
                           <Box
                             className="kpi-group-panel"
+                            onClick={() => handleGroupToggle('themes')}
                             sx={{
                               p: isCompact ? 1.5 : 2,
-                              border: isThemesSelected ? '2px solid' : '1px solid',
-                              borderColor: isThemesSelected ? colors.brand : colors.borderTertiary,
-                              borderRadius: 2,
-                              bgcolor: colors.bgPrimary,
-                              boxShadow: isThemesSelected
-                                ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
-                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                              pb: isCompact ? 2.5 : 3,
+                              pl: isCompact ? 5 : 6,
+                              borderTop: 1,
+                              borderRight: 1,
+                              borderBottom: 1,
+                              borderColor: 'divider',
+                              borderLeft: 'none',
+                              borderRadius: '0 8px 0 0',
+                              bgcolor: isThemesSelected ? brandAlpha(0.04) : colors.bgPrimary,
+                              position: 'relative',
+                              overflow: 'visible',
+                              boxShadow: 'none',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',
                               '&:hover': {
-                                borderColor: isThemesSelected ? colors.brand : colors.borderPrimary,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
-                                transform: 'translateY(-1px)',
+                                bgcolor: brandAlpha(0.06),
                               }
                             }}
                           >
+                            {/* Left bracket arrow — top half */}
+                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1 }} preserveAspectRatio="none" viewBox="0 0 20 100">
+                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? '#f5f6f8' : colors.bgPrimary} />
+                              <polyline points="0,0 20,50" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polyline points="20,50 0,100" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                            </svg>
                             {/* Themes Header */}
                             <Box
                               component="button"
@@ -1574,16 +1589,22 @@ export default function Home() {
                                 width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
                               }}
                             >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                                 <StyleOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
                                 <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
                                   Theme KPIs
                                 </Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
                                   <AnimatedNumber value={themesScore} />%
                                 </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: themesTrend >= 0 ? 'success.main' : 'error.main' }}>
+                                  {themesTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+                                    {Math.abs(themesTrend)}%
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {isThemesSelected
                                   ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
                                   : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
@@ -1593,7 +1614,7 @@ export default function Home() {
                             {/* Primary Theme KPIs — only clickable when themes are active */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                              gridTemplateColumns: 'repeat(4, 1fr)',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
@@ -1631,24 +1652,34 @@ export default function Home() {
                           {/* ===== OPERATIONS ROW ===== */}
                           <Box
                             className="kpi-group-panel"
+                            onClick={() => handleGroupToggle('operations')}
                             sx={{
                               p: isCompact ? 1.5 : 2,
-                              border: isOperationsSelected ? '2px solid' : '1px solid',
-                              borderColor: isOperationsSelected ? colors.brand : colors.borderTertiary,
-                              borderRadius: 2,
-                              bgcolor: colors.bgPrimary,
-                              boxShadow: isOperationsSelected
-                                ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
-                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                              pb: isCompact ? 2.5 : 3,
+                              pl: isCompact ? 5 : 6,
+                              borderTop: 'none',
+                              borderRight: 1,
+                              borderBottom: 1,
+                              borderColor: 'divider',
+                              borderLeft: 'none',
+                              borderRadius: '0 0 8px 0',
+                              bgcolor: isOperationsSelected ? brandAlpha(0.04) : colors.bgPrimary,
+                              position: 'relative',
+                              overflow: 'visible',
+                              boxShadow: 'none',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',
                               '&:hover': {
-                                borderColor: isOperationsSelected ? colors.brand : colors.borderPrimary,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
-                                transform: 'translateY(-1px)',
+                                bgcolor: brandAlpha(0.06),
                               }
                             }}
                           >
+                            {/* Left bracket arrow — bottom half */}
+                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1 }} preserveAspectRatio="none" viewBox="0 0 20 100">
+                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? '#f5f6f8' : colors.bgPrimary} />
+                              <polyline points="0,0 20,50" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polyline points="20,50 0,100" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                            </svg>
                             {/* Operations Header */}
                             <Box
                               component="button"
@@ -1659,16 +1690,22 @@ export default function Home() {
                                 width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
                               }}
                             >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                                 <EngineeringOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
                                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
                                   Operational KPIs
                                 </Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
                                   <AnimatedNumber value={operationsScore} />%
                                 </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: operationsTrend >= 0 ? 'success.main' : 'error.main' }}>
+                                  {operationsTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+                                    {Math.abs(operationsTrend)}%
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {isOperationsSelected
                                   ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
                                   : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
@@ -1678,7 +1715,7 @@ export default function Home() {
                             {/* Operations KPIs */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                              gridTemplateColumns: 'repeat(4, 1fr)',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
@@ -2261,10 +2298,15 @@ function SummaryStatCard({ label, value, subtitle, trend }: { label: string; val
   return (
     <Box sx={{
       p: 2.5,
-      border: 1,
-      borderColor: 'divider',
-      borderRadius: 1,
-      bgcolor: colors.bgSecondary,
+      border: 'none',
+      borderRadius: '12px',
+      bgcolor: '#ffffff',
+      boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
+      transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+      },
     }}>
       <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, display: 'block', mb: 1 }}>
         {label}
@@ -2292,10 +2334,15 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
   return (
     <Box sx={{
       p: 3,
-      border: 1,
-      borderColor: 'divider',
-      borderRadius: 1,
-      bgcolor: colors.bgSecondary,
+      border: 'none',
+      borderRadius: '12px',
+      bgcolor: '#ffffff',
+      boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
+      transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+      },
       minHeight: 240,
       display: 'flex',
       flexDirection: 'column',

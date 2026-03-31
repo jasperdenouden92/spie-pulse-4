@@ -370,20 +370,19 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* ═══ SECTION 1: Theme KPI + Topic KPI Cards ═══ */}
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+          <SpaOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+          <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>
             Comfort Performance
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {themeScore}%
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+            {themeScore}%
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themeTrend >= 0 ? 'success.main' : 'error.main' }}>
+            {themeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+              {Math.abs(themeTrend)}%
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themeTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {themeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(themeTrend)}%
-              </Typography>
-            </Box>
           </Box>
         </Box>
 
@@ -395,48 +394,42 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
               elevation={0}
               sx={{
                 p: 2.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
+                border: 'none',
+                borderRadius: '12px',
+                bgcolor: '#ffffff',
+                boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 1.5,
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+                },
               }}
             >
-              {/* Topic header */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ color: 'text.secondary', display: 'flex' }}>{topic.icon}</Box>
-                <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1 }}>{topic.label}</Typography>
+              {/* Row 1: Icon + Title */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box sx={{ color: 'text.secondary', display: 'flex', '& .MuiSvgIcon-root': { fontSize: '18px !important' } }}>{topic.icon}</Box>
+                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{topic.label}</Typography>
               </Box>
 
-              {/* Score + trend + sparkline */}
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  <Typography variant="h5" fontWeight={700}>{topic.score}%</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
-                    {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
-                    <Typography variant="caption" fontWeight={600}>{Math.abs(topic.trend)}%</Typography>
+              {/* Row 2+3 left: Score + Trend/Label, right: Sparkline */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1.15rem', lineHeight: 1.2 }}>{topic.score}%</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
+                      {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 12 }} /> : <TrendingDownIcon sx={{ fontSize: 12 }} />}
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>{Math.abs(topic.trend)}%</Typography>
+                    </Box>
+                    <Chip label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)} size="small" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 600, bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`, color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove), '& .MuiChip-label': { px: 0.75 } }} />
                   </Box>
                 </Box>
-                <Box sx={{ ml: 'auto' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                   {renderSparkline(topic.sparkline, getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove))}
                 </Box>
               </Box>
-
-              {/* Performance rating */}
-              <Chip
-                label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)}
-                size="small"
-                sx={{
-                  alignSelf: 'flex-start',
-                  height: 20,
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`,
-                  color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove),
-                  '& .MuiChip-label': { px: 1 },
-                }}
-              />
 
             </Paper>
           ))}
@@ -455,15 +448,15 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
         {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: 'none', borderRadius: '12px', bgcolor: '#ffffff', boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
               <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Best Performing</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? 'white' : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('improved')}>Most Improved</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? 'white' : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -520,15 +513,15 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: 'none', borderRadius: '12px', bgcolor: '#ffffff', boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
               <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst Performing</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? 'white' : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('deteriorated')}>Most Deteriorated</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? 'white' : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -585,7 +578,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
         </Paper>
 
         {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: 'none', borderRadius: '12px', bgcolor: '#ffffff', boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)', display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ShowChartOutlinedIcon sx={{ fontSize: 18, color: colors.brand }} />
@@ -678,10 +671,10 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
 
       {/* ═══ SECTION 3: Comfort Dashboards ═══ */}
       <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
           Comfort Dashboards
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1.5 }}>
           {COMFORT_DASHBOARDS.map(dash => (
             <Paper
               key={dash.id}
@@ -690,18 +683,19 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
               sx={{
                 py: 1.5,
                 px: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
+                border: 'none',
+                borderRadius: '12px',
+                bgcolor: '#ffffff',
+                boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 1.5,
-                flex: '0 1 auto',
                 '&:hover': {
-                  bgcolor: 'action.hover',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
                 },
               }}
             >
