@@ -175,6 +175,12 @@ const PRIMARY_THEME_KEYS: MetricType[] = ['sustainability', 'comfort', 'asset_mo
 const ALL_THEME_KEYS: MetricType[] = [...PRIMARY_THEME_KEYS];
 const OPERATIONS_KEYS: MetricType[] = ['tickets', 'quotations', 'maintenance'];
 
+// Per-tenant theme restrictions — tenants not listed here use all themes
+const TENANT_THEME_KEYS: Record<string, MetricType[]> = {
+  'de Bijenkorf': ['sustainability'],
+  'Stichting Carmelcollege': ['comfort'],
+};
+
 const SELECTION_LABELS: Record<string, string> = {
   overall: 'overall performance',
   themes_group: 'theme KPIs',
@@ -239,8 +245,8 @@ function getAssetMonitoringTopics(assetMonitoringGreen: number): TopicScore[] {
   ];
 }
 
-function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
-  const themeKeys: MetricKeys[] = ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
+function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, themeKeysOverride?: MetricType[]): TopicScore[] {
+  const themeKeys: MetricKeys[] = themeKeysOverride ?? ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
   const opsKeys: MetricKeys[] = ['tickets', 'quotations', 'maintenance'];
   const themeScore = Math.round(themeKeys.reduce((sum, k) => sum + metrics[k].green, 0) / themeKeys.length);
   const themeTrend = Math.round(themeKeys.reduce((sum, k) => sum + trends[k], 0) / themeKeys.length * 10) / 10;
@@ -252,13 +258,19 @@ function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends
   ];
 }
 
-function getThemesTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
-  return [
-    { label: 'Sustainability', score: metrics.sustainability.green, trend: trends.sustainability, icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
-    { label: 'Comfort', score: metrics.comfort.green, trend: trends.comfort, icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Asset Monitoring', score: metrics.asset_monitoring.green, trend: trends.asset_monitoring, icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Compliance', score: metrics.compliance.green, trend: trends.compliance, icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-  ];
+const THEME_TOPIC_CONFIG: Record<MetricType, { label: string; icon: React.ReactNode; color: string }> = {
+  sustainability: { label: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
+  comfort: { label: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+  asset_monitoring: { label: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+  compliance: { label: 'Compliance', icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+} as Record<MetricType, { label: string; icon: React.ReactNode; color: string }>;
+
+function getThemesTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, keys: MetricType[] = PRIMARY_THEME_KEYS): TopicScore[] {
+  return keys.filter(k => THEME_TOPIC_CONFIG[k]).map(k => ({
+    ...THEME_TOPIC_CONFIG[k],
+    score: metrics[k].green,
+    trend: trends[k],
+  }));
 }
 
 function getOperationsTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
@@ -345,6 +357,7 @@ export default function Home() {
   const selectedGroup = searchParams.get('group') ?? 'All Groups';
   const selectedCity = searchParams.get('city') ?? 'All Cities';
   const selectedTenant = searchParams.get('tenant') ?? tenants[0];
+  const activeThemeKeys = TENANT_THEME_KEYS[selectedTenant] ?? PRIMARY_THEME_KEYS;
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
@@ -641,7 +654,7 @@ export default function Home() {
   };
 
   // Determine if a group is "active" (either the group itself or one of its children is selected)
-  const isThemesActive = selection === 'overall' || selection === 'themes_group' || ALL_THEME_KEYS.includes(selection as MetricType);
+  const isThemesActive = selection === 'overall' || selection === 'themes_group' || activeThemeKeys.includes(selection as MetricType);
   const isOperationsActive = selection === 'overall' || selection === 'operations_group' || OPERATIONS_KEYS.includes(selection as MetricType);
 
   // Visual-only: highlight only the exact level that is selected (not ancestors/descendants)
@@ -653,7 +666,7 @@ export default function Home() {
     if (selection === 'overall') return 'inherited'; // Both groups on in inherited mode
     if (group === 'themes') {
       if (selection === 'themes_group') return 'on';
-      if (ALL_THEME_KEYS.includes(selection as MetricType)) return 'inherited'; // A child is selected
+      if (activeThemeKeys.includes(selection as MetricType)) return 'inherited'; // A child is selected
       return 'off'; // Operations is active
     } else {
       if (selection === 'operations_group') return 'on';
@@ -809,21 +822,23 @@ export default function Home() {
 
   // Calculate rolled-up scores for KPI groups
   const themesScore = selectedBuilding
-    ? Math.round(PRIMARY_THEME_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / PRIMARY_THEME_KEYS.length)
-    : Math.round(periodMetrics.themes.reduce((sum, m) => sum + m.score, 0) / periodMetrics.themes.length);
+    ? Math.round(activeThemeKeys.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / activeThemeKeys.length)
+    : Math.round(periodMetrics.themes.filter((_, i) => activeThemeKeys.includes(PRIMARY_THEME_KEYS[i])).reduce((sum, m) => sum + m.score, 0) / activeThemeKeys.length);
 
   const operationsScore = selectedBuilding
     ? Math.round(OPERATIONS_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / OPERATIONS_KEYS.length)
     : Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.score, 0) / periodMetrics.operations.length);
 
-  const themesTrend = Math.round(periodMetrics.themes.reduce((sum, m) => sum + m.trend, 0) / periodMetrics.themes.length * 10) / 10;
+  const activeThemeMetrics = periodMetrics.themes.filter((_, i) => activeThemeKeys.includes(PRIMARY_THEME_KEYS[i]));
+  const themesTrend = Math.round(activeThemeMetrics.reduce((sum, m) => sum + m.trend, 0) / activeThemeMetrics.length * 10) / 10;
   const operationsTrend = Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.trend, 0) / periodMetrics.operations.length * 10) / 10;
 
   // Score for the currently selected KPI (shown in breadcrumb)
   const selectionScore = (() => {
-    const themeIdx = PRIMARY_THEME_KEYS.indexOf(selection as MetricType);
+    const themeIdx = activeThemeKeys.indexOf(selection as MetricType);
     if (themeIdx !== -1) {
-      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.themes[themeIdx]?.score ?? null;
+      const fullIdx = PRIMARY_THEME_KEYS.indexOf(selection as MetricType);
+      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.themes[fullIdx]?.score ?? null;
     }
     const opsIdx = OPERATIONS_KEYS.indexOf(selection as MetricType);
     if (opsIdx !== -1) {
@@ -834,13 +849,16 @@ export default function Home() {
 
   // Metric items for breadcrumb dropdown (all KPIs with icons and scores)
   const metricItems = useMemo(() => [
-    ...PRIMARY_THEME_KEYS.map((key, i) => ({
-      key,
-      label: periodMetrics.themes[i]?.title ?? key,
-      icon: themeIcons[periodMetrics.themes[i]?.title ?? ''],
-      score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.themes[i]?.score ?? 0,
-      group: 'themes' as const,
-    })),
+    ...activeThemeKeys.map((key) => {
+      const i = PRIMARY_THEME_KEYS.indexOf(key);
+      return {
+        key,
+        label: periodMetrics.themes[i]?.title ?? key,
+        icon: themeIcons[periodMetrics.themes[i]?.title ?? ''],
+        score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.themes[i]?.score ?? 0,
+        group: 'themes' as const,
+      };
+    }),
     ...OPERATIONS_KEYS.map((key, i) => ({
       key,
       label: periodMetrics.operations[i]?.title ?? key,
@@ -1416,7 +1434,7 @@ export default function Home() {
                       </Box>
                       {(() => {
                         const overallScore = selectedBuilding
-                          ? Math.round([...PRIMARY_THEME_KEYS, ...OPERATIONS_KEYS].reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / (PRIMARY_THEME_KEYS.length + OPERATIONS_KEYS.length))
+                          ? Math.round([...activeThemeKeys, ...OPERATIONS_KEYS].reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / (activeThemeKeys.length + OPERATIONS_KEYS.length))
                           : Math.round([...periodMetrics.themes, ...periodMetrics.operations].reduce((sum, m) => sum + m.score, 0) / (periodMetrics.themes.length + periodMetrics.operations.length));
                         const overallRating = getPerformanceRating(overallScore);
                         // Generate sparkline data based on score
@@ -1568,6 +1586,7 @@ export default function Home() {
                             }}>
                               {periodMetrics.themes.map((metric, index) => {
                                 const metricKey = PRIMARY_THEME_KEYS[index];
+                                if (!activeThemeKeys.includes(metricKey)) return null;
                                 if (contractFilter && (metricKey === 'compliance' || metricKey === 'comfort')) return null;
                                 const score = selectedBuilding
                                   ? selectedBuilding.metrics[metricKey].green
@@ -1788,9 +1807,9 @@ export default function Home() {
                                 const firstMetrics = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).metrics : (firstItem as typeof filteredBuildings[0]).metrics) : undefined;
                                 const firstTrends = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).trends : (firstItem as typeof filteredBuildings[0]).trends) : undefined;
                                 const topicHeaders = firstMetrics && firstTrends ? (
-                                  selection === 'themes_group' ? getThemesTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
+                                  selection === 'themes_group' ? getThemesTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys)
                                   : selection === 'operations_group' ? getOperationsTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
-                                  : selectedMetric === 'overall' ? getOverallTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
+                                  : selectedMetric === 'overall' ? getOverallTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys)
                                   : selectedMetric === 'comfort' ? getComfortTopics(firstMetrics.comfort.green)
                                   : selectedMetric === 'sustainability' ? getSustainabilityTopics(firstMetrics.sustainability.green)
                                   : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(firstMetrics.asset_monitoring.green)
@@ -1843,9 +1862,9 @@ export default function Home() {
 
                                   const metrics = isCluster ? c.metrics : b.metrics;
                                   const trends = isCluster ? c.trends : b.trends;
-                                  const topics = selection === 'themes_group' ? getThemesTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
+                                  const topics = selection === 'themes_group' ? getThemesTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys)
                                     : selection === 'operations_group' ? getOperationsTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
-                                    : selectedMetric === 'overall' ? getOverallTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
+                                    : selectedMetric === 'overall' ? getOverallTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys)
                                     : selectedMetric === 'comfort' ? getComfortTopics(metrics.comfort.green)
                                     : selectedMetric === 'sustainability' ? getSustainabilityTopics(metrics.sustainability.green)
                                     : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(metrics.asset_monitoring.green)
@@ -1996,7 +2015,7 @@ export default function Home() {
                                       showOverall={selectedMetric !== 'overall'}
                                       trend={cluster.trends[selectedMetric]}
                                       periodLabel={periodMetrics.periodLabel}
-                                      topics={selection === 'themes_group' ? getThemesTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selection === 'operations_group' ? getOperationsTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selectedMetric === 'overall' ? getOverallTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(cluster.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(cluster.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(cluster.metrics.tickets.green) : undefined}
+                                      topics={selection === 'themes_group' ? getThemesTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys) : selection === 'operations_group' ? getOperationsTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selectedMetric === 'overall' ? getOverallTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys) : selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(cluster.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(cluster.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(cluster.metrics.tickets.green) : undefined}
                                     />
                                   </motion.div>
                                 ))
@@ -2061,7 +2080,7 @@ export default function Home() {
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
-                                    topics={selection === 'themes_group' ? getThemesTopics(b.metrics, b.trends) : selection === 'operations_group' ? getOperationsTopics(b.metrics, b.trends) : selectedMetric === 'overall' ? getOverallTopics(b.metrics, b.trends) : selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(b.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
+                                    topics={selection === 'themes_group' ? getThemesTopics(b.metrics, b.trends, activeThemeKeys) : selection === 'operations_group' ? getOperationsTopics(b.metrics, b.trends) : selectedMetric === 'overall' ? getOverallTopics(b.metrics, b.trends, activeThemeKeys) : selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(b.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
                                     energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
                                     alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : selectedMetric === 'asset_monitoring' && stats ? stats.assetMonitoring.alerts : undefined}
                                   />
@@ -2082,6 +2101,7 @@ export default function Home() {
                             metricInfo={metricInfo}
                             onMetricSelect={handleMetricSelect}
                             periodMetrics={periodMetrics}
+                            themeKeys={activeThemeKeys}
                             onBuildingSelect={setSelectedBuilding}
                             onViewAllBuildings={(sort) => {
                               setBuildingsPanelTab('buildings');
@@ -2332,6 +2352,7 @@ function KPIAnalysisView({
   onViewAllBuildings,
   buildingMode = 'buildings',
   onNavigateToDashboard,
+  themeKeys = PRIMARY_THEME_KEYS,
 }: {
   selection: string;
   selectedMetric: MetricType;
@@ -2344,9 +2365,10 @@ function KPIAnalysisView({
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode;
   onNavigateToDashboard?: (dashboardId: string) => void;
+  themeKeys?: MetricType[];
 }) {
   // Determine which KPIs to show based on toggle state and selection
-  const visibleThemes = themesEnabled ? ALL_THEME_KEYS : [];
+  const visibleThemes = themesEnabled ? themeKeys : [];
   const visibleOps = operationsEnabled ? OPERATIONS_KEYS : [];
   const allVisible = [...visibleThemes, ...visibleOps];
 
