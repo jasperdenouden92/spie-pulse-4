@@ -237,9 +237,8 @@ interface DashboardLink {
 }
 
 const COMPLIANCE_DASHBOARDS: DashboardLink[] = [
-  { id: 'preventief_onderhoud', label: 'Preventive Maintenance', subtitle: 'Scheduled maintenance compliance and status', icon: <BuildOutlinedIcon /> },
-  { id: 'process_orders', label: 'Process Orders', subtitle: 'Work order tracking and completion rates', icon: <AssignmentOutlinedIcon /> },
-  { id: 'mjob', label: 'Multi-year Maintenance Budget', subtitle: 'Long-term maintenance planning and spend', icon: <DateRangeOutlinedIcon /> },
+  { id: 'compliance_dashboard', label: 'Compliance Dashboard', subtitle: 'Regulatory compliance overview and status', icon: <GavelOutlinedIcon /> },
+  { id: 'bacs_overview', label: 'BACS Overview', subtitle: 'Building automation and control systems', icon: <SensorsOutlinedIcon /> },
 ];
 
 // ── Component ──

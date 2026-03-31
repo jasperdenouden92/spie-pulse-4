@@ -151,7 +151,7 @@ export function getDateRangeDisplayLabel(value: string): string {
   for (const preset of PRESETS) {
     const { from: pf, to: pt } = preset.getRange();
     if (from.getTime() === pf.getTime() && to.getTime() === pt.getTime()) {
-      return preset.label.toLowerCase();
+      return preset.label;
     }
   }
 
@@ -722,7 +722,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   );
 
   if (inline) {
-    return <Box sx={{ maxWidth: 920 }}>{content}</Box>;
+    return <Box>{content}</Box>;
   }
 
   return (

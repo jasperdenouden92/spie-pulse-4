@@ -202,12 +202,24 @@ const DASHBOARD_GROUPS: ThemeGroup[] = [
     themeKey: 'compliance',
     dashboards: [
       {
-        id: 'compliance_overview',
-        label: 'Compliance overview',
+        id: 'compliance_dashboard',
+        label: 'Compliance Dashboard',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><AssetTrendChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
+      {
+        id: 'bacs_overview',
+        label: 'BACS Overview',
         renderCharts: (b) => (
           <>
             <ChartCard span={2}><PerformanceHeatmapChart buildingName={b} /></ChartCard>
-            <ChartCard span={2}><MaintenanceOverviewTable buildingName={b} title="Compliance Records" /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
           </>
         ),
       },

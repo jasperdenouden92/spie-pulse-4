@@ -9,7 +9,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
@@ -18,6 +17,8 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import Chip from '@mui/material/Chip';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { AssetNode } from '@/data/assetTree';
 import { colors, secondaryAlpha } from '@/colors';
 import { ContractFilterToggle, type ContractFilter } from '@/components/BuildingSelector';
@@ -54,9 +55,7 @@ interface PageHeaderProps {
   onExport?: () => void;
   activeDashboardId?: string;
   activeDashboardLabel?: string;
-  // Compact filter in header (shown when page title scrolls out of view)
-  isFilterTitleScrolled?: boolean;
-  filterSelectionLabel?: string;
+  // Filter chips in header
   filterPeriodLabel?: string;
   filterBuildingLabel?: string;
   onFilterDateClick?: (e: React.MouseEvent<HTMLElement>) => void;
@@ -118,8 +117,6 @@ export default function PageHeader({
   onExport,
   activeDashboardId,
   activeDashboardLabel,
-  isFilterTitleScrolled = false,
-  filterSelectionLabel,
   filterPeriodLabel,
   filterBuildingLabel,
   onFilterDateClick,
@@ -187,7 +184,9 @@ export default function PageHeader({
         justifyContent: 'space-between',
         backgroundColor: colors.bgSecondary,
         zIndex: 1200,
-        transition: 'left 0.3s ease, right 0.3s ease'
+        transition: 'left 0.3s ease, right 0.3s ease',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
       }}
     >
       {/* Left: Collapse button + Breadcrumb */}
@@ -261,7 +260,27 @@ export default function PageHeader({
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Exports</Typography>
             )}
             {currentPage === 'dashboards' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Dashboards</Typography>
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    color: activeDashboardLabel ? 'text.secondary' : 'text.primary',
+                    fontFamily: '"Inter", sans-serif',
+                  }}
+                >
+                  Dashboards
+                </Typography>
+                {activeDashboardLabel && (
+                  <>
+                    <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
+                      {activeDashboardLabel}
+                    </Typography>
+                  </>
+                )}
+              </>
             )}
             {currentPage === 'operations' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Operations</Typography>
@@ -511,76 +530,47 @@ export default function PageHeader({
         )}
       </Box>
 
-      {/* Center: Compact filter title (fades in when page title scrolls out of view) */}
-      <AnimatePresence>
-        {isFilterTitleScrolled && filterPeriodLabel && (
-          <motion.div
-            key="compact-filter"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', zIndex: 1200 }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 600,
-                fontSize: '0.8125rem',
-                color: 'text.secondary',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '3px',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Showing{filterSelectionLabel ? ` ${filterSelectionLabel} of` : ''}
-              <Box
-                component="span"
-                onClick={onFilterDateClick}
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'baseline',
-                  gap: '1px',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  color: 'primary.main',
-                  transition: 'opacity 0.2s ease',
-                  '&:hover': { opacity: 0.7 },
-                }}
-              >
-                {filterPeriodLabel}
-                <KeyboardArrowDownIcon sx={{ fontSize: 14, verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-              </Box>
-              {filterBuildingLabel && (
-                <>
-                  for
-                  <Box
-                    component="span"
-                    onClick={onFilterBuildingClick}
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'baseline',
-                      gap: '1px',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      color: 'primary.main',
-                      transition: 'opacity 0.2s ease',
-                      '&:hover': { opacity: 0.7 },
-                    }}
-                  >
-                    {filterBuildingLabel}
-                    <KeyboardArrowDownIcon sx={{ fontSize: 14, verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                  </Box>
-                </>
-              )}
-            </Typography>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Right: Filters + Export + Favorite */}
+      {/* Right: Filter chips + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        {/* Filter chips — always visible next to export */}
+        {filterBuildingLabel && onFilterBuildingClick && (
+          <Chip
+            label={filterBuildingLabel}
+            onClick={onFilterBuildingClick}
+            deleteIcon={<ExpandMoreIcon />}
+            onDelete={onFilterBuildingClick as any}
+            sx={{
+              height: 32,
+              borderRadius: '6px',
+              backgroundColor: 'white',
+              border: '1px solid',
+              borderColor: colors.borderPrimary,
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              '&:hover': { backgroundColor: colors.bgPrimaryHover },
+              '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
+              '& .MuiChip-deleteIcon': { color: 'text.primary' },
+            }}
+          />
+        )}
+        {filterPeriodLabel && onFilterDateClick && (
+          <Chip
+            label={filterPeriodLabel}
+            onClick={onFilterDateClick}
+            deleteIcon={<ExpandMoreIcon />}
+            onDelete={onFilterDateClick as any}
+            sx={{
+              height: 32,
+              borderRadius: '6px',
+              backgroundColor: 'white',
+              border: '1px solid',
+              borderColor: colors.borderPrimary,
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+              '&:hover': { backgroundColor: colors.bgPrimaryHover },
+              '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
+              '& .MuiChip-deleteIcon': { color: 'text.primary' },
+            }}
+          />
+        )}
         {/* Export Button — on Control Room and Dashboards */}
         {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
           <Button

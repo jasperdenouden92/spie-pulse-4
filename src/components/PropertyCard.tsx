@@ -90,14 +90,18 @@ const energyLabelColors: Record<string, string> = {
   G: '#d0021b',
 };
 
-function EnergyLabel({ rating }: { rating: string }) {
+export function EnergyLabel({ rating, size = 'default' }: { rating: string; size?: 'default' | 'small' }) {
   const color = energyLabelColors[rating] || '#999';
+  const isSmall = size === 'small';
+  const w = isSmall ? 24 : 32;
+  const h = isSmall ? 14 : 18;
+  const textW = isSmall ? 18 : 24;
   return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', position: 'relative', height: 18, minWidth: 28 }}>
-      <svg width="32" height="18" viewBox="0 0 32 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 2C0 0.9 0.9 0 2 0H22L32 9L22 18H2C0.9 18 0 17.1 0 16V2Z" fill={color} />
+    <Box sx={{ display: 'inline-flex', alignItems: 'center', position: 'relative', height: h, minWidth: isSmall ? 22 : 28 }}>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d={`M0 2C0 0.9 0.9 0 2 0H${w - 10}L${w} ${h / 2}L${w - 10} ${h}H2C0.9 ${h} 0 ${h - 0.9} 0 ${h - 2}V2Z`} fill={color} />
       </svg>
-      <Typography sx={{ position: 'absolute', left: 0, width: 24, textAlign: 'center', fontWeight: 700, fontSize: '0.6875rem', lineHeight: 1, color: 'white' }}>
+      <Typography sx={{ position: 'absolute', left: 0, width: textW, textAlign: 'center', fontWeight: 700, fontSize: isSmall ? '0.5625rem' : '0.6875rem', lineHeight: 1, color: 'white' }}>
         {rating}
       </Typography>
     </Box>
@@ -119,10 +123,15 @@ function ScoreBadge({
   periodLabel?: string | null;
   overallPerformance?: PerformanceMetric;
 }) {
+  const scoreColor = getScoreColor(performance.green);
   return (
     <>
-      {metricIcon}
-      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.25rem', lineHeight: 1, color: getScoreColor(performance.green) }}>
+      {metricIcon && (
+        <Box sx={{ display: 'flex', alignItems: 'center', color: scoreColor, '& .MuiSvgIcon-root': { color: `${scoreColor} !important` } }}>
+          {metricIcon}
+        </Box>
+      )}
+      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.25rem', lineHeight: 1, color: scoreColor }}>
         {performance.green}%
       </Typography>
       {trend !== undefined && periodLabel !== null && (
@@ -186,29 +195,30 @@ function PerformanceBars({
   periodLabel?: string | null;
 }) {
   return (
-    <Box sx={{ position: 'relative', minHeight: showOverall ? 76 : 40 }}>
+    <Box sx={{ position: 'relative', minHeight: showOverall ? 76 : 'auto' }}>
       {/* Overall Performance - base layer */}
-      <Box sx={{
-        position: showOverall ? 'absolute' : 'relative',
-        bottom: showOverall ? 0 : 'auto',
-        left: 0, right: 0,
-        opacity: showOverall ? 0.4 : 0,
-        transition: 'opacity 0.3s ease',
-        pointerEvents: showOverall ? 'auto' : 'none',
-      }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>Overall Performance</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{overallPerformance?.green}%</Typography>
+      {showOverall && (
+        <Box sx={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0, right: 0,
+          opacity: 0.4,
+          transition: 'opacity 0.3s ease',
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>Overall Performance</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{overallPerformance?.green}%</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover }}>
+            <Box sx={{ width: `${overallPerformance?.green || 0}%`, bgcolor: '#4caf50', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            <Box sx={{ width: `${overallPerformance?.yellow || 0}%`, bgcolor: '#ffc107', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            <Box sx={{ width: `${overallPerformance?.red || 0}%`, bgcolor: '#f44336', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover }}>
-          <Box sx={{ width: `${overallPerformance?.green || 0}%`, bgcolor: '#4caf50', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-          <Box sx={{ width: `${overallPerformance?.yellow || 0}%`, bgcolor: '#ffc107', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-          <Box sx={{ width: `${overallPerformance?.red || 0}%`, bgcolor: '#f44336', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-        </Box>
-      </Box>
+      )}
 
       {/* Selected Metric - toast layer */}
       <Box sx={{
@@ -222,7 +232,11 @@ function PerformanceBars({
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
           <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', transition: 'all 0.3s ease' }}>{metricTitle}</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, transition: 'all 0.3s ease' }}>
-            {metricIcon || <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />}
+            {metricIcon ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', color: getScoreColor(performance.green), '& .MuiSvgIcon-root': { color: `${getScoreColor(performance.green)} !important` } }}>
+                {metricIcon}
+              </Box>
+            ) : <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />}
             <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.9375rem', transition: 'all 0.3s ease' }}>{performance.green}%</Typography>
             {trend !== undefined && periodLabel !== null && (
               <Tooltip title={periodLabel ? `Compared to ${periodLabel}` : ''} arrow placement="top">
