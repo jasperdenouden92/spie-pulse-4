@@ -1761,9 +1761,8 @@ export default function Home() {
                   {/* ========== BUILDINGS / PERFORMANCE INDICATORS PANEL ========== */}
                   {!selectedBuilding ? (
                     <Box sx={{
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 1,
+                      border: '1px solid rgba(0,0,0,0.04)',
+                      borderRadius: '12px',
                       bgcolor: '#fff',
                       overflow: 'hidden'
                     }}>
@@ -1773,8 +1772,7 @@ export default function Home() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         p: 1.5,
-                        borderBottom: 1,
-                        borderColor: 'divider',
+                        borderBottom: '1px solid rgba(0,0,0,0.04)',
                         bgcolor: colors.bgSecondary
                       }}>
                         <AppTabs
