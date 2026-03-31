@@ -1,3 +1,5 @@
+import { seededRandom } from './generators';
+
 export interface PerformanceMetric {
   green: number;
   yellow: number;
@@ -19,7 +21,7 @@ export interface Building {
 }
 
 // Seeded random for deterministic trend generation (xorshift32 for better distribution)
-function seededRandom(seed: number): () => number {
+function createSeededRng(seed: number): () => number {
   // Mix the seed to avoid clustering with similar inputs
   let s = seed ^ 0xDEADBEEF;
   s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
@@ -35,7 +37,7 @@ function seededRandom(seed: number): () => number {
 }
 
 function genTrends(seed: number): Record<MetricKeys, number> {
-  const rng = seededRandom(seed);
+  const rng = createSeededRng(seed);
   // Range centered around 0: roughly -15 to +20, with good spread
   const gen = () => Math.round((rng() * 35 - 15) * 10) / 10;
   return {
@@ -48,9 +50,9 @@ function genTrends(seed: number): Record<MetricKeys, number> {
 
 // Helper to generate a performance metric with some variance around a base green score
 function genMetric(baseGreen: number, variance: number = 8): PerformanceMetric {
-  const green = Math.max(20, Math.min(95, baseGreen + Math.floor((Math.random() - 0.5) * variance)));
+  const green = Math.max(20, Math.min(95, baseGreen + Math.floor((seededRandom() - 0.5) * variance)));
   const remaining = 100 - green;
-  const yellow = Math.floor(remaining * (0.5 + Math.random() * 0.3));
+  const yellow = Math.floor(remaining * (0.5 + seededRandom() * 0.3));
   const red = remaining - yellow;
   return { green, yellow, red };
 }

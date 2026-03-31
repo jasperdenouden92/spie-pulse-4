@@ -12,8 +12,8 @@ export const metadata: Metadata = { title: 'Pulse Core 4.0' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} ${jost.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} ${jost.variable}`} suppressHydrationWarning>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Suspense fallback={null}>

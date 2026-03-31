@@ -1,4 +1,5 @@
 import { colors } from '@/colors';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -54,11 +55,11 @@ const generateMockData = (assetFilter?: string): MaintenanceRecord[] => {
     location: 'Demo project',
     equipment: eq,
     failureMode: failureModes[index % 2],
-    value: `${Math.floor(Math.random() * 100 + 10)} Pa`,
-    upperLimit: `${Math.floor(Math.random() * 50 + 50)} Pa`,
-    daysSince: `${Math.floor(Math.random() * 50 + 80)} day`,
-    upperLimitDays: `${Math.floor(Math.random() * 400 + 300)} day`,
-    remainingWeeks: index % 3 === 0 ? '0.00 wk' : `${Math.floor(Math.random() * 20 + 5)}.0wk`,
+    value: `${Math.floor(((index * 37 + 13) % 100) + 10)} Pa`,
+    upperLimit: `${Math.floor(((index * 41 + 7) % 50) + 50)} Pa`,
+    daysSince: `${Math.floor(((index * 53 + 17) % 50) + 80)} day`,
+    upperLimitDays: `${Math.floor(((index * 59 + 23) % 400) + 300)} day`,
+    remainingWeeks: index % 3 === 0 ? '0.00 wk' : `${Math.floor(((index * 43 + 11) % 20) + 5)}.0wk`,
     advisedDate: index % 3 === 0 ? `${26 + index}.01.2026` : `> 29.07.2026`,
     plannedDate: 'geen OH gepland',
     lastMaintenance: `00100128${index + 30}34`

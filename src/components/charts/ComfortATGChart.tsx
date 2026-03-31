@@ -1,4 +1,5 @@
 import { colors, secondaryAlpha } from '@/colors';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -28,21 +29,21 @@ const generateMockData = () => {
       id: 'Upper Limit',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 25 + Math.random() * 1
+        y: 25 + ((i * 37 + 13) % 10) / 10
       }))
     },
     {
       id: 'Lower Limit',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 20 + Math.random() * 1
+        y: 20 + ((i * 41 + 7) % 10) / 10
       }))
     },
     {
       id: 'Temperature',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 21.5 + Math.random() * 2
+        y: 21.5 + ((i * 53 + 17) % 20) / 10
       }))
     }
   ];

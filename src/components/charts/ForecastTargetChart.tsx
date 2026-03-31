@@ -1,4 +1,5 @@
 import { colors, secondaryAlpha } from '@/colors';
+
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -21,7 +22,7 @@ const generateMockData = () => {
       color: '#2196f3',
       data: months.map((month, i) => ({
         x: month,
-        y: 20 + Math.random() * 40 + i * 2
+        y: 20 + ((i * 37 + 13) % 40) + i * 2
       }))
     },
     {
@@ -29,7 +30,7 @@ const generateMockData = () => {
       color: '#90caf9',
       data: months.map((month, i) => ({
         x: month,
-        y: 25 + Math.random() * 35 + i * 2
+        y: 25 + ((i * 41 + 7) % 35) + i * 2
       }))
     },
     {
@@ -37,7 +38,7 @@ const generateMockData = () => {
       color: '#ff9800',
       data: months.map((month, i) => ({
         x: month,
-        y: 28 + Math.random() * 30 + i * 2
+        y: 28 + ((i * 53 + 17) % 30) + i * 2
       }))
     },
     {
@@ -45,7 +46,7 @@ const generateMockData = () => {
       color: '#4caf50',
       data: months.map((month, i) => ({
         x: month,
-        y: 22 + Math.random() * 38 + i * 2
+        y: 22 + ((i * 59 + 23) % 38) + i * 2
       }))
     }
   ];

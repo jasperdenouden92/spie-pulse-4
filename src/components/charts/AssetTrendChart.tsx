@@ -1,4 +1,5 @@
 import { colors, secondaryAlpha } from '@/colors';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -33,33 +34,33 @@ const generateMockData = (assetFilter?: string) => {
     {
       id: 'Supply Temperature - CV Buffer',
       color: '#ef5350',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 45 + Math.random() * 15
+        y: 45 + ((i * 37 + 13) % 15)
       }))
     },
     {
       id: 'Supply Temperature - CV Boiler',
       color: '#42a5f5',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 40 + Math.random() * 12
+        y: 40 + ((i * 41 + 7) % 12)
       }))
     },
     {
       id: 'Outside Temperature',
       color: '#66bb6a',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 5 + Math.random() * 10
+        y: 5 + ((i * 53 + 17) % 10)
       }))
     },
     {
       id: 'Return Temperature',
       color: '#ffa726',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 30 + Math.random() * 10
+        y: 30 + ((i * 59 + 23) % 10)
       }))
     }
   ];

@@ -1,4 +1,5 @@
 import { colors, secondaryAlpha } from '@/colors';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -28,7 +29,7 @@ const generateMockData = () => {
       id: 'Floor 6, Room Sensor 1 (D-3883)',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 420 + i * 10 + Math.random() * 30
+        y: 420 + i * 10 + ((i * 37 + 13) % 30)
       }))
     }
   ];
