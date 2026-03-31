@@ -626,7 +626,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           </Box>
           {/* Scrollable nav section — position trick guarantees bounded height */}
           <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-            <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: 2, pt: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
+            <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: 2, pt: 0, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
             <List sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             {/* "+ New" action button — opens dropdown menu */}
             <NavItem
@@ -822,7 +822,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           </Box>
 
           {/* Nav items */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 1, pt: 2, flex: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 1, pt: 0, flex: 1 }}>
             <Tooltip title="New  [N]" placement="right">
               <IconButton
                 ref={collapsedNewButtonRef}
