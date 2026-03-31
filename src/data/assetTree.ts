@@ -1,4 +1,5 @@
 import { seededRandom } from './generators';
+import { locations } from './locations';
 
 export interface AssetNode {
   id: string;
@@ -20,35 +21,26 @@ export interface AssetNode {
   };
 }
 
-// Building configurations for different types
-const buildingConfigs = [
-  { name: 'Skyline Plaza', floors: 8, type: 'office' },
-  { name: 'Innovation Hub', floors: 6, type: 'tech' },
-  { name: 'Harmony Estates', floors: 4, type: 'residential' },
-  { name: 'Atrium Towers', floors: 12, type: 'office' },
-  { name: 'Civic Center', floors: 5, type: 'civic' },
-  { name: 'Harbor Point', floors: 7, type: 'mixed' },
-  { name: 'Crystal Tower', floors: 15, type: 'office' },
-  { name: 'Green Park Office', floors: 5, type: 'office' },
-  { name: 'Sunset Plaza', floors: 8, type: 'retail' },
-  { name: 'Metro Central', floors: 10, type: 'office' },
-  { name: 'Riverside Complex', floors: 6, type: 'mixed' },
-  { name: 'North Star', floors: 9, type: 'office' },
-  { name: 'Gateway Plaza', floors: 7, type: 'mixed' },
-  { name: 'Tech Park East', floors: 4, type: 'tech' },
-  { name: 'Crown Heights', floors: 8, type: 'residential' },
-  { name: 'Liberty Square', floors: 6, type: 'office' },
-  { name: 'Pinnacle Tower', floors: 20, type: 'office' },
-  { name: 'Heritage Building', floors: 3, type: 'civic' },
-  { name: 'Modern Canvas', floors: 5, type: 'mixed' },
-  { name: 'Velocity Center', floors: 7, type: 'tech' },
-  { name: 'Zenith Plaza', floors: 11, type: 'office' },
-  { name: 'Eclipse Tower', floors: 14, type: 'office' },
-  { name: 'Aurora Office', floors: 6, type: 'office' },
-  { name: 'Nexus Building', floors: 8, type: 'tech' },
-  { name: 'Vertex Square', floors: 5, type: 'retail' },
-  { name: 'Prism Complex', floors: 9, type: 'mixed' },
-];
+// Generate building configurations from location data
+const buildingTypes = ['office', 'tech', 'retail', 'mixed', 'civic'];
+
+function configRng(seed: number): () => number {
+  let s = seed ^ 0xDEADBEEF;
+  s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+  s = Math.imul(s ^ (s >>> 13), 0x45d9f3b);
+  s = (s ^ (s >>> 16)) >>> 0;
+  if (s === 0) s = 1;
+  return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return (s >>> 0) / 4294967296; };
+}
+
+const buildingConfigs = locations.map((loc, i) => {
+  const rng = configRng(i * 43 + 7);
+  return {
+    name: loc.name,
+    floors: Math.floor(rng() * 12) + 2, // 2-13 floors
+    type: buildingTypes[Math.floor(rng() * buildingTypes.length)],
+  };
+});
 
 // Manufacturers by category
 const manufacturers = {

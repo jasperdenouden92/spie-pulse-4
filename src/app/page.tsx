@@ -66,7 +66,7 @@ import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
-import { sortBuildingsByMetric, sortBuildingsByTrend, Building, MetricKeys, buildings as allBuildings } from '@/data/buildings';
+import { sortBuildingsByMetric, sortBuildingsByTrend, Building, MetricKeys, buildings as allBuildings, tenants } from '@/data/buildings';
 import { motion, AnimatePresence } from 'framer-motion';
 import TicketsList from '@/components/TicketsList';
 import QuotationsList from '@/components/QuotationsList';
@@ -344,6 +344,7 @@ export default function Home() {
   const dateRange = searchParams.get('dateRange') ?? 'This Month';
   const selectedGroup = searchParams.get('group') ?? 'All Groups';
   const selectedCity = searchParams.get('city') ?? 'All Cities';
+  const selectedTenant = searchParams.get('tenant') ?? tenants[0];
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
@@ -418,6 +419,7 @@ export default function Home() {
   const setDateRange = (r: string) => setURLParams({ dateRange: r });
   const setSelectedGroup = (g: string) => setURLParams({ group: g });
   const setSelectedCity = (c: string) => setURLParams({ city: c });
+  const setSelectedTenant = (t: string) => setURLParams({ tenant: t });
   const setIsInspectMode = (v: boolean) => setURLParams({ inspect: v ? '1' : '0' });
   const setIsAssetExplorerOpen = (v: boolean) => setURLParams({ explorer: v ? '1' : '0' });
   const setAssetTab = (n: number) => setURLParams({ assetTab: String(n) });
@@ -548,17 +550,27 @@ export default function Home() {
     return selection as MetricType;
   })();
 
+  // Filter buildings by selected tenant
+  const tenantBuildings = useMemo(() => {
+    return allBuildings.filter(b => b.tenant === selectedTenant);
+  }, [selectedTenant]);
+
   // Sort buildings based on selected metric and sort order
   const sortedBuildings = useMemo(() => {
     const metricForSort = selectedMetric === 'overall' ? 'overall' : selectedMetric;
 
+    const sortByMetric = (metric: MetricKeys) =>
+      [...tenantBuildings].sort((a, b) => a.metrics[metric].green - b.metrics[metric].green);
+    const sortByTrend = (metric: MetricKeys, direction: 'improved' | 'deteriorated') =>
+      [...tenantBuildings].sort((a, b) => direction === 'improved' ? b.trends[metric] - a.trends[metric] : a.trends[metric] - b.trends[metric]);
+
     if (sortOrder === 'Most Improved') {
-      return sortBuildingsByTrend(metricForSort, 'improved');
+      return sortByTrend(metricForSort, 'improved');
     } else if (sortOrder === 'Most Deteriorated') {
-      return sortBuildingsByTrend(metricForSort, 'deteriorated');
+      return sortByTrend(metricForSort, 'deteriorated');
     }
 
-    const buildings = sortBuildingsByMetric(metricForSort);
+    const buildings = sortByMetric(metricForSort);
 
     if (sortOrder === 'Best to Worst') {
       return [...buildings].reverse();
@@ -569,11 +581,13 @@ export default function Home() {
     }
 
     return buildings;
-  }, [selectedMetric, sortOrder]);
+  }, [selectedMetric, sortOrder, tenantBuildings]);
 
   // Apply contract filter on top of sorted buildings
+  // When contractFilter is false ("Overall"), show all buildings; when true ("Contract"), show only contracted
   const filteredBuildings = useMemo(() => {
-    return sortedBuildings.filter(b => b.hasContract === contractFilter);
+    if (!contractFilter) return sortedBuildings;
+    return sortedBuildings.filter(b => b.hasContract);
   }, [sortedBuildings, contractFilter]);
 
   // Aggregate buildings into clusters for cluster grid view
@@ -851,6 +865,8 @@ export default function Home() {
           selectedMetric={selectedMetric}
           onBuildingSelect={setSelectedBuilding}
           onMetricSelect={(metric) => setSelection(metric as MetricType)}
+          selectedTenant={selectedTenant}
+          onTenantChange={setSelectedTenant}
           favorites={favorites}
           onFavoritesChange={setFavorites}
           selection={selection}
