@@ -1204,7 +1204,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                 <WeiiScatterChart data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
               </Box>
             </Box>
-            <Box sx={{ borderLeft: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ borderLeft: '1px solid rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <WeiiSidebar data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} groupMode={weiiSidebarGroupMode} onGroupModeChange={setWeiiSidebarGroupMode} />
             </Box>
           </Box>
