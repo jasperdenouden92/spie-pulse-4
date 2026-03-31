@@ -122,9 +122,6 @@ function buildThresholdZones(goodAbove: number, moderateAbove: number): Threshol
   ];
 }
 
-const OVERALL_GOOD_ABOVE = 75;
-const OVERALL_MODERATE_ABOVE = 55;
-
 // ── Component ──
 
 interface OverallPerformancePageProps {
@@ -141,7 +138,6 @@ interface OverallPerformancePageProps {
 
 export default function OverallPerformancePage({
   themesScore, themesTrend, operationsScore, operationsTrend,
-  overallScore, overallTrend,
   onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings',
 }: OverallPerformancePageProps) {
   const [chartView, setChartView] = useState<ViewMode>('themes');
@@ -192,65 +188,45 @@ export default function OverallPerformancePage({
     { key: 'operations', label: 'Operational KPIs', icon: <EngineeringOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
-  // Overall combined chart (shown at top)
-  const overallSeries = useMemo(() => ({
-    label: 'Overall Performance',
-    color: colors.brand,
-    data: generateKpiTimeSeries('overall_combined', overallScore),
-  }), [overallScore]);
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* ═══ Overall Score Over Time (card) ═══ */}
-      <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
-            Overall Performance
-          </Typography>
+      {/* ═══ Theme & Operations Score Cards ═══ */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <StyleOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>Theme KPIs</Typography>
+          </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {overallScore}%
+              {themesScore}%
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: overallTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {overallTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themesTrend >= 0 ? 'success.main' : 'error.main' }}>
+              {themesTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
               <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(overallTrend)}%
+                {Math.abs(themesTrend)}%
               </Typography>
             </Box>
           </Box>
-        </Box>
-
-        <Box sx={{ flex: 1, minHeight: 340 }}>
-          <LineChart
-            xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
-            yAxis={[{ min: Math.max(0, Math.floor((Math.min(...overallSeries.data, OVERALL_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-            series={[{ data: overallSeries.data, label: 'Overall Performance', color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
-            height={370}
-            margin={{ top: 48, right: 80, bottom: 28, left: 80 }}
-            grid={{ horizontal: true }}
-            hideLegend
-            slotProps={{ tooltip: { trigger: 'none' } }}
-            axisHighlight={{ x: 'none', y: 'none' }}
-            sx={{
-              '& .MuiLineElement-root': { stroke: 'url(#threshold-gradient-overall-line)', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-              [`& .${lineClasses.area}`]: { fill: 'url(#threshold-gradient-overall-combined)', filter: 'none', opacity: 0.15 },
-              '& .MuiChartsGrid-line': { stroke: '#e8e8e8', strokeWidth: 1 },
-              '& .MuiChartsAxis-line': { stroke: 'transparent' },
-              '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-            }}
-          >
-            <HorizontalThresholdGradient data={overallSeries.data} goodAbove={OVERALL_GOOD_ABOVE} moderateAbove={OVERALL_MODERATE_ABOVE} id="threshold-gradient-overall-combined" />
-            <HorizontalThresholdGradient data={overallSeries.data} goodAbove={OVERALL_GOOD_ABOVE} moderateAbove={OVERALL_MODERATE_ABOVE} id="threshold-gradient-overall-line" goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-            <InteractiveThresholdLine y={OVERALL_GOOD_ABOVE} label={`Good: ${OVERALL_GOOD_ABOVE}–100%`} />
-            <InteractiveThresholdLine y={OVERALL_MODERATE_ABOVE} label={`Moderate: ${OVERALL_MODERATE_ABOVE}–${OVERALL_GOOD_ABOVE}%`} />
-            <ChartHoverOverlay
-              data={overallSeries.data}
-              labels={MONTHS}
-              getColor={(v) => v >= OVERALL_GOOD_ABOVE ? '#66bb6a' : v >= OVERALL_MODERATE_ABOVE ? '#ffa726' : '#ef5350'}
-            />
-          </LineChart>
-        </Box>
-      </Paper>
+        </Paper>
+        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <EngineeringOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>Operational KPIs</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
+              {operationsScore}%
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: operationsTrend >= 0 ? 'success.main' : 'error.main' }}>
+              {operationsTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
+              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+                {Math.abs(operationsTrend)}%
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
 
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
