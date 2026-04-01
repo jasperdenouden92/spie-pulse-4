@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Inter, Jost } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { theme } from '@/theme';
+import { ThemeRegistry } from '@/theme-registry';
 import { Annotations } from "@/annotations/provider";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -15,14 +14,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} ${jost.variable}`} suppressHydrationWarning>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
+        <ThemeRegistry>
           <Annotations>
             <Suspense fallback={null}>
               {children}
             </Suspense>
           </Annotations>
-        </ThemeProvider>
+        </ThemeRegistry>
       </body>
     </html>
   );
