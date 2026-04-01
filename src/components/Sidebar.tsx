@@ -687,7 +687,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Box sx={{ height: favoritesHeight, flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', px: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
               <Divider sx={{ mb: 1 }} />
               <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>Favorites</Typography>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <DndContext id="sidebar-favorites" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={favorites.map(f => f.id)} strategy={verticalListSortingStrategy}>
                   <List dense sx={{ py: 0 }}>
                     {favorites.map((fav) => (
