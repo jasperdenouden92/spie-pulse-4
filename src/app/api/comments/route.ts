@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     if (annotationId) {
       filter.and.push({
-        property: "Annotation",
+        property: "Annotatie ID",
         rich_text: { equals: annotationId },
       });
     }
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
       id: page.id,
       auteur: page.properties.Auteur?.rich_text?.[0]?.plain_text ?? "",
       comment: page.properties.Comment?.rich_text?.[0]?.plain_text ?? "",
-      status: page.properties.Status?.status?.name ?? "Open",
+      status: page.properties.Status?.select?.name ?? "Open",
       antwoord: page.properties.Antwoord?.rich_text?.[0]?.plain_text ?? null,
       aangemaakt: page.properties.Aangemaakt?.created_time ?? page.created_time,
     }));
@@ -105,14 +105,15 @@ export async function POST(req: NextRequest) {
     }
 
     const properties: any = {
+      Naam: { title: [{ text: { content: comment } }] },
       Auteur: { rich_text: [{ text: { content: auteur } }] },
-      Comment: { title: [{ text: { content: comment } }] },
-      Status: { status: { name: "Open" } },
+      Comment: { rich_text: [{ text: { content: comment } }] },
+      Status: { select: { name: "Open" } },
       Project: { relation: [{ id: env.projectId }] },
     };
 
     if (annotationId) {
-      properties.Annotation = { rich_text: [{ text: { content: String(annotationId) } }] };
+      properties["Annotatie ID"] = { rich_text: [{ text: { content: String(annotationId) } }] };
     }
 
     if (label) {
