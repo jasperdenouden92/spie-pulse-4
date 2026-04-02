@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked } from '@/components/performance';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, TicketStatusOverviewCard, TicketActiveListCard } from '@/components/performance';
+import type { TicketItem, StatusCount } from '@/components/performance';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -221,9 +220,7 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Ticket status data ─────────────────────────────────────────────────────
 
-type TicketStatus = 'Received' | 'In operation' | 'Function restored' | 'Completed' | 'Invoiced' | 'To approve';
-
-const STATUS_COUNTS: { status: TicketStatus; count: number; color: string }[] = [
+const STATUS_COUNTS: StatusCount[] = [
   { status: 'Received', count: 8, color: '#2196f3' },
   { status: 'In operation', count: 5, color: '#ff9800' },
   { status: 'To approve', count: 3, color: '#e91e63' },
@@ -231,20 +228,6 @@ const STATUS_COUNTS: { status: TicketStatus; count: number; color: string }[] = 
   { status: 'Completed', count: 12, color: '#4caf50' },
   { status: 'Invoiced', count: 6, color: '#78909c' },
 ];
-
-interface TicketItem {
-  id: string;
-  title: string;
-  building: string;
-  status: TicketStatus;
-  category: string;
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  createdDate: string;
-  assignee: string;
-  werkbon: string;
-  referentie: string;
-  amount?: number;
-}
 
 const ACTIVE_TICKETS: TicketItem[] = [
   { id: 'T-2026-0041', title: 'Test', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026 10:45', assignee: 'M. Neuten', werkbon: '-/-', referentie: '-' },
@@ -271,23 +254,6 @@ const ACTIVE_TICKETS: TicketItem[] = [
   { id: 'T-2026-0020', title: 'Air handling unit service', building: 'TU Eindhoven', status: 'Invoiced', category: 'Regie', priority: 'Medium', createdDate: '25-01-2026 14:15', assignee: 'R.R.H.M. Zij', werkbon: '440227', referentie: 'REF-2026-014', amount: 6350 },
 ];
 
-const ACTIVE_STATUSES: TicketStatus[] = ['Received', 'In operation', 'To approve', 'Function restored'];
-const ACTION_REQUIRED_STATUSES: TicketStatus[] = ['To approve'];
-
-function getTicketStatusColor(status: TicketStatus): string {
-  return STATUS_COUNTS.find(s => s.status === status)?.color ?? '#888';
-}
-
-function getPriorityColor(priority: string): string {
-  switch (priority) {
-    case 'Critical': return '#f44336';
-    case 'High': return '#ff9800';
-    case 'Medium': return '#2196f3';
-    case 'Low': return '#4caf50';
-    default: return '#888';
-  }
-}
-
 // ── Component ────────────────────────────────────────────────────────────────
 
 interface TicketsPerformancePageProps {
@@ -305,7 +271,6 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
-  const [ticketsActionFilter, setTicketsActionFilter] = useState(false);
 
   // Sparkline renderer
   const renderSparkline = (data: number[], color: string, w = 80, h = 28) => {
@@ -449,190 +414,15 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
       />
 
       {/* ═══ SECTION 3: Tickets Overview ═══ */}
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
-          Tickets Overview
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 7fr', gap: 2 }}>
-          {/* Card 1: Status distribution donut */}
-          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>Status Overview</Typography>
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-              <PieChart data-annotation-id="ticketsperformancepage-grafiek"
-                series={[{
-                  data: STATUS_COUNTS.map((s, i) => ({ id: i, value: s.count, label: s.status, color: s.color })),
-                  innerRadius: 46,
-                  outerRadius: 70,
-                  paddingAngle: 2,
-                  cornerRadius: 3,
-                }]}
-                width={180}
-                height={160}
-                hideLegend
-                margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
-              />
-              <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1 }}>
-                  {STATUS_COUNTS.reduce((s, c) => s + c.count, 0)}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>total</Typography>
-              </Box>
-            </Box>
-
-            {/* Legend */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1 }}>
-              {STATUS_COUNTS.map(s => (
-                <Box
-                  key={s.status}
-                  onClick={() => onStatusFilter?.(s.status)}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1,
-                    px: 1, py: 0.5, mx: -1, borderRadius: 0.5,
-                    cursor: 'pointer', transition: 'background-color 0.15s ease',
-                    '&:hover': { bgcolor: 'action.hover' },
-                  }}
-                >
-                  <FiberManualRecordIcon sx={{ fontSize: 8, color: s.color }} />
-                  <Typography variant="caption" sx={{ flex: 1, fontSize: '0.75rem' }}>{s.status}</Typography>
-                  <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.75rem' }}>{s.count}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-
-          {/* Card 2: Active tickets list */}
-          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="subtitle2" fontWeight={600}>Active Tickets</Typography>
-                <Chip
-                  icon={<FilterListIcon sx={{ fontSize: 13 }} />}
-                  label="Action required"
-                  size="small"
-                  onClick={() => setTicketsActionFilter(f => !f)}
-                  sx={{
-                    height: 22, fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer',
-                    bgcolor: ticketsActionFilter ? `${c.brand}14` : 'transparent',
-                    color: ticketsActionFilter ? c.brand : 'text.secondary',
-                    border: '1px solid', borderColor: ticketsActionFilter ? c.brand : 'divider',
-                    '& .MuiChip-icon': { ml: 0.5, mr: -0.25, color: ticketsActionFilter ? c.brand : 'text.secondary' },
-                    '& .MuiChip-label': { px: 0.75 },
-                  }}
-                />
-              </Box>
-              <Button
-                size="small"
-                endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
-                sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
-              >
-                View all
-              </Button>
-            </Box>
-            <Box sx={{ flex: 1, overflow: 'auto', maxHeight: 320, display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {ACTIVE_TICKETS.filter(t => ticketsActionFilter ? ACTION_REQUIRED_STATUSES.includes(t.status) : ACTIVE_STATUSES.includes(t.status)).map(t => (
-                <Box
-                  key={t.id}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1.5,
-                    borderBottom: '1px solid', borderColor: 'divider',
-                    borderRadius: 0.5,
-                    cursor: 'pointer', transition: 'background-color 0.15s ease',
-                    '&:hover': { bgcolor: 'action.hover' },
-                    '&:last-child': { borderBottom: 'none' },
-                  }}
-                >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap sx={{ fontSize: '0.8rem' }}>
-                        {t.id}
-                      </Typography>
-                      <Typography variant="body2" fontWeight={500} noWrap sx={{ fontSize: '0.8rem', color: 'text.primary' }}>
-                        {t.title}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <LocationOnOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.building}</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <CalendarTodayOutlinedIcon sx={{ fontSize: 11, color: 'text.secondary' }} />
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.createdDate}</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <ReceiptLongOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.werkbon}</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <TagOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.referentie}</Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                  <Chip
-                    icon={t.category === 'Storing'
-                      ? <ErrorOutlineIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
-                      : <SupportAgentOutlinedIcon sx={{ fontSize: 13, color: 'text.secondary' }} />}
-                    label={t.category}
-                    size="small"
-                    sx={{
-                      height: 20,
-                      fontSize: '0.65rem',
-                      fontWeight: 500,
-                      bgcolor: 'action.hover',
-                      color: 'text.secondary',
-                      '& .MuiChip-label': { px: 0.5 },
-                      '& .MuiChip-icon': { ml: 0.5, mr: 0 },
-                      flexShrink: 0,
-                    }}
-                  />
-                  {t.amount != null && (
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', flexShrink: 0, minWidth: 70, textAlign: 'right', color: 'text.secondary' }}>
-                      €{t.amount.toLocaleString('nl-NL')}
-                    </Typography>
-                  )}
-                  <Chip
-                    label={t.status}
-                    size="small"
-                    sx={{
-                      height: 20,
-                      fontSize: '0.65rem',
-                      fontWeight: 600,
-                      bgcolor: `${getTicketStatusColor(t.status)}14`,
-                      color: getTicketStatusColor(t.status),
-                      '& .MuiChip-label': { px: 0.75 },
-                      flexShrink: 0,
-                      minWidth: 80,
-                      justifyContent: 'center',
-                    }}
-                  />
-                  <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0, width: 56, justifyContent: 'center' }}>
-                    {t.status === 'To approve' ? (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => { e.stopPropagation(); }}
-                          sx={{ width: 24, height: 24, bgcolor: '#4caf5014', color: '#4caf50', '&:hover': { bgcolor: '#4caf5028' } }}
-                        >
-                          <CheckIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => { e.stopPropagation(); }}
-                          sx={{ width: 24, height: 24, bgcolor: '#ef535014', color: '#ef5350', '&:hover': { bgcolor: '#ef535028' } }}
-                        >
-                          <CloseIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      </>
-                    ) : null}
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        </Box>
-      </Box>
+      <TicketStatusOverviewCard
+        statusCounts={STATUS_COUNTS}
+        onStatusFilter={onStatusFilter}
+      />
+      <TicketActiveListCard
+        size="lg"
+        tickets={ACTIVE_TICKETS}
+        statusCounts={STATUS_COUNTS}
+      />
     </PerformanceGrid>
   );
 }

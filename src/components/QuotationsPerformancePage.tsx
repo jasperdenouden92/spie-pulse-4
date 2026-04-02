@@ -449,7 +449,7 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
 
       {/* ═══ SECTION 3: Quotations Overview ═══ */}
       <GridCard
-        size="lg"
+        size="xl"
         icon={<RequestQuoteOutlinedIcon sx={{ color: c.brand }} />}
         title="Quotations Overview"
       >

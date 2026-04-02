@@ -10,3 +10,7 @@ export type { DashboardLink } from './DashboardLinksCard';
 export { default as KpiScoreOverTimeCard } from './KpiScoreOverTimeCard';
 export type { ViewMenuItem } from './KpiScoreOverTimeCard';
 export type { RankedEntry } from './BuildingRankingCard';
+export { default as TicketStatusOverviewCard } from './TicketStatusOverviewCard';
+export type { TicketStatus, StatusCount } from './TicketStatusOverviewCard';
+export { default as TicketActiveListCard } from './TicketActiveListCard';
+export type { TicketItem } from './TicketActiveListCard';

@@ -916,7 +916,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
 
       {/* ═══ WEii Energy Performance ═══ */}
       <GridCard
-        size="lg"
+        size="xl"
         icon={<SpeedOutlinedIcon sx={{ color: '#2e7d32' }} />}
         title="WEii Energy Performance"
         headerRight={

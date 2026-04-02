@@ -74,7 +74,7 @@ export default function PerformanceIndicatorsCard({ icon, title, score, trend, t
   const { themeColors: c } = useThemeMode();
 
   return (
-    <GridCard size="lg">
+    <GridCard size="xl">
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
         {icon && (
           <Box sx={{ display: 'flex', color: 'text.secondary', '& .MuiSvgIcon-root': { fontSize: 18 } }}>

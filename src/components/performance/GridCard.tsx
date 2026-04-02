@@ -7,12 +7,13 @@ import Typography from '@mui/material/Typography';
 import type { SxProps } from '@mui/material';
 import { useThemeMode } from '@/theme-mode-context';
 
-type GridCardSize = 'sm' | 'md' | 'lg';
+export type GridCardSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const COLUMN_SPAN: Record<GridCardSize, object | string> = {
   sm: 'span 1',
   md: { xs: 'span 1', md: 'span 1', lg: 'span 2' },
-  lg: { xs: 'span 1', md: 'span 2', lg: 'span 4' },
+  lg: { xs: 'span 1', md: 'span 2', lg: 'span 3' },
+  xl: { xs: 'span 1', md: 'span 2', lg: 'span 4' },
 };
 
 interface GridCardProps {
@@ -41,6 +42,7 @@ export default function GridCard({
       sx={[
         {
           gridColumn: COLUMN_SPAN[size],
+          minWidth: 0,
           p: 2.5,
           border: `1px solid ${c.cardBorder}`,
           borderRadius: '12px',
