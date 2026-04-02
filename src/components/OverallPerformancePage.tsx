@@ -5,19 +5,15 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
-import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
-import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { useThemeMode } from '@/theme-mode-context';
-import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
-import { PerformanceGrid, GridCard } from '@/components/performance';
+import { PerformanceGrid, GridCard, PerformanceChartCard } from '@/components/performance';
 
 // ── Helpers ──
 
@@ -95,8 +91,6 @@ const clusterSortedMostDeteriorated = [...clusterEntries].sort((a, b) => a.trend
 
 // ── KPI over time data ──
 
-type ViewMode = 'themes' | 'operations';
-
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function generateKpiTimeSeries(topicKey: string, baseScore: number, volatility = 1): number[] {
@@ -108,18 +102,6 @@ function generateKpiTimeSeries(topicKey: string, baseScore: number, volatility =
     const val = start + (target - start) * progress + (rng() - 0.5) * 4 * volatility;
     return Math.round(Math.max(0, Math.min(100, val)) * 10) / 10;
   });
-}
-
-// ── Thresholds ──
-
-interface ThresholdZone { label: string; min: number; max: number; color: string; }
-
-function buildThresholdZones(goodAbove: number, moderateAbove: number): ThresholdZone[] {
-  return [
-    { label: 'Poor', min: 0, max: moderateAbove, color: 'rgba(239,83,80,0.10)' },
-    { label: 'Moderate', min: moderateAbove, max: goodAbove, color: 'rgba(255,167,38,0.10)' },
-    { label: 'Good', min: goodAbove, max: 100, color: 'rgba(102,187,106,0.08)' },
-  ];
 }
 
 // ── Component ──
@@ -137,86 +119,19 @@ interface OverallPerformancePageProps {
 }
 
 export default function OverallPerformancePage({
-  themesScore, themesTrend, operationsScore, operationsTrend,
+  overallScore, overallTrend,
   onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings',
 }: OverallPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
-  const [chartView, setChartView] = useState<ViewMode>('themes');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
 
-  const themesSeries = useMemo(() => ({
-    label: 'Theme KPIs',
-    color: c.brand,
-    data: generateKpiTimeSeries('themes_overall', themesScore),
+  const overallSeries = useMemo(() => ({
+    label: 'Overall Performance',
+    data: generateKpiTimeSeries('overall_performance', overallScore),
     goodAbove: 75,
     moderateAbove: 55,
-  }), [themesScore]);
-
-  const operationsSeries = useMemo(() => ({
-    label: 'Operational KPIs',
-    color: '#ff9800',
-    data: generateKpiTimeSeries('operations_overall', operationsScore),
-    goodAbove: 75,
-    moderateAbove: 55,
-  }), [operationsScore]);
-
-  const chartSeries = useMemo(() => {
-    switch (chartView) {
-      case 'themes':
-        return [themesSeries];
-      case 'operations':
-        return [operationsSeries];
-    }
-  }, [chartView, themesSeries, operationsSeries]);
-
-  const activeThresholdZones = useMemo(() => {
-    const s = chartView === 'themes' ? themesSeries : operationsSeries;
-    return buildThresholdZones(s.goodAbove, s.moderateAbove);
-  }, [chartView, themesSeries, operationsSeries]);
-
-  const yRange = useMemo(() => {
-    const allValues = chartSeries.flatMap(s => s.data);
-    const dataMin = Math.min(...allValues);
-    const modAbove = activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55;
-    const relevantMin = Math.min(dataMin, modAbove);
-    const yMin = Math.max(0, Math.floor((relevantMin - 10) / 10) * 10);
-    return { min: yMin, max: 100 };
-  }, [chartSeries, activeThresholdZones]);
-
-  const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'themes', label: 'Theme KPIs', icon: <StyleOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'operations', label: 'Operational KPIs', icon: <EngineeringOutlinedIcon sx={{ fontSize: 16 }} /> },
-  ];
-
-  // Score+trend display helper
-  const ScoreTrend = ({ score, trend }: { score: number; trend: number }) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-        {score}%
-      </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
-        {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-          {Math.abs(trend)}%
-        </Typography>
-      </Box>
-    </Box>
-  );
-
-  // Toggle button helper
-  const ToggleButton = ({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) => (
-    <Box
-      sx={{
-        px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px',
-        cursor: 'pointer', transition: 'all 0.15s',
-        bgcolor: active ? c.bgPrimary : 'transparent',
-        color: active ? 'text.primary' : 'text.secondary',
-        boxShadow: active ? c.shadow : 'none',
-      }}
-      onClick={onClick}
-    />
-  );
+  }), [overallScore]);
 
   // Building list renderer
   const renderBuildingList = (
@@ -266,25 +181,19 @@ export default function OverallPerformancePage({
 
   return (
     <PerformanceGrid>
-      {/* ═══ Theme KPIs Score Card ═══ */}
-      <GridCard
-        size="md"
-        icon={<StyleOutlinedIcon />}
-        title="Theme KPIs"
-        headerRight={<ScoreTrend score={themesScore} trend={themesTrend} />}
-      >
-        <Box />
-      </GridCard>
-
-      {/* ═══ Operational KPIs Score Card ═══ */}
-      <GridCard
-        size="md"
-        icon={<EngineeringOutlinedIcon />}
-        title="Operational KPIs"
-        headerRight={<ScoreTrend score={operationsScore} trend={operationsTrend} />}
-      >
-        <Box />
-      </GridCard>
+      {/* ═══ Overall Performance Chart ═══ */}
+      <PerformanceChartCard
+        icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
+        title="Overall Performance"
+        score={overallScore}
+        trend={overallTrend}
+        data={overallSeries.data}
+        label="Overall Performance"
+        goodAbove={overallSeries.goodAbove}
+        moderateAbove={overallSeries.moderateAbove}
+        gradientId="threshold-gradient-overall"
+        annotationId="overallperformancepage-grafiek"
+      />
 
       {/* ═══ Top Buildings ═══ */}
       <GridCard
@@ -328,76 +237,6 @@ export default function OverallPerformancePage({
         <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
       </GridCard>
 
-      {/* ═══ KPI Score Over Time ═══ */}
-      <GridCard
-        size="md"
-        icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
-        title="KPI Score Over Time"
-        headerRight={
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5, flexShrink: 0 }}>
-            {menuItems.map(item => {
-              const isActive = chartView === item.key;
-              return (
-                <Box
-                  key={item.key}
-                  onClick={() => setChartView(item.key)}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 0.75,
-                    px: 1.5, py: 0.75, borderRadius: 1,
-                    cursor: 'pointer', userSelect: 'none',
-                    bgcolor: isActive ? `${c.brand}14` : 'transparent',
-                    transition: 'all 0.15s ease',
-                    '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
-                  }}
-                >
-                  <Box sx={{ display: 'flex', color: isActive ? c.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
-                  <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? c.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
-                </Box>
-              );
-            })}
-          </Box>
-        }
-      >
-        {(() => {
-          const currentData = chartSeries[0].data;
-          const goodAbove = activeThresholdZones.find(z => z.label === 'Good')?.min ?? 75;
-          const modAbove = activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55;
-          const gradientId = `threshold-gradient-sub-${chartView}`;
-          const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
-          return (
-            <Box sx={{ flex: 1, minHeight: 370 }}>
-              <LineChart data-annotation-id="overallperformancepage-grafiek"
-                xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
-                yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-                series={chartSeries.map(s => ({ data: s.data, label: s.label, color: s.color, curve: 'catmullRom' as const, showMark: false, area: true }))}
-                height={370}
-                margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
-                grid={{ horizontal: true }}
-                hideLegend
-                slotProps={{ tooltip: { trigger: 'none' } }}
-                axisHighlight={{ x: 'none', y: 'none' }}
-                sx={{
-                  '& .MuiLineElement-root': { stroke: `url(#${lineGradientId})`, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-                  [`& .${lineClasses.area}`]: { fill: `url(#${gradientId})`, filter: 'none', opacity: 0.15 },
-                  '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
-                  '& .MuiChartsAxis-line': { stroke: 'transparent' },
-                  '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-                }}
-              >
-                <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={gradientId} />
-                <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-                <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
-                <InteractiveThresholdLine y={modAbove} label={`Moderate: ${modAbove}–${goodAbove}%`} />
-                <ChartHoverOverlay
-                  data={currentData}
-                  labels={MONTHS}
-                  getColor={(v) => v >= goodAbove ? '#66bb6a' : v >= modAbove ? '#ffa726' : '#ef5350'}
-                />
-              </LineChart>
-            </Box>
-          );
-        })()}
-      </GridCard>
     </PerformanceGrid>
   );
 }

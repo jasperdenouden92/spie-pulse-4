@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard } from '@/components/performance';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, toRanked } from '@/components/performance';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -415,134 +415,24 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       {/* ═══ Top/Worst Buildings + KPI Over Time ═══ */}
       {/* ═══ Top Buildings ═══ */}
-      <GridCard
-        size="sm"
-        icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
-        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
-        headerRight={
-          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
-            </Box>
-        }
-      >
-          {(buildingMode === 'clusters'
-            ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
-            : (leftListMode === 'best' ? buildingLists.sortedBest : buildingLists.sortedMostImproved)
-          ).map((b, i) => {
-            const score = 'adjustedScore' in b ? b.adjustedScore : (b as Building).metrics.tickets.green;
-            const trend = 'adjustedTrend' in b ? b.adjustedTrend : (b as Building).trends.tickets;
-            const showTrend = leftListMode === 'improved';
-            const barColor = getStatusColor(score, 80, 60);
-            return (
-              <Box
-                key={b.name}
-                onClick={() => buildingMode === 'buildings' && 'address' in b ? onBuildingSelect?.(b as Building) : undefined}
-                sx={{
-                  display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
-                  borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
-                  '&:hover': { bgcolor: 'action.hover' },
-                }}
-              >
-                <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-                {buildingMode === 'clusters' && 'images' in b ? (
-                  <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
-                ) : (
-                  <Avatar src={(b as Building).image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
-                )}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, ml: 1 }}>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>{score}%</Typography>
-                      {showTrend && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
-                          {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 13 }} /> : <TrendingDownIcon sx={{ fontSize: 13 }} />}
-                          <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem', lineHeight: 1 }}>{Math.abs(trend)}%</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
-                    <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
-                  </Box>
-                </Box>
-              </Box>
-            );
-          })}
-          <Button
-            size="small"
-            onClick={() => onViewAllBuildings?.('Best to Worst')}
-            sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-          >
-            View all
-          </Button>
-        </GridCard>
+      <BuildingRankingCard
+        variant="top"
+        buildingMode={buildingMode}
+        primaryItems={toRanked(buildingMode === 'clusters' ? clusterSortedBest : buildingLists.sortedBest)}
+        secondaryItems={toRanked(buildingMode === 'clusters' ? clusterSortedMostImproved : buildingLists.sortedMostImproved)}
+        onBuildingSelect={onBuildingSelect}
+        onViewAllBuildings={onViewAllBuildings}
+      />
 
       {/* ═══ Worst Buildings ═══ */}
-      <GridCard
-        size="sm"
-        icon={<WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />}
-        title={buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}
-        headerRight={
-          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
-            </Box>
-        }
-      >
-          {(buildingMode === 'clusters'
-            ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
-            : (rightListMode === 'worst' ? buildingLists.sortedWorst : buildingLists.sortedMostDeteriorated)
-          ).map((b, i) => {
-            const score = 'adjustedScore' in b ? b.adjustedScore : (b as Building).metrics.tickets.green;
-            const trend = 'adjustedTrend' in b ? b.adjustedTrend : (b as Building).trends.tickets;
-            const showTrend = rightListMode === 'deteriorated';
-            const barColor = getStatusColor(score, 80, 60);
-            return (
-              <Box
-                key={b.name}
-                onClick={() => buildingMode === 'buildings' && 'address' in b ? onBuildingSelect?.(b as Building) : undefined}
-                sx={{
-                  display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
-                  borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
-                  '&:hover': { bgcolor: 'action.hover' },
-                }}
-              >
-                <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-                {buildingMode === 'clusters' && 'images' in b ? (
-                  <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
-                ) : (
-                  <Avatar src={(b as Building).image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
-                )}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, ml: 1 }}>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>{score}%</Typography>
-                      {showTrend && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
-                          {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 13 }} /> : <TrendingDownIcon sx={{ fontSize: 13 }} />}
-                          <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem', lineHeight: 1 }}>{Math.abs(trend)}%</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
-                    <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
-                  </Box>
-                </Box>
-              </Box>
-            );
-          })}
-          <Button
-            size="small"
-            onClick={() => onViewAllBuildings?.('Worst to Best')}
-            sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
-          >
-            View all
-          </Button>
-        </GridCard>
+      <BuildingRankingCard
+        variant="worst"
+        buildingMode={buildingMode}
+        primaryItems={toRanked(buildingMode === 'clusters' ? clusterSortedWorst : buildingLists.sortedWorst)}
+        secondaryItems={toRanked(buildingMode === 'clusters' ? clusterSortedMostDeteriorated : buildingLists.sortedMostDeteriorated)}
+        onBuildingSelect={onBuildingSelect}
+        onViewAllBuildings={onViewAllBuildings}
+      />
 
       {/* ═══ KPI Score Over Time ═══ */}
       <GridCard

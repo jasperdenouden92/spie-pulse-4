@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard } from '@/components/performance';
+import { PerformanceGrid, GridCard, PerformanceChartCard } from '@/components/performance';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
@@ -316,54 +316,18 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
   return (
     <PerformanceGrid>
       {/* ═══ Operational KPIs Combined Score Over Time (card) ═══ */}
-      <GridCard
-        size="lg"
+      <PerformanceChartCard
+        icon={<BuildOutlinedIcon sx={{ color: c.brand }} />}
         title="Operational KPI Performance"
-        headerRight={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {overallScore}%
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: overallTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {overallTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(overallTrend)}%
-              </Typography>
-            </Box>
-          </Box>
-        }
-      >
-        <Box sx={{ flex: 1, minHeight: 340 }}>
-          <LineChart data-annotation-id="operationsperformancepage-grafiek-2"
-            xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
-            yAxis={[{ min: Math.max(0, Math.floor((Math.min(...opsSeries.data, OPS_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-            series={[{ data: opsSeries.data, label: 'Operational KPIs', color: c.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
-            height={370}
-            margin={{ top: 48, right: isNarrow ? 16 : 80, bottom: 28, left: isNarrow ? 40 : 80 }}
-            grid={{ horizontal: true }}
-            hideLegend
-            slotProps={{ tooltip: { trigger: 'none' } }}
-            axisHighlight={{ x: 'none', y: 'none' }}
-            sx={{
-              '& .MuiLineElement-root': { stroke: 'url(#threshold-gradient-ops-line)', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-              [`& .${lineClasses.area}`]: { fill: 'url(#threshold-gradient-ops-combined)', filter: 'none', opacity: 0.15 },
-              '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
-              '& .MuiChartsAxis-line': { stroke: 'transparent' },
-              '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-            }}
-          >
-            <HorizontalThresholdGradient data={opsSeries.data} goodAbove={OPS_GOOD_ABOVE} moderateAbove={OPS_MODERATE_ABOVE} id="threshold-gradient-ops-combined" />
-            <HorizontalThresholdGradient data={opsSeries.data} goodAbove={OPS_GOOD_ABOVE} moderateAbove={OPS_MODERATE_ABOVE} id="threshold-gradient-ops-line" goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-            <InteractiveThresholdLine y={OPS_GOOD_ABOVE} label={`Good: ${OPS_GOOD_ABOVE}–100%`} />
-            <InteractiveThresholdLine y={OPS_MODERATE_ABOVE} label={`Moderate: ${OPS_MODERATE_ABOVE}–${OPS_GOOD_ABOVE}%`} />
-            <ChartHoverOverlay
-              data={opsSeries.data}
-              labels={MONTHS}
-              getColor={(v) => v >= OPS_GOOD_ABOVE ? '#66bb6a' : v >= OPS_MODERATE_ABOVE ? '#ffa726' : '#ef5350'}
-            />
-          </LineChart>
-        </Box>
-      </GridCard>
+        score={overallScore}
+        trend={overallTrend}
+        data={opsSeries.data}
+        label="Operational KPIs"
+        goodAbove={OPS_GOOD_ABOVE}
+        moderateAbove={OPS_MODERATE_ABOVE}
+        gradientId="threshold-gradient-ops"
+        annotationId="operationsperformancepage-grafiek-2"
+      />
 
       {/* ═══ Top Buildings ═══ */}
       <GridCard

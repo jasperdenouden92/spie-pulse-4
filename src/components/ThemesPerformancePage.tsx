@@ -3,8 +3,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard } from '@/components/performance';
+import { PerformanceGrid, GridCard, PerformanceChartCard } from '@/components/performance';
 import Chip from '@mui/material/Chip';
+import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
@@ -364,55 +365,18 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
   return (
     <PerformanceGrid>
       {/* ═══ Theme KPIs Combined Score Over Time (card) ═══ */}
-      <GridCard
-        size="lg"
-        title="Theme KPI Performance"
-        headerRight={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {overallScore}%
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: overallTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {overallTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(overallTrend)}%
-              </Typography>
-            </Box>
-          </Box>
-        }
-      >
-
-        <Box sx={{ flex: 1, minHeight: 340 }}>
-          <LineChart data-annotation-id="themesperformancepage-grafiek-2"
-            xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
-            yAxis={[{ min: Math.max(0, Math.floor((Math.min(...themeSeries.data, THEME_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-            series={[{ data: themeSeries.data, label: 'Theme KPIs', color: c.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
-            height={370}
-            margin={{ top: 48, right: isNarrow ? 16 : 80, bottom: 28, left: isNarrow ? 40 : 80 }}
-            grid={{ horizontal: true }}
-            hideLegend
-            slotProps={{ tooltip: { trigger: 'none' } }}
-            axisHighlight={{ x: 'none', y: 'none' }}
-            sx={{
-              '& .MuiLineElement-root': { stroke: 'url(#threshold-gradient-themes-line)', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-              [`& .${lineClasses.area}`]: { fill: 'url(#threshold-gradient-themes-combined)', filter: 'none', opacity: 0.15 },
-              '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
-              '& .MuiChartsAxis-line': { stroke: 'transparent' },
-              '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-            }}
-          >
-            <HorizontalThresholdGradient data={themeSeries.data} goodAbove={THEME_GOOD_ABOVE} moderateAbove={THEME_MODERATE_ABOVE} id="threshold-gradient-themes-combined" />
-            <HorizontalThresholdGradient data={themeSeries.data} goodAbove={THEME_GOOD_ABOVE} moderateAbove={THEME_MODERATE_ABOVE} id="threshold-gradient-themes-line" goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-            <InteractiveThresholdLine y={THEME_GOOD_ABOVE} label={`Good: ${THEME_GOOD_ABOVE}–100%`} />
-            <InteractiveThresholdLine y={THEME_MODERATE_ABOVE} label={`Moderate: ${THEME_MODERATE_ABOVE}–${THEME_GOOD_ABOVE}%`} />
-            <ChartHoverOverlay
-              data={themeSeries.data}
-              labels={MONTHS}
-              getColor={(v) => v >= THEME_GOOD_ABOVE ? '#66bb6a' : v >= THEME_MODERATE_ABOVE ? '#ffa726' : '#ef5350'}
-            />
-          </LineChart>
-        </Box>
-      </GridCard>
+      <PerformanceChartCard
+        icon={<StyleOutlinedIcon sx={{ color: c.brand }} />}
+        title="Theme KPIs"
+        score={overallScore}
+        trend={overallTrend}
+        data={themeSeries.data}
+        label="Theme KPIs"
+        goodAbove={THEME_GOOD_ABOVE}
+        moderateAbove={THEME_MODERATE_ABOVE}
+        gradientId="threshold-gradient-themes"
+        annotationId="themesperformancepage-grafiek-2"
+      />
 
       {/* ═══ Top Buildings ═══ */}
       <GridCard
