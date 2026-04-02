@@ -1,7 +1,7 @@
 'use client';
 import { useThemeMode } from '@/theme-mode-context';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -15,6 +15,8 @@ import Button from '@mui/material/Button';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import IconButton from '@mui/material/IconButton';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
 import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
@@ -22,7 +24,8 @@ import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
-import DateRangeSelector from './DateRangeSelector';
+import DateRangeSelector, { parseDateRange, formatDateNL } from './DateRangeSelector';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import { buildings as allBuildingsData } from '@/data/buildings';
 import {
   ElectricityConsumptionChart,
@@ -439,6 +442,11 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
     DASHBOARD_THEMES.map(g => g.themeKey)
   );
   const [mobilePickerOpen, setMobilePickerOpen] = useState(!initialDashboardId);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const shiftRangeRef = useRef<((dir: -1 | 1) => void) | null>(null);
+  const handleShiftRangeRef = useCallback((fn: (dir: -1 | 1) => void) => {
+    shiftRangeRef.current = fn;
+  }, []);
 
   // Apply incoming dashboard navigation
   useEffect(() => {
@@ -579,33 +587,60 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
             </Button>
           )}
 
-          {/* Dashboard header */}
-          <Box sx={{ mb: 3 }}>
+          {/* Dashboard header + date dropdown */}
+          <Box sx={{ mb: 1.5 }}>
             {selectedGroup && (
               <Typography variant="caption" color="text.secondary">
                 {selectedGroup.theme}
               </Typography>
             )}
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
-              {selectedDashboard.label}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+                {selectedDashboard.label}
+              </Typography>
+              {dateRange && onDateRangeChange && (() => {
+                const { from, to } = parseDateRange(dateRange);
+                return (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <IconButton size="small" onClick={() => shiftRangeRef.current?.(-1)} sx={{ p: 0.25 }}>
+                      <ChevronLeftIcon sx={{ fontSize: 18, color: c.brand }} />
+                    </IconButton>
+                    <Box
+                      onClick={() => setDatePickerOpen(true)}
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 0.75,
+                        cursor: 'pointer', px: 1.5, py: 0.5,
+                        borderRadius: '8px', bgcolor: c.bgSecondary,
+                        border: '1px solid', borderColor: c.borderSecondary,
+                        '&:hover': { bgcolor: c.bgSecondaryHover, borderColor: c.borderPrimary },
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <CalendarTodayOutlinedIcon sx={{ fontSize: 14, color: c.brand }} />
+                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 500, color: c.textPrimary, whiteSpace: 'nowrap' }}>
+                        {formatDateNL(from)} - {formatDateNL(to)}
+                      </Typography>
+                      <ExpandMoreIcon sx={{ fontSize: 16, color: c.textSecondary, ml: -0.25 }} />
+                    </Box>
+                    <IconButton size="small" onClick={() => shiftRangeRef.current?.(1)} sx={{ p: 0.25 }}>
+                      <ChevronRightIcon sx={{ fontSize: 18, color: c.brand }} />
+                    </IconButton>
+                  </Box>
+                );
+              })()}
+            </Box>
           </Box>
 
-          {/* Date range selector - full width */}
+          {/* Date range slider - no card */}
           {dateRange && onDateRangeChange && (
-            <Box sx={{
-              mb: 4,
-              bgcolor: c.bgPrimary,
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 2,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-              p: 2,
-            }}>
+            <Box sx={{ mb: 4, px: 0.5 }}>
               <DateRangeSelector
                 inline
                 value={dateRange}
                 onChange={onDateRangeChange}
+                dialogOpen={datePickerOpen}
+                onDialogOpenChange={setDatePickerOpen}
+                onShiftRangeRef={handleShiftRangeRef}
               />
             </Box>
           )}
