@@ -650,12 +650,6 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               onClick={() => setSearchModalOpen(true)}
               shortcut={modifierHeld ? 'F' : undefined}
             />
-            <NavItem
-              label="Data Explorer"
-              icon={<ExploreOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={dataExplorerOpen}
-              onClick={() => onDataExplorerToggle?.()}
-            />
             <Divider sx={{ my: 1.5 }} />
             <NavItem
               label="Home"
@@ -674,6 +668,18 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
               active={currentPage === 'insights'}
               onClick={() => onPageChange?.('insights')}
+            />
+            <NavItem
+              label="Buildings & Assets"
+              icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'portfolio_overview'}
+              onClick={() => onPageChange?.('portfolio_overview')}
+            />
+            <NavItem
+              label="Operations"
+              icon={<EngineeringOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={currentPage === 'operations'}
+              onClick={() => onPageChange?.('operations')}
             />
             <NavItem
               label="Dashboards"
@@ -719,7 +725,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                 </SortableContext>
               </DndContext>
             </Box>
-            {/* Bottom sticky: Data Explorer, Notifications, Help, Account */}
+            {/* Bottom sticky: Notifications, Help, Account */}
             <Box sx={{ flexShrink: 0, px: isCollapsed ? 1.5 : 2, pt: 1, pb: 0.5 }}>
               <Divider sx={{ mb: 1 }} />
               <List data-annotation-id="sidebar-lijst" dense sx={{ py: 0 }}>

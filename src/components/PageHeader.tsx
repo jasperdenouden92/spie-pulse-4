@@ -258,7 +258,7 @@ function PageHeader({
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Insights</Typography>
             )}
             {currentPage === 'portfolio_overview' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Portfolio</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Buildings & Assets</Typography>
             )}
             {currentPage === 'bms' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>BMS</Typography>
