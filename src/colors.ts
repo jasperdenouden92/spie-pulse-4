@@ -48,6 +48,7 @@ const lightColors = {
   // Shadows
   shadow: 'rgba(0, 0, 0, 0.08)',
   shadowMedium: 'rgba(0, 0, 0, 0.12)',
+  cardShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
 
   // Card
   cardBorder: 'transparent',
@@ -103,6 +104,7 @@ const darkColors: { [K in keyof typeof lightColors]: string } = {
   // Shadows
   shadow: 'rgba(0, 0, 0, 0.3)',
   shadowMedium: 'rgba(0, 0, 0, 0.4)',
+  cardShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.3)',
 
   // Card
   cardBorder: '#333333',
