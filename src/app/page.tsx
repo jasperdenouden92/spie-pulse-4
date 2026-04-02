@@ -1657,7 +1657,7 @@ export default function Home() {
                             {/* Primary Theme KPIs — only clickable when themes are active */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                              gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(180px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
@@ -1759,7 +1759,7 @@ export default function Home() {
                             {/* Operations KPIs */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                              gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(180px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
