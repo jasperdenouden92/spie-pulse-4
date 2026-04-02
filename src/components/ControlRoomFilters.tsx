@@ -179,7 +179,7 @@ export default function ControlRoomFilters({
 }: ControlRoomFiltersProps) {
   const { themeColors: c } = useThemeMode();
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
-  const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState<null | HTMLElement>(null);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [localDateRange, setLocalDateRange] = useState('This Month');
   const selectedDateRange = selectedDateRangeProp ?? localDateRange;
   const setSelectedDateRange = (v: string) => { setLocalDateRange(v); onDateRangeChange?.(v); };
@@ -382,9 +382,9 @@ export default function ControlRoomFilters({
       {/* Date Range Picker */}
       <Chip
         label={getDateRangeDisplay(selectedDateRange)}
-        onClick={(e) => setDateRangeAnchorEl(e.currentTarget)}
+        onClick={() => setDatePickerOpen(true)}
         deleteIcon={<ExpandMoreIcon />}
-        onDelete={(e) => setDateRangeAnchorEl(e.currentTarget as any)}
+        onDelete={() => setDatePickerOpen(true)}
         sx={{
           height: 32,
           borderRadius: '6px',
@@ -396,10 +396,12 @@ export default function ControlRoomFilters({
         }}
       />
       <DateRangeSelector
-        anchorEl={dateRangeAnchorEl}
-        onClose={() => setDateRangeAnchorEl(null)}
+        inline
+        hideSlider
         value={selectedDateRange}
         onChange={(v) => { setSelectedDateRange(v); }}
+        dialogOpen={datePickerOpen}
+        onDialogOpenChange={setDatePickerOpen}
       />
     </Box>
   );

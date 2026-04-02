@@ -411,7 +411,7 @@ export default function Home() {
 
 
   // Page title inline filter state
-  const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
+  const [titleDatePickerOpen, setTitleDatePickerOpen] = useState(false);
   const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
   const [contractMenuAnchor, setContractMenuAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
@@ -1336,7 +1336,7 @@ export default function Home() {
               (currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards'
                 ? getTitleBuildingLabel() : undefined
             }
-            onFilterDateClick={currentPage === 'portfolio' ? (e) => setTitleDateRangeAnchor(e.currentTarget) : undefined}
+            onFilterDateClick={currentPage === 'portfolio' ? () => setTitleDatePickerOpen(true) : undefined}
             onFilterBuildingClick={
               ((currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards')
                 ? (e) => setTitleBuildingAnchor(e.currentTarget) : undefined
@@ -1349,10 +1349,12 @@ export default function Home() {
 
         {/* ========== Shared filter menus (used by inline title & header compact filter) ========== */}
         <DateRangeSelector
-          anchorEl={titleDateRangeAnchor}
-          onClose={() => setTitleDateRangeAnchor(null)}
+          inline
+          hideSlider
           value={dateRange}
           onChange={(v) => { setDateRange(v); }}
+          dialogOpen={titleDatePickerOpen}
+          onDialogOpenChange={setTitleDatePickerOpen}
         />
 
         <BuildingSelectorPopover
