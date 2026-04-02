@@ -219,6 +219,7 @@ export default function PageHeader({
             <Typography
               variant="h6"
               sx={{
+                fontFamily: '"Inter", sans-serif',
                 fontWeight: 600,
                 fontSize: '0.8rem',
                 cursor: 'pointer',
@@ -274,7 +275,7 @@ export default function PageHeader({
                 </Typography>
                 {activeDashboardLabel && (
                   <>
-                    <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                    <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                     <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
                       {activeDashboardLabel}
                     </Typography>
@@ -289,12 +290,12 @@ export default function PageHeader({
               <>
                 <Typography
                   variant="h6"
-                  sx={{ fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
+                  sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => onPageChange?.('operations')}
                 >
                   Operations
                 </Typography>
-                <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
                   {currentPage === 'operations_docs' ? 'Docs' : currentPage === 'operations_tickets' ? 'Tickets' : 'Quotations'}
                 </Typography>
@@ -317,11 +318,12 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                   <ApartmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
                   <Typography
                     variant="h6"
                     sx={{
+                      fontFamily: '"Inter", sans-serif',
                       fontWeight: 600,
                       fontSize: '0.8rem',
                       color: (selectedAsset?.type === 'asset' || showGroupSegment) ? 'text.secondary' : 'text.primary',
@@ -376,8 +378,8 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: showGroupSegment ? 'text.secondary' : 'text.primary' }}>
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                  <Typography variant="h6" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', color: showGroupSegment ? 'text.secondary' : 'text.primary' }}>
                     {selectedAsset.name}
                   </Typography>
                 </motion.div>
@@ -395,10 +397,11 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                   <Typography
                     variant="h6"
                     sx={{
+                      fontFamily: '"Inter", sans-serif',
                       fontWeight: 600,
                       fontSize: '0.8rem',
                       color: showChildSegment ? 'text.secondary' : 'text.primary',
@@ -453,7 +456,7 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                   <Box
                     onClick={(e) => setChildCaretAnchor(e.currentTarget)}
                     sx={{
