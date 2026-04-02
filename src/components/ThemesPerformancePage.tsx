@@ -38,6 +38,7 @@ import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useThemeMode } from '@/theme-mode-context';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
@@ -251,6 +252,7 @@ interface ThemesPerformancePageProps {
 
 export default function ThemesPerformancePage({ themeScores, themeTrends, overallScore = 75, overallTrend = 3, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: ThemesPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const isNarrow = useMediaQuery('(max-width:960px)');
   const [chartView, setChartView] = useState<ViewMode>('sustainability');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -386,7 +388,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
             yAxis={[{ min: Math.max(0, Math.floor((Math.min(...themeSeries.data, THEME_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
             series={[{ data: themeSeries.data, label: 'Theme KPIs', color: c.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
             height={370}
-            margin={{ top: 48, right: 80, bottom: 28, left: 80 }}
+            margin={{ top: 48, right: isNarrow ? 16 : 80, bottom: 28, left: isNarrow ? 40 : 80 }}
             grid={{ horizontal: true }}
             hideLegend
             slotProps={{ tooltip: { trigger: 'none' } }}
@@ -413,7 +415,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
       </Paper>
 
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
         {/* Best performing / Most improved */}
         <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>

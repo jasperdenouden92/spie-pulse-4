@@ -20,6 +20,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Chip from '@mui/material/Chip';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Tooltip from '@mui/material/Tooltip';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import TuneIcon from '@mui/icons-material/Tune';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import { AssetNode } from '@/data/assetTree';
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
@@ -129,10 +133,13 @@ function PageHeader({
   metricItems = [],
 }: PageHeaderProps) {
   const { themeColors: c } = useThemeMode();
+  const isNarrow = useMediaQuery('(max-width:960px)');
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
   const [groupCaretAnchor, setGroupCaretAnchor] = useState<null | HTMLElement>(null);
   const [childCaretAnchor, setChildCaretAnchor] = useState<null | HTMLElement>(null);
+  // Filter dropdown anchor
+  const [filterMenuAnchor, setFilterMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Determine page name based on current page and selections
   const getPageName = () => {
@@ -218,8 +225,8 @@ function PageHeader({
           )}
         </AnimatePresence>
 
-        {/* Root breadcrumb segment */}
-        {currentPage === 'portfolio' ? (
+        {/* Root breadcrumb segment — hidden on narrow screens */}
+        {isNarrow ? null : currentPage === 'portfolio' ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography
               variant="h6"
@@ -310,7 +317,7 @@ function PageHeader({
         )}
 
         {/* Smart contextual breadcrumbs for Portfolio page */}
-        {currentPage === 'portfolio' && (
+        {!isNarrow && currentPage === 'portfolio' && (
           <>
             {/* Building segment (when a building is selected) */}
             <AnimatePresence>
@@ -538,67 +545,83 @@ function PageHeader({
         )}
       </Box>
 
-      {/* Right: Filter chips + Export + Favorite */}
+      {/* Right: Filter dropdown + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        {/* Filter chips — always visible next to export */}
-        {filterBuildingLabel && onFilterBuildingClick && (
-          <Chip
-            label={filterBuildingLabel}
-            onClick={onFilterBuildingClick}
-            deleteIcon={<ExpandMoreIcon />}
-            onDelete={onFilterBuildingClick as any}
-            sx={{
-              height: 32,
-              borderRadius: '6px',
-              backgroundColor: c.bgPrimary,
-              border: '1px solid',
-              borderColor: c.borderPrimary,
-              boxShadow: `0 1px 3px ${c.shadow}`,
-              '&:hover': { backgroundColor: c.bgPrimaryHover },
-              '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
-              '& .MuiChip-deleteIcon': { color: 'text.primary' },
-            }}
-          />
+        {/* Filter dropdown — combines building and date filters */}
+        {((filterBuildingLabel && onFilterBuildingClick) || (filterPeriodLabel && onFilterDateClick)) && (
+          <>
+            <Chip
+              icon={<TuneIcon sx={{ fontSize: 16 }} />}
+              label="Filters"
+              onClick={(e) => setFilterMenuAnchor(e.currentTarget)}
+              deleteIcon={<ExpandMoreIcon />}
+              onDelete={(e) => setFilterMenuAnchor((e as any).currentTarget?.closest('.MuiChip-root') || filterMenuAnchor)}
+              sx={{
+                height: 32,
+                borderRadius: '6px',
+                backgroundColor: c.bgPrimary,
+                border: '1px solid',
+                borderColor: c.borderPrimary,
+                boxShadow: `0 1px 3px ${c.shadow}`,
+                '&:hover': { backgroundColor: c.bgPrimaryHover },
+                '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
+                '& .MuiChip-deleteIcon': { color: 'text.primary' },
+                '& .MuiChip-icon': { color: 'text.primary', ml: 1 },
+              }}
+            />
+            <Menu
+              anchorEl={filterMenuAnchor}
+              open={Boolean(filterMenuAnchor)}
+              onClose={() => setFilterMenuAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              slotProps={{ paper: { sx: { mt: 0.5, minWidth: 200, borderRadius: '8px', boxShadow: `0 4px 20px ${c.shadow}` } } }}
+            >
+              {filterBuildingLabel && onFilterBuildingClick && (
+                <MenuItem
+                  onClick={(e) => {
+                    setFilterMenuAnchor(null);
+                    onFilterBuildingClick(e);
+                  }}
+                  sx={{ fontSize: '0.875rem', py: 1 }}
+                >
+                  <ListItemIcon><ApartmentOutlinedIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{filterBuildingLabel}</ListItemText>
+                </MenuItem>
+              )}
+              {filterPeriodLabel && onFilterDateClick && (
+                <MenuItem
+                  onClick={(e) => {
+                    setFilterMenuAnchor(null);
+                    onFilterDateClick(e);
+                  }}
+                  sx={{ fontSize: '0.875rem', py: 1 }}
+                >
+                  <ListItemIcon><CalendarTodayOutlinedIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{filterPeriodLabel}</ListItemText>
+                </MenuItem>
+              )}
+            </Menu>
+          </>
         )}
-        {filterPeriodLabel && onFilterDateClick && (
-          <Chip
-            label={filterPeriodLabel}
-            onClick={onFilterDateClick}
-            deleteIcon={<ExpandMoreIcon />}
-            onDelete={onFilterDateClick as any}
-            sx={{
-              height: 32,
-              borderRadius: '6px',
-              backgroundColor: c.bgPrimary,
-              border: '1px solid',
-              borderColor: c.borderPrimary,
-              boxShadow: `0 1px 3px ${c.shadow}`,
-              '&:hover': { backgroundColor: c.bgPrimaryHover },
-              '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
-              '& .MuiChip-deleteIcon': { color: 'text.primary' },
-            }}
-          />
-        )}
-        {/* Export Button — on Control Room and Dashboards */}
+        {/* Export Button — icon only, on Control Room and Dashboards */}
         {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<FileDownloadOutlinedIcon />}
-            onClick={onExport}
-            sx={{
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '0.8125rem',
-              borderRadius: '6px',
-              px: 2,
-              height: 32,
-              boxShadow: 'none',
-              '&:hover': { boxShadow: 'none' }
-            }}
-          >
-            Export
-          </Button>
+          <Tooltip title="Export">
+            <IconButton
+              size="small"
+              onClick={onExport}
+              sx={{
+                borderRadius: '6px',
+                width: 32,
+                height: 32,
+                backgroundColor: 'primary.main',
+                color: 'primary.contrastText',
+                '&:hover': { backgroundColor: 'primary.dark' },
+              }}
+            >
+              <FileDownloadOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         )}
 
         {/* Favorite Icon */}
