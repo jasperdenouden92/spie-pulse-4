@@ -545,10 +545,10 @@ function PageHeader({
         )}
       </Box>
 
-      {/* Right: Filter dropdown + Export + Favorite */}
+      {/* Right: Filter chips + Export + Favorite */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        {/* Filter dropdown — combines building and date filters */}
-        {((filterBuildingLabel && onFilterBuildingClick) || (filterPeriodLabel && onFilterDateClick)) && (
+        {/* Narrow: combined filter dropdown */}
+        {isNarrow && ((filterBuildingLabel && onFilterBuildingClick) || (filterPeriodLabel && onFilterDateClick)) && (
           <>
             <Chip
               icon={<TuneIcon sx={{ fontSize: 16 }} />}
@@ -604,24 +604,84 @@ function PageHeader({
             </Menu>
           </>
         )}
-        {/* Export Button — icon only, on Control Room and Dashboards */}
+        {/* Wide: individual filter chips */}
+        {!isNarrow && filterBuildingLabel && onFilterBuildingClick && (
+          <Chip
+            label={filterBuildingLabel}
+            onClick={onFilterBuildingClick}
+            deleteIcon={<ExpandMoreIcon />}
+            onDelete={onFilterBuildingClick as any}
+            sx={{
+              height: 32,
+              borderRadius: '6px',
+              backgroundColor: c.bgPrimary,
+              border: '1px solid',
+              borderColor: c.borderPrimary,
+              boxShadow: `0 1px 3px ${c.shadow}`,
+              '&:hover': { backgroundColor: c.bgPrimaryHover },
+              '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
+              '& .MuiChip-deleteIcon': { color: 'text.primary' },
+            }}
+          />
+        )}
+        {!isNarrow && filterPeriodLabel && onFilterDateClick && (
+          <Chip
+            label={filterPeriodLabel}
+            onClick={onFilterDateClick}
+            deleteIcon={<ExpandMoreIcon />}
+            onDelete={onFilterDateClick as any}
+            sx={{
+              height: 32,
+              borderRadius: '6px',
+              backgroundColor: c.bgPrimary,
+              border: '1px solid',
+              borderColor: c.borderPrimary,
+              boxShadow: `0 1px 3px ${c.shadow}`,
+              '&:hover': { backgroundColor: c.bgPrimaryHover },
+              '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
+              '& .MuiChip-deleteIcon': { color: 'text.primary' },
+            }}
+          />
+        )}
+        {/* Export Button — on Control Room and Dashboards */}
         {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
-          <Tooltip title="Export">
-            <IconButton
+          isNarrow ? (
+            <Tooltip title="Export">
+              <IconButton
+                size="small"
+                onClick={onExport}
+                sx={{
+                  borderRadius: '6px',
+                  width: 32,
+                  height: 32,
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  '&:hover': { backgroundColor: 'primary.dark' },
+                }}
+              >
+                <FileDownloadOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="contained"
               size="small"
+              startIcon={<FileDownloadOutlinedIcon />}
               onClick={onExport}
               sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.8125rem',
                 borderRadius: '6px',
-                width: 32,
+                px: 2,
                 height: 32,
-                backgroundColor: 'primary.main',
-                color: 'primary.contrastText',
-                '&:hover': { backgroundColor: 'primary.dark' },
+                boxShadow: 'none',
+                '&:hover': { boxShadow: 'none' }
               }}
             >
-              <FileDownloadOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+              Export
+            </Button>
+          )
         )}
 
         {/* Favorite Icon */}
