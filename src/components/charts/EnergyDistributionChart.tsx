@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -30,11 +30,12 @@ const mockData = [
 ];
 
 export default function EnergyDistributionChart({ buildingName }: EnergyDistributionChartProps) {
+  const { themeColors: c } = useThemeMode();
   const [selectedType, setSelectedType] = useState('Electricity');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 300 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 300 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -48,10 +49,10 @@ export default function EnergyDistributionChart({ buildingName }: EnergyDistribu
             px: 1,
             py: 0.5,
             borderRadius: '6px',
-            bgcolor: colors.bgPrimaryHover,
+            bgcolor: c.bgPrimaryHover,
             cursor: 'pointer',
             '&:hover': {
-              bgcolor: '#e8e8e8'
+              bgcolor: c.bgSecondaryHover
             }
           }}
           onClick={(e) => setAnchorEl(e.currentTarget)}
@@ -118,7 +119,7 @@ export default function EnergyDistributionChart({ buildingName }: EnergyDistribu
               itemsSpacing: 12,
               itemWidth: 100,
               itemHeight: 20,
-              itemTextColor: '#666',
+              itemTextColor: c.chartAxisText,
               itemDirection: 'left-to-right',
               itemOpacity: 1,
               symbolSize: 12,
@@ -127,7 +128,7 @@ export default function EnergyDistributionChart({ buildingName }: EnergyDistribu
                 {
                   on: 'hover',
                   style: {
-                    itemTextColor: '#000'
+                    itemTextColor: c.textPrimary
                   }
                 }
               ]

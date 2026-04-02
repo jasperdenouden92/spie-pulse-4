@@ -1,10 +1,11 @@
 'use client';
-import { colors, secondaryAlpha } from '@/colors';
 
 import React from 'react';
 import MuiTabs from '@mui/material/Tabs';
 import MuiTab from '@mui/material/Tab';
 import type { SxProps, Theme } from '@mui/material/styles';
+import { useThemeMode } from '@/theme-mode-context';
+import { secondaryAlpha } from '@/colors';
 
 interface TabItem {
   value?: string;
@@ -22,6 +23,7 @@ interface AppTabsProps {
 }
 
 export default function AppTabs({ value, onChange, tabs, size = 'medium', sx, indicatorColor }: AppTabsProps) {
+  const { themeColors: c } = useThemeMode();
   const fontSize = size === 'small' ? '0.8125rem' : '0.875rem';
   const py = size === 'small' ? 0.625 : 1;
   const px = size === 'small' ? 1.25 : 1.5;
@@ -52,8 +54,8 @@ export default function AppTabs({ value, onChange, tabs, size = 'medium', sx, in
             color: 'text.primary',
           },
           '&.Mui-selected': {
-            bgcolor: secondaryAlpha(0.08),
-            color: colors.brand,
+            bgcolor: secondaryAlpha(0.15),
+            color: c.brand,
             fontWeight: 600,
           },
         },

@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface PerformanceHeatmapChartProps {
   buildingName?: string;
@@ -34,10 +35,11 @@ const getColor = (value: number): string => {
 };
 
 export default function PerformanceHeatmapChart({ buildingName }: PerformanceHeatmapChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData();
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>

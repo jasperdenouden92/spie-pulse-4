@@ -8,7 +8,7 @@ import TextField from '@mui/material/TextField';
 import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { assetTree, AssetNode } from '@/data/assetTree';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import BuildingSelector, { type BuildingFilterMode } from '@/components/BuildingSelector';
 import DateRangeSelector, { getDateRangeDisplayLabel } from './DateRangeSelector';
 
@@ -63,6 +63,7 @@ function AssetTreeNode({
   onToggleSelect: (id: string, leafIds: string[]) => void;
   searchQuery: string;
 }) {
+  const { themeColors: c } = useThemeMode();
   const isAsset = node.type === 'asset';
   const hasChildren = !!(node.children && node.children.length > 0);
   const isExpanded = expandedNodes.has(node.id);
@@ -90,7 +91,7 @@ function AssetTreeNode({
           pr: 1,
           py: 0.25,
           cursor: 'pointer',
-          '&:hover': { bgcolor: colors.bgPrimaryHover },
+          '&:hover': { bgcolor: c.bgPrimaryHover },
         }}
         onClick={() => onToggleSelect(node.id, [node.id])}
       >
@@ -127,7 +128,7 @@ function AssetTreeNode({
           pr: 1,
           py: 0.5,
           cursor: 'pointer',
-          '&:hover': { bgcolor: colors.bgPrimaryHover },
+          '&:hover': { bgcolor: c.bgPrimaryHover },
         }}
         onClick={() => onToggleExpand(node.id)}
       >
@@ -176,6 +177,7 @@ export default function ControlRoomFilters({
   buildingFilterMode = 'buildings',
   onBuildingFilterModeChange,
 }: ControlRoomFiltersProps) {
+  const { themeColors: c } = useThemeMode();
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
   const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState<null | HTMLElement>(null);
   const [localDateRange, setLocalDateRange] = useState('This Month');
@@ -237,13 +239,13 @@ export default function ControlRoomFilters({
   const chipSx = (active: boolean) => ({
     height: 32,
     borderRadius: '6px',
-    backgroundColor: active ? colors.bgActive : 'white',
+    backgroundColor: active ? c.bgActive : c.bgPrimary,
     border: '1px solid',
-    borderColor: active ? colors.brand : colors.borderPrimary,
+    borderColor: active ? c.brand : c.borderPrimary,
     boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-    '&:hover': { backgroundColor: active ? '#bbdefb' : colors.bgPrimaryHover },
-    '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500, color: active ? colors.brand : 'inherit' },
-    '& .MuiChip-deleteIcon': { color: active ? colors.brand : undefined },
+    '&:hover': { backgroundColor: active ? c.bgActiveHover : c.bgPrimaryHover },
+    '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500, color: active ? c.brand : 'inherit' },
+    '& .MuiChip-deleteIcon': { color: active ? c.brand : undefined },
   });
 
   const searchLower = assetSearch.toLowerCase();
@@ -277,7 +279,7 @@ export default function ControlRoomFilters({
             PaperProps={{ sx: { mt: 0.5, width: 420, borderRadius: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.14)', overflow: 'hidden' } }}
           >
             {/* Header */}
-            <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.bgSecondaryHover}` }}>
+            <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${c.bgSecondaryHover}` }}>
               <Typography variant="subtitle2" fontWeight={600}>Filter assets</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Typography variant="caption" color="text.secondary">
@@ -292,7 +294,7 @@ export default function ControlRoomFilters({
             </Box>
 
             {/* Search */}
-            <Box sx={{ p: 1, borderBottom: `1px solid ${colors.bgSecondaryHover}` }}>
+            <Box sx={{ p: 1, borderBottom: `1px solid ${c.bgSecondaryHover}` }}>
               <TextField
                 size="small"
                 placeholder="Zoek asset..."
@@ -330,8 +332,8 @@ export default function ControlRoomFilters({
                         px: 1.5,
                         py: 0.75,
                         cursor: 'pointer',
-                        '&:hover': { bgcolor: colors.bgPrimaryHover },
-                        borderBottom: `1px solid ${colors.bgSecondaryHover}`,
+                        '&:hover': { bgcolor: c.bgPrimaryHover },
+                        borderBottom: `1px solid ${c.bgSecondaryHover}`,
                       }}
                       onClick={() => toggleAssetExpand(building.id)}
                     >
@@ -386,10 +388,10 @@ export default function ControlRoomFilters({
         sx={{
           height: 32,
           borderRadius: '6px',
-          backgroundColor: 'white',
-          border: `1px solid ${colors.borderPrimary}`,
+          backgroundColor: c.bgPrimary,
+          border: `1px solid ${c.borderPrimary}`,
           boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-          '&:hover': { backgroundColor: colors.bgPrimaryHover },
+          '&:hover': { backgroundColor: c.bgPrimaryHover },
           '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500 }
         }}
       />
