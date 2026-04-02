@@ -10,7 +10,11 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import Button from '@mui/material/Button';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
 import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
 import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInputComponentOutlined';
@@ -427,12 +431,14 @@ interface DashboardsPageProps {
 
 export default function DashboardsPage({ onDashboardChange, initialDashboardId, onInitialDashboardConsumed, dateRange, onDateRangeChange, selectedBuildingNames = [] }: DashboardsPageProps) {
   const { themeColors: c } = useThemeMode();
+  const isNarrow = useMediaQuery('(max-width:960px)');
   const [selectedId, setSelectedId] = useState<string>(
     initialDashboardId ?? DASHBOARD_THEMES[0].dashboards[0].id
   );
   const [expandedGroups, setExpandedGroups] = useState<string[]>(
     DASHBOARD_THEMES.map(g => g.themeKey)
   );
+  const [mobilePickerOpen, setMobilePickerOpen] = useState(!initialDashboardId);
 
   // Apply incoming dashboard navigation
   useEffect(() => {
@@ -466,6 +472,192 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
   const selectedDashboard = DASHBOARD_THEMES.flatMap(g => g.dashboards).find(d => d.id === selectedId);
   const selectedGroup = DASHBOARD_THEMES.find(g => g.dashboards.some(d => d.id === selectedId));
 
+  const handleMobileDashboardSelect = (dashId: string) => {
+    setSelectedId(dashId);
+    setMobilePickerOpen(false);
+  };
+
+  const dashboardNavList = (onSelect?: (id: string) => void) => (
+    <>
+      <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+        <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.7rem' }}>
+          Dashboards
+        </Typography>
+      </Box>
+      <List data-annotation-id="dashboardspage-lijst" dense disablePadding sx={{ pb: 2 }}>
+        {DASHBOARD_THEMES.map((group) => {
+          const isOpen = expandedGroups.includes(group.themeKey);
+          const hasActiveChild = group.dashboards.some(d => d.id === selectedId);
+          return (
+            <React.Fragment key={group.themeKey}>
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => toggleGroup(group.themeKey)}
+                  sx={{ py: 0.75, px: 2, gap: 1.5 }}
+                >
+                  <Box sx={{ color: hasActiveChild ? c.brand : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    {group.icon}
+                  </Box>
+                  <ListItemText
+                    primary={group.theme}
+                    primaryTypographyProps={{
+                      variant: 'body2',
+                      fontWeight: 600,
+                      fontSize: '0.8125rem',
+                      color: hasActiveChild ? c.brand : 'text.primary',
+                    }}
+                  />
+                  <ExpandMoreIcon sx={{
+                    fontSize: 16,
+                    color: 'text.secondary',
+                    transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                    transition: 'transform 0.2s',
+                    flexShrink: 0,
+                  }} />
+                </ListItemButton>
+              </ListItem>
+              <Collapse data-annotation-id="dashboardspage-accordion" in={isOpen} unmountOnExit>
+                {group.dashboards.map((dash) => {
+                  const isActive = dash.id === selectedId;
+                  return (
+                    <ListItem key={dash.id} disablePadding>
+                      <ListItemButton
+                        onClick={() => onSelect ? onSelect(dash.id) : setSelectedId(dash.id)}
+                        sx={{
+                          pl: 5.5,
+                          pr: 2,
+                          py: 0.5,
+                          bgcolor: isActive ? c.bgActive : 'transparent',
+                          borderRight: isActive ? `2px solid ${c.brand}` : '2px solid transparent',
+                          '&:hover': { bgcolor: isActive ? c.bgActive : c.bgSecondaryHover },
+                        }}
+                      >
+                        <ListItemText
+                          primary={dash.label}
+                          primaryTypographyProps={{
+                            variant: 'body2',
+                            fontSize: '0.8125rem',
+                            fontWeight: isActive ? 600 : 400,
+                            color: isActive ? c.brand : 'text.primary',
+                            sx: { lineHeight: 1.4 },
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
+              </Collapse>
+              <Divider sx={{ mx: 2 }} />
+            </React.Fragment>
+          );
+        })}
+      </List>
+    </>
+  );
+
+  const dashboardContent = (
+    <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+      {selectedDashboard ? (
+        <>
+          {/* Go back button - mobile only */}
+          {isNarrow && (
+            <Button
+              variant="text"
+              startIcon={<ChevronLeftIcon />}
+              onClick={() => setMobilePickerOpen(true)}
+              sx={{
+                mb: 2,
+                color: 'text.secondary',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                textTransform: 'none',
+                px: 1,
+                '&:hover': { bgcolor: 'transparent', color: 'text.primary' },
+              }}
+            >
+              Go back
+            </Button>
+          )}
+
+          {/* Dashboard header */}
+          <Box sx={{ mb: 3 }}>
+            {selectedGroup && (
+              <Typography variant="caption" color="text.secondary">
+                {selectedGroup.theme}
+              </Typography>
+            )}
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+              {selectedDashboard.label}
+            </Typography>
+          </Box>
+
+          {/* Date range selector - full width */}
+          {dateRange && onDateRangeChange && (
+            <Box sx={{
+              mb: 4,
+              bgcolor: c.bgPrimary,
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+              p: 2,
+            }}>
+              <DateRangeSelector
+                inline
+                value={dateRange}
+                onChange={onDateRangeChange}
+              />
+            </Box>
+          )}
+
+          {/* Charts grid */}
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: isNarrow ? '1fr' : 'repeat(2, 1fr)',
+            gap: 3,
+          }}>
+            {selectedDashboard.renderCharts(undefined)}
+          </Box>
+        </>
+      ) : (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+          <Typography color="text.secondary">Selecteer een dashboard</Typography>
+        </Box>
+      )}
+    </Box>
+  );
+
+  // Mobile layout: fullpage dialog for picker, then dashboard content
+  if (isNarrow) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px)', mt: '56px', overflow: 'hidden' }}>
+        <Dialog
+          fullScreen
+          open={mobilePickerOpen}
+          onClose={() => setMobilePickerOpen(false)}
+          sx={{
+            '& .MuiDialog-paper': {
+              bgcolor: c.bgSecondary,
+              mt: '56px',
+              height: 'calc(100vh - 56px)',
+            },
+          }}
+        >
+          <Box sx={{
+            overflowY: 'auto',
+            height: '100%',
+            '&::-webkit-scrollbar': { width: '4px' },
+            '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
+          }}>
+            {dashboardNavList(handleMobileDashboardSelect)}
+          </Box>
+        </Dialog>
+        {dashboardContent}
+      </Box>
+    );
+  }
+
+  // Desktop layout: sidebar + content
   return (
     <Box sx={{ display: 'flex', height: 'calc(100vh - 56px)', mt: '56px', overflow: 'hidden' }}>
       {/* Left: Theme/Dashboard navigation */}
@@ -479,136 +671,12 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
         '&::-webkit-scrollbar': { width: '4px' },
         '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
       }}>
-        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-          <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.06em', fontSize: '0.7rem' }}>
-            Dashboards
-          </Typography>
-        </Box>
-        <List data-annotation-id="dashboardspage-lijst" dense disablePadding sx={{ pb: 2 }}>
-          {DASHBOARD_THEMES.map((group) => {
-            const isOpen = expandedGroups.includes(group.themeKey);
-            const hasActiveChild = group.dashboards.some(d => d.id === selectedId);
-            return (
-              <React.Fragment key={group.themeKey}>
-                {/* Theme group header */}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => toggleGroup(group.themeKey)}
-                    sx={{ py: 0.75, px: 2, gap: 1.5 }}
-                  >
-                    <Box sx={{ color: hasActiveChild ? c.brand : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                      {group.icon}
-                    </Box>
-                    <ListItemText
-                      primary={group.theme}
-                      primaryTypographyProps={{
-                        variant: 'body2',
-                        fontWeight: 600,
-                        fontSize: '0.8125rem',
-                        color: hasActiveChild ? c.brand : 'text.primary',
-                      }}
-                    />
-                    <ExpandMoreIcon sx={{
-                      fontSize: 16,
-                      color: 'text.secondary',
-                      transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                      transition: 'transform 0.2s',
-                      flexShrink: 0,
-                    }} />
-                  </ListItemButton>
-                </ListItem>
-
-                {/* Dashboard items */}
-                <Collapse data-annotation-id="dashboardspage-accordion" in={isOpen} unmountOnExit>
-                  {group.dashboards.map((dash) => {
-                    const isActive = dash.id === selectedId;
-                    return (
-                      <ListItem key={dash.id} disablePadding>
-                        <ListItemButton
-                          onClick={() => setSelectedId(dash.id)}
-                          sx={{
-                            pl: 5.5,
-                            pr: 2,
-                            py: 0.5,
-                            bgcolor: isActive ? c.bgActive : 'transparent',
-                            borderRight: isActive ? `2px solid ${c.brand}` : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? c.bgActive : c.bgSecondaryHover },
-                          }}
-                        >
-                          <ListItemText
-                            primary={dash.label}
-                            primaryTypographyProps={{
-                              variant: 'body2',
-                              fontSize: '0.8125rem',
-                              fontWeight: isActive ? 600 : 400,
-                              color: isActive ? c.brand : 'text.primary',
-                              sx: { lineHeight: 1.4 },
-                            }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                    );
-                  })}
-                </Collapse>
-                <Divider sx={{ mx: 2 }} />
-              </React.Fragment>
-            );
-          })}
-        </List>
+        {dashboardNavList()}
       </Box>
 
       {/* Right: Dashboard content */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Dashboard content */}
-        <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
-          {selectedDashboard ? (
-            <>
-              {/* Dashboard header */}
-              <Box sx={{ mb: 3 }}>
-                {selectedGroup && (
-                  <Typography variant="caption" color="text.secondary">
-                    {selectedGroup.theme}
-                  </Typography>
-                )}
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
-                  {selectedDashboard.label}
-                </Typography>
-              </Box>
-
-              {/* Date range selector - full width */}
-              {dateRange && onDateRangeChange && (
-                <Box sx={{
-                  mb: 4,
-                  bgcolor: c.bgPrimary,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-                  p: 2,
-                }}>
-                  <DateRangeSelector
-                    inline
-                    value={dateRange}
-                    onChange={onDateRangeChange}
-                  />
-                </Box>
-              )}
-
-              {/* Charts grid */}
-              <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: 3,
-              }}>
-                {selectedDashboard.renderCharts(undefined)}
-              </Box>
-            </>
-          ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-              <Typography color="text.secondary">Selecteer een dashboard</Typography>
-            </Box>
-          )}
-        </Box>
+        {dashboardContent}
       </Box>
     </Box>
   );
