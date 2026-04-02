@@ -321,7 +321,7 @@ export default function RecommendationsInbox() {
                 </Box>
 
                 {/* Expanded detail */}
-                <Collapse in={isExpanded}>
+                <Collapse data-annotation-id="recommendationsinbox-accordion" in={isExpanded}>
                   <Box sx={{ px: 2, pb: 2, pt: 0, pl: 7.5 }}>
                     <Box sx={{ display: 'flex', gap: 0.75, mb: 1.5 }}>
                       <Chip

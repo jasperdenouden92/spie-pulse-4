@@ -222,7 +222,7 @@ export default function OverallPerformancePage({
         </Box>
 
         <Box sx={{ flex: 1, minHeight: 340 }}>
-          <LineChart
+          <LineChart data-annotation-id="overallperformancepage-grafiek-2"
             xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
             yAxis={[{ min: Math.max(0, Math.floor((Math.min(...overallSeries.data, OVERALL_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
             series={[{ data: overallSeries.data, label: 'Overall Performance', color: c.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
@@ -412,7 +412,7 @@ export default function OverallPerformancePage({
             const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart
+                <LineChart data-annotation-id="overallperformancepage-grafiek"
                   xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
                   yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
                   series={chartSeries.map(s => ({ data: s.data, label: s.label, color: s.color, curve: 'catmullRom' as const, showMark: false, area: true }))}

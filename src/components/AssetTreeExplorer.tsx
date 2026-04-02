@@ -155,7 +155,7 @@ export default function AssetTreeExplorer({
   };
 
   return (
-    <Drawer
+    <Drawer data-annotation-id="assettreeexplorer-modal"
       anchor="right"
       open={open}
       onClose={onClose}
@@ -223,7 +223,7 @@ export default function AssetTreeExplorer({
           </Box>
 
           <TableContainer>
-            <Table size="small">
+            <Table data-annotation-id="assettreeexplorer-tabel" size="small">
               <TableBody>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 600, width: '40%', border: 0, py: 0.5 }}>Category</TableCell>

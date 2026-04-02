@@ -484,7 +484,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
             Dashboards
           </Typography>
         </Box>
-        <List dense disablePadding sx={{ pb: 2 }}>
+        <List data-annotation-id="dashboardspage-lijst" dense disablePadding sx={{ pb: 2 }}>
           {DASHBOARD_THEMES.map((group) => {
             const isOpen = expandedGroups.includes(group.themeKey);
             const hasActiveChild = group.dashboards.some(d => d.id === selectedId);
@@ -519,7 +519,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                 </ListItem>
 
                 {/* Dashboard items */}
-                <Collapse in={isOpen} unmountOnExit>
+                <Collapse data-annotation-id="dashboardspage-accordion" in={isOpen} unmountOnExit>
                   {group.dashboards.map((dash) => {
                     const isActive = dash.id === selectedId;
                     return (

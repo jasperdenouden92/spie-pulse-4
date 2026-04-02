@@ -241,7 +241,7 @@ export default function ChangelogButton() {
       </Box>
 
       {/* Drawer */}
-      <Drawer
+      <Drawer data-annotation-id="changelogbutton-modal"
         anchor="right"
         open={open}
         onClose={() => setOpen(false)}

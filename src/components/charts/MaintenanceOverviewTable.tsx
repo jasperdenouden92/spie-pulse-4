@@ -118,7 +118,7 @@ export default function MaintenanceOverviewTable({
           },
         },
       }}>
-        <Table stickyHeader size="small">
+        <Table data-annotation-id="maintenanceoverviewtable-tabel" stickyHeader size="small">
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>

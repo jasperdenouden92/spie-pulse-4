@@ -70,7 +70,7 @@ export default function TicketsList({ tickets, buildingName, compact = false }: 
             bgcolor: c.bgPrimary
           }}
         >
-          <Table>
+          <Table data-annotation-id="ticketslist-tabel">
             <TableHead>
               <TableRow sx={{ bgcolor: compact ? 'transparent' : c.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>

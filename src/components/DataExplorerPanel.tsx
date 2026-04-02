@@ -312,7 +312,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
 
           {/* Menu list */}
           <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
-            <List disablePadding>
+            <List data-annotation-id="dataexplorerpanel-lijst" disablePadding>
               {/* Section: Buildings & Assets */}
               <Typography variant="caption" sx={{ px: 2.5, pt: 1.5, pb: 0.5, display: 'block', color: 'text.secondary', fontWeight: 600, fontSize: '0.675rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Buildings & Assets

@@ -333,7 +333,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
         </Box>
 
         <Box sx={{ flex: 1, minHeight: 340 }}>
-          <LineChart
+          <LineChart data-annotation-id="operationsperformancepage-grafiek-2"
             xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
             yAxis={[{ min: Math.max(0, Math.floor((Math.min(...opsSeries.data, OPS_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
             series={[{ data: opsSeries.data, label: 'Operational KPIs', color: c.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
@@ -523,7 +523,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart
+                <LineChart data-annotation-id="operationsperformancepage-grafiek"
                   xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
                   yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
                   series={chartSeries.map(s => ({ data: s.data, label: s.label, color: c.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}

@@ -319,7 +319,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
         '&::-webkit-scrollbar': { width: '4px' },
         '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
       }}>
-        <List dense disablePadding sx={{ py: 1 }}>
+        <List data-annotation-id="dashboardsview-lijst" dense disablePadding sx={{ py: 1 }}>
           {visibleGroups.map((group) => {
             const isOpen = expandedGroups.includes(group.themeKey);
             return (
@@ -345,7 +345,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                 </ListItem>
 
                 {/* Dashboard items */}
-                <Collapse in={isOpen} unmountOnExit>
+                <Collapse data-annotation-id="dashboardsview-accordion" in={isOpen} unmountOnExit>
                   {group.dashboards.map((dash) => {
                     const isActive = dash.id === selectedId;
                     return (

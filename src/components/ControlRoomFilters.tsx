@@ -150,7 +150,7 @@ function AssetTreeNode({
         </Typography>
       </Box>
       {hasChildren && (
-        <Collapse in={isExpanded} unmountOnExit>
+        <Collapse data-annotation-id="controlroomfilters-accordion-2" in={isExpanded} unmountOnExit>
           {node.children!.map(child => (
             <AssetTreeNode
               key={child.id}
@@ -356,7 +356,7 @@ export default function ControlRoomFilters({
                     </Box>
 
                     {/* Building children tree */}
-                    <Collapse in={isExpanded} unmountOnExit>
+                    <Collapse data-annotation-id="controlroomfilters-accordion" in={isExpanded} unmountOnExit>
                       {building.children?.map(child => (
                         <AssetTreeNode
                           key={child.id}
