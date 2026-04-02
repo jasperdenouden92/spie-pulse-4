@@ -1096,7 +1096,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
               <Typography variant="subtitle2" fontWeight={600}>KPI Score Over Time</Typography>
             </Box>
             {/* View selector */}
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
               {menuItems.map(item => {
                 const isActive = chartView === item.key;
                 return (

@@ -541,7 +541,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
               <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
               <Typography variant="body2" fontWeight={600}>KPI Score Over Time</Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
               {menuItems.map(item => {
                 const isActive = chartView === item.key;
                 return (
