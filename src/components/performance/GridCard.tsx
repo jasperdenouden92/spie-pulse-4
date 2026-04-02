@@ -11,7 +11,7 @@ export type GridCardSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const COLUMN_SPAN: Record<GridCardSize, object | string> = {
   sm: 'span 1',
-  md: { xs: 'span 1', md: 'span 1', lg: 'span 2' },
+  md: { xs: 'span 1', md: 'span 2', lg: 'span 2' },
   lg: { xs: 'span 1', md: 'span 2', lg: 'span 3' },
   xl: { xs: 'span 1', md: 'span 2', lg: 'span 4' },
 };
