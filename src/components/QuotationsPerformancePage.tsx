@@ -661,7 +661,7 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
             const lineGradientId = `threshold-gradient-quot-line`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart
+                <LineChart data-annotation-id="quotationsperformancepage-grafiek-2"
                   xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
                   yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
                   series={chartSeries.map(s => ({ data: s.data, label: s.label, color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
@@ -712,7 +712,7 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
             <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>Status Overview</Typography>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-              <PieChart
+              <PieChart data-annotation-id="quotationsperformancepage-grafiek"
                 series={[{
                   data: STATUS_COUNTS.map((s, i) => ({ id: i, value: s.count, label: s.status, color: s.color })),
                   innerRadius: 46,

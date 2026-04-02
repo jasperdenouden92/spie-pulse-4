@@ -666,7 +666,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
             const lineGradientId = `threshold-gradient-maint-line`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart
+                <LineChart data-annotation-id="maintenanceperformancepage-grafiek"
                   xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
                   yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
                   series={chartSeries.map(s => ({ data: s.data, label: s.label, color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}

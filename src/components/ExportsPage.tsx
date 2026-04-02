@@ -80,7 +80,7 @@ export default function ExportsPage() {
         </Box>
       ) : (
         <TableContainer sx={{ bgcolor: 'white', borderRadius: 1, border: `1px solid ${colors.borderSecondary}` }}>
-          <Table>
+          <Table data-annotation-id="exportspage-tabel">
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Name</TableCell>

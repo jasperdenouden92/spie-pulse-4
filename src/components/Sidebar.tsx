@@ -623,7 +623,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           {/* Scrollable nav section — position trick guarantees bounded height */}
           <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
             <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: 2, pt: 0, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
-            <List sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <List data-annotation-id="sidebar-lijst-3" sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             {/* "+ New" action button — opens dropdown menu */}
             <NavItem
               label="New"
@@ -689,7 +689,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>Favorites</Typography>
               <DndContext id="sidebar-favorites" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={favorites.map(f => f.id)} strategy={verticalListSortingStrategy}>
-                  <List dense sx={{ py: 0 }}>
+                  <List data-annotation-id="sidebar-lijst-2" dense sx={{ py: 0 }}>
                     {favorites.map((fav) => (
                       <SortableFavoriteItem
                         key={fav.id}
@@ -707,7 +707,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             {/* Bottom sticky: Notifications, Help, Account */}
             <Box sx={{ flexShrink: 0, px: 2, pt: 1, pb: 0.5 }}>
               <Divider sx={{ mb: 1 }} />
-              <List dense sx={{ py: 0 }}>
+              <List data-annotation-id="sidebar-lijst" dense sx={{ py: 0 }}>
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onDataExplorerToggle?.()}

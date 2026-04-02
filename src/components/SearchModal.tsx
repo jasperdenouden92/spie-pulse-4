@@ -598,7 +598,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
   };
 
   return (
-    <Modal
+    <Modal data-annotation-id="searchmodal-modal"
       open={open}
       onClose={handleClose}
       sx={{
