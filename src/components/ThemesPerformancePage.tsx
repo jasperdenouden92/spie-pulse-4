@@ -362,7 +362,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* ═══ Theme KPIs Combined Score Over Time (card) ═══ */}
-      <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
+      <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
             Theme KPI Performance
@@ -415,7 +415,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
         {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
@@ -474,7 +474,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
@@ -533,7 +533,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
         </Paper>
 
         {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />

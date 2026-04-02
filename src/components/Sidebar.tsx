@@ -648,6 +648,12 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               onClick={() => setSearchModalOpen(true)}
               shortcut={modifierHeld ? 'F' : undefined}
             />
+            <NavItem
+              label="Data Explorer"
+              icon={<ExploreOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={dataExplorerOpen}
+              onClick={() => onDataExplorerToggle?.()}
+            />
             <Divider sx={{ my: 1.5 }} />
             <NavItem
               label="Home"
@@ -716,17 +722,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Box sx={{ flexShrink: 0, px: 2, pt: 1, pb: 0.5 }}>
               <Divider sx={{ mb: 1 }} />
               <List data-annotation-id="sidebar-lijst" dense sx={{ py: 0 }}>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => onDataExplorerToggle?.()}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: dataExplorerOpen ? c.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
-                  >
-                    <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <ExploreOutlinedIcon sx={{ fontSize: 16 }} />
-                    </Box>
-                    <ListItemText primary="Data Explorer" primaryTypographyProps={{ variant: 'body2' }} />
-                  </ListItemButton>
-                </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onNotificationsPanelToggle?.()}

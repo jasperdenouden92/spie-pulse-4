@@ -431,7 +431,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
                 border: `1px solid ${c.cardBorder}`,
                 borderRadius: '12px',
                 bgcolor: c.bgPrimary,
-                boxShadow: c.shadow,
+                boxShadow: c.cardShadow,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 1.5,
@@ -481,7 +481,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
         {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
@@ -546,7 +546,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
@@ -611,7 +611,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
         </Paper>
 
         {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
@@ -709,7 +709,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 7fr', gap: 2 }}>
           {/* Card 1: Status distribution donut */}
-          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
+          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>Status Overview</Typography>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
@@ -756,7 +756,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
           </Paper>
 
           {/* Card 2: Active tickets list */}
-          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
+          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="subtitle2" fontWeight={600}>Active Tickets</Typography>

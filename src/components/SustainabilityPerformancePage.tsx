@@ -898,7 +898,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                 border: `1px solid ${c.cardBorder}`,
                 borderRadius: '12px',
                 bgcolor: c.bgPrimary,
-                boxShadow: c.shadow,
+                boxShadow: c.cardShadow,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 1.5,
@@ -959,7 +959,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
         {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
@@ -1024,7 +1024,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
@@ -1089,7 +1089,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
         </Paper>
 
         {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
@@ -1187,7 +1187,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
         <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
           Sustainability Key Dashboards
         </Typography>
-        <Paper elevation={0} sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 360px', height: 528, overflow: 'hidden' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5 }}>
@@ -1231,7 +1231,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                 border: `1px solid ${c.cardBorder}`,
                 borderRadius: '12px',
                 bgcolor: c.bgPrimary,
-                boxShadow: c.shadow,
+                boxShadow: c.cardShadow,
                 cursor: 'pointer',
                 transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
                 display: 'flex',
