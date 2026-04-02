@@ -118,33 +118,37 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.15rem', lineHeight: 1.2 }}>
               <AnimatedNumber value={score} />%
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              {periodLabel !== null && (
+            {periodLabel !== null && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: trend >= 0 ? 'success.main' : 'error.main', flexShrink: 0 }}>
                 <Tooltip title={`Compared to ${periodLabel}`} arrow placement="top">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: trend >= 0 ? 'success.main' : 'error.main', flexShrink: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 12 }} /> : <TrendingDownIcon sx={{ fontSize: 12 }} />}
                     <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
                       {Math.abs(trend)}%
                     </Typography>
                   </Box>
                 </Tooltip>
-              )}
-              {performanceRating && (
-                <Chip
-                  label={performanceRating.label}
-                  size="small"
-                  sx={{
-                    height: 18,
-                    fontSize: '0.6rem',
-                    fontWeight: 600,
-                    bgcolor: `${performanceRating.color}18`,
-                    color: performanceRating.color,
-                    '& .MuiChip-label': { px: 0.75 },
-                  }}
-                />
-              )}
-            </Box>
+              </Box>
+            )}
           </Box>
+
+          {/* Status label */}
+          {performanceRating && (
+            <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              <Chip
+                label={performanceRating.label}
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  bgcolor: `${performanceRating.color}18`,
+                  color: performanceRating.color,
+                  '& .MuiChip-label': { px: 0.75 },
+                }}
+              />
+            </Box>
+          )}
 
           {/* Right: sparkline spanning percentage + trend rows */}
           <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
