@@ -51,7 +51,7 @@ const formatChipColor = (format: string): 'default' | 'primary' | 'success' | 'w
   }
 };
 
-export default function ExportsPage() {
+function ExportsPage() {
   const [exports, setExports] = useState<ExportItem[]>(initialExports);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
@@ -147,3 +147,6 @@ export default function ExportsPage() {
     </Box>
   );
 }
+
+
+export default React.memo(ExportsPage);

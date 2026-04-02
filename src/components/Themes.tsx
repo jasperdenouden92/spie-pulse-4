@@ -35,7 +35,7 @@ interface Theme {
   buildings: number;
 }
 
-export default function Themes() {
+function Themes() {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 
   const themes: Theme[] = [
@@ -329,3 +329,6 @@ export default function Themes() {
     </Box>
   );
 }
+
+
+export default React.memo(Themes);

@@ -16,6 +16,7 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import MenuIcon from '@mui/icons-material/Menu';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Chip from '@mui/material/Chip';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -88,7 +89,7 @@ const OPERATIONS_CHILDREN: Record<string, string> = {
 const ALL_THEME_KEYS = Object.keys(THEME_CHILDREN);
 const ALL_OPERATIONS_KEYS = Object.keys(OPERATIONS_CHILDREN);
 
-export default function PageHeader({
+function PageHeader({
   currentPage = 'portfolio',
   selectedBuilding,
   selectedAsset,
@@ -176,6 +177,7 @@ export default function PageHeader({
         position: 'fixed',
         top: 0,
         left: effectiveLeft,
+        '@media (max-width: 926px)': { left: 0 },
         right: rightSidebarWidth,
         height: 56,
         px: 3,
@@ -196,7 +198,8 @@ export default function PageHeader({
           onClick={onToggleCollapse}
           sx={{ flexShrink: 0 }}
         >
-          <MenuOpenIcon sx={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
+          <MenuIcon sx={{ display: 'none', '@media (max-width: 926px)': { display: 'block' } }} />
+          <MenuOpenIcon sx={{ display: 'block', '@media (max-width: 926px)': { display: 'none' }, transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
         </IconButton>
         <AnimatePresence>
           {(selectedBuilding || selectedAsset) && (
@@ -613,3 +616,5 @@ export default function PageHeader({
     </Box>
   );
 }
+
+export default React.memo(PageHeader);

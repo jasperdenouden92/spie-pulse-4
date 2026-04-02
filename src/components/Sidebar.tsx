@@ -35,7 +35,6 @@ import SearchModal from '@/components/SearchModal';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import Badge from '@mui/material/Badge';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import Tooltip from '@mui/material/Tooltip';
 import Popover from '@mui/material/Popover';
 import Avatar from '@mui/material/Avatar';
 import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
@@ -327,7 +326,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, dataExplorerOpen = false, onDataExplorerToggle, onDashboardNavigate, selectedTenant, onTenantChange }: SidebarProps) {
+function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, dataExplorerOpen = false, onDataExplorerToggle, onDashboardNavigate, selectedTenant, onTenantChange }: SidebarProps) {
   const selectedCustomer = selectedTenant ?? tenants[0];
   const setSelectedCustomer = (t: string) => onTenantChange?.(t);
   const [searchQuery, setSearchQuery] = useState('');
@@ -339,7 +338,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const newButtonRef = useRef<HTMLDivElement>(null);
-  const collapsedNewButtonRef = useRef<HTMLButtonElement>(null);
 
   const NEW_MENU_ITEMS = [
     { label: 'Report issue', key: '1' },
@@ -366,7 +364,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
       if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
         e.preventDefault();
-        setNewMenuAnchorEl(collapsedNewButtonRef.current ?? newButtonRef.current);
+        setNewMenuAnchorEl(newButtonRef.current);
         return;
       }
 
@@ -579,36 +577,38 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
 
   return (
     <Box sx={{
-      width: isCollapsed ? 64 : 280,
+      width: '100%',
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
       bgcolor: '#fff',
-      borderRight: 1,
-      borderColor: 'divider',
-      transition: 'width 0.3s ease'
+      // Collapsed state — hide labels, favorites, shortcuts; center icons
+      ...(isCollapsed && {
+        '& .MuiListItemText-root': { display: 'none' },
+        '& .sidebar-hide-collapsed': { display: 'none !important' },
+        '& .MuiListItemButton-root': { justifyContent: 'center', pl: 1.5, pr: 1.5 },
+        '& .sidebar-logo-full': { display: 'none' },
+        '& .sidebar-logo-icon': { display: 'block !important' },
+      }),
     }}>
-
-      {!isCollapsed && (
         <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          {/* ACME Corp section - aligns with PageHeader breadcrumb */}
-          <Box sx={{ height: 56, display: 'flex', alignItems: 'center', px: 2, flexShrink: 0 }}>
+          {/* Tenant selector */}
+          <Box sx={{ height: 56, display: 'flex', alignItems: 'center', px: isCollapsed ? 1.5 : 2, justifyContent: isCollapsed ? 'center' : 'flex-start', flexShrink: 0 }}>
             <Box
-              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between', gap: 1, flex: isCollapsed ? undefined : 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
               onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
             >
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}
-              >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: isCollapsed ? undefined : 1 }}>
                 <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
                   <img src={tenantLogos[selectedCustomer]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 </Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Typography className="sidebar-hide-collapsed" variant="subtitle1" sx={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {selectedCustomer}
                 </Typography>
               </Box>
               <IconButton
+                className="sidebar-hide-collapsed"
                 size="small"
                 sx={{ flexShrink: 0 }}
                 onClick={(e) => {
@@ -620,11 +620,10 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </IconButton>
             </Box>
           </Box>
-          {/* Scrollable nav section — position trick guarantees bounded height */}
+          {/* Scrollable nav section */}
           <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-            <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: 2, pt: 0, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
+            <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: isCollapsed ? 1.5 : 2, pt: 0, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
             <List data-annotation-id="sidebar-lijst-3" sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            {/* "+ New" action button — opens dropdown menu */}
             <NavItem
               label="New"
               icon={<AddIcon sx={{ fontSize: 16 }} />}
@@ -674,8 +673,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           </List>
             </Box>
           </Box>
-          {/* Drag handle — resize favorites vs nav */}
-            <Box
+          {/* Drag handle + Favorites — hidden when collapsed */}
+            <Box className="sidebar-hide-collapsed"
               onMouseDown={handleSectionResize}
               sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: colors.bgPrimaryHover }, '&:hover .resize-icon': { opacity: 0.6 } }}
             >
@@ -683,8 +682,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <DragIndicatorIcon sx={{ fontSize: 14, color: 'text.secondary', transform: 'rotate(90deg)' }} />
               </Box>
             </Box>
-            {/* Favorites — resizable height */}
-            <Box sx={{ height: favoritesHeight, flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', px: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
+            <Box className="sidebar-hide-collapsed" sx={{ height: favoritesHeight, flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', px: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
               <Divider sx={{ mb: 1 }} />
               <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>Favorites</Typography>
               <DndContext id="sidebar-favorites" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -704,8 +702,8 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </SortableContext>
               </DndContext>
             </Box>
-            {/* Bottom sticky: Notifications, Help, Account */}
-            <Box sx={{ flexShrink: 0, px: 2, pt: 1, pb: 0.5 }}>
+            {/* Bottom sticky: Data Explorer, Notifications, Help, Account */}
+            <Box sx={{ flexShrink: 0, px: isCollapsed ? 1.5 : 2, pt: 1, pb: 0.5 }}>
               <Divider sx={{ mb: 1 }} />
               <List data-annotation-id="sidebar-lijst" dense sx={{ py: 0 }}>
                 <ListItem disablePadding>
@@ -756,20 +754,20 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </List>
             </Box>
             {/* Logo */}
-            <Box sx={{ px: 2.5, pt: 0.5, pb: 1.5, flexShrink: 0 }}>
-              <img src="/images/pulse-core-logo.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5 }} />
+            <Box sx={{ px: isCollapsed ? 0 : 2.5, pt: 0.5, pb: 1.5, flexShrink: 0, display: 'flex', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
+              <img className="sidebar-logo-full" src="/images/pulse-core-logo.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5 }} />
+              <img className="sidebar-logo-icon" src="/images/pulse-core-icon.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5, display: 'none' }} />
             </Box>
         </Box>
-      )}
 
-      {/* "+ New" dropdown — shared between expanded and collapsed */}
+      {/* "+ New" dropdown */}
       <Menu
         anchorEl={newMenuAnchorEl}
         open={Boolean(newMenuAnchorEl)}
         onClose={() => setNewMenuAnchorEl(null)}
-        anchorOrigin={{ vertical: isCollapsed ? 'top' : 'bottom', horizontal: isCollapsed ? 'right' : 'left' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        slotProps={{ paper: { sx: { ml: isCollapsed ? 1 : 0, mt: isCollapsed ? 0 : 0.5, minWidth: 260, borderRadius: '10px', py: 0.5 } } }}
+        slotProps={{ paper: { sx: { mt: 0.5, minWidth: 260, borderRadius: '10px', py: 0.5 } } }}
         sx={{ zIndex: 1600 }}
       >
         <Typography variant="caption" sx={{ display: 'block', px: 2, pt: 1, pb: 0.5, color: 'text.secondary', fontWeight: 500, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -797,136 +795,6 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           </MenuItem>
         ))}
       </Menu>
-
-      {/* Collapsed View - Icon Only */}
-      {isCollapsed && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          {/* Tenant switcher */}
-          <Box sx={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Tooltip title={selectedCustomer} placement="right">
-              <IconButton
-                onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
-              >
-                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
-                  <img src={tenantLogos[selectedCustomer]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
-                </Box>
-              </IconButton>
-            </Tooltip>
-          </Box>
-
-          {/* Nav items */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 1, pt: 0, flex: 1 }}>
-            <Tooltip title="New  [N]" placement="right">
-              <IconButton
-                ref={collapsedNewButtonRef}
-                onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: colors.bgActive, color: colors.brand, '&:hover': { bgcolor: colors.bgActiveHover } }}
-              >
-                <AddIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Search  [F]" placement="right">
-              <IconButton
-                onClick={() => setSearchModalOpen(true)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
-              >
-                <SearchIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-            <Divider sx={{ width: 24, my: 0.5 }} />
-
-            <Tooltip title="Home" placement="right">
-              <IconButton
-                onClick={() => onPageChange?.('home')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? colors.bgActive : 'transparent', color: currentPage === 'home' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'home' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-              >
-                <HomeOutlinedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Control Room" placement="right">
-              <IconButton
-                onClick={() => onPageChange?.('portfolio')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? colors.bgActive : 'transparent', color: currentPage === 'portfolio' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'portfolio' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-              >
-                <MonitorHeartOutlined sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Insights" placement="right">
-              <IconButton
-                onClick={() => onPageChange?.('insights')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? colors.bgActive : 'transparent', color: currentPage === 'insights' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'insights' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-              >
-                <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Dashboards" placement="right">
-              <IconButton
-                onClick={() => onPageChange?.('dashboards')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? colors.bgActive : 'transparent', color: currentPage === 'dashboards' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'dashboards' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-              >
-                <DashboardOutlinedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="BMS" placement="right">
-              <IconButton
-                onClick={() => onPageChange?.('bms')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? colors.bgActive : 'transparent', color: currentPage === 'bms' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'bms' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-              >
-                <SettingsInputComponentOutlinedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-
-            {/* Bottom section */}
-            <Box sx={{ mt: 'auto', pb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-              <Divider sx={{ width: 40, mb: 0.5 }} />
-              <Tooltip title="Data Explorer" placement="right">
-                <IconButton
-                  onClick={() => onDataExplorerToggle?.()}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: dataExplorerOpen ? colors.bgActive : 'transparent', color: dataExplorerOpen ? colors.brand : undefined, '&:hover': { bgcolor: dataExplorerOpen ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-                >
-                  <ExploreOutlinedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Notifications" placement="right">
-                <IconButton
-                  onClick={() => onNotificationsPanelToggle?.()}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgActive : 'transparent', color: notificationsPanelOpen ? colors.brand : undefined, '&:hover': { bgcolor: notificationsPanelOpen ? colors.bgActiveHover : colors.bgPrimaryHover } }}
-                >
-                  <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
-                    <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Help" placement="right">
-                <IconButton sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
-                  <HelpOutlineIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={userAnchorEl ? '' : 'Account'} placement="right">
-                <IconButton
-                  onMouseEnter={(e) => {
-                    safeTriangleCleanupRef.current?.();
-                    setUserAnchorEl(e.currentTarget);
-                  }}
-                  onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
-                >
-                  <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-          {/* Logo */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5, flexShrink: 0 }}>
-            <img src="/images/pulse-core-icon.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5 }} />
-          </Box>
-        </Box>
-      )}
       <Menu
         anchorEl={customerAnchorEl}
         open={Boolean(customerAnchorEl)}
@@ -983,3 +851,5 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
     </Box>
   );
 }
+
+export default React.memo(Sidebar);
