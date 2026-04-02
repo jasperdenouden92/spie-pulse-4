@@ -84,7 +84,7 @@ function countNodes(node: AssetNode): number {
   return node.children.reduce((sum, child) => sum + countNodes(child), 0);
 }
 
-export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenInMainApp, onWidthChange }: DataExplorerPanelProps) {
+function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenInMainApp, onWidthChange }: DataExplorerPanelProps) {
   const { themeColors: c } = useThemeMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -516,3 +516,5 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
     </>
   );
 }
+
+export default React.memo(DataExplorerPanel);

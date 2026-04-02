@@ -383,6 +383,8 @@ export default function Home() {
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const notificationsRef = useRef<NotificationsPanelHandle>(null);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
+  const mobileBackdropRef = useRef<HTMLDivElement>(null);
   const [dataExplorerOpen, setDataExplorerOpen] = useState(false);
   const [dataExplorerWidth, setDataExplorerWidth] = useState(0);
   const [exportToast, setExportToast] = useState<{ open: boolean; message: string; severity: 'info' | 'success' }>({ open: false, message: '', severity: 'info' });
@@ -426,18 +428,18 @@ export default function Home() {
 
 
   // ── URL setter helpers ─────────────────────────────────────────────────────
-  const setCurrentPage = (page: string) => navigateTo({ page });
-  const setSelectedBuilding = (b: Building | null) => navigateTo({ building: b?.name ?? '' });
-  const setSelection = (s: string) => navigateTo({ metric: s });
-  const setViewMode = (v: string) => setURLParams({ view: v });
-  const setSortOrder = (s: string) => setURLParams({ sort: s });
-  const setDateRange = (r: string) => setURLParams({ dateRange: r });
-  const setSelectedGroup = (g: string) => setURLParams({ group: g });
-  const setSelectedCity = (c: string) => setURLParams({ city: c });
-  const setSelectedTenant = (t: string) => setURLParams({ tenant: t });
-  const setIsInspectMode = (v: boolean) => setURLParams({ inspect: v ? '1' : '0' });
-  const setIsAssetExplorerOpen = (v: boolean) => setURLParams({ explorer: v ? '1' : '0' });
-  const setAssetTab = (n: number) => setURLParams({ assetTab: String(n) });
+  const setCurrentPage = useCallback((page: string) => navigateTo({ page }), [navigateTo]);
+  const setSelectedBuilding = useCallback((b: Building | null) => navigateTo({ building: b?.name ?? '' }), [navigateTo]);
+  const setSelection = useCallback((s: string) => navigateTo({ metric: s }), [navigateTo]);
+  const setViewMode = useCallback((v: string) => setURLParams({ view: v }), [setURLParams]);
+  const setSortOrder = useCallback((s: string) => setURLParams({ sort: s }), [setURLParams]);
+  const setDateRange = useCallback((r: string) => setURLParams({ dateRange: r }), [setURLParams]);
+  const setSelectedGroup = useCallback((g: string) => setURLParams({ group: g }), [setURLParams]);
+  const setSelectedCity = useCallback((c: string) => setURLParams({ city: c }), [setURLParams]);
+  const setSelectedTenant = useCallback((t: string) => setURLParams({ tenant: t }), [setURLParams]);
+  const setIsInspectMode = useCallback((v: boolean) => setURLParams({ inspect: v ? '1' : '0' }), [setURLParams]);
+  const setIsAssetExplorerOpen = useCallback((v: boolean) => setURLParams({ explorer: v ? '1' : '0' }), [setURLParams]);
+  const setAssetTab = useCallback((n: number) => setURLParams({ assetTab: String(n) }), [setURLParams]);
   // Open a URL-serialisable asset (from the tree)
   const setQuickviewAsset = (a: AssetNode | null) => {
     setLocalQuickviewAsset(null);
@@ -697,13 +699,57 @@ export default function Home() {
     }
   };
 
+  // Mobile nav — ref-based, no React state, no re-render
+  const openMobileNav = useCallback(() => {
+    mobileNavRef.current?.setAttribute('data-open', 'true');
+    mobileBackdropRef.current?.setAttribute('data-open', 'true');
+  }, []);
+  const closeMobileNav = useCallback(() => {
+    mobileNavRef.current?.removeAttribute('data-open');
+    mobileBackdropRef.current?.removeAttribute('data-open');
+  }, []);
+
   // Handle left sidebar toggle
-  const handleLeftSidebarToggle = () => {
+  const handleLeftSidebarToggle = useCallback(() => {
+    if (window.matchMedia('(max-width: 926px)').matches) {
+      const isOpen = mobileNavRef.current?.hasAttribute('data-open');
+      if (isOpen) closeMobileNav(); else openMobileNav();
+      return;
+    }
     if (leftSidebarCollapsed) {
       setURLParams({ view: 'dashboard' });
     }
-    setLeftSidebarCollapsed(!leftSidebarCollapsed);
-  };
+    setLeftSidebarCollapsed(c => !c);
+  }, [leftSidebarCollapsed, setURLParams, openMobileNav, closeMobileNav]);
+
+  // Close mobile nav on any navigation
+  useEffect(() => {
+    closeMobileNav();
+  }, [currentPage, selectedBuilding?.name, closeMobileNav]);
+
+  // Stable callbacks for Sidebar props
+  const handleSidebarMetricSelect = useCallback((metric: string) => setSelection(metric as MetricType), [setSelection]);
+  const handleSidebarSelectionChange = useCallback((s: string) => setSelection(s), [setSelection]);
+  const handleDashboardNavigate = useCallback((id: string) => setPendingDashboardId(id), []);
+  const handleAssetExplorerToggle = useCallback(() => {
+    setIsAssetExplorerOpen(!isAssetExplorerOpen);
+    if (!isAssetExplorerOpen && isInspectMode) {
+      setIsInspectMode(false);
+    }
+  }, [isAssetExplorerOpen, isInspectMode, setIsAssetExplorerOpen, setIsInspectMode]);
+  const handleNotificationsPanelToggle = useCallback(() => {
+    const opening = !notificationsPanelOpen;
+    setNotificationsPanelOpen(opening);
+    if (opening) {
+      setHasUnreadNotifications(false);
+      setDataExplorerOpen(false);
+    }
+  }, [notificationsPanelOpen]);
+  const handleDataExplorerToggle = useCallback(() => {
+    const opening = !dataExplorerOpen;
+    setDataExplorerOpen(opening);
+    if (opening) setNotificationsPanelOpen(false);
+  }, [dataExplorerOpen]);
 
   // Calculate current page name and favorite status
   const getCurrentPageName = () => {
@@ -748,14 +794,14 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
       Object.assign(updates, { building: '', view: 'dashboard' });
     }
     setURLParams(updates);
-  };
+  }, [setURLParams]);
 
   const handleExport = () => {
     const exportName = selectedBuilding
@@ -870,7 +916,7 @@ export default function Home() {
     })),
   ], [periodMetrics, selectedBuilding, themeIcons, operationsIcons]);
 
-  // Calculate sidebar widths
+  // Calculate sidebar widths (desktop only — on mobile the sidebar is an overlay)
   const leftSidebarWidth = leftSidebarCollapsed ? 64 : 280;
   const rightSidebarWidth = viewMode === 'tree' ? 280 : 64;
 
@@ -878,47 +924,71 @@ export default function Home() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: tc.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
+      {/* Mobile backdrop — always rendered, hidden on desktop via CSS */}
+      <Box
+        ref={mobileBackdropRef}
+        onClick={closeMobileNav}
+        sx={{
+          display: 'none',
+          '@media (max-width: 926px)': {
+            display: 'block',
+          },
+          position: 'fixed',
+          inset: 0,
+          bgcolor: 'rgba(0,0,0,0.5)',
+          zIndex: 1499,
+          opacity: 0,
+          pointerEvents: 'none',
+          transition: 'opacity 0.3s ease',
+          '&[data-open]': {
+            opacity: 1,
+            pointerEvents: 'auto',
+          },
+        }}
+      />
       {/* Left Sidebar */}
-      <Box component="aside" sx={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: leftSidebarWidth, borderRight: 1, borderColor: 'divider', zIndex: 1500, transition: 'width 0.3s ease' }}>
+      <Box ref={mobileNavRef} component="aside" sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        width: leftSidebarWidth,
+        borderRight: 1,
+        borderColor: 'divider',
+        zIndex: 1500,
+        transition: 'width 0.3s ease, transform 0.3s ease',
+        bgcolor: 'background.paper',
+        '@media (max-width: 926px)': {
+          width: 280,
+          transform: 'translateX(-100%)',
+          '&[data-open]': {
+            transform: 'translateX(0)',
+          },
+        },
+      }}>
         <Sidebar data-annotation-id="app-navigatie"
           selectedBuilding={selectedBuilding}
           selectedMetric={selectedMetric}
           onBuildingSelect={setSelectedBuilding}
-          onMetricSelect={(metric) => setSelection(metric as MetricType)}
+          onMetricSelect={handleSidebarMetricSelect}
           selectedTenant={selectedTenant}
           onTenantChange={setSelectedTenant}
           favorites={favorites}
           onFavoritesChange={setFavorites}
           selection={selection}
-          onSelectionChange={(s) => setSelection(s)}
+          onSelectionChange={handleSidebarSelectionChange}
           isCollapsed={leftSidebarCollapsed}
           onToggleCollapse={handleLeftSidebarToggle}
           currentPage={currentPage}
           onPageChange={handlePageChange}
-          onDashboardNavigate={(id) => setPendingDashboardId(id)}
-          onAssetExplorerToggle={() => {
-            setIsAssetExplorerOpen(!isAssetExplorerOpen);
-            if (!isAssetExplorerOpen && isInspectMode) {
-              setIsInspectMode(false);
-            }
-          }}
+          onDashboardNavigate={handleDashboardNavigate}
+          onAssetExplorerToggle={handleAssetExplorerToggle}
           isAssetExplorerOpen={isAssetExplorerOpen}
           notificationsPanelOpen={notificationsPanelOpen}
-          onNotificationsPanelToggle={() => {
-            const opening = !notificationsPanelOpen;
-            setNotificationsPanelOpen(opening);
-            if (opening) {
-              setHasUnreadNotifications(false);
-              setDataExplorerOpen(false);
-            }
-          }}
+          onNotificationsPanelToggle={handleNotificationsPanelToggle}
           hasUnreadNotifications={hasUnreadNotifications}
           dataExplorerOpen={dataExplorerOpen}
-          onDataExplorerToggle={() => {
-            const opening = !dataExplorerOpen;
-            setDataExplorerOpen(opening);
-            if (opening) setNotificationsPanelOpen(false);
-          }}
+          onDataExplorerToggle={handleDataExplorerToggle}
         />
       </Box>
 
@@ -1220,6 +1290,7 @@ export default function Home() {
         display: 'flex',
         flexDirection: 'column',
         ml: viewingAssetDetail ? `${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px` : `${leftSidebarWidth}px`,
+        '@media (max-width: 926px)': { ml: 0 },
         transition: 'margin-left 0.3s ease, border-color 0.3s ease',
         position: 'relative',
         zIndex: 1,
@@ -1254,6 +1325,7 @@ export default function Home() {
             onPageChange={handlePageChange}
             isCollapsed={leftSidebarCollapsed}
             onToggleCollapse={handleLeftSidebarToggle}
+
             onExport={handleExport}
             activeDashboardId={activeDashboardId}
             activeDashboardLabel={activeDashboardLabel}

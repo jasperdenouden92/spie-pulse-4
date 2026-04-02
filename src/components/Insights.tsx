@@ -27,7 +27,7 @@ interface Insight {
   timestamp: string;
 }
 
-export default function Insights() {
+function Insights() {
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
   const insights: Insight[] = [
@@ -328,3 +328,6 @@ export default function Insights() {
     </Box>
   );
 }
+
+
+export default React.memo(Insights);
