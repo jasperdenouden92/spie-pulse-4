@@ -1481,7 +1481,7 @@ export default function Home() {
                         border: 1,
                         borderColor: 'divider',
                         borderRight: isNarrow ? `1px solid ${tc.borderSecondary}` : 'none',
-                        borderBottom: isNarrow ? 'none' : 1,
+                        ...(isNarrow && { borderBottom: 'none' }),
                         borderRadius: isNarrow ? '8px 8px 0 0' : '8px 0 0 8px',
                         bgcolor: selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary,
                         width: isNarrow ? '100%' : 280,
