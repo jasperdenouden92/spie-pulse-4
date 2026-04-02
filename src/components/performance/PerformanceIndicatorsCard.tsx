@@ -103,7 +103,7 @@ export default function PerformanceIndicatorsCard({ icon, title, score, trend, t
           View performance indicators
         </Button>
       </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${topics.length}, 1fr)`, gap: 2 }}>
         {topics.map(topic => (
           <Paper
             key={topic.key}

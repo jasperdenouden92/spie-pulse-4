@@ -297,6 +297,7 @@ function getComplianceTopics(complianceGreen: number): TopicScore[] {
 export default function Home() {
   const { themeColors: tc } = useThemeMode();
   const isNarrow = useMediaQuery('(max-width:960px)');
+  const isWide = useMediaQuery('(min-width:1200px)');
   // ── URL state ──────────────────────────────────────────────────────────────
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -882,6 +883,9 @@ export default function Home() {
   const activeThemeMetrics = periodMetrics.themes.filter((_, i) => activeThemeKeys.includes(PRIMARY_THEME_KEYS[i]));
   const themesTrend = Math.round(activeThemeMetrics.reduce((sum, m) => sum + m.trend, 0) / activeThemeMetrics.length * 10) / 10;
   const operationsTrend = Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.trend, 0) / periodMetrics.operations.length * 10) / 10;
+
+  const visibleThemeCount = activeThemeKeys.filter(k => !(contractFilter && (k === 'compliance' || k === 'comfort'))).length;
+  const maxKpiColumns = Math.max(visibleThemeCount, OPERATIONS_KEYS.length);
 
   // Score for the currently selected KPI (shown in breadcrumb)
   const selectionScore = (() => {
@@ -1659,7 +1663,7 @@ export default function Home() {
                             {/* Primary Theme KPIs — only clickable when themes are active */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(180px, 1fr))',
+                              gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : isWide ? `repeat(${maxKpiColumns}, 1fr)` : 'repeat(auto-fill, minmax(180px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
@@ -1761,7 +1765,7 @@ export default function Home() {
                             {/* Operations KPIs */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(180px, 1fr))',
+                              gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : isWide ? `repeat(${maxKpiColumns}, 1fr)` : 'repeat(auto-fill, minmax(180px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
