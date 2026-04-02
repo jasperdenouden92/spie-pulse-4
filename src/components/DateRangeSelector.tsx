@@ -577,7 +577,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   }, [dayDrag, effectiveRangeGranular, commitRange]);
 
   const granularCanGoBack = displayMonth > new Date(MIN_YEAR, 0, 1);
-  const granularCanGoForward = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 2, 1) <= TODAY;
+  const granularCanGoForward = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) <= TODAY;
 
   const handleGranularNav = useCallback((dir: -1 | 1) => {
     setDisplayMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + dir, 1));
@@ -858,7 +858,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   // ── Render month block (granular mode) ──────────────────────────────
   // Mirrors renderYearBlock: days row → week row → month nav
 
-  const renderMonthBlock = (monthDate: Date, side: 'left' | 'right') => {
+  const renderMonthBlock = (monthDate: Date) => {
     const year = monthDate.getFullYear();
     const month = monthDate.getMonth();
     const daysInMonth = endOfMonth(monthDate).getDate();
@@ -987,55 +987,38 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
           alignItems: 'center',
           pt: 0.75,
         }}>
-          {(() => {
-            const canGoBack = side === 'left'
-              ? granularCanGoBack
-              : new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) > new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1);
-            const canGoForward = side === 'left'
-              ? new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) < new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1)
-              : granularCanGoForward;
-
-            return (
-              <>
-                {side === 'left' && (
-                  <IconButton
-                    size="small"
-                    onClick={() => handleGranularNav(-1)}
-                    disabled={!granularCanGoBack}
-                    sx={{ p: 0.25 }}
-                  >
-                    <ChevronLeftIcon sx={{ fontSize: '1rem', color: !granularCanGoBack ? colors.textDisabled : colors.brand }} />
-                  </IconButton>
-                )}
-                <Typography
-                  onClick={() => handleMonthClick(monthDate)}
-                  sx={{
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: monthStart > TODAY ? 'default' : 'pointer',
-                    color: (range.from <= monthStart && range.to >= monthEnd)
-                      ? colors.brand : colors.textPrimary,
-                    mx: 0.75,
-                    userSelect: 'none',
-                    '&:hover': monthStart <= TODAY ? { color: colors.brand } : {},
-                    transition: 'color 0.1s',
-                  }}
-                >
-                  {MONTHS_SHORT[month]} {year}
-                </Typography>
-                {side === 'right' && (
-                  <IconButton
-                    size="small"
-                    onClick={() => handleGranularNav(1)}
-                    disabled={!granularCanGoForward}
-                    sx={{ p: 0.25 }}
-                  >
-                    <ChevronRightIcon sx={{ fontSize: '1rem', color: !granularCanGoForward ? colors.textDisabled : colors.brand }} />
-                  </IconButton>
-                )}
-              </>
-            );
-          })()}
+          <IconButton
+            size="small"
+            onClick={() => handleGranularNav(-1)}
+            disabled={!granularCanGoBack}
+            sx={{ p: 0.25 }}
+          >
+            <ChevronLeftIcon sx={{ fontSize: '1rem', color: !granularCanGoBack ? colors.textDisabled : colors.brand }} />
+          </IconButton>
+          <Typography
+            onClick={() => handleMonthClick(monthDate)}
+            sx={{
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: monthStart > TODAY ? 'default' : 'pointer',
+              color: (range.from <= monthStart && range.to >= monthEnd)
+                ? colors.brand : colors.textPrimary,
+              mx: 0.75,
+              userSelect: 'none',
+              '&:hover': monthStart <= TODAY ? { color: colors.brand } : {},
+              transition: 'color 0.1s',
+            }}
+          >
+            {MONTHS_SHORT[month]} {year}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={() => handleGranularNav(1)}
+            disabled={!granularCanGoForward}
+            sx={{ p: 0.25 }}
+          >
+            <ChevronRightIcon sx={{ fontSize: '1rem', color: !granularCanGoForward ? colors.textDisabled : colors.brand }} />
+          </IconButton>
         </Box>
       </Box>
     );
@@ -1133,20 +1116,10 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
             display: 'flex',
             px: inline ? 0 : 3,
             py: inline ? 1.5 : 2.5,
-            gap: 2,
             userSelect: 'none',
           }}
         >
-          {renderMonthBlock(displayMonth, 'left')}
-          <Box sx={{
-            width: '1px',
-            bgcolor: colors.borderTertiary,
-            flexShrink: 0,
-          }} />
-          {renderMonthBlock(
-            new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1),
-            'right',
-          )}
+          {renderMonthBlock(displayMonth)}
         </Box>
       )}
     </>
