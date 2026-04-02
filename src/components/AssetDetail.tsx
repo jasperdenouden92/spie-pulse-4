@@ -13,7 +13,7 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import PlumbingIcon from '@mui/icons-material/Plumbing';
 import SecurityIcon from '@mui/icons-material/Security';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import ElevatorIcon from '@mui/icons-material/Elevator';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
@@ -35,11 +35,12 @@ export default function AssetDetail({ asset, tab: tabProp, onTabChange }: AssetD
   const [localTab, setLocalTab] = useState(0);
   const tab = tabProp ?? localTab;
   const setTab = (n: number) => { setLocalTab(n); onTabChange?.(n); };
+  const { themeColors: c } = useThemeMode();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Get icon for asset category
   const getCategoryIcon = () => {
-    const iconProps = { sx: { fontSize: 40, color: colors.brand } };
+    const iconProps = { sx: { fontSize: 40, color: c.brand } };
     if (!asset.metadata?.category) return <SettingsInputAntennaIcon {...iconProps} />;
 
     const IconComponent = {
@@ -74,14 +75,14 @@ export default function AssetDetail({ asset, tab: tabProp, onTabChange }: AssetD
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Header Card */}
-      <Paper sx={{ p: 3, bgcolor: '#fff' }}>
+      <Paper sx={{ p: 3, bgcolor: c.bgPrimary, border: `1px solid ${c.cardBorder}` }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
           {/* Icon */}
           <Box sx={{
             width: 80,
             height: 80,
             borderRadius: 2,
-            bgcolor: colors.bgActive,
+            bgcolor: c.bgActive,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -134,7 +135,7 @@ export default function AssetDetail({ asset, tab: tabProp, onTabChange }: AssetD
       </Paper>
 
       {/* Tabs */}
-      <Paper sx={{ bgcolor: '#fff' }}>
+      <Paper sx={{ bgcolor: c.bgPrimary, border: `1px solid ${c.cardBorder}` }}>
         <AppTabs
           value={tab}
           onChange={setTab}

@@ -1,4 +1,5 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React from 'react';
 import Box from '@mui/material/Box';
@@ -36,18 +37,19 @@ const generateMockData = () => {
 };
 
 export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTemperatureTrendChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData();
 
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 3 }}>
       {/* Temperature Chart */}
-      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Box sx={{
             width: 32,
             height: 32,
             borderRadius: '50%',
-            bgcolor: colors.bgActive,
+            bgcolor: c.bgActive,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -101,7 +103,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
             pointSize={6}
             pointColor="#2196f3"
             pointBorderWidth={2}
-            pointBorderColor="#fff"
+            pointBorderColor={c.chartPointBorder}
             enableGridX={false}
             gridYValues={5}
             curve="monotoneX"
@@ -109,10 +111,10 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
             enableArea={false}
             theme={{
               axis: {
-                domain: { line: { stroke: colors.borderSecondary, strokeWidth: 1 } },
-                ticks: { text: { fontSize: 11, fill: '#666' } },
+                domain: { line: { stroke: c.borderSecondary, strokeWidth: 1 } },
+                ticks: { text: { fontSize: 11, fill: c.chartAxisText } },
               },
-              grid: { line: { stroke: colors.bgSecondaryHover, strokeWidth: 1 } },
+              grid: { line: { stroke: c.chartGridLine, strokeWidth: 1 } },
             }}
           />
         </Box>
@@ -130,7 +132,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
       </Box>
 
       {/* Temperature Assessment */}
-      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Temperature assessment
@@ -145,7 +147,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
 
         {/* Progress bar */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ height: 40, bgcolor: colors.brand, borderRadius: 1, position: 'relative' }}>
+          <Box sx={{ height: 40, bgcolor: c.brand, borderRadius: 1, position: 'relative' }}>
             <Typography
               variant="caption"
               sx={{
@@ -153,7 +155,7 @@ export default function ComfortTemperatureTrendChart({ buildingName }: ComfortTe
                 left: 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#fff',
+                color: c.bgPrimary,
                 fontWeight: 500
               }}
             >

@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -85,6 +85,7 @@ export default function CriticalAssetsCard({
   onHoverAsset,
   hoveredAssetId
 }: CriticalAssetsCardProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData(assetFilter);
   const criticalCount = data.filter(a => a.severity === 'critical').length;
   const warningCount = data.filter(a => a.severity === 'warning').length;
@@ -95,7 +96,7 @@ export default function CriticalAssetsCard({
       border: 1,
       borderColor: 'divider',
       borderRadius: 1,
-      bgcolor: '#fff',
+      bgcolor: c.bgPrimary,
       height: 500,
       display: 'flex',
       flexDirection: 'column'
@@ -201,15 +202,15 @@ export default function CriticalAssetsCard({
               border: 1,
               borderColor: 'divider',
               borderRadius: 1,
-              bgcolor: colors.bgSecondary,
-              outline: isInspectMode && hoveredAssetId === asset.id ? `3px dashed ${colors.brandSecondary}` : 'none',
+              bgcolor: c.bgSecondary,
+              outline: isInspectMode && hoveredAssetId === asset.id ? `3px dashed ${c.brandSecondary}` : 'none',
               outlineOffset: '4px',
               transition: 'outline 0.2s ease, background-color 0.2s ease',
               position: 'relative',
               zIndex: isInspectMode && hoveredAssetId === asset.id ? 1100 : 'auto',
               cursor: isInspectMode ? 'pointer' : 'default',
               '&:hover': {
-                bgcolor: isInspectMode ? colors.bgPrimaryHover : colors.bgPrimaryHover,
+                bgcolor: isInspectMode ? c.bgPrimaryHover : c.bgPrimaryHover,
                 cursor: isInspectMode ? 'pointer' : 'pointer'
               }
             }}
@@ -227,8 +228,8 @@ export default function CriticalAssetsCard({
                 label={asset.severity.toUpperCase()}
                 size="small"
                 sx={{
-                  bgcolor: asset.severity === 'critical' ? '#ef5350' : '#ffa726',
-                  color: '#fff',
+                  bgcolor: asset.severity === 'critical' ? c.statusPoor : c.statusModerate,
+                  color: c.bgPrimary,
                   fontWeight: 600,
                   fontSize: '0.688rem',
                   height: 20

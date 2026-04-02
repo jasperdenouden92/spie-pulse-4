@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { ResponsivePie } from '@nivo/pie';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface AssetHealthDistributionChartProps {
   buildingName?: string;
@@ -32,11 +33,12 @@ export default function AssetHealthDistributionChart({
   buildingName,
   assetFilter
 }: AssetHealthDistributionChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData(assetFilter);
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 380 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 380 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -61,7 +63,7 @@ export default function AssetHealthDistributionChart({
           enableArcLinkLabels={false}
           arcLabelsSkipAngle={10}
           arcLabel={(d) => `${d.value}`}
-          arcLabelsTextColor="#fff"
+          arcLabelsTextColor={c.bgPrimary}
           theme={{
             labels: {
               text: {

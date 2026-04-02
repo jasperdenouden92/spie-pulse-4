@@ -9,7 +9,7 @@ import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import AnimatedNumber from './AnimatedNumber';
 import { ToggleState } from './KPIToggle';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 export interface PerformanceRating {
   label: string;
@@ -34,6 +34,8 @@ interface KPICardProps {
 }
 
 export default function KPICard({ title, icon, score, trend, sparklineData, periodLabel, onClick, onToggle, toggleState = 'on', isSelected = false, isDimmed = false, isCompact = false, performanceRating, variant = 'default' }: KPICardProps) {
+  const { themeColors: c } = useThemeMode();
+
   const generateSparkline = (data: number[]) => {
     const width = isCompact ? 60 : 80;
     const height = isCompact ? 32 : 40;
@@ -71,20 +73,20 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
       sx={{
         p: isCompact ? 1.5 : 2,
         borderRadius: '12px',
-        bgcolor: isSelected ? '#f5f6f8' : '#ffffff',
+        bgcolor: isSelected ? c.bgPrimaryHover : c.bgPrimary,
         display: 'flex',
         flexDirection: 'row',
         gap: 1,
-        border: 'none',
+        border: `1px solid ${c.cardBorder}`,
         boxShadow: isSelected
-          ? '0 2px 12px 0 rgba(0, 0, 0, 0.12)'
-          : '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
+          ? `0 2px 12px 0 ${c.shadowMedium}`
+          : `0 2px 12px 0 ${c.shadow}`,
         cursor: 'pointer',
         textAlign: 'left',
         transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
         '&:hover': {
           transform: 'translateY(-2px)',
-          boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+          boxShadow: `0 4px 20px 0 ${c.shadowMedium}`,
         }
       }}
     >
@@ -102,7 +104,7 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
             <Box
               component="span"
               onClick={(e: React.MouseEvent) => { e.stopPropagation(); onToggle(); }}
-              sx={{ display: 'inline-flex', cursor: 'pointer', color: isSelected ? colors.brand : '#bdbdbd', transition: 'color 0.2s ease', flexShrink: 0, '&:hover': { color: isSelected ? '#1565c0' : '#9e9e9e' } }}
+              sx={{ display: 'inline-flex', cursor: 'pointer', color: isSelected ? c.brand : c.borderPrimary, transition: 'color 0.2s ease', flexShrink: 0, '&:hover': { color: isSelected ? c.brandSecondary : c.textTertiary } }}
             >
               {isSelected
                 ? <RadioButtonCheckedIcon sx={{ fontSize: isCompact ? 16 : 18 }} />
@@ -152,7 +154,7 @@ export default function KPICard({ title, icon, score, trend, sparklineData, peri
               <path
                 d={generateSparkline(sparklineData)}
                 fill="none"
-                stroke={performanceRating ? performanceRating.color : colors.brand}
+                stroke={performanceRating ? performanceRating.color : c.brand}
                 strokeWidth={1.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"

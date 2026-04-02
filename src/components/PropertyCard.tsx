@@ -13,7 +13,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Tooltip from '@mui/material/Tooltip';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 // ── Shared types ──
 
@@ -72,10 +72,10 @@ export type PropertyCardProps = CommonProps & (BuildingProps | ClusterProps);
 
 // ── Helpers ──
 
-function getScoreColor(score: number): string {
-  if (score >= 75) return '#4caf50';
-  if (score >= 50) return '#ffc107';
-  return '#f44336';
+function getScoreColor(score: number, c: { statusGood: string; statusModerate: string; statusPoor: string }): string {
+  if (score >= 75) return c.statusGood;
+  if (score >= 50) return c.statusModerate;
+  return c.statusPoor;
 }
 
 const energyLabelColors: Record<string, string> = {
@@ -123,7 +123,8 @@ function ScoreBadge({
   periodLabel?: string | null;
   overallPerformance?: PerformanceMetric;
 }) {
-  const scoreColor = getScoreColor(performance.green);
+  const { themeColors: c } = useThemeMode();
+  const scoreColor = getScoreColor(performance.green, c);
   return (
     <>
       {metricIcon && (
@@ -194,6 +195,7 @@ function PerformanceBars({
   trend?: number;
   periodLabel?: string | null;
 }) {
+  const { themeColors: c } = useThemeMode();
   return (
     <Box sx={{ position: 'relative', minHeight: showOverall ? 76 : 'auto' }}>
       {/* Overall Performance - base layer */}
@@ -212,10 +214,10 @@ function PerformanceBars({
               <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{overallPerformance?.green}%</Typography>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover }}>
-            <Box sx={{ width: `${overallPerformance?.green || 0}%`, bgcolor: '#4caf50', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-            <Box sx={{ width: `${overallPerformance?.yellow || 0}%`, bgcolor: '#ffc107', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-            <Box sx={{ width: `${overallPerformance?.red || 0}%`, bgcolor: '#f44336', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+          <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: c.bgPrimaryHover }}>
+            <Box sx={{ width: `${overallPerformance?.green || 0}%`, bgcolor: c.statusGood, transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            <Box sx={{ width: `${overallPerformance?.yellow || 0}%`, bgcolor: c.statusModerate, transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            <Box sx={{ width: `${overallPerformance?.red || 0}%`, bgcolor: c.statusPoor, transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
           </Box>
         </Box>
       )}
@@ -233,7 +235,7 @@ function PerformanceBars({
           <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', transition: 'all 0.3s ease' }}>{metricTitle}</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, transition: 'all 0.3s ease' }}>
             {metricIcon ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', color: getScoreColor(performance.green), '& .MuiSvgIcon-root': { color: `${getScoreColor(performance.green)} !important` } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', color: getScoreColor(performance.green, c), '& .MuiSvgIcon-root': { color: `${getScoreColor(performance.green, c)} !important` } }}>
                 {metricIcon}
               </Box>
             ) : <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />}
@@ -248,10 +250,10 @@ function PerformanceBars({
             )}
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', height: 8, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover, transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
-          <Box sx={{ width: `${performance.green}%`, bgcolor: '#4caf50', borderTop: '2px solid rgba(76, 175, 80, 0.4)', borderBottom: '2px solid rgba(76, 175, 80, 0.4)', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-          <Box sx={{ width: `${performance.yellow}%`, bgcolor: '#ffc107', borderTop: '2px solid rgba(255, 193, 7, 0.4)', borderBottom: '2px solid rgba(255, 193, 7, 0.4)', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-          <Box sx={{ width: `${performance.red}%`, bgcolor: '#f44336', borderTop: '2px solid rgba(244, 67, 54, 0.4)', borderBottom: '2px solid rgba(244, 67, 54, 0.4)', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+        <Box sx={{ display: 'flex', height: 8, borderRadius: '2px', overflow: 'hidden', bgcolor: c.bgPrimaryHover, transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+          <Box sx={{ width: `${performance.green}%`, bgcolor: c.statusGood, borderTop: '2px solid rgba(76, 175, 80, 0.4)', borderBottom: '2px solid rgba(76, 175, 80, 0.4)', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+          <Box sx={{ width: `${performance.yellow}%`, bgcolor: c.statusModerate, borderTop: '2px solid rgba(255, 193, 7, 0.4)', borderBottom: '2px solid rgba(255, 193, 7, 0.4)', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+          <Box sx={{ width: `${performance.red}%`, bgcolor: c.statusPoor, borderTop: '2px solid rgba(244, 67, 54, 0.4)', borderBottom: '2px solid rgba(244, 67, 54, 0.4)', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
         </Box>
       </Box>
     </Box>
@@ -284,7 +286,7 @@ function OperationalStatsRow({ stats }: { stats: OperationalStats[] }) {
 
 // ── Stacked image thumbnails (cluster header) ──
 
-function StackedThumbnails({ images }: { images: string[] }) {
+function StackedThumbnails({ images, bgColor }: { images: string[]; bgColor: string }) {
   const stack = images.slice(0, 3);
   const BASE = 40;
   const SCALE_STEP = 0.8;
@@ -308,7 +310,7 @@ function StackedThumbnails({ images }: { images: string[] }) {
               width: size, height: size,
               borderRadius: '6px',
               objectFit: 'cover',
-              border: '2px solid white',
+              border: `2px solid ${bgColor}`,
               boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
               zIndex: stack.length - i,
             }}
@@ -336,6 +338,7 @@ export default function PropertyCard(props: PropertyCardProps) {
     topics,
   } = props;
 
+  const { themeColors: c } = useThemeMode();
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const hasTopics = topics && topics.length > 0;
   const isBuilding = variant === 'building';
@@ -354,8 +357,8 @@ export default function PropertyCard(props: PropertyCardProps) {
           top: 12, right: 12,
           borderRadius: '50%',
           aspectRatio: 1,
-          bgcolor: 'rgba(255, 255, 255, 0.9)',
-          '&:hover': { bgcolor: 'rgba(255, 255, 255, 1)' },
+          bgcolor: `color-mix(in srgb, ${c.bgPrimary} 90%, transparent)`,
+          '&:hover': { bgcolor: c.bgPrimary },
         } : {}),
       }}
     >
@@ -380,11 +383,12 @@ export default function PropertyCard(props: PropertyCardProps) {
   return (
     <Card sx={{
       borderRadius: '12px',
-      boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
+      border: `1px solid ${c.cardBorder}`,
+      boxShadow: `0 2px 12px 0 ${c.shadow}`,
       transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
       '&:hover': {
         transform: 'translateY(-2px)',
-        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+        boxShadow: `0 4px 20px 0 ${c.shadowMedium}`,
         '& .more-options-btn': { opacity: 1 },
       },
     }}>
@@ -402,7 +406,7 @@ export default function PropertyCard(props: PropertyCardProps) {
             <Box sx={{
               position: 'absolute', top: 10, left: 10,
               display: 'flex', alignItems: 'center', gap: 0.5,
-              bgcolor: 'rgba(255, 255, 255, 0.9)', borderRadius: '10px',
+              bgcolor: `color-mix(in srgb, ${c.bgPrimary} 90%, transparent)`, borderRadius: '10px',
               px: 1, py: 0.5, color: 'text.secondary',
             }}>
               <NotificationsActiveOutlinedIcon sx={{ fontSize: 15 }} />
@@ -415,9 +419,9 @@ export default function PropertyCard(props: PropertyCardProps) {
             <Box sx={{
               position: 'absolute', bottom: -14, right: 12,
               display: 'flex', alignItems: 'center', gap: 0.5,
-              bgcolor: 'white', borderRadius: '10px',
-              px: 1.5, py: 0.5, border: '2px solid white',
-              color: getScoreColor(performance.green),
+              bgcolor: c.bgPrimary, borderRadius: '10px',
+              px: 1.5, py: 0.5, border: `2px solid ${c.bgPrimary}`,
+              color: getScoreColor(performance.green, c),
             }}>
               <ScoreBadge performance={performance} metricIcon={metricIcon} trend={trend} periodLabel={periodLabel} overallPerformance={overallPerformance} />
             </Box>
@@ -429,7 +433,7 @@ export default function PropertyCard(props: PropertyCardProps) {
         {/* ── Cluster: inline header with stacked images ── */}
         {!isBuilding && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: hasTopics ? 1.5 : 1 }}>
-            <StackedThumbnails images={props.images} />
+            <StackedThumbnails images={props.images} bgColor={c.bgPrimary} />
 
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.9375rem', lineHeight: 1.3 }}>{title}</Typography>
@@ -442,10 +446,10 @@ export default function PropertyCard(props: PropertyCardProps) {
             {hasTopics && (
               <Box sx={{
                 display: 'flex', alignItems: 'center', gap: 0.5,
-                bgcolor: 'white', borderRadius: '10px',
+                bgcolor: c.bgPrimary, borderRadius: '10px',
                 px: 1.5, py: 0.5,
                 border: '1px solid', borderColor: 'divider',
-                color: getScoreColor(performance.green),
+                color: getScoreColor(performance.green, c),
                 flexShrink: 0,
               }}>
                 <ScoreBadge performance={performance} metricIcon={metricIcon} trend={trend} periodLabel={periodLabel} overallPerformance={overallPerformance} />

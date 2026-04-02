@@ -8,7 +8,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { Ticket } from '@/data/tickets';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import InfiniteScrollContainer from './InfiniteScrollContainer';
@@ -35,6 +35,7 @@ const statusColors = {
 };
 
 export default function TicketsList({ tickets, buildingName, compact = false }: TicketsListProps) {
+  const { themeColors: c } = useThemeMode();
   const filteredTickets = useMemo(() => {
     return buildingName
       ? tickets.filter(t => t.building === buildingName)
@@ -66,12 +67,12 @@ export default function TicketsList({ tickets, buildingName, compact = false }: 
             border: 1,
             borderColor: 'divider',
             borderRadius: 1,
-            bgcolor: '#fff'
+            bgcolor: c.bgPrimary
           }}
         >
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: compact ? 'transparent' : colors.bgSecondary }}>
+              <TableRow sx={{ bgcolor: compact ? 'transparent' : c.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Title</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Building</TableCell>
@@ -87,7 +88,7 @@ export default function TicketsList({ tickets, buildingName, compact = false }: 
                 <TableRow
                   key={order.id}
                   sx={{
-                    '&:hover': { bgcolor: colors.bgPrimaryHover },
+                    '&:hover': { bgcolor: c.bgPrimaryHover },
                     cursor: 'pointer'
                   }}
                 >

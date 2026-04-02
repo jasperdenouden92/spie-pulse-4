@@ -8,7 +8,7 @@ import DateRangeSelector, {
   dateRangeToString,
   getDateRangeDisplayLabel,
 } from './DateRangeSelector';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface InlinePeriodSelectorProps {
   value: string;
@@ -16,6 +16,7 @@ interface InlinePeriodSelectorProps {
 }
 
 export default function InlinePeriodSelector({ value, onChange }: InlinePeriodSelectorProps) {
+  const { themeColors: c } = useThemeMode();
   const [customAnchor, setCustomAnchor] = useState<null | HTMLElement>(null);
 
   const { from: currentFrom, to: currentTo } = parseDateRange(value);
@@ -48,11 +49,11 @@ export default function InlinePeriodSelector({ value, onChange }: InlinePeriodSe
               fontWeight: isActive ? 600 : 500,
               fontSize: '0.8rem',
               cursor: 'pointer',
-              bgcolor: isActive ? colors.bgActive : 'transparent',
-              color: isActive ? colors.brand : colors.textSecondary,
+              bgcolor: isActive ? c.bgActive : 'transparent',
+              color: isActive ? c.brand : c.textSecondary,
               border: '1px solid',
-              borderColor: isActive ? colors.brand : colors.borderSecondary,
-              '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgPrimaryHover },
+              borderColor: isActive ? c.brand : c.borderSecondary,
+              '&:hover': { bgcolor: isActive ? c.bgActive : c.bgPrimaryHover },
             }}
           />
         );
@@ -67,11 +68,11 @@ export default function InlinePeriodSelector({ value, onChange }: InlinePeriodSe
           fontWeight: isCustomRange ? 600 : 500,
           fontSize: '0.8rem',
           cursor: 'pointer',
-          bgcolor: isCustomRange ? colors.bgActive : 'transparent',
-          color: isCustomRange ? colors.brand : colors.textSecondary,
+          bgcolor: isCustomRange ? c.bgActive : 'transparent',
+          color: isCustomRange ? c.brand : c.textSecondary,
           border: '1px solid',
-          borderColor: isCustomRange ? colors.brand : colors.borderSecondary,
-          '&:hover': { bgcolor: isCustomRange ? colors.bgActive : colors.bgPrimaryHover },
+          borderColor: isCustomRange ? c.brand : c.borderSecondary,
+          '&:hover': { bgcolor: isCustomRange ? c.bgActive : c.bgPrimaryHover },
         }}
       />
       <DateRangeSelector

@@ -1,5 +1,5 @@
 'use client';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
@@ -121,23 +121,24 @@ const insights: Insight[] = [
   },
 ];
 
-const typeConfig = {
-  opportunity: { icon: <TrendingUpIcon sx={{ fontSize: 16 }} />, color: '#2e7d32', bg: '#e8f5e9', label: 'Opportunity' },
-  warning: { icon: <WarningAmberOutlinedIcon sx={{ fontSize: 16 }} />, color: '#e65100', bg: '#fff3e0', label: 'Warning' },
-  info: { icon: <InfoOutlinedIcon sx={{ fontSize: 16 }} />, color: '#1565c0', bg: colors.bgActive, label: 'Info' },
-  recommendation: { icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} />, color: '#7b1fa2', bg: '#f3e5f5', label: 'Recommendation' },
-};
-
-const impactConfig = {
-  high: { color: '#d32f2f', bg: '#ffebee', label: 'High impact' },
-  medium: { color: '#ed6c02', bg: '#fff3e0', label: 'Medium impact' },
-  low: { color: '#757575', bg: colors.bgPrimaryHover, label: 'Low impact' },
-};
-
 type FilterType = 'all' | 'opportunity' | 'warning' | 'info' | 'recommendation';
 
 export default function RecommendationsInbox() {
+  const { themeColors: c } = useThemeMode();
   const [filter, setFilter] = useState<FilterType>('all');
+
+  const typeConfig = {
+    opportunity: { icon: <TrendingUpIcon sx={{ fontSize: 16 }} />, color: '#2e7d32', bg: '#e8f5e9', label: 'Opportunity' },
+    warning: { icon: <WarningAmberOutlinedIcon sx={{ fontSize: 16 }} />, color: '#e65100', bg: '#fff3e0', label: 'Warning' },
+    info: { icon: <InfoOutlinedIcon sx={{ fontSize: 16 }} />, color: '#1565c0', bg: c.bgActive, label: 'Info' },
+    recommendation: { icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} />, color: '#7b1fa2', bg: '#f3e5f5', label: 'Recommendation' },
+  };
+
+  const impactConfig = {
+    high: { color: '#d32f2f', bg: '#ffebee', label: 'High impact' },
+    medium: { color: '#ed6c02', bg: '#fff3e0', label: 'Medium impact' },
+    low: { color: '#757575', bg: c.bgPrimaryHover, label: 'Low impact' },
+  };
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
@@ -198,9 +199,9 @@ export default function RecommendationsInbox() {
                 height: 28,
                 fontSize: '0.75rem',
                 fontWeight: 500,
-                bgcolor: filter === f.key ? colors.brand : colors.bgSecondaryHover,
-                color: filter === f.key ? '#fff' : 'text.secondary',
-                '&:hover': { bgcolor: filter === f.key ? '#1565c0' : colors.borderSecondary },
+                bgcolor: filter === f.key ? c.brand : c.bgSecondaryHover,
+                color: filter === f.key ? c.bgPrimary : 'text.secondary',
+                '&:hover': { bgcolor: filter === f.key ? '#1565c0' : c.borderSecondary },
                 '& .MuiChip-label': { px: 1 },
               }}
             />
@@ -232,7 +233,7 @@ export default function RecommendationsInbox() {
                   border: '1px solid',
                   borderColor: isExpanded ? config.color : 'divider',
                   borderRadius: 1.5,
-                  bgcolor: isRead ? '#fff' : '#fafbff',
+                  bgcolor: isRead ? c.bgPrimary : c.bgSecondary,
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                   overflow: 'hidden',
@@ -249,7 +250,7 @@ export default function RecommendationsInbox() {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    bgcolor: isRead ? 'transparent' : colors.brand,
+                    bgcolor: isRead ? 'transparent' : c.brand,
                     mt: 0.75,
                     flexShrink: 0,
                   }} />

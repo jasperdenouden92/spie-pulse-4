@@ -48,7 +48,8 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { AssetNode, assetTree } from '@/data/assetTree';
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface DataExplorerPanelProps {
   open: boolean;
@@ -84,6 +85,7 @@ function countNodes(node: AssetNode): number {
 }
 
 export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenInMainApp, onWidthChange }: DataExplorerPanelProps) {
+  const { themeColors: c } = useThemeMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [treeExpanded, setTreeExpanded] = useState<string[]>([]);
@@ -140,11 +142,11 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'operational': return '#4caf50';
-      case 'maintenance': return '#ff9800';
-      case 'offline': return '#9e9e9e';
-      case 'failed': return '#f44336';
-      default: return '#9e9e9e';
+      case 'operational': return c.statusGood;
+      case 'maintenance': return c.statusModerate;
+      case 'offline': return c.statusOffline;
+      case 'failed': return c.statusPoor;
+      default: return c.statusOffline;
     }
   };
 
@@ -205,7 +207,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                     height: 18,
                     fontSize: '0.688rem',
                     fontFamily: 'monospace',
-                    bgcolor: colors.bgPrimaryHover,
+                    bgcolor: c.bgPrimaryHover,
                     '& .MuiChip-label': { px: 0.5, py: 0 }
                   }}
                 />
@@ -291,7 +293,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
           sx={{
             width: MENU_WIDTH,
             height: '100vh',
-            bgcolor: '#fff',
+            bgcolor: c.bgPrimary,
             borderRight: '1px solid',
             borderColor: 'divider',
             display: 'flex',
@@ -332,11 +334,11 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                       borderRadius: '8px',
                       mb: 0.25,
                       py: 1,
-                      ...(isSelected && { bgcolor: colors.bgActive, '&:hover': { bgcolor: colors.bgActiveHover } }),
-                      ...(!isSelected && { '&:hover': { bgcolor: colors.bgPrimaryHover } }),
+                      ...(isSelected && { bgcolor: c.bgActive, '&:hover': { bgcolor: c.bgActiveHover } }),
+                      ...(!isSelected && { '&:hover': { bgcolor: c.bgPrimaryHover } }),
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 36, color: isSelected ? colors.brand : 'text.secondary' }}>
+                    <ListItemIcon sx={{ minWidth: 36, color: isSelected ? c.brand : 'text.secondary' }}>
                       {assetCategoryIcons[category.id] || <FolderIcon sx={{ fontSize: 18 }} />}
                     </ListItemIcon>
                     <ListItemText
@@ -347,7 +349,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                       <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                         {nodeCount}
                       </Typography>
-                      <ChevronRightIcon sx={{ fontSize: 16, color: isSelected ? colors.brand : 'text.secondary' }} />
+                      <ChevronRightIcon sx={{ fontSize: 16, color: isSelected ? c.brand : 'text.secondary' }} />
                     </Box>
                   </ListItemButton>
                 );
@@ -372,11 +374,11 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                       borderRadius: '8px',
                       mb: 0.25,
                       py: 1,
-                      ...(isSelected && { bgcolor: colors.bgActive, '&:hover': { bgcolor: colors.bgActiveHover } }),
-                      ...(!isSelected && { '&:hover': { bgcolor: colors.bgPrimaryHover } }),
+                      ...(isSelected && { bgcolor: c.bgActive, '&:hover': { bgcolor: c.bgActiveHover } }),
+                      ...(!isSelected && { '&:hover': { bgcolor: c.bgPrimaryHover } }),
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 36, color: isSelected ? colors.brand : 'text.secondary' }}>
+                    <ListItemIcon sx={{ minWidth: 36, color: isSelected ? c.brand : 'text.secondary' }}>
                       {folder.icon}
                     </ListItemIcon>
                     <ListItemText
@@ -387,7 +389,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                       <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                         {folder.count}
                       </Typography>
-                      <ChevronRightIcon sx={{ fontSize: 16, color: isSelected ? colors.brand : 'text.secondary' }} />
+                      <ChevronRightIcon sx={{ fontSize: 16, color: isSelected ? c.brand : 'text.secondary' }} />
                     </Box>
                   </ListItemButton>
                 );
@@ -409,12 +411,12 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
             sx={{
               width: SUBPANE_WIDTH,
               height: '100vh',
-              bgcolor: '#fff',
+              bgcolor: c.bgPrimary,
               borderRight: '1px solid',
               borderColor: 'divider',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '4px 0 24px rgba(0,0,0,0.08)',
+              boxShadow: `4px 0 24px ${c.shadow}`,
             }}
           >
             {/* Sub-pane header */}
@@ -424,7 +426,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
               </IconButton>
               {subPaneContent && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
-                  <Box sx={{ color: colors.brand, display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ color: c.brand, display: 'flex', alignItems: 'center' }}>
                     {subPaneContent.icon}
                   </Box>
                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -444,7 +446,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                 fullWidth
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: colors.bgPrimaryHover,
+                    backgroundColor: c.bgPrimaryHover,
                     border: 'none',
                     '& fieldset': { border: 'none' }
                   },
@@ -467,7 +469,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                     sx={{
                       '& .MuiTreeItem-content': { py: '3px', px: '4px', borderRadius: '3px' },
                       '& .MuiTreeItem-iconContainer svg': { fontSize: 16 },
-                      '& .MuiTreeItem-group': { marginLeft: 0, paddingLeft: '24px', borderLeft: `1px solid ${colors.borderSecondary}` }
+                      '& .MuiTreeItem-group': { marginLeft: 0, paddingLeft: '24px', borderLeft: `1px solid ${c.borderSecondary}` }
                     }}
                   >
                     {renderTree(subPaneContent.children)}
@@ -477,7 +479,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
 
               {subPaneContent?.type === 'folder' && (
                 <Box sx={{ px: 2.5, py: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
-                  <Box sx={{ color: colors.brand, opacity: 0.6, '& svg': { fontSize: 40 } }}>
+                  <Box sx={{ color: c.brand, opacity: 0.6, '& svg': { fontSize: 40 } }}>
                     {subPaneContent.icon}
                   </Box>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>

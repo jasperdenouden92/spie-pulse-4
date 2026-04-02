@@ -66,7 +66,12 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { colors } from '@/colors';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import SettingsBrightnessOutlined from '@mui/icons-material/SettingsBrightnessOutlined';
+import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
+import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface Favorite {
   id: string;
@@ -114,9 +119,10 @@ interface NavItemProps {
 }
 
 function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExpand, size = 28, iconBoxBgColor, alwaysAccent, buttonRef }: NavItemProps) {
+  const { themeColors: c } = useThemeMode();
   const hasChevron = onToggleExpand !== undefined;
   const isDot = !icon && !alwaysAccent;
-  const accentColor = colors.brand;
+  const accentColor = c.brand;
   const isAccent = active || alwaysAccent;
 
   return (
@@ -129,10 +135,10 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
           paddingLeft: '4px',
           gap: 1,
           borderRadius: '6px',
-          backgroundColor: active ? colors.bgActive : 'transparent',
+          backgroundColor: active ? c.bgActive : 'transparent',
           transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            backgroundColor: active ? colors.bgActiveHover : colors.bgPrimaryHover,
+            backgroundColor: active ? c.bgActiveHover : c.bgPrimaryHover,
           },
           ...(hasChevron && {
             '&:hover .nav-icon': { opacity: 0 },
@@ -185,7 +191,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
           }}
         />
         {shortcut && (
-          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: colors.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
+          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: c.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
             {shortcut}
           </Typography>
         )}
@@ -203,6 +209,7 @@ interface SortableFavoriteItemProps {
 }
 
 function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave, onRemove }: SortableFavoriteItemProps) {
+  const { themeColors: c } = useThemeMode();
   const {
     attributes,
     listeners,
@@ -236,7 +243,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
             top: 0,
             bottom: 0,
             width: 40,
-            background: 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1))',
+            background: `linear-gradient(to right, transparent, ${c.bgPrimary})`,
             pointerEvents: 'none',
             zIndex: 1,
           }}
@@ -338,6 +345,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
   const [newMenuAnchorEl, setNewMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
+  const { preference: themePreference, setThemePreference, themeColors: c } = useThemeMode();
   const newButtonRef = useRef<HTMLDivElement>(null);
   const collapsedNewButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -584,7 +592,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      bgcolor: '#fff',
+      bgcolor: c.bgPrimary,
       borderRight: 1,
       borderColor: 'divider',
       transition: 'width 0.3s ease'
@@ -595,13 +603,13 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           {/* ACME Corp section - aligns with PageHeader breadcrumb */}
           <Box sx={{ height: 56, display: 'flex', alignItems: 'center', px: 2, flexShrink: 0 }}>
             <Box
-              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
               onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
             >
               <Box
                 sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}
               >
-                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: c.bgSecondaryHover }}>
                   <img src={tenantLogos[selectedCustomer]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 </Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -677,7 +685,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
           {/* Drag handle — resize favorites vs nav */}
             <Box
               onMouseDown={handleSectionResize}
-              sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: colors.bgPrimaryHover }, '&:hover .resize-icon': { opacity: 0.6 } }}
+              sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: c.bgPrimaryHover }, '&:hover .resize-icon': { opacity: 0.6 } }}
             >
               <Box className="resize-icon" sx={{ opacity: 0.2, lineHeight: 0, transition: 'opacity 0.15s' }}>
                 <DragIndicatorIcon sx={{ fontSize: 14, color: 'text.secondary', transform: 'rotate(90deg)' }} />
@@ -711,7 +719,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onDataExplorerToggle?.()}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: dataExplorerOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: dataExplorerOpen ? c.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <ExploreOutlinedIcon sx={{ fontSize: 16 }} />
@@ -722,7 +730,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onNotificationsPanelToggle?.()}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? c.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
@@ -733,7 +741,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}>
+                  <ListItemButton sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}>
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <HelpOutlineIcon sx={{ fontSize: 16 }} />
                     </Box>
@@ -747,7 +755,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                       setUserAnchorEl(e.currentTarget);
                     }}
                     onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                     <ListItemText primary="Account" primaryTypographyProps={{ variant: 'body2' }} />
@@ -791,7 +799,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               primaryTypographyProps={{ variant: 'body2', fontSize: '0.875rem' }}
               sx={{ flex: 1 }}
             />
-            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: colors.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
+            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: c.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
               Press {item.key}
             </Typography>
           </MenuItem>
@@ -806,9 +814,9 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title={selectedCustomer} placement="right">
               <IconButton
                 onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: c.bgPrimaryHover } }}
               >
-                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', bgcolor: c.bgSecondaryHover }}>
                   <img src={tenantLogos[selectedCustomer]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 </Box>
               </IconButton>
@@ -821,7 +829,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <IconButton
                 ref={collapsedNewButtonRef}
                 onClick={(e) => setNewMenuAnchorEl(e.currentTarget)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: colors.bgActive, color: colors.brand, '&:hover': { bgcolor: colors.bgActiveHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: c.bgActive, color: c.brand, '&:hover': { bgcolor: c.bgActiveHover } }}
               >
                 <AddIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -829,7 +837,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Search  [F]" placement="right">
               <IconButton
                 onClick={() => setSearchModalOpen(true)}
-                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: c.bgPrimaryHover } }}
               >
                 <SearchIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -839,7 +847,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Home" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('home')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? colors.bgActive : 'transparent', color: currentPage === 'home' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'home' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'home' ? c.bgActive : 'transparent', color: currentPage === 'home' ? c.brand : undefined, '&:hover': { bgcolor: currentPage === 'home' ? c.bgActiveHover : c.bgPrimaryHover } }}
               >
                 <HomeOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -848,7 +856,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Control Room" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('portfolio')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? colors.bgActive : 'transparent', color: currentPage === 'portfolio' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'portfolio' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'portfolio' ? c.bgActive : 'transparent', color: currentPage === 'portfolio' ? c.brand : undefined, '&:hover': { bgcolor: currentPage === 'portfolio' ? c.bgActiveHover : c.bgPrimaryHover } }}
               >
                 <MonitorHeartOutlined sx={{ fontSize: 18 }} />
               </IconButton>
@@ -857,7 +865,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Insights" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('insights')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? colors.bgActive : 'transparent', color: currentPage === 'insights' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'insights' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'insights' ? c.bgActive : 'transparent', color: currentPage === 'insights' ? c.brand : undefined, '&:hover': { bgcolor: currentPage === 'insights' ? c.bgActiveHover : c.bgPrimaryHover } }}
               >
                 <TipsAndUpdatesOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -866,7 +874,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="Dashboards" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('dashboards')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? colors.bgActive : 'transparent', color: currentPage === 'dashboards' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'dashboards' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'dashboards' ? c.bgActive : 'transparent', color: currentPage === 'dashboards' ? c.brand : undefined, '&:hover': { bgcolor: currentPage === 'dashboards' ? c.bgActiveHover : c.bgPrimaryHover } }}
               >
                 <DashboardOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -875,7 +883,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             <Tooltip title="BMS" placement="right">
               <IconButton
                 onClick={() => onPageChange?.('bms')}
-                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? colors.bgActive : 'transparent', color: currentPage === 'bms' ? colors.brand : undefined, '&:hover': { bgcolor: currentPage === 'bms' ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: currentPage === 'bms' ? c.bgActive : 'transparent', color: currentPage === 'bms' ? c.brand : undefined, '&:hover': { bgcolor: currentPage === 'bms' ? c.bgActiveHover : c.bgPrimaryHover } }}
               >
                 <SettingsInputComponentOutlinedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -887,7 +895,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Tooltip title="Data Explorer" placement="right">
                 <IconButton
                   onClick={() => onDataExplorerToggle?.()}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: dataExplorerOpen ? colors.bgActive : 'transparent', color: dataExplorerOpen ? colors.brand : undefined, '&:hover': { bgcolor: dataExplorerOpen ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: dataExplorerOpen ? c.bgActive : 'transparent', color: dataExplorerOpen ? c.brand : undefined, '&:hover': { bgcolor: dataExplorerOpen ? c.bgActiveHover : c.bgPrimaryHover } }}
                 >
                   <ExploreOutlinedIcon sx={{ fontSize: 18 }} />
                 </IconButton>
@@ -895,7 +903,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               <Tooltip title="Notifications" placement="right">
                 <IconButton
                   onClick={() => onNotificationsPanelToggle?.()}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgActive : 'transparent', color: notificationsPanelOpen ? colors.brand : undefined, '&:hover': { bgcolor: notificationsPanelOpen ? colors.bgActiveHover : colors.bgPrimaryHover } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', bgcolor: notificationsPanelOpen ? c.bgActive : 'transparent', color: notificationsPanelOpen ? c.brand : undefined, '&:hover': { bgcolor: notificationsPanelOpen ? c.bgActiveHover : c.bgPrimaryHover } }}
                 >
                   <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
                     <NotificationsOutlinedIcon sx={{ fontSize: 18 }} />
@@ -903,7 +911,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </IconButton>
               </Tooltip>
               <Tooltip title="Help" placement="right">
-                <IconButton sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}>
+                <IconButton sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: c.bgPrimaryHover } }}>
                   <HelpOutlineIcon sx={{ fontSize: 18 }} />
                 </IconButton>
               </Tooltip>
@@ -914,7 +922,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                     setUserAnchorEl(e.currentTarget);
                   }}
                   onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                  sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: colors.bgPrimaryHover } }}
+                  sx={{ width: 40, height: 40, borderRadius: '6px', '&:hover': { bgcolor: c.bgPrimaryHover } }}
                 >
                   <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                 </IconButton>
@@ -941,11 +949,11 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
             selected={selectedCustomer === customer.name}
             sx={{
               display: 'flex', gap: 1, py: 0.75, px: 1.5, mx: 0.5, borderRadius: '6px',
-              '&:hover': { backgroundColor: colors.bgPrimaryHover },
-              '&.Mui-selected': { backgroundColor: colors.bgActive, '&:hover': { backgroundColor: colors.bgActiveHover } }
+              '&:hover': { backgroundColor: c.bgPrimaryHover },
+              '&.Mui-selected': { backgroundColor: c.bgActive, '&:hover': { backgroundColor: c.bgActiveHover } }
             }}
           >
-            <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+            <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: c.bgSecondaryHover }}>
               <img src={tenantLogos[customer.name]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
             </Box>
             <Typography variant="body2" sx={{ fontWeight: 500 }}>{customer.name}</Typography>
@@ -972,6 +980,22 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
         <Box sx={{ px: 1.5, py: 1 }}>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>Admin User</Typography>
           <Typography variant="caption" color="text.secondary">admin@spie.com</Typography>
+        </Box>
+        <Divider sx={{ my: 0.5 }} />
+        <Box sx={{ px: 1.5, py: 0.75 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Appearance</Typography>
+          <ToggleButtonGroup
+            value={themePreference}
+            exclusive
+            onChange={(_, val) => { if (val) setThemePreference(val); }}
+            size="small"
+            fullWidth
+            sx={{ mt: 0.75, '& .MuiToggleButton-root': { textTransform: 'none', fontSize: '0.75rem', py: 0.5, gap: 0.5 } }}
+          >
+            <ToggleButton value="system"><SettingsBrightnessOutlined sx={{ fontSize: 16 }} />System</ToggleButton>
+            <ToggleButton value="light"><LightModeOutlined sx={{ fontSize: 16 }} />Light</ToggleButton>
+            <ToggleButton value="dark"><DarkModeOutlined sx={{ fontSize: 16 }} />Dark</ToggleButton>
+          </ToggleButtonGroup>
         </Box>
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Settings</MenuItem>
