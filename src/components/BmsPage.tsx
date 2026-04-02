@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import AppTabs from './AppTabs';
 
-export default function BmsPage() {
+function BmsPage() {
   const [tab, setTab] = useState('access');
 
   return (
@@ -37,3 +37,6 @@ export default function BmsPage() {
     </Box>
   );
 }
+
+
+export default React.memo(BmsPage);

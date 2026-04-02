@@ -36,7 +36,7 @@ interface Theme {
   buildings: number;
 }
 
-export default function Themes() {
+function Themes() {
   const { themeColors: c } = useThemeMode();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 
@@ -331,3 +331,6 @@ export default function Themes() {
     </Box>
   );
 }
+
+
+export default React.memo(Themes);

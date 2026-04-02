@@ -26,7 +26,7 @@ interface HomeProps {
   userName?: string;
 }
 
-export default function Home({ userName = 'Marc' }: HomeProps) {
+function Home({ userName = 'Marc' }: HomeProps) {
   const { themeColors: c } = useThemeMode();
   const [selectedTab, setSelectedTab] = useState(0);
   const [buildingFilter, setBuildingFilter] = useState<null | HTMLElement>(null);
@@ -434,3 +434,6 @@ export default function Home({ userName = 'Marc' }: HomeProps) {
     </Box>
   );
 }
+
+
+export default React.memo(Home);
