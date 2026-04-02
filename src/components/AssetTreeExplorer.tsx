@@ -1,4 +1,5 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -57,6 +58,7 @@ export default function AssetTreeExplorer({
   buildingName,
   onAssetSelect
 }: AssetTreeExplorerProps) {
+  const { themeColors: c } = useThemeMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAsset, setSelectedAsset] = useState<AssetNode | null>(null);
   const [expanded, setExpanded] = useState<string[]>([]);
@@ -112,7 +114,7 @@ export default function AssetTreeExplorer({
                 <Typography
                   variant="caption"
                   sx={{
-                    bgcolor: colors.bgActive,
+                    bgcolor: c.bgActive,
                     color: 'primary.main',
                     px: 1,
                     py: 0.25,
@@ -210,7 +212,7 @@ export default function AssetTreeExplorer({
             p: 2,
             border: 1,
             borderColor: 'divider',
-            bgcolor: colors.bgPrimaryHover
+            bgcolor: c.bgPrimaryHover
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>

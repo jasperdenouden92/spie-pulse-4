@@ -1,10 +1,10 @@
-import { colors } from '@/colors';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { ResponsiveBar } from '@nivo/bar';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface AssetPerformanceByCategoryChartProps {
   buildingName?: string;
@@ -19,42 +19,36 @@ const generateMockData = () => {
       performance: 87,
       target: 90,
       performanceColor: '#42a5f5',
-      targetColor: colors.borderSecondary
     },
     {
       category: 'Electrical',
       performance: 92,
       target: 90,
       performanceColor: '#66bb6a',
-      targetColor: colors.borderSecondary
     },
     {
       category: 'Plumbing',
       performance: 78,
       target: 90,
       performanceColor: '#ffa726',
-      targetColor: colors.borderSecondary
     },
     {
       category: 'Fire Safety',
       performance: 95,
       target: 90,
       performanceColor: '#66bb6a',
-      targetColor: colors.borderSecondary
     },
     {
       category: 'Elevators',
       performance: 84,
       target: 90,
       performanceColor: '#42a5f5',
-      targetColor: colors.borderSecondary
     },
     {
       category: 'Access Control',
       performance: 89,
       target: 90,
       performanceColor: '#42a5f5',
-      targetColor: colors.borderSecondary
     }
   ];
 };
@@ -63,10 +57,11 @@ export default function AssetPerformanceByCategoryChart({
   buildingName,
   assetFilter
 }: AssetPerformanceByCategoryChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData();
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 380 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 380 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -119,7 +114,7 @@ export default function AssetPerformanceByCategoryChart({
           label={(d) => `${d.value}%`}
           labelSkipWidth={12}
           labelSkipHeight={12}
-          labelTextColor="#fff"
+          labelTextColor={c.bgPrimary}
           markers={[
             {
               axis: 'x',
@@ -133,20 +128,20 @@ export default function AssetPerformanceByCategoryChart({
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             grid: {
               line: {
-                stroke: colors.bgSecondaryHover,
+                stroke: c.bgSecondaryHover,
                 strokeWidth: 1,
               },
             },

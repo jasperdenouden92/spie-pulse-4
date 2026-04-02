@@ -1,42 +1,56 @@
 'use client';
 
 import { createTheme } from '@mui/material/styles';
-import { colors } from '@/colors';
+import { getColors } from '@/colors';
 
-export const theme = createTheme({
-  typography: {
-    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    h1: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-    h2: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-    h3: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-    h4: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-    h5: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-    h6: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-    subtitle1: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-    subtitle2: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
-  },
-  shape: {
-    borderRadius: 8,
-  },
-  palette: {
-    mode: 'light',
-    primary: {
-      main: colors.brand,
+export function createAppTheme(mode: 'light' | 'dark') {
+  const c = getColors(mode);
+  return createTheme({
+    typography: {
+      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      h1: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
+      h2: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
+      h3: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
+      h4: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
+      h5: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
+      h6: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
+      subtitle1: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
+      subtitle2: { fontFamily: 'var(--font-jost), "Jost", sans-serif' },
     },
-    secondary: {
-      main: colors.brandSecondary,
+    shape: {
+      borderRadius: 8,
     },
-    success: {
-      main: colors.brandGreen,
+    palette: {
+      mode,
+      primary: {
+        main: c.brand,
+      },
+      secondary: {
+        main: c.brandSecondary,
+      },
+      success: {
+        main: c.brandGreen,
+      },
+      error: {
+        main: c.brandRed,
+      },
+      text: {
+        primary: c.textPrimary,
+        secondary: c.textSecondary,
+        disabled: c.textDisabled,
+      },
+      background: {
+        default: c.bgSecondary,
+        paper: c.bgPrimary,
+      },
+      divider: c.borderSecondary,
     },
-    text: {
-      primary: colors.textPrimary,
-      secondary: colors.textSecondary,
-      disabled: colors.textDisabled,
+    components: {
+      MuiPaper: {
+        styleOverrides: {
+          root: { backgroundImage: 'none' },
+        },
+      },
     },
-    background: {
-      default: colors.bgSecondary,
-      paper: colors.bgPrimary,
-    },
-  },
-});
+  });
+}

@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -37,11 +37,12 @@ const mockData = [
 ];
 
 export default function EnergyUseByBuildingChart({ buildingName }: EnergyUseByBuildingChartProps) {
+  const { themeColors: c } = useThemeMode();
   const [selectedView, setSelectedView] = useState('Per m²');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 300 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 300 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -55,10 +56,10 @@ export default function EnergyUseByBuildingChart({ buildingName }: EnergyUseByBu
             px: 1.5,
             py: 0.5,
             borderRadius: '6px',
-            bgcolor: colors.bgPrimaryHover,
+            bgcolor: c.bgPrimaryHover,
             cursor: 'pointer',
             '&:hover': {
-              bgcolor: '#e8e8e8'
+              bgcolor: c.bgSecondaryHover
             }
           }}
           onClick={(e) => setAnchorEl(e.currentTarget)}
@@ -112,14 +113,14 @@ export default function EnergyUseByBuildingChart({ buildingName }: EnergyUseByBu
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },

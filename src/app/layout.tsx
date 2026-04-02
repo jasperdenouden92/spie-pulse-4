@@ -13,6 +13,9 @@ export const metadata: Metadata = { title: 'Pulse Core 4.0' };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var p=localStorage.getItem('theme-mode');var d=p==='dark'||(p!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light')})()` }} />
+      </head>
       <body className={`${inter.className} ${jost.variable}`} suppressHydrationWarning>
         <ThemeRegistry>
           <Annotations>

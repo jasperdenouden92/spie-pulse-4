@@ -20,7 +20,8 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Chip from '@mui/material/Chip';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { AssetNode } from '@/data/assetTree';
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { ContractFilterToggle, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
@@ -126,6 +127,7 @@ export default function PageHeader({
   selectionScore,
   metricItems = [],
 }: PageHeaderProps) {
+  const { themeColors: c } = useThemeMode();
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
   const [groupCaretAnchor, setGroupCaretAnchor] = useState<null | HTMLElement>(null);
@@ -182,7 +184,7 @@ export default function PageHeader({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: colors.bgSecondary,
+        backgroundColor: c.bgSecondary,
         zIndex: 1200,
         transition: 'left 0.3s ease, right 0.3s ease',
         borderBottom: '1px solid',
@@ -497,7 +499,7 @@ export default function PageHeader({
                           >
                             <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>{item.icon}</ListItemIcon>
                             <ListItemText>{item.label}</ListItemText>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? '#4caf50' : item.score >= 60 ? '#ff9800' : '#f44336', ml: 2 }}>{item.score}%</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? c.statusGood : item.score >= 60 ? c.statusModerate : c.statusPoor, ml: 2 }}>{item.score}%</Typography>
                           </MenuItem>
                         ))}
                         <Divider />
@@ -510,7 +512,7 @@ export default function PageHeader({
                           >
                             <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>{item.icon}</ListItemIcon>
                             <ListItemText>{item.label}</ListItemText>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? '#4caf50' : item.score >= 60 ? '#ff9800' : '#f44336', ml: 2 }}>{item.score}%</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? c.statusGood : item.score >= 60 ? c.statusModerate : c.statusPoor, ml: 2 }}>{item.score}%</Typography>
                           </MenuItem>
                         ))}
                       </>
@@ -545,11 +547,11 @@ export default function PageHeader({
             sx={{
               height: 32,
               borderRadius: '6px',
-              backgroundColor: 'white',
+              backgroundColor: c.bgPrimary,
               border: '1px solid',
-              borderColor: colors.borderPrimary,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-              '&:hover': { backgroundColor: colors.bgPrimaryHover },
+              borderColor: c.borderPrimary,
+              boxShadow: `0 1px 3px ${c.shadow}`,
+              '&:hover': { backgroundColor: c.bgPrimaryHover },
               '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
               '& .MuiChip-deleteIcon': { color: 'text.primary' },
             }}
@@ -564,11 +566,11 @@ export default function PageHeader({
             sx={{
               height: 32,
               borderRadius: '6px',
-              backgroundColor: 'white',
+              backgroundColor: c.bgPrimary,
               border: '1px solid',
-              borderColor: colors.borderPrimary,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-              '&:hover': { backgroundColor: colors.bgPrimaryHover },
+              borderColor: c.borderPrimary,
+              boxShadow: `0 1px 3px ${c.shadow}`,
+              '&:hover': { backgroundColor: c.bgPrimaryHover },
               '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
               '& .MuiChip-deleteIcon': { color: 'text.primary' },
             }}

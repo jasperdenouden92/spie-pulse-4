@@ -17,6 +17,7 @@ import NatureIcon from '@mui/icons-material/Nature';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { colors, secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface Theme {
   id: string;
@@ -36,6 +37,7 @@ interface Theme {
 }
 
 export default function Themes() {
+  const { themeColors: c } = useThemeMode();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 
   const themes: Theme[] = [
@@ -152,7 +154,7 @@ export default function Themes() {
                 height: '100%',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                border: selectedTheme === theme.id ? `2px solid ${theme.color}` : `1px solid ${colors.borderSecondary}`,
+                border: selectedTheme === theme.id ? `2px solid ${theme.color}` : `1px solid ${c.borderSecondary}`,
                 '&:hover': {
                   boxShadow: 4,
                   transform: 'translateY(-4px)',
@@ -226,7 +228,7 @@ export default function Themes() {
                                 mt: 1,
                                 height: 6,
                                 borderRadius: 1,
-                                bgcolor: colors.bgSecondaryHover,
+                                bgcolor: c.bgSecondaryHover,
                                 '& .MuiLinearProgress-bar': {
                                   bgcolor: theme.color,
                                   borderRadius: 1,
@@ -271,10 +273,10 @@ export default function Themes() {
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             border: '2px dashed',
-            borderColor: colors.borderPrimary,
+            borderColor: c.borderPrimary,
             bgcolor: 'rgba(250, 250, 250, 0.5)',
             '&:hover': {
-              borderColor: colors.brand,
+              borderColor: c.brand,
               bgcolor: secondaryAlpha(0.02),
               transform: 'translateY(-4px)',
             }
@@ -295,7 +297,7 @@ export default function Themes() {
                 width: 80,
                 height: 80,
                 borderRadius: 2,
-                bgcolor: colors.bgPrimaryHover,
+                bgcolor: c.bgPrimaryHover,
                 color: '#999',
                 display: 'flex',
                 alignItems: 'center',

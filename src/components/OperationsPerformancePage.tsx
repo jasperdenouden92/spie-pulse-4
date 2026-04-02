@@ -17,7 +17,7 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
@@ -214,6 +214,7 @@ interface OperationsPerformancePageProps {
 }
 
 export default function OperationsPerformancePage({ opsScores, opsTrends, overallScore = 75, overallTrend = 3, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: OperationsPerformancePageProps) {
+  const { themeColors: c } = useThemeMode();
   const [chartView, setChartView] = useState<ViewMode>('tickets');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -247,7 +248,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
 
   const opsSeries = useMemo(() => ({
     label: 'Operational KPIs',
-    color: colors.brand,
+    color: c.brand,
     data: [55, 52, 58, 62, 48, 60, 65, 68, 72, 70, 75, overallScore],
   }), [overallScore]);
 
@@ -313,7 +314,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* ═══ Operational KPIs Combined Score Over Time (card) ═══ */}
-      <Paper elevation={0} sx={{ p: 2.5, border: 'none', borderRadius: '12px', bgcolor: '#ffffff', boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)', display: 'flex', flexDirection: 'column' }}>
+      <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
             Operational KPI Performance
@@ -333,9 +334,9 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
 
         <Box sx={{ flex: 1, minHeight: 340 }}>
           <LineChart data-annotation-id="operationsperformancepage-grafiek-2"
-            xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
-            yAxis={[{ min: Math.max(0, Math.floor((Math.min(...opsSeries.data, OPS_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-            series={[{ data: opsSeries.data, label: 'Operational KPIs', color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
+            xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
+            yAxis={[{ min: Math.max(0, Math.floor((Math.min(...opsSeries.data, OPS_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
+            series={[{ data: opsSeries.data, label: 'Operational KPIs', color: c.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
             height={370}
             margin={{ top: 48, right: 80, bottom: 28, left: 80 }}
             grid={{ horizontal: true }}
@@ -345,7 +346,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             sx={{
               '& .MuiLineElement-root': { stroke: 'url(#threshold-gradient-ops-line)', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
               [`& .${lineClasses.area}`]: { fill: 'url(#threshold-gradient-ops-combined)', filter: 'none', opacity: 0.15 },
-              '& .MuiChartsGrid-line': { stroke: '#e8e8e8', strokeWidth: 1 },
+              '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
               '& .MuiChartsAxis-line': { stroke: 'transparent' },
               '& .MuiChartsAxis-tick': { stroke: 'transparent' },
             }}
@@ -366,15 +367,15 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
         {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: 'none', borderRadius: '12px', bgcolor: '#ffffff', boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
               <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? 'white' : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -414,7 +415,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
                       )}
                     </Box>
                   </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
                     <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
                   </Box>
                 </Box>
@@ -425,15 +426,15 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: 'none', borderRadius: '12px', bgcolor: '#ffffff', boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
               <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? 'white' : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -473,7 +474,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
                       )}
                     </Box>
                   </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
                     <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
                   </Box>
                 </Box>
@@ -484,10 +485,10 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
         </Paper>
 
         {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: 'none', borderRadius: '12px', bgcolor: '#ffffff', boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)', display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.shadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: colors.brand }} />
+              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
               <Typography variant="body2" fontWeight={600}>KPI Score Over Time</Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
@@ -501,13 +502,13 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
                       display: 'flex', alignItems: 'center', gap: 0.75,
                       px: 1.5, py: 0.75, borderRadius: 1,
                       cursor: 'pointer', userSelect: 'none',
-                      bgcolor: isActive ? `${colors.brand}14` : 'transparent',
+                      bgcolor: isActive ? `${c.brand}14` : 'transparent',
                       transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: isActive ? `${colors.brand}20` : 'action.hover' },
+                      '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
                     }}
                   >
-                    <Box sx={{ display: 'flex', color: isActive ? colors.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
-                    <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? colors.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
+                    <Box sx={{ display: 'flex', color: isActive ? c.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
+                    <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? c.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
                   </Box>
                 );
               })}
@@ -523,9 +524,9 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
                 <LineChart data-annotation-id="operationsperformancepage-grafiek"
-                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
-                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
+                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
+                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
+                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: c.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
                   height={370}
                   margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
                   grid={{ horizontal: true }}
@@ -533,9 +534,9 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
                   slotProps={{ tooltip: { trigger: 'none' } }}
                   axisHighlight={{ x: 'none', y: 'none' }}
                   sx={{
-                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : colors.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
+                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : c.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
                     [`& .${lineClasses.area}`]: { fill: showThresholds ? `url(#${gradientId})` : undefined, filter: 'none', opacity: 0.15 },
-                    '& .MuiChartsGrid-line': { stroke: '#e8e8e8', strokeWidth: 1 },
+                    '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
                     '& .MuiChartsAxis-line': { stroke: 'transparent' },
                     '& .MuiChartsAxis-tick': { stroke: 'transparent' },
                   }}

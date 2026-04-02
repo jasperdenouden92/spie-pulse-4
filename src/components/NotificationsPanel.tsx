@@ -8,7 +8,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import Tooltip from '@mui/material/Tooltip';
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 export interface Notification {
   id: string;
@@ -54,6 +55,7 @@ interface NotificationsPanelProps {
 
 const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPanelProps>(
   function NotificationsPanel({ open, onClose, sidebarWidth }, ref) {
+    const { themeColors: c } = useThemeMode();
     const [notifications, setNotifications] = useState(initialNotifications);
 
     useImperativeHandle(ref, () => ({
@@ -89,7 +91,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
           left: sidebarWidth,
           width: 380,
           height: '100vh',
-          bgcolor: '#fff',
+          bgcolor: c.bgPrimary,
           borderRight: '1px solid',
           borderColor: 'divider',
           zIndex: 1250,
@@ -99,7 +101,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
           transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: open ? '4px 0 24px rgba(0,0,0,0.08)' : 'none',
+          boxShadow: open ? `4px 0 24px ${c.shadowMedium}` : 'none',
         }}
       >
         {/* Header */}
@@ -107,7 +109,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Inbox</Typography>
             {unreadCount > 0 && (
-              <Box sx={{ bgcolor: colors.brand, color: '#fff', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '0.7rem', fontWeight: 700, lineHeight: 1.4, minWidth: 18, textAlign: 'center' }}>
+              <Box sx={{ bgcolor: c.brand, color: '#fff', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '0.7rem', fontWeight: 700, lineHeight: 1.4, minWidth: 18, textAlign: 'center' }}>
                 {unreadCount}
               </Box>
             )}
@@ -163,6 +165,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
 export default NotificationsPanel;
 
 function NotificationRow({ notification, onRead }: { notification: Notification; onRead: (id: string) => void }) {
+  const { themeColors: c } = useThemeMode();
   const n = notification;
   return (
     <Box
@@ -173,9 +176,9 @@ function NotificationRow({ notification, onRead }: { notification: Notification;
         px: 2.5,
         py: 1.5,
         cursor: n.read ? 'default' : 'pointer',
-        borderBottom: `1px solid ${colors.bgPrimaryHover}`,
+        borderBottom: `1px solid ${c.bgPrimaryHover}`,
         bgcolor: n.read ? 'transparent' : secondaryAlpha(0.03),
-        '&:hover': { bgcolor: n.read ? colors.bgSecondary : secondaryAlpha(0.06) },
+        '&:hover': { bgcolor: n.read ? c.bgSecondary : secondaryAlpha(0.06) },
         transition: 'background-color 0.15s ease',
       }}
     >
@@ -194,7 +197,7 @@ function NotificationRow({ notification, onRead }: { notification: Notification;
               {formatDate(n.date)}
             </Typography>
             {!n.read && (
-              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: colors.brand, flexShrink: 0 }} />
+              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: c.brand, flexShrink: 0 }} />
             )}
           </Box>
         </Box>

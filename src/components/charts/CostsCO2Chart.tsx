@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { ResponsiveBar } from '@nivo/bar';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface CostsCO2ChartProps {
   buildingName?: string;
@@ -35,8 +36,9 @@ const mockData = [
 ];
 
 export default function CostsCO2Chart({ buildingName }: CostsCO2ChartProps) {
+  const { themeColors: c } = useThemeMode();
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 300 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 300 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -77,7 +79,7 @@ export default function CostsCO2Chart({ buildingName }: CostsCO2ChartProps) {
                     dominantBaseline="central"
                     style={{
                       fontSize: 11,
-                      fill: '#666'
+                      fill: c.chartAxisText
                     }}
                   >
                     {tick.value}
@@ -92,21 +94,21 @@ export default function CostsCO2Chart({ buildingName }: CostsCO2ChartProps) {
           label={(d) => `{{value}}`}
           labelSkipWidth={12}
           labelSkipHeight={12}
-          labelTextColor="#666"
+          labelTextColor={c.chartAxisText}
           legends={[]}
           theme={{
             axis: {
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             labels: {
               text: {
                 fontSize: 11,
-                fill: '#666',
+                fill: c.chartAxisText,
               }
             }
           }}

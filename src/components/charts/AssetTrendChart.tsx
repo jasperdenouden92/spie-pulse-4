@@ -1,4 +1,5 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React from 'react';
 import Box from '@mui/material/Box';
@@ -69,10 +70,11 @@ const generateMockData = (assetFilter?: string) => {
 };
 
 export default function AssetTrendChart({ buildingName, assetFilter }: AssetTrendChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData(assetFilter);
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -168,27 +170,27 @@ export default function AssetTrendChart({ buildingName, assetFilter }: AssetTren
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             grid: {
               line: {
-                stroke: colors.bgSecondaryHover,
+                stroke: c.chartGridLine,
                 strokeWidth: 1,
               },
             },
             legends: {
               text: {
                 fontSize: 11,
-                fill: '#666',
+                fill: c.chartAxisText,
               },
             },
           }}

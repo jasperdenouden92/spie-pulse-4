@@ -1,5 +1,5 @@
 'use client';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -426,6 +426,7 @@ interface DashboardsPageProps {
 }
 
 export default function DashboardsPage({ onDashboardChange, initialDashboardId, onInitialDashboardConsumed, dateRange, onDateRangeChange, selectedBuildingNames = [] }: DashboardsPageProps) {
+  const { themeColors: c } = useThemeMode();
   const [selectedId, setSelectedId] = useState<string>(
     initialDashboardId ?? DASHBOARD_THEMES[0].dashboards[0].id
   );
@@ -474,7 +475,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
         borderRight: 1,
         borderColor: 'divider',
         overflowY: 'auto',
-        bgcolor: colors.bgSecondary,
+        bgcolor: c.bgSecondary,
         '&::-webkit-scrollbar': { width: '4px' },
         '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
       }}>
@@ -495,7 +496,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                     onClick={() => toggleGroup(group.themeKey)}
                     sx={{ py: 0.75, px: 2, gap: 1.5 }}
                   >
-                    <Box sx={{ color: hasActiveChild ? colors.brand : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <Box sx={{ color: hasActiveChild ? c.brand : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                       {group.icon}
                     </Box>
                     <ListItemText
@@ -504,7 +505,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                         variant: 'body2',
                         fontWeight: 600,
                         fontSize: '0.8125rem',
-                        color: hasActiveChild ? colors.brand : 'text.primary',
+                        color: hasActiveChild ? c.brand : 'text.primary',
                       }}
                     />
                     <ExpandMoreIcon sx={{
@@ -529,9 +530,9 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                             pl: 5.5,
                             pr: 2,
                             py: 0.5,
-                            bgcolor: isActive ? colors.bgActive : 'transparent',
-                            borderRight: isActive ? `2px solid ${colors.brand}` : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgSecondaryHover },
+                            bgcolor: isActive ? c.bgActive : 'transparent',
+                            borderRight: isActive ? `2px solid ${c.brand}` : '2px solid transparent',
+                            '&:hover': { bgcolor: isActive ? c.bgActive : c.bgSecondaryHover },
                           }}
                         >
                           <ListItemText
@@ -540,7 +541,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                               variant: 'body2',
                               fontSize: '0.8125rem',
                               fontWeight: isActive ? 600 : 400,
-                              color: isActive ? colors.brand : 'text.primary',
+                              color: isActive ? c.brand : 'text.primary',
                               sx: { lineHeight: 1.4 },
                             }}
                           />
@@ -578,7 +579,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
               {dateRange && onDateRangeChange && (
                 <Box sx={{
                   mb: 4,
-                  bgcolor: '#fff',
+                  bgcolor: c.bgPrimary,
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 2,
