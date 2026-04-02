@@ -761,7 +761,7 @@ export default function Home() {
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'portfolio_overview') return 'Data Explorer';
+    if (currentPage === 'portfolio_overview') return 'Buildings & Assets';
     if (currentPage === 'bms') return 'BMS';
     if (currentPage === 'operations') return 'Operations';
     if (selectedBuilding) return selectedBuilding.name;
