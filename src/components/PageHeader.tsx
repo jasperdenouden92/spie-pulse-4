@@ -9,7 +9,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import StarIcon from '@mui/icons-material/Star';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
@@ -17,9 +16,17 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import MenuIcon from '@mui/icons-material/Menu';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import Chip from '@mui/material/Chip';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Tooltip from '@mui/material/Tooltip';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import TuneIcon from '@mui/icons-material/Tune';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import { AssetNode } from '@/data/assetTree';
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { ContractFilterToggle, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
@@ -54,9 +61,7 @@ interface PageHeaderProps {
   onExport?: () => void;
   activeDashboardId?: string;
   activeDashboardLabel?: string;
-  // Compact filter in header (shown when page title scrolls out of view)
-  isFilterTitleScrolled?: boolean;
-  filterSelectionLabel?: string;
+  // Filter chips in header
   filterPeriodLabel?: string;
   filterBuildingLabel?: string;
   onFilterDateClick?: (e: React.MouseEvent<HTMLElement>) => void;
@@ -89,7 +94,7 @@ const OPERATIONS_CHILDREN: Record<string, string> = {
 const ALL_THEME_KEYS = Object.keys(THEME_CHILDREN);
 const ALL_OPERATIONS_KEYS = Object.keys(OPERATIONS_CHILDREN);
 
-export default function PageHeader({
+function PageHeader({
   currentPage = 'portfolio',
   selectedBuilding,
   selectedAsset,
@@ -118,8 +123,6 @@ export default function PageHeader({
   onExport,
   activeDashboardId,
   activeDashboardLabel,
-  isFilterTitleScrolled = false,
-  filterSelectionLabel,
   filterPeriodLabel,
   filterBuildingLabel,
   onFilterDateClick,
@@ -129,10 +132,14 @@ export default function PageHeader({
   selectionScore,
   metricItems = [],
 }: PageHeaderProps) {
+  const { themeColors: c } = useThemeMode();
+  const isNarrow = useMediaQuery('(max-width:960px)');
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
   const [groupCaretAnchor, setGroupCaretAnchor] = useState<null | HTMLElement>(null);
   const [childCaretAnchor, setChildCaretAnchor] = useState<null | HTMLElement>(null);
+  // Filter dropdown anchor
+  const [filterMenuAnchor, setFilterMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Determine page name based on current page and selections
   const getPageName = () => {
@@ -179,15 +186,18 @@ export default function PageHeader({
         position: 'fixed',
         top: 0,
         left: effectiveLeft,
+        '@media (max-width: 926px)': { left: 0 },
         right: rightSidebarWidth,
         height: 56,
         px: 3,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: colors.bgSecondary,
+        backgroundColor: c.bgSecondary,
         zIndex: 1200,
-        transition: 'left 0.3s ease, right 0.3s ease'
+        transition: 'left 0.3s ease, right 0.3s ease',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
       }}
     >
       {/* Left: Collapse button + Breadcrumb */}
@@ -197,7 +207,8 @@ export default function PageHeader({
           onClick={onToggleCollapse}
           sx={{ flexShrink: 0 }}
         >
-          <MenuOpenIcon sx={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
+          <MenuIcon sx={{ display: 'none', '@media (max-width: 926px)': { display: 'block' } }} />
+          <MenuOpenIcon sx={{ display: 'block', '@media (max-width: 926px)': { display: 'none' }, transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
         </IconButton>
         <AnimatePresence>
           {(selectedBuilding || selectedAsset) && (
@@ -214,12 +225,13 @@ export default function PageHeader({
           )}
         </AnimatePresence>
 
-        {/* Root breadcrumb segment */}
-        {currentPage === 'portfolio' ? (
+        {/* Root breadcrumb segment — hidden on narrow screens */}
+        {isNarrow ? null : currentPage === 'portfolio' ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography
               variant="h6"
               sx={{
+                fontFamily: '"Inter", sans-serif',
                 fontWeight: 600,
                 fontSize: '0.8rem',
                 cursor: 'pointer',
@@ -261,7 +273,27 @@ export default function PageHeader({
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Exports</Typography>
             )}
             {currentPage === 'dashboards' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Dashboards</Typography>
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    color: activeDashboardLabel ? 'text.secondary' : 'text.primary',
+                    fontFamily: '"Inter", sans-serif',
+                  }}
+                >
+                  Dashboards
+                </Typography>
+                {activeDashboardLabel && (
+                  <>
+                    <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
+                      {activeDashboardLabel}
+                    </Typography>
+                  </>
+                )}
+              </>
             )}
             {currentPage === 'operations' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Operations</Typography>
@@ -270,12 +302,12 @@ export default function PageHeader({
               <>
                 <Typography
                   variant="h6"
-                  sx={{ fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
+                  sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => onPageChange?.('operations')}
                 >
                   Operations
                 </Typography>
-                <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
                   {currentPage === 'operations_docs' ? 'Docs' : currentPage === 'operations_tickets' ? 'Tickets' : 'Quotations'}
                 </Typography>
@@ -285,7 +317,7 @@ export default function PageHeader({
         )}
 
         {/* Smart contextual breadcrumbs for Portfolio page */}
-        {currentPage === 'portfolio' && (
+        {!isNarrow && currentPage === 'portfolio' && (
           <>
             {/* Building segment (when a building is selected) */}
             <AnimatePresence>
@@ -298,11 +330,12 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                   <ApartmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
                   <Typography
                     variant="h6"
                     sx={{
+                      fontFamily: '"Inter", sans-serif',
                       fontWeight: 600,
                       fontSize: '0.8rem',
                       color: (selectedAsset?.type === 'asset' || showGroupSegment) ? 'text.secondary' : 'text.primary',
@@ -357,8 +390,8 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: showGroupSegment ? 'text.secondary' : 'text.primary' }}>
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                  <Typography variant="h6" sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', color: showGroupSegment ? 'text.secondary' : 'text.primary' }}>
                     {selectedAsset.name}
                   </Typography>
                 </motion.div>
@@ -376,10 +409,11 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                   <Typography
                     variant="h6"
                     sx={{
+                      fontFamily: '"Inter", sans-serif',
                       fontWeight: 600,
                       fontSize: '0.8rem',
                       color: showChildSegment ? 'text.secondary' : 'text.primary',
@@ -434,7 +468,7 @@ export default function PageHeader({
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                   <Box
                     onClick={(e) => setChildCaretAnchor(e.currentTarget)}
                     sx={{
@@ -475,7 +509,7 @@ export default function PageHeader({
                           >
                             <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>{item.icon}</ListItemIcon>
                             <ListItemText>{item.label}</ListItemText>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? '#4caf50' : item.score >= 60 ? '#ff9800' : '#f44336', ml: 2 }}>{item.score}%</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? c.statusGood : item.score >= 60 ? c.statusModerate : c.statusPoor, ml: 2 }}>{item.score}%</Typography>
                           </MenuItem>
                         ))}
                         <Divider />
@@ -488,7 +522,7 @@ export default function PageHeader({
                           >
                             <ListItemIcon sx={{ minWidth: 32, color: 'text.secondary' }}>{item.icon}</ListItemIcon>
                             <ListItemText>{item.label}</ListItemText>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? '#4caf50' : item.score >= 60 ? '#ff9800' : '#f44336', ml: 2 }}>{item.score}%</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: item.score >= 80 ? c.statusGood : item.score >= 60 ? c.statusModerate : c.statusPoor, ml: 2 }}>{item.score}%</Typography>
                           </MenuItem>
                         ))}
                       </>
@@ -511,96 +545,83 @@ export default function PageHeader({
         )}
       </Box>
 
-      {/* Center: Compact filter title (fades in when page title scrolls out of view) */}
-      <AnimatePresence>
-        {isFilterTitleScrolled && filterPeriodLabel && (
-          <motion.div
-            key="compact-filter"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', zIndex: 1200 }}
-          >
-            <Typography
-              variant="body2"
+      {/* Right: Filter dropdown + Export + Favorite */}
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        {/* Filter dropdown — combines building and date filters */}
+        {((filterBuildingLabel && onFilterBuildingClick) || (filterPeriodLabel && onFilterDateClick)) && (
+          <>
+            <Chip
+              icon={<TuneIcon sx={{ fontSize: 16 }} />}
+              label="Filters"
+              onClick={(e) => setFilterMenuAnchor(e.currentTarget)}
+              deleteIcon={<ExpandMoreIcon />}
+              onDelete={(e) => setFilterMenuAnchor((e as any).currentTarget?.closest('.MuiChip-root') || filterMenuAnchor)}
               sx={{
-                fontWeight: 600,
-                fontSize: '0.8125rem',
-                color: 'text.secondary',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '3px',
-                whiteSpace: 'nowrap',
+                height: 32,
+                borderRadius: '6px',
+                backgroundColor: c.bgPrimary,
+                border: '1px solid',
+                borderColor: c.borderPrimary,
+                boxShadow: `0 1px 3px ${c.shadow}`,
+                '&:hover': { backgroundColor: c.bgPrimaryHover },
+                '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
+                '& .MuiChip-deleteIcon': { color: 'text.primary' },
+                '& .MuiChip-icon': { color: 'text.primary', ml: 1 },
+              }}
+            />
+            <Menu
+              anchorEl={filterMenuAnchor}
+              open={Boolean(filterMenuAnchor)}
+              onClose={() => setFilterMenuAnchor(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              slotProps={{ paper: { sx: { mt: 0.5, minWidth: 200, borderRadius: '8px', boxShadow: `0 4px 20px ${c.shadow}` } } }}
+            >
+              {filterBuildingLabel && onFilterBuildingClick && (
+                <MenuItem
+                  onClick={(e) => {
+                    setFilterMenuAnchor(null);
+                    onFilterBuildingClick(e);
+                  }}
+                  sx={{ fontSize: '0.875rem', py: 1 }}
+                >
+                  <ListItemIcon><ApartmentOutlinedIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{filterBuildingLabel}</ListItemText>
+                </MenuItem>
+              )}
+              {filterPeriodLabel && onFilterDateClick && (
+                <MenuItem
+                  onClick={(e) => {
+                    setFilterMenuAnchor(null);
+                    onFilterDateClick(e);
+                  }}
+                  sx={{ fontSize: '0.875rem', py: 1 }}
+                >
+                  <ListItemIcon><CalendarTodayOutlinedIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>{filterPeriodLabel}</ListItemText>
+                </MenuItem>
+              )}
+            </Menu>
+          </>
+        )}
+        {/* Export Button — icon only, on Control Room and Dashboards */}
+        {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
+          <Tooltip title="Export">
+            <IconButton
+              size="small"
+              onClick={onExport}
+              sx={{
+                borderRadius: '6px',
+                width: 32,
+                height: 32,
+                backgroundColor: 'primary.main',
+                color: 'primary.contrastText',
+                '&:hover': { backgroundColor: 'primary.dark' },
               }}
             >
-              Showing{filterSelectionLabel ? ` ${filterSelectionLabel} of` : ''}
-              <Box
-                component="span"
-                onClick={onFilterDateClick}
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'baseline',
-                  gap: '1px',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  color: 'primary.main',
-                  transition: 'opacity 0.2s ease',
-                  '&:hover': { opacity: 0.7 },
-                }}
-              >
-                {filterPeriodLabel}
-                <KeyboardArrowDownIcon sx={{ fontSize: 14, verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-              </Box>
-              {filterBuildingLabel && (
-                <>
-                  for
-                  <Box
-                    component="span"
-                    onClick={onFilterBuildingClick}
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'baseline',
-                      gap: '1px',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      color: 'primary.main',
-                      transition: 'opacity 0.2s ease',
-                      '&:hover': { opacity: 0.7 },
-                    }}
-                  >
-                    {filterBuildingLabel}
-                    <KeyboardArrowDownIcon sx={{ fontSize: 14, verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                  </Box>
-                </>
-              )}
-            </Typography>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Right: Filters + Export + Favorite */}
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        {/* Export Button — on Control Room and Dashboards */}
-        {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<FileDownloadOutlinedIcon />}
-            onClick={onExport}
-            sx={{
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '0.8125rem',
-              borderRadius: '6px',
-              px: 2,
-              height: 32,
-              boxShadow: 'none',
-              '&:hover': { boxShadow: 'none' }
-            }}
-          >
-            Export
-          </Button>
+              <FileDownloadOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         )}
 
         {/* Favorite Icon */}
@@ -620,3 +641,5 @@ export default function PageHeader({
     </Box>
   );
 }
+
+export default React.memo(PageHeader);

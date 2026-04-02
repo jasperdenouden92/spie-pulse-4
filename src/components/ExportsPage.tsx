@@ -13,7 +13,7 @@ import Chip from '@mui/material/Chip';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface ExportItem {
   id: string;
@@ -51,7 +51,8 @@ const formatChipColor = (format: string): 'default' | 'primary' | 'success' | 'w
   }
 };
 
-export default function ExportsPage() {
+function ExportsPage() {
+  const { themeColors: c } = useThemeMode();
   const [exports, setExports] = useState<ExportItem[]>(initialExports);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
@@ -79,16 +80,16 @@ export default function ExportsPage() {
           </Typography>
         </Box>
       ) : (
-        <TableContainer sx={{ bgcolor: 'white', borderRadius: 1, border: `1px solid ${colors.borderSecondary}` }}>
-          <Table>
+        <TableContainer sx={{ bgcolor: c.bgPrimary, borderRadius: 1, border: `1px solid ${c.borderSecondary}` }}>
+          <Table data-annotation-id="exportspage-tabel">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Name</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Origin</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Created</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Format</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}` }}>Size</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${colors.borderSecondary}`, width: 80 }} />
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${c.borderSecondary}` }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${c.borderSecondary}` }}>Origin</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${c.borderSecondary}` }}>Created</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${c.borderSecondary}` }}>Format</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${c.borderSecondary}` }}>Size</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', borderBottom: `1px solid ${c.borderSecondary}`, width: 80 }} />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -99,7 +100,7 @@ export default function ExportsPage() {
                   onMouseLeave={() => setHoveredRow(null)}
                   sx={{
                     '&:last-child td': { borderBottom: 0 },
-                    '&:hover': { bgcolor: colors.bgSecondary },
+                    '&:hover': { bgcolor: c.bgSecondary },
                     transition: 'background-color 0.15s ease',
                   }}
                 >
@@ -147,3 +148,6 @@ export default function ExportsPage() {
     </Box>
   );
 }
+
+
+export default React.memo(ExportsPage);

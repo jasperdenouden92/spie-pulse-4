@@ -1,4 +1,5 @@
 import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -42,6 +43,7 @@ const frequencyColors = {
 };
 
 export default function MaintenanceScheduleList({ schedules, buildingName, compact = false }: MaintenanceScheduleListProps) {
+  const { themeColors: c } = useThemeMode();
   const filteredSchedules = useMemo(() => {
     return buildingName
       ? schedules.filter(s => s.building === buildingName)
@@ -73,12 +75,12 @@ export default function MaintenanceScheduleList({ schedules, buildingName, compa
             border: 1,
             borderColor: 'divider',
             borderRadius: 1,
-            bgcolor: '#fff'
+            bgcolor: c.bgPrimary
           }}
         >
-          <Table>
+          <Table data-annotation-id="maintenanceschedulelist-tabel">
             <TableHead>
-              <TableRow sx={{ bgcolor: compact ? 'transparent' : colors.bgSecondary }}>
+              <TableRow sx={{ bgcolor: compact ? 'transparent' : c.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Title</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Building</TableCell>
@@ -95,7 +97,7 @@ export default function MaintenanceScheduleList({ schedules, buildingName, compa
                 <TableRow
                   key={schedule.id}
                   sx={{
-                    '&:hover': { bgcolor: colors.bgPrimaryHover },
+                    '&:hover': { bgcolor: c.bgPrimaryHover },
                     cursor: 'pointer'
                   }}
                 >

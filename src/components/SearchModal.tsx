@@ -23,6 +23,7 @@ import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colors, secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface SearchModalProps {
   open: boolean;
@@ -131,7 +132,7 @@ function groupByDate(items: RecentItem[]): { label: string; items: RecentItem[] 
   return Array.from(groups.entries()).map(([label, items]) => ({ label, items }));
 }
 
-const rowSx = (active?: boolean) => ({
+const rowSx = (active: boolean | undefined, bgHover: string) => ({
   display: 'flex',
   alignItems: 'center',
   gap: 1.5,
@@ -140,13 +141,13 @@ const rowSx = (active?: boolean) => ({
   py: 1.25,
   borderRadius: 1,
   cursor: 'pointer',
-  bgcolor: active ? colors.bgPrimaryHover : 'transparent',
-  '&:hover': { bgcolor: colors.bgPrimaryHover },
+  bgcolor: active ? bgHover : 'transparent',
+  '&:hover': { bgcolor: bgHover },
 });
 
 const PREVIEW_WIDTH = 400;
 
-const kbdSx = {
+const kbdSx = (bgPrimary: string) => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -157,12 +158,12 @@ const kbdSx = {
   fontFamily: 'inherit',
   fontWeight: 600,
   color: 'text.secondary',
-  bgcolor: '#fff',
+  bgcolor: bgPrimary,
   border: '1px solid',
   borderColor: 'divider',
   borderRadius: '4px',
   lineHeight: 1,
-};
+});
 
 const typeLabels: Record<string, string> = {
   building: 'Building',
@@ -174,8 +175,9 @@ const typeLabels: Record<string, string> = {
 };
 
 function ResultRow({ result, onClick, active, rowRef, onMouseEnter }: { result: SearchResult; onClick: () => void; active?: boolean; rowRef?: React.Ref<HTMLDivElement>; onMouseEnter?: () => void }) {
+  const { themeColors: c } = useThemeMode();
   return (
-    <Box ref={rowRef} onClick={onClick} onMouseEnter={onMouseEnter} sx={rowSx(active)}>
+    <Box ref={rowRef} onClick={onClick} onMouseEnter={onMouseEnter} sx={rowSx(active, c.bgPrimaryHover)}>
       <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.disabled' }}>
         {typeIcons[result.type]}
       </Box>
@@ -194,6 +196,7 @@ function ResultRow({ result, onClick, active, rowRef, onMouseEnter }: { result: 
 }
 
 function PerformanceBar({ green, yellow, red }: { green: number; yellow: number; red: number }) {
+  const { themeColors: c } = useThemeMode();
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
@@ -204,10 +207,10 @@ function PerformanceBar({ green, yellow, red }: { green: number; yellow: number;
           {green}%
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: colors.bgPrimaryHover }}>
-        <Box sx={{ width: `${green}%`, bgcolor: '#4caf50' }} />
-        <Box sx={{ width: `${yellow}%`, bgcolor: '#ffc107' }} />
-        <Box sx={{ width: `${red}%`, bgcolor: '#f44336' }} />
+      <Box sx={{ display: 'flex', height: 6, borderRadius: '2px', overflow: 'hidden', bgcolor: c.bgPrimaryHover }}>
+        <Box sx={{ width: `${green}%`, bgcolor: c.statusGood }} />
+        <Box sx={{ width: `${yellow}%`, bgcolor: c.statusModerate }} />
+        <Box sx={{ width: `${red}%`, bgcolor: c.statusPoor }} />
       </Box>
     </Box>
   );
@@ -220,6 +223,7 @@ const buildingPerformance: Record<string, { green: number; yellow: number; red: 
 };
 
 function BuildingPreviewCard({ result }: { result: SearchResult }) {
+  const { themeColors: c } = useThemeMode();
   const performance = buildingPerformance[result.title] ?? { green: 60, yellow: 25, red: 15 };
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -229,7 +233,7 @@ function BuildingPreviewCard({ result }: { result: SearchResult }) {
           backgroundImage: result.image ? `url(${result.image})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          bgcolor: result.image ? undefined : colors.borderSecondary,
+          bgcolor: result.image ? undefined : c.borderSecondary,
         }}
       />
       <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -369,8 +373,9 @@ function DashboardPreviewCard({ result }: { result: SearchResult }) {
 }
 
 function AISearchPreviewCard({ query }: { query: string }) {
+  const { themeColors: c } = useThemeMode();
   return (
-    <Box sx={{ bgcolor: colors.bgPrimaryHover, height: '100%', display: 'flex', flexDirection: 'column', p: 2.5, gap: 2 }}>
+    <Box sx={{ bgcolor: c.bgPrimaryHover, height: '100%', display: 'flex', flexDirection: 'column', p: 2.5, gap: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <AutoAwesomeIcon sx={{ fontSize: 16, color: 'primary.main' }} />
         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
@@ -380,7 +385,7 @@ function AISearchPreviewCard({ query }: { query: string }) {
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {/* User message */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Box sx={{ bgcolor: colors.brand, color: '#fff', px: 2, py: 1, borderRadius: '12px 12px 4px 12px', maxWidth: '85%' }}>
+          <Box sx={{ bgcolor: c.brand, color: c.bgPrimary, px: 2, py: 1, borderRadius: '12px 12px 4px 12px', maxWidth: '85%' }}>
             <Typography variant="body2" sx={{ fontSize: '0.813rem' }}>
               {query}
             </Typography>
@@ -388,7 +393,7 @@ function AISearchPreviewCard({ query }: { query: string }) {
         </Box>
         {/* AI thinking */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-          <Box sx={{ bgcolor: '#fff', px: 2, py: 1, borderRadius: '12px 12px 12px 4px', maxWidth: '85%' }}>
+          <Box sx={{ bgcolor: c.bgPrimary, px: 2, py: 1, borderRadius: '12px 12px 12px 4px', maxWidth: '85%' }}>
             <Typography variant="body2" sx={{ fontSize: '0.813rem', color: 'text.secondary' }}>
               ...
             </Typography>
@@ -465,6 +470,7 @@ function PreviewSkeleton() {
 }
 
 export default function SearchModal({ open, onClose, onNavigate }: SearchModalProps) {
+  const { themeColors: c } = useThemeMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filterType, setFilterType] = useState<string>('all');
@@ -598,7 +604,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
   };
 
   return (
-    <Modal
+    <Modal data-annotation-id="searchmodal-modal"
       open={open}
       onClose={handleClose}
       sx={{
@@ -812,7 +818,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
               <Box
                 ref={activeIndex === 0 ? activeRowRef : undefined}
                 sx={{
-                  ...rowSx(activeIndex === 0),
+                  ...rowSx(activeIndex === 0, c.bgPrimaryHover),
                   mt: 0.5,
                   py: 1.25,
                 }}
@@ -900,7 +906,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
             elevation={0}
             sx={{
               borderRadius: 2,
-              boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+              boxShadow: `0 2px 12px ${c.shadow}`,
               border: '1px solid',
               borderColor: 'divider',
               height: 280,
@@ -922,26 +928,26 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
             py: 1.5,
             borderTop: 1,
             borderColor: 'divider',
-            bgcolor: colors.bgSecondary,
+            bgcolor: c.bgSecondary,
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Box sx={{ display: 'flex', gap: 0.25 }}>
-              <Box component="kbd" sx={kbdSx}>↑</Box>
-              <Box component="kbd" sx={kbdSx}>↓</Box>
+              <Box component="kbd" sx={kbdSx(c.bgPrimary)}>↑</Box>
+              <Box component="kbd" sx={kbdSx(c.bgPrimary)}>↓</Box>
             </Box>
             <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>
               Navigate
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Box component="kbd" sx={kbdSx}>↵</Box>
+            <Box component="kbd" sx={kbdSx(c.bgPrimary)}>↵</Box>
             <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>
               Open
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Box component="kbd" sx={kbdSx}>Esc</Box>
+            <Box component="kbd" sx={kbdSx(c.bgPrimary)}>Esc</Box>
             <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>
               Close
             </Typography>

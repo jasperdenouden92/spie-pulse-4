@@ -66,7 +66,7 @@ export default function AssetBreadcrumb({ asset, onAssetSelect }: AssetBreadcrum
           <React.Fragment key={segment.node.id}>
             {i > 0 && (
               <KeyboardArrowRightIcon
-                sx={{ fontSize: 14, color: 'text.disabled', mx: 0.25, flexShrink: 0 }}
+                sx={{ fontSize: 18, color: 'text.disabled', mx: 0.25, flexShrink: 0 }}
               />
             )}
 

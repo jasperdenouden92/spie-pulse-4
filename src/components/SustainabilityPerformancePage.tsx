@@ -26,7 +26,7 @@ import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
 import Tooltip from '@mui/material/Tooltip';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
@@ -352,6 +352,7 @@ function getExpectationKey(rating: string, consumption: number): 'above' | 'expe
 }
 
 function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, onGroupModeChange }: { data: WeiiDataPoint[]; onBuildingClick?: (building: Building) => void; hoveredName: string | null; onHover: (name: string | null) => void; groupMode: SidebarGroupMode; onGroupModeChange: (mode: SidebarGroupMode) => void }) {
+  const { themeColors: c } = useThemeMode();
   // Group by rating
   const groupedByRating = useMemo(() => {
     const groups: Record<string, WeiiDataPoint[]> = {};
@@ -417,13 +418,13 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, o
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Segmented control header */}
-      <Box sx={{ px: 2, py: 1.25, flexShrink: 0, bgcolor: '#f8f8f8', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.65rem', flexShrink: 0 }}>
+      <Box sx={{ px: 2, py: 1.25, flexShrink: 0, bgcolor: c.bgPrimaryHover, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="caption" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', flexShrink: 0 }}>
           Buildings
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'rating' ? 'white' : 'transparent', color: groupMode === 'rating' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'rating' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('rating')}>By Label</Box>
-          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'performance' ? 'white' : 'transparent', color: groupMode === 'performance' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'performance' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('performance')}>By Performance</Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'rating' ? c.bgPrimary : 'transparent', color: groupMode === 'rating' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'rating' ? c.shadow : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('rating')}>By Label</Box>
+          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'performance' ? c.bgPrimary : 'transparent', color: groupMode === 'performance' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'performance' ? c.shadow : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('performance')}>By Performance</Box>
         </Box>
       </Box>
       {/* Scrollable list */}
@@ -438,7 +439,7 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, o
                     <rect width="22" height="18" rx="2.5" fill={WEII_LABEL_COLORS[rating]} />
                     <polygon points="22,0 32,9 22,18" fill={WEII_LABEL_COLORS[rating]} />
                   </svg>
-                  <Typography sx={{ position: 'absolute', left: 0, width: 22, textAlign: 'center', fontWeight: 700, fontSize: '0.7rem', lineHeight: 1, color: 'white' }}>
+                  <Typography sx={{ position: 'absolute', left: 0, width: 22, textAlign: 'center', fontWeight: 700, fontSize: '0.7rem', lineHeight: 1, color: c.bgPrimary }}>
                     {rating}
                   </Typography>
                 </Box>
@@ -480,6 +481,7 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, o
 // ── WEii Scatter Chart ──
 
 function WeiiScatterChart({ data, onBuildingClick, hoveredName, onHover }: { data: WeiiDataPoint[]; onBuildingClick?: (building: Building) => void; hoveredName: string | null; onHover: (name: string | null) => void }) {
+  const { themeColors: c } = useThemeMode();
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(700);
@@ -732,7 +734,7 @@ function WeiiScatterChart({ data, onBuildingClick, hoveredName, onHover }: { dat
               top: tooltipPos.y - 44,
               transform: 'translateX(-50%)',
               bgcolor: 'rgba(33,33,33,0.92)',
-              color: 'white',
+              color: c.bgPrimary,
               px: 1.5,
               py: 0.75,
               borderRadius: 1,
@@ -764,6 +766,7 @@ interface SustainabilityPerformancePageProps {
 }
 
 export default function SustainabilityPerformancePage({ themeScore = 72, themeTrend = 4, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: SustainabilityPerformancePageProps) {
+  const { themeColors: c } = useThemeMode();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -869,69 +872,76 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+          <NatureOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+          <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>
             Sustainability Performance
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {themeScore}%
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+            {themeScore}%
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themeTrend >= 0 ? 'success.main' : 'error.main' }}>
+            {themeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+              {Math.abs(themeTrend)}%
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themeTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {themeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(themeTrend)}%
-              </Typography>
-            </Box>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
           {topics.map(topic => (
             <Paper
               key={topic.key}
               elevation={0}
               sx={{
                 p: 2.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
+                border: `1px solid ${c.cardBorder}`,
+                borderRadius: '12px',
+                bgcolor: c.bgPrimary,
+                boxShadow: c.cardShadow,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 1.5,
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+                },
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ color: 'text.secondary', display: 'flex' }}>{topic.icon}</Box>
-                <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1 }}>{topic.label}</Typography>
+              {/* Row 1: Icon + Title */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box sx={{ color: 'text.secondary', display: 'flex', '& .MuiSvgIcon-root': { fontSize: '18px !important' } }}>{topic.icon}</Box>
+                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{topic.label}</Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  <Typography variant="h5" fontWeight={700}>{topic.score}%</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
-                    {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
-                    <Typography variant="caption" fontWeight={600}>{Math.abs(topic.trend)}%</Typography>
+              {/* Row 2+3 left: Score + Trend/Label, right: Sparkline */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1.15rem', lineHeight: 1.2 }}>{topic.score}%</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
+                      {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 12 }} /> : <TrendingDownIcon sx={{ fontSize: 12 }} />}
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>{Math.abs(topic.trend)}%</Typography>
+                    </Box>
+                    <Chip
+                      label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.6rem',
+                        fontWeight: 600,
+                        bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`,
+                        color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove),
+                        '& .MuiChip-label': { px: 0.75 },
+                      }}
+                    />
                   </Box>
                 </Box>
-                <Box sx={{ ml: 'auto' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                   {renderSparkline(topic.sparkline, getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove))}
                 </Box>
               </Box>
-
-              <Chip
-                label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)}
-                size="small"
-                sx={{
-                  alignSelf: 'flex-start',
-                  height: 20,
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`,
-                  color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove),
-                  '& .MuiChip-label': { px: 1 },
-                }}
-              />
             </Paper>
           ))}
         </Box>
@@ -947,17 +957,17 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
       </Box>
 
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
         {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
               <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Best Performing</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? 'white' : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('improved')}>Most Improved</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -997,7 +1007,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                       )}
                     </Box>
                   </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
                     <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
                   </Box>
                 </Box>
@@ -1014,15 +1024,15 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
               <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst Performing</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? 'white' : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('deteriorated')}>Most Deteriorated</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -1062,7 +1072,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                       )}
                     </Box>
                   </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
                     <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
                   </Box>
                 </Box>
@@ -1079,10 +1089,10 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
         </Paper>
 
         {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: colors.brand }} />
+              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
               <Typography variant="subtitle2" fontWeight={600}>KPI Score Over Time</Typography>
             </Box>
             {/* View selector */}
@@ -1097,14 +1107,14 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                       display: 'flex', alignItems: 'center', gap: 0.75,
                       px: 1.5, py: 0.75, borderRadius: 1,
                       cursor: 'pointer', userSelect: 'none',
-                      bgcolor: isActive ? `${colors.brand}14` : 'transparent',
+                      bgcolor: isActive ? `${c.brand}14` : 'transparent',
                       transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: isActive ? `${colors.brand}20` : 'action.hover' },
+                      '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
                     }}
                   >
                     <Box sx={{
                       display: 'flex',
-                      color: isActive ? colors.brand : 'text.disabled',
+                      color: isActive ? c.brand : 'text.disabled',
                       transition: 'color 0.15s ease',
                     }}>
                       {item.icon}
@@ -1112,7 +1122,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                     <Typography variant="body2" sx={{
                       fontSize: '0.8rem',
                       fontWeight: isActive ? 600 : 400,
-                      color: isActive ? colors.brand : 'text.secondary',
+                      color: isActive ? c.brand : 'text.secondary',
                       transition: 'all 0.15s ease',
                     }}>
                       {item.label}
@@ -1131,10 +1141,10 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
             const lineGradientId = `threshold-gradient-sust-line`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart
-                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
-                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
+                <LineChart data-annotation-id="sustainabilityperformancepage-grafiek"
+                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
+                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
+                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: c.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
                   height={370}
                   margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
                   grid={{ horizontal: true }}
@@ -1142,9 +1152,9 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                   slotProps={{ tooltip: { trigger: 'none' } }}
                   axisHighlight={{ x: 'none', y: 'none' }}
                   sx={{
-                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : colors.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
+                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : c.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
                     [`& .${lineClasses.area}`]: { fill: showThresholds ? `url(#${gradientId})` : undefined, filter: 'none', opacity: 0.15 },
-                    '& .MuiChartsGrid-line': { stroke: '#e8e8e8', strokeWidth: 1 },
+                    '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
                     '& .MuiChartsAxis-line': { stroke: 'transparent' },
                     '& .MuiChartsAxis-tick': { stroke: 'transparent' },
                   }}
@@ -1174,10 +1184,10 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
       {/* ═══ SECTION 3: Sustainability Dashboards ═══ */}
       {/* ═══ Sustainability Key Dashboards ═══ */}
       <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
           Sustainability Key Dashboards
         </Typography>
-        <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 360px', height: 528, overflow: 'hidden' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5 }}>
@@ -1197,7 +1207,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
                 <WeiiScatterChart data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
               </Box>
             </Box>
-            <Box sx={{ borderLeft: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ borderLeft: '1px solid rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <WeiiSidebar data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} groupMode={weiiSidebarGroupMode} onGroupModeChange={setWeiiSidebarGroupMode} />
             </Box>
           </Box>
@@ -1206,10 +1216,10 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
 
       {/* ═══ Other Sustainability Dashboards ═══ */}
       <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
           Other Sustainability Dashboards
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1.5 }}>
           {SUSTAINABILITY_DASHBOARDS.map(dash => (
             <Paper
               key={dash.id}
@@ -1218,18 +1228,19 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
               sx={{
                 py: 1.5,
                 px: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
+                border: `1px solid ${c.cardBorder}`,
+                borderRadius: '12px',
+                bgcolor: c.bgPrimary,
+                boxShadow: c.cardShadow,
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 1.5,
-                flex: '0 1 auto',
                 '&:hover': {
-                  bgcolor: 'action.hover',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
                 },
               }}
             >

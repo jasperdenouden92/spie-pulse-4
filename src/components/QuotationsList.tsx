@@ -8,7 +8,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { Quotation } from '@/data/quotations';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import InfiniteScrollContainer from './InfiniteScrollContainer';
@@ -28,6 +28,7 @@ const statusColors = {
 };
 
 export default function QuotationsList({ quotations, buildingName, compact = false }: QuotationsListProps) {
+  const { themeColors: c } = useThemeMode();
   const filteredQuotations = useMemo(() => {
     return buildingName
       ? quotations.filter(q => q.building === buildingName)
@@ -66,12 +67,12 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
             border: 1,
             borderColor: 'divider',
             borderRadius: 1,
-            bgcolor: '#fff'
+            bgcolor: c.bgPrimary
           }}
         >
-          <Table>
+          <Table data-annotation-id="quotationslist-tabel">
             <TableHead>
-              <TableRow sx={{ bgcolor: compact ? 'transparent' : colors.bgSecondary }}>
+              <TableRow sx={{ bgcolor: compact ? 'transparent' : c.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Title</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Building</TableCell>
@@ -87,7 +88,7 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
                 <TableRow
                   key={quotation.id}
                   sx={{
-                    '&:hover': { bgcolor: colors.bgPrimaryHover },
+                    '&:hover': { bgcolor: c.bgPrimaryHover },
                     cursor: 'pointer'
                   }}
                 >

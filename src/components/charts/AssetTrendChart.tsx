@@ -1,4 +1,6 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -33,33 +35,33 @@ const generateMockData = (assetFilter?: string) => {
     {
       id: 'Supply Temperature - CV Buffer',
       color: '#ef5350',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 45 + Math.random() * 15
+        y: 45 + ((i * 37 + 13) % 15)
       }))
     },
     {
       id: 'Supply Temperature - CV Boiler',
       color: '#42a5f5',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 40 + Math.random() * 12
+        y: 40 + ((i * 41 + 7) % 12)
       }))
     },
     {
       id: 'Outside Temperature',
       color: '#66bb6a',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 5 + Math.random() * 10
+        y: 5 + ((i * 53 + 17) % 10)
       }))
     },
     {
       id: 'Return Temperature',
       color: '#ffa726',
-      data: hours.map((date) => ({
+      data: hours.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 30 + Math.random() * 10
+        y: 30 + ((i * 59 + 23) % 10)
       }))
     }
   ];
@@ -68,10 +70,11 @@ const generateMockData = (assetFilter?: string) => {
 };
 
 export default function AssetTrendChart({ buildingName, assetFilter }: AssetTrendChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData(assetFilter);
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -167,27 +170,27 @@ export default function AssetTrendChart({ buildingName, assetFilter }: AssetTren
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             grid: {
               line: {
-                stroke: colors.bgSecondaryHover,
+                stroke: c.chartGridLine,
                 strokeWidth: 1,
               },
             },
             legends: {
               text: {
                 fontSize: 11,
-                fill: '#666',
+                fill: c.chartAxisText,
               },
             },
           }}

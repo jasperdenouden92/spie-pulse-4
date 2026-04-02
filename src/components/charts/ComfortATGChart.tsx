@@ -1,4 +1,6 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -28,39 +30,40 @@ const generateMockData = () => {
       id: 'Upper Limit',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 25 + Math.random() * 1
+        y: 25 + ((i * 37 + 13) % 10) / 10
       }))
     },
     {
       id: 'Lower Limit',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 20 + Math.random() * 1
+        y: 20 + ((i * 41 + 7) % 10) / 10
       }))
     },
     {
       id: 'Temperature',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 21.5 + Math.random() * 2
+        y: 21.5 + ((i * 53 + 17) % 20) / 10
       }))
     }
   ];
 };
 
 export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData();
 
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 3 }}>
       {/* ATG Chart */}
-      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Box sx={{
             width: 32,
             height: 32,
             borderRadius: '50%',
-            bgcolor: colors.bgActive,
+            bgcolor: c.bgActive,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -112,13 +115,13 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
             colors={(d) => {
               if (d.id === 'Upper Limit') return '#ef5350';
               if (d.id === 'Lower Limit') return '#42a5f5';
-              return colors.brand;
+              return c.brand;
             }}
             lineWidth={2}
             pointSize={6}
-            pointColor={colors.brand}
+            pointColor={c.brand}
             pointBorderWidth={2}
-            pointBorderColor="#fff"
+            pointBorderColor={c.chartPointBorder}
             enableGridX={false}
             gridYValues={6}
             curve="monotoneX"
@@ -127,10 +130,10 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
             areaOpacity={0.1}
             theme={{
               axis: {
-                domain: { line: { stroke: colors.borderSecondary, strokeWidth: 1 } },
-                ticks: { text: { fontSize: 11, fill: '#666' } },
+                domain: { line: { stroke: c.borderSecondary, strokeWidth: 1 } },
+                ticks: { text: { fontSize: 11, fill: c.chartAxisText } },
               },
-              grid: { line: { stroke: colors.bgSecondaryHover, strokeWidth: 1 } },
+              grid: { line: { stroke: c.chartGridLine, strokeWidth: 1 } },
             }}
           />
         </Box>
@@ -138,7 +141,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
         {/* Legend */}
         <Box sx={{ display: 'flex', gap: 2, mt: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: colors.brand }} />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c.brand }} />
             <Typography variant="caption">Temperature</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -153,7 +156,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
       </Box>
 
       {/* ATG Assessment */}
-      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Temperature ATG assessment
@@ -168,7 +171,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
 
         {/* Progress bar */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ height: 40, bgcolor: colors.brand, borderRadius: 1, position: 'relative' }}>
+          <Box sx={{ height: 40, bgcolor: c.brand, borderRadius: 1, position: 'relative' }}>
             <Typography
               variant="caption"
               sx={{
@@ -176,7 +179,7 @@ export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) 
                 left: 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#fff',
+                color: c.bgPrimary,
                 fontWeight: 500
               }}
             >

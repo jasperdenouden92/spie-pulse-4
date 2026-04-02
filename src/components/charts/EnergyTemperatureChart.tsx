@@ -1,4 +1,5 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
+
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -19,9 +20,9 @@ const generateMockData = () => {
 
   // Generate clustered points showing correlation between temperature and energy
   for (let i = 0; i < 25; i++) {
-    const temp = 10 + Math.random() * 15; // Temperature range 10-25
+    const temp = 10 + ((i * 37 + 13) % 15); // Temperature range 10-25
     const baseEnergy = 62 + (25 - temp) * 0.4; // Inverse correlation
-    const energy = baseEnergy + (Math.random() - 0.5) * 2; // Add some variance
+    const energy = baseEnergy + (((i * 41 + 7) % 20) - 10) / 10; // Add some variance
 
     points.push({
       x: temp,
@@ -38,12 +39,13 @@ const generateMockData = () => {
 };
 
 export default function EnergyTemperatureChart({ buildingName }: EnergyTemperatureChartProps) {
+  const { themeColors: c } = useThemeMode();
   const [selectedMeter, setSelectedMeter] = useState('Meter');
   const [meterAnchorEl, setMeterAnchorEl] = useState<null | HTMLElement>(null);
   const data = generateMockData();
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 400 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 400 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -66,12 +68,12 @@ export default function EnergyTemperatureChart({ buildingName }: EnergyTemperatu
               border: 1,
               borderColor: 'divider',
               borderRadius: '6px',
-              bgcolor: '#fff',
+              bgcolor: c.bgPrimary,
               cursor: 'pointer',
               minWidth: 90,
               justifyContent: 'space-between',
               '&:hover': {
-                bgcolor: colors.bgPrimaryHover
+                bgcolor: c.bgPrimaryHover
               }
             }}
             onClick={(e) => setMeterAnchorEl(e.currentTarget)}
@@ -128,20 +130,20 @@ export default function EnergyTemperatureChart({ buildingName }: EnergyTemperatu
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             grid: {
               line: {
-                stroke: colors.bgSecondaryHover,
+                stroke: c.chartGridLine,
                 strokeWidth: 1,
               },
             },

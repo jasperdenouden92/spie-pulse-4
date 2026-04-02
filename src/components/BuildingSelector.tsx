@@ -13,12 +13,13 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { buildings as allBuildingsData } from '@/data/buildings';
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha, type ColorTokens } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 export type BuildingFilterMode = 'buildings' | 'clusters';
 export type ContractFilter = boolean;
 
-const kbdSx = {
+const getKbdSx = (c: ColorTokens) => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -29,30 +30,31 @@ const kbdSx = {
   fontFamily: 'inherit',
   fontWeight: 600,
   color: 'text.secondary',
-  bgcolor: '#fff',
+  bgcolor: c.bgPrimary,
   border: '1px solid',
   borderColor: 'divider',
   borderRadius: '4px',
   lineHeight: 1,
-};
+});
 
-const segmentedControlSx = (active: boolean) => ({
+const segmentedControlSx = (active: boolean, c: ColorTokens) => ({
   px: 1.5, py: 0.5, fontSize: '0.75rem', fontWeight: 600, borderRadius: '6px',
   cursor: 'pointer', transition: 'all 0.15s',
-  bgcolor: active ? 'white' : 'transparent',
-  color: active ? colors.brand : 'text.secondary',
-  boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-  '&:hover': { color: active ? colors.brand : 'text.primary' },
+  bgcolor: active ? c.bgPrimary : 'transparent',
+  color: active ? c.brand : 'text.secondary',
+  boxShadow: active ? `0 1px 3px ${c.shadow}` : 'none',
+  '&:hover': { color: active ? c.brand : 'text.primary' },
 });
 
 /** Segmented control to switch between buildings and clusters mode */
 export function BuildingFilterModeToggle({ mode, onModeChange }: { mode: BuildingFilterMode; onModeChange: (mode: BuildingFilterMode) => void }) {
+  const { themeColors: c } = useThemeMode();
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${colors.borderTertiary}` }}>
-      <Box sx={segmentedControlSx(mode === 'buildings')} onClick={() => onModeChange('buildings')}>
+    <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${c.borderTertiary}` }}>
+      <Box sx={segmentedControlSx(mode === 'buildings', c)} onClick={() => onModeChange('buildings')}>
         Buildings
       </Box>
-      <Box sx={segmentedControlSx(mode === 'clusters')} onClick={() => onModeChange('clusters')}>
+      <Box sx={segmentedControlSx(mode === 'clusters', c)} onClick={() => onModeChange('clusters')}>
         Clusters
       </Box>
     </Box>
@@ -61,12 +63,13 @@ export function BuildingFilterModeToggle({ mode, onModeChange }: { mode: Buildin
 
 /** Toggle to filter by contract status */
 export function ContractFilterToggle({ value, onChange }: { value: ContractFilter; onChange: (value: ContractFilter) => void }) {
+  const { themeColors: c } = useThemeMode();
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${colors.borderTertiary}` }}>
-      <Box sx={segmentedControlSx(!value)} onClick={() => onChange(false)}>
+    <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${c.borderTertiary}` }}>
+      <Box sx={segmentedControlSx(!value, c)} onClick={() => onChange(false)}>
         Overall
       </Box>
-      <Box sx={segmentedControlSx(value)} onClick={() => onChange(true)}>
+      <Box sx={segmentedControlSx(value, c)} onClick={() => onChange(true)}>
         Contract
       </Box>
     </Box>
@@ -86,14 +89,15 @@ function SelectorListItem({ label, subtitle, selected, highlighted, onClick, inn
   label: string; subtitle: string; selected: boolean; highlighted: boolean;
   onClick: () => void; innerRef?: (el: HTMLElement | null) => void;
 }) {
+  const { themeColors: c } = useThemeMode();
   return (
     <Box
       ref={innerRef}
       sx={{
         display: 'flex', alignItems: 'center', mx: 1, px: 1.5, py: 1,
         cursor: 'pointer', borderRadius: '6px',
-        bgcolor: selected ? colors.bgActive : highlighted ? colors.bgPrimaryHover : undefined,
-        '&:hover': { bgcolor: selected ? colors.bgActive : colors.bgPrimaryHover },
+        bgcolor: selected ? c.bgActive : highlighted ? c.bgPrimaryHover : undefined,
+        '&:hover': { bgcolor: selected ? c.bgActive : c.bgPrimaryHover },
       }}
       onClick={onClick}
     >
@@ -101,7 +105,7 @@ function SelectorListItem({ label, subtitle, selected, highlighted, onClick, inn
         <Typography variant="body2" noWrap sx={{ fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.2, m: 0, mb: '4px' }}>{label}</Typography>
         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', lineHeight: 1, display: 'block', m: 0 }}>{subtitle}</Typography>
       </Box>
-      {selected && <CheckIcon sx={{ fontSize: 18, color: colors.brand, ml: 1, flexShrink: 0 }} />}
+      {selected && <CheckIcon sx={{ fontSize: 18, color: c.brand, ml: 1, flexShrink: 0 }} />}
     </Box>
   );
 }
@@ -116,6 +120,7 @@ const allCities = [...new Set(allBuildingsData.map(b => b.city))].sort();
  * - In clusters mode: ['cluster1', 'cluster2'] = filter to these clusters
  */
 export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSelectionChange, mode, onModeChange }: BuildingSelectorPopoverProps) {
+  const { themeColors: c } = useThemeMode();
   const [search, setSearch] = useState('');
   const [filterGroups, setFilterGroups] = useState<string[]>([]);
   const [filterCity, setFilterCity] = useState<string>('all');
@@ -209,6 +214,8 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
     '& .MuiSelect-select': { py: 0.5, px: 1.5 },
   });
 
+  const kbdSx = getKbdSx(c);
+
   return (
     <Popover
       anchorEl={anchorEl}
@@ -227,11 +234,11 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
       {/* Mode toggle */}
       {onModeChange && (
         <Box sx={{ px: 1.5, pt: 1.5, pb: 0, flexShrink: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-            <Box sx={{ ...segmentedControlSx(mode === 'buildings'), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('buildings')}>
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ ...segmentedControlSx(mode === 'buildings', c), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('buildings')}>
               Buildings
             </Box>
-            <Box sx={{ ...segmentedControlSx(mode === 'clusters'), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('clusters')}>
+            <Box sx={{ ...segmentedControlSx(mode === 'clusters', c), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('clusters')}>
               Clusters
             </Box>
           </Box>
@@ -293,8 +300,8 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               sx={filterSelectSx(filterCity !== 'all')}
             >
               <MenuItem value="all">All cities</MenuItem>
-              {allCities.map(c => (
-                <MenuItem key={c} value={c}>{c}</MenuItem>
+              {allCities.map(city => (
+                <MenuItem key={city} value={city}>{city}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -321,8 +328,8 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               sx={filterSelectSx(filterCity !== 'all')}
             >
               <MenuItem value="all">All cities</MenuItem>
-              {allCities.map(c => (
-                <MenuItem key={c} value={c}>{c}</MenuItem>
+              {allCities.map(city => (
+                <MenuItem key={city} value={city}>{city}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -341,17 +348,17 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
       {/* Selected chips */}
       {filterActive && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, px: 2, pb: 1, flexShrink: 0, maxHeight: 64, overflowY: 'auto' }}>
-          {[...selectedNames].sort().map(c => (
+          {[...selectedNames].sort().map(name => (
             <Chip
-              key={c}
-              label={c}
+              key={name}
+              label={name}
               size="small"
-              onDelete={() => removeChip(c)}
+              onDelete={() => removeChip(name)}
               deleteIcon={<CloseIcon sx={{ fontSize: '14px !important' }} />}
               sx={{
                 height: 24, fontSize: '0.75rem',
-                bgcolor: colors.bgActive, color: colors.brand,
-                '& .MuiChip-deleteIcon': { color: colors.brand, fontSize: 14 },
+                bgcolor: c.bgActive, color: c.brand,
+                '& .MuiChip-deleteIcon': { color: c.brand, fontSize: 14 },
               }}
             />
           ))}
@@ -409,7 +416,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
       {/* Footer: shortcuts */}
       <Box sx={{
         display: 'flex', alignItems: 'center', gap: 2.5,
-        px: 2, py: 1.25, borderTop: `1px solid ${colors.borderTertiary}`, bgcolor: colors.bgSecondary, flexShrink: 0,
+        px: 2, py: 1.25, borderTop: `1px solid ${c.borderTertiary}`, bgcolor: c.bgSecondary, flexShrink: 0,
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
           <Box sx={{ display: 'flex', gap: 0.25 }}>
@@ -434,7 +441,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
 
 /** Helper to get the chip/inline label for the current selection */
 export function getBuildingSelectorLabel(selectedNames: string[], mode: BuildingFilterMode = 'buildings'): string {
-  if (selectedNames.length === 0) return mode === 'clusters' ? 'all clusters' : 'all buildings';
+  if (selectedNames.length === 0) return mode === 'clusters' ? 'All Clusters' : 'All Buildings';
   if (selectedNames.length === 1) return selectedNames[0];
   return `${selectedNames.length} ${mode === 'clusters' ? 'clusters' : 'buildings'}`;
 }
@@ -448,6 +455,7 @@ interface BuildingSelectorProps {
 
 /** Self-contained chip + popover variant */
 export default function BuildingSelector({ selectedNames, onSelectionChange, mode, onModeChange }: BuildingSelectorProps) {
+  const { themeColors: c } = useThemeMode();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const hasFilter = selectedNames.length > 0;
@@ -458,13 +466,13 @@ export default function BuildingSelector({ selectedNames, onSelectionChange, mod
 
   const chipSx = {
     height: 32, borderRadius: '6px',
-    backgroundColor: hasFilter ? colors.bgActive : 'white',
+    backgroundColor: hasFilter ? c.bgActive : c.bgPrimary,
     border: '1px solid',
-    borderColor: hasFilter ? colors.brand : colors.borderPrimary,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
-    '&:hover': { backgroundColor: hasFilter ? '#bbdefb' : colors.bgPrimaryHover },
-    '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500, color: hasFilter ? colors.brand : 'inherit' },
-    '& .MuiChip-deleteIcon': { color: hasFilter ? colors.brand : undefined },
+    borderColor: hasFilter ? c.brand : c.borderPrimary,
+    boxShadow: `0 1px 4px ${c.shadow}`,
+    '&:hover': { backgroundColor: hasFilter ? c.bgActiveHover : c.bgPrimaryHover },
+    '& .MuiChip-label': { px: 1.5, fontSize: '0.875rem', fontWeight: 500, color: hasFilter ? c.brand : 'inherit' },
+    '& .MuiChip-deleteIcon': { color: hasFilter ? c.brand : undefined },
   };
 
   return (

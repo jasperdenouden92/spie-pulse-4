@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Drawer from '@mui/material/Drawer';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -26,10 +27,12 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import PageHeader from '@/components/PageHeader';
-import PropertyCard, { TopicScore } from '@/components/PropertyCard';
+import PropertyCard, { TopicScore, EnergyLabel } from '@/components/PropertyCard';
 import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
 import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
 import KPICard, { PerformanceRating } from '@/components/KPICard';
@@ -64,7 +67,7 @@ import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import { overallMetrics, themeMetrics, expandedThemeMetrics, operationsMetrics, getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
-import { sortBuildingsByMetric, sortBuildingsByTrend, Building, MetricKeys, buildings as allBuildings } from '@/data/buildings';
+import { sortBuildingsByMetric, sortBuildingsByTrend, Building, MetricKeys, buildings as allBuildings, tenants } from '@/data/buildings';
 import { motion, AnimatePresence } from 'framer-motion';
 import TicketsList from '@/components/TicketsList';
 import QuotationsList from '@/components/QuotationsList';
@@ -82,6 +85,7 @@ import HomePage from '@/components/Home';
 import InsightsPage from '@/components/Insights';
 import RecommendationsInbox from '@/components/RecommendationsInbox';
 import ThemesPage from '@/components/Themes';
+import BmsPage from '@/components/BmsPage';
 import DashboardsPage from '@/components/DashboardsPage';
 import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import ComfortPerformancePage from '@/components/ComfortPerformancePage';
@@ -148,6 +152,7 @@ import {
 } from '@/components/charts';
 import type { ToggleState } from '@/components/KPIToggle';
 import { colors, brandAlpha, secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { BuildingSelectorPopover, getBuildingSelectorLabel, ContractFilterToggle, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = keyof Building['metrics'];
@@ -171,6 +176,12 @@ function getPerformanceRating(score: number): PerformanceRating {
 const PRIMARY_THEME_KEYS: MetricType[] = ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
 const ALL_THEME_KEYS: MetricType[] = [...PRIMARY_THEME_KEYS];
 const OPERATIONS_KEYS: MetricType[] = ['tickets', 'quotations', 'maintenance'];
+
+// Per-tenant theme restrictions — tenants not listed here use all themes
+const TENANT_THEME_KEYS: Record<string, MetricType[]> = {
+  'de Bijenkorf': ['sustainability'],
+  'Stichting Carmelcollege': ['comfort'],
+};
 
 const SELECTION_LABELS: Record<string, string> = {
   overall: 'overall performance',
@@ -220,7 +231,7 @@ function getQuotationsTopics(quotationsGreen: number): TopicScore[] {
 
 function getTicketsTopics(ticketsGreen: number): TopicScore[] {
   return [
-    { label: 'Respond time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: 'Response time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
     { label: 'Restore time', score: Math.max(0, Math.min(100, ticketsGreen - 5)), trend: -2, icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
   ];
 }
@@ -236,25 +247,32 @@ function getAssetMonitoringTopics(assetMonitoringGreen: number): TopicScore[] {
   ];
 }
 
-function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
+function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, themeKeysOverride?: MetricType[]): TopicScore[] {
+  const themeKeys: MetricKeys[] = themeKeysOverride ?? ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
+  const opsKeys: MetricKeys[] = ['tickets', 'quotations', 'maintenance'];
+  const themeScore = Math.round(themeKeys.reduce((sum, k) => sum + metrics[k].green, 0) / themeKeys.length);
+  const themeTrend = Math.round(themeKeys.reduce((sum, k) => sum + trends[k], 0) / themeKeys.length * 10) / 10;
+  const opsScore = Math.round(opsKeys.reduce((sum, k) => sum + metrics[k].green, 0) / opsKeys.length);
+  const opsTrend = Math.round(opsKeys.reduce((sum, k) => sum + trends[k], 0) / opsKeys.length * 10) / 10;
   return [
-    { label: 'Sustainability', score: metrics.sustainability.green, trend: trends.sustainability, icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
-    { label: 'Comfort', score: metrics.comfort.green, trend: trends.comfort, icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Asset Monitoring', score: metrics.asset_monitoring.green, trend: trends.asset_monitoring, icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Compliance', score: metrics.compliance.green, trend: trends.compliance, icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-    { label: 'Tickets', score: metrics.tickets.green, trend: trends.tickets, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
-    { label: 'Quotations', score: metrics.quotations.green, trend: trends.quotations, icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
-    { label: 'Maintenance', score: metrics.maintenance.green, trend: trends.maintenance, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#795548' },
+    { label: 'Theme KPIs', score: themeScore, trend: themeTrend, icon: <StyleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
+    { label: 'Operational KPIs', score: opsScore, trend: opsTrend, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
   ];
 }
 
-function getThemesTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
-  return [
-    { label: 'Sustainability', score: metrics.sustainability.green, trend: trends.sustainability, icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
-    { label: 'Comfort', score: metrics.comfort.green, trend: trends.comfort, icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Asset Monitoring', score: metrics.asset_monitoring.green, trend: trends.asset_monitoring, icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Compliance', score: metrics.compliance.green, trend: trends.compliance, icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-  ];
+const THEME_TOPIC_CONFIG: Record<MetricType, { label: string; icon: React.ReactNode; color: string }> = {
+  sustainability: { label: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
+  comfort: { label: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+  asset_monitoring: { label: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+  compliance: { label: 'Compliance', icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+} as Record<MetricType, { label: string; icon: React.ReactNode; color: string }>;
+
+function getThemesTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, keys: MetricType[] = PRIMARY_THEME_KEYS): TopicScore[] {
+  return keys.filter(k => THEME_TOPIC_CONFIG[k]).map(k => ({
+    ...THEME_TOPIC_CONFIG[k],
+    score: metrics[k].green,
+    trend: trends[k],
+  }));
 }
 
 function getOperationsTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
@@ -277,6 +295,8 @@ function getComplianceTopics(complianceGreen: number): TopicScore[] {
 }
 
 export default function Home() {
+  const { themeColors: tc } = useThemeMode();
+  const isNarrow = useMediaQuery('(max-width:960px)');
   // ── URL state ──────────────────────────────────────────────────────────────
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -340,6 +360,8 @@ export default function Home() {
   const dateRange = searchParams.get('dateRange') ?? 'This Month';
   const selectedGroup = searchParams.get('group') ?? 'All Groups';
   const selectedCity = searchParams.get('city') ?? 'All Cities';
+  const selectedTenant = searchParams.get('tenant') ?? tenants[0];
+  const activeThemeKeys = TENANT_THEME_KEYS[selectedTenant] ?? PRIMARY_THEME_KEYS;
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
@@ -363,7 +385,10 @@ export default function Home() {
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const notificationsRef = useRef<NotificationsPanelHandle>(null);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
+  const mobileBackdropRef = useRef<HTMLDivElement>(null);
   const [dataExplorerOpen, setDataExplorerOpen] = useState(false);
+  const [dataExplorerWidth, setDataExplorerWidth] = useState(0);
   const [exportToast, setExportToast] = useState<{ open: boolean; message: string; severity: 'info' | 'success' }>({ open: false, message: '', severity: 'info' });
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [favorites, setFavorites] = useState<Favorite[]>([
@@ -374,6 +399,8 @@ export default function Home() {
   const rawPanelTab = searchParams.get('panel') ?? 'buildings';
   const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis' || rawPanelTab === 'recommendations') ? rawPanelTab : 'buildings';
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
+  const buildingsViewMode = (searchParams.get('bview') ?? 'cards') as 'cards' | 'list';
+  const setBuildingsViewMode = (v: 'cards' | 'list') => setURLParams({ bview: v });
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
@@ -382,25 +409,6 @@ export default function Home() {
   const [activeDashboardLabel, setActiveDashboardLabel] = useState<string>('');
   const [pendingDashboardId, setPendingDashboardId] = useState<string | null>(null);
 
-  // Page title scroll tracking — show compact filter in header when scrolled
-  const [isFilterTitleScrolled, setIsFilterTitleScrolled] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const pageTitleRef = React.useCallback((node: HTMLDivElement | null) => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-      observerRef.current = null;
-    }
-    if (node) {
-      const obs = new IntersectionObserver(
-        ([entry]) => setIsFilterTitleScrolled(!entry.isIntersecting),
-        { threshold: 0, rootMargin: '-56px 0px 0px 0px' }
-      );
-      obs.observe(node);
-      observerRef.current = obs;
-    } else {
-      setIsFilterTitleScrolled(false);
-    }
-  }, []);
 
   // Page title inline filter state
   const [titleDateRangeAnchor, setTitleDateRangeAnchor] = useState<null | HTMLElement>(null);
@@ -420,31 +428,20 @@ export default function Home() {
 
   const getPeriodDisplayLabel = (range: string): string => getDateRangeDisplayLabel(range);
 
-  const inlineDropdownSx = {
-    display: 'inline-flex',
-    alignItems: 'baseline',
-    gap: '2px',
-    cursor: 'pointer',
-    fontWeight: 600,
-    color: 'primary.main',
-    transition: 'opacity 0.2s ease',
-    '&:hover': {
-      opacity: 0.7,
-    },
-  };
 
   // ── URL setter helpers ─────────────────────────────────────────────────────
-  const setCurrentPage = (page: string) => navigateTo({ page });
-  const setSelectedBuilding = (b: Building | null) => navigateTo({ building: b?.name ?? '' });
-  const setSelection = (s: string) => navigateTo({ metric: s });
-  const setViewMode = (v: string) => setURLParams({ view: v });
-  const setSortOrder = (s: string) => setURLParams({ sort: s });
-  const setDateRange = (r: string) => setURLParams({ dateRange: r });
-  const setSelectedGroup = (g: string) => setURLParams({ group: g });
-  const setSelectedCity = (c: string) => setURLParams({ city: c });
-  const setIsInspectMode = (v: boolean) => setURLParams({ inspect: v ? '1' : '0' });
-  const setIsAssetExplorerOpen = (v: boolean) => setURLParams({ explorer: v ? '1' : '0' });
-  const setAssetTab = (n: number) => setURLParams({ assetTab: String(n) });
+  const setCurrentPage = useCallback((page: string) => navigateTo({ page }), [navigateTo]);
+  const setSelectedBuilding = useCallback((b: Building | null) => navigateTo({ building: b?.name ?? '' }), [navigateTo]);
+  const setSelection = useCallback((s: string) => navigateTo({ metric: s }), [navigateTo]);
+  const setViewMode = useCallback((v: string) => setURLParams({ view: v }), [setURLParams]);
+  const setSortOrder = useCallback((s: string) => setURLParams({ sort: s }), [setURLParams]);
+  const setDateRange = useCallback((r: string) => setURLParams({ dateRange: r }), [setURLParams]);
+  const setSelectedGroup = useCallback((g: string) => setURLParams({ group: g }), [setURLParams]);
+  const setSelectedCity = useCallback((c: string) => setURLParams({ city: c }), [setURLParams]);
+  const setSelectedTenant = useCallback((t: string) => setURLParams({ tenant: t }), [setURLParams]);
+  const setIsInspectMode = useCallback((v: boolean) => setURLParams({ inspect: v ? '1' : '0' }), [setURLParams]);
+  const setIsAssetExplorerOpen = useCallback((v: boolean) => setURLParams({ explorer: v ? '1' : '0' }), [setURLParams]);
+  const setAssetTab = useCallback((n: number) => setURLParams({ assetTab: String(n) }), [setURLParams]);
   // Open a URL-serialisable asset (from the tree)
   const setQuickviewAsset = (a: AssetNode | null) => {
     setLocalQuickviewAsset(null);
@@ -572,17 +569,27 @@ export default function Home() {
     return selection as MetricType;
   })();
 
+  // Filter buildings by selected tenant
+  const tenantBuildings = useMemo(() => {
+    return allBuildings.filter(b => b.tenant === selectedTenant);
+  }, [selectedTenant]);
+
   // Sort buildings based on selected metric and sort order
   const sortedBuildings = useMemo(() => {
     const metricForSort = selectedMetric === 'overall' ? 'overall' : selectedMetric;
 
+    const sortByMetric = (metric: MetricKeys) =>
+      [...tenantBuildings].sort((a, b) => a.metrics[metric].green - b.metrics[metric].green);
+    const sortByTrend = (metric: MetricKeys, direction: 'improved' | 'deteriorated') =>
+      [...tenantBuildings].sort((a, b) => direction === 'improved' ? b.trends[metric] - a.trends[metric] : a.trends[metric] - b.trends[metric]);
+
     if (sortOrder === 'Most Improved') {
-      return sortBuildingsByTrend(metricForSort, 'improved');
+      return sortByTrend(metricForSort, 'improved');
     } else if (sortOrder === 'Most Deteriorated') {
-      return sortBuildingsByTrend(metricForSort, 'deteriorated');
+      return sortByTrend(metricForSort, 'deteriorated');
     }
 
-    const buildings = sortBuildingsByMetric(metricForSort);
+    const buildings = sortByMetric(metricForSort);
 
     if (sortOrder === 'Best to Worst') {
       return [...buildings].reverse();
@@ -593,11 +600,13 @@ export default function Home() {
     }
 
     return buildings;
-  }, [selectedMetric, sortOrder]);
+  }, [selectedMetric, sortOrder, tenantBuildings]);
 
   // Apply contract filter on top of sorted buildings
+  // When contractFilter is false ("Overall"), show all buildings; when true ("Contract"), show only contracted
   const filteredBuildings = useMemo(() => {
-    return sortedBuildings.filter(b => b.hasContract === contractFilter);
+    if (!contractFilter) return sortedBuildings;
+    return sortedBuildings.filter(b => b.hasContract);
   }, [sortedBuildings, contractFilter]);
 
   // Aggregate buildings into clusters for cluster grid view
@@ -651,7 +660,7 @@ export default function Home() {
   };
 
   // Determine if a group is "active" (either the group itself or one of its children is selected)
-  const isThemesActive = selection === 'overall' || selection === 'themes_group' || ALL_THEME_KEYS.includes(selection as MetricType);
+  const isThemesActive = selection === 'overall' || selection === 'themes_group' || activeThemeKeys.includes(selection as MetricType);
   const isOperationsActive = selection === 'overall' || selection === 'operations_group' || OPERATIONS_KEYS.includes(selection as MetricType);
 
   // Visual-only: highlight only the exact level that is selected (not ancestors/descendants)
@@ -663,7 +672,7 @@ export default function Home() {
     if (selection === 'overall') return 'inherited'; // Both groups on in inherited mode
     if (group === 'themes') {
       if (selection === 'themes_group') return 'on';
-      if (ALL_THEME_KEYS.includes(selection as MetricType)) return 'inherited'; // A child is selected
+      if (activeThemeKeys.includes(selection as MetricType)) return 'inherited'; // A child is selected
       return 'off'; // Operations is active
     } else {
       if (selection === 'operations_group') return 'on';
@@ -692,13 +701,57 @@ export default function Home() {
     }
   };
 
+  // Mobile nav — ref-based, no React state, no re-render
+  const openMobileNav = useCallback(() => {
+    mobileNavRef.current?.setAttribute('data-open', 'true');
+    mobileBackdropRef.current?.setAttribute('data-open', 'true');
+  }, []);
+  const closeMobileNav = useCallback(() => {
+    mobileNavRef.current?.removeAttribute('data-open');
+    mobileBackdropRef.current?.removeAttribute('data-open');
+  }, []);
+
   // Handle left sidebar toggle
-  const handleLeftSidebarToggle = () => {
+  const handleLeftSidebarToggle = useCallback(() => {
+    if (window.matchMedia('(max-width: 926px)').matches) {
+      const isOpen = mobileNavRef.current?.hasAttribute('data-open');
+      if (isOpen) closeMobileNav(); else openMobileNav();
+      return;
+    }
     if (leftSidebarCollapsed) {
       setURLParams({ view: 'dashboard' });
     }
-    setLeftSidebarCollapsed(!leftSidebarCollapsed);
-  };
+    setLeftSidebarCollapsed(c => !c);
+  }, [leftSidebarCollapsed, setURLParams, openMobileNav, closeMobileNav]);
+
+  // Close mobile nav on any navigation
+  useEffect(() => {
+    closeMobileNav();
+  }, [currentPage, selectedBuilding?.name, closeMobileNav]);
+
+  // Stable callbacks for Sidebar props
+  const handleSidebarMetricSelect = useCallback((metric: string) => setSelection(metric as MetricType), [setSelection]);
+  const handleSidebarSelectionChange = useCallback((s: string) => setSelection(s), [setSelection]);
+  const handleDashboardNavigate = useCallback((id: string) => setPendingDashboardId(id), []);
+  const handleAssetExplorerToggle = useCallback(() => {
+    setIsAssetExplorerOpen(!isAssetExplorerOpen);
+    if (!isAssetExplorerOpen && isInspectMode) {
+      setIsInspectMode(false);
+    }
+  }, [isAssetExplorerOpen, isInspectMode, setIsAssetExplorerOpen, setIsInspectMode]);
+  const handleNotificationsPanelToggle = useCallback(() => {
+    const opening = !notificationsPanelOpen;
+    setNotificationsPanelOpen(opening);
+    if (opening) {
+      setHasUnreadNotifications(false);
+      setDataExplorerOpen(false);
+    }
+  }, [notificationsPanelOpen]);
+  const handleDataExplorerToggle = useCallback(() => {
+    const opening = !dataExplorerOpen;
+    setDataExplorerOpen(opening);
+    if (opening) setNotificationsPanelOpen(false);
+  }, [dataExplorerOpen]);
 
   // Calculate current page name and favorite status
   const getCurrentPageName = () => {
@@ -743,14 +796,14 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
       Object.assign(updates, { building: '', view: 'dashboard' });
     }
     setURLParams(updates);
-  };
+  }, [setURLParams]);
 
   const handleExport = () => {
     const exportName = selectedBuilding
@@ -819,18 +872,23 @@ export default function Home() {
 
   // Calculate rolled-up scores for KPI groups
   const themesScore = selectedBuilding
-    ? Math.round(PRIMARY_THEME_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / PRIMARY_THEME_KEYS.length)
-    : Math.round(periodMetrics.themes.reduce((sum, m) => sum + m.score, 0) / periodMetrics.themes.length);
+    ? Math.round(activeThemeKeys.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / activeThemeKeys.length)
+    : Math.round(periodMetrics.themes.filter((_, i) => activeThemeKeys.includes(PRIMARY_THEME_KEYS[i])).reduce((sum, m) => sum + m.score, 0) / activeThemeKeys.length);
 
   const operationsScore = selectedBuilding
     ? Math.round(OPERATIONS_KEYS.reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / OPERATIONS_KEYS.length)
     : Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.score, 0) / periodMetrics.operations.length);
 
+  const activeThemeMetrics = periodMetrics.themes.filter((_, i) => activeThemeKeys.includes(PRIMARY_THEME_KEYS[i]));
+  const themesTrend = Math.round(activeThemeMetrics.reduce((sum, m) => sum + m.trend, 0) / activeThemeMetrics.length * 10) / 10;
+  const operationsTrend = Math.round(periodMetrics.operations.reduce((sum, m) => sum + m.trend, 0) / periodMetrics.operations.length * 10) / 10;
+
   // Score for the currently selected KPI (shown in breadcrumb)
   const selectionScore = (() => {
-    const themeIdx = PRIMARY_THEME_KEYS.indexOf(selection as MetricType);
+    const themeIdx = activeThemeKeys.indexOf(selection as MetricType);
     if (themeIdx !== -1) {
-      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.themes[themeIdx]?.score ?? null;
+      const fullIdx = PRIMARY_THEME_KEYS.indexOf(selection as MetricType);
+      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.themes[fullIdx]?.score ?? null;
     }
     const opsIdx = OPERATIONS_KEYS.indexOf(selection as MetricType);
     if (opsIdx !== -1) {
@@ -841,13 +899,16 @@ export default function Home() {
 
   // Metric items for breadcrumb dropdown (all KPIs with icons and scores)
   const metricItems = useMemo(() => [
-    ...PRIMARY_THEME_KEYS.map((key, i) => ({
-      key,
-      label: periodMetrics.themes[i]?.title ?? key,
-      icon: themeIcons[periodMetrics.themes[i]?.title ?? ''],
-      score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.themes[i]?.score ?? 0,
-      group: 'themes' as const,
-    })),
+    ...activeThemeKeys.map((key) => {
+      const i = PRIMARY_THEME_KEYS.indexOf(key);
+      return {
+        key,
+        label: periodMetrics.themes[i]?.title ?? key,
+        icon: themeIcons[periodMetrics.themes[i]?.title ?? ''],
+        score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.themes[i]?.score ?? 0,
+        group: 'themes' as const,
+      };
+    }),
     ...OPERATIONS_KEYS.map((key, i) => ({
       key,
       label: periodMetrics.operations[i]?.title ?? key,
@@ -857,53 +918,79 @@ export default function Home() {
     })),
   ], [periodMetrics, selectedBuilding, themeIcons, operationsIcons]);
 
-  // Calculate sidebar widths
+  // Calculate sidebar widths (desktop only — on mobile the sidebar is an overlay)
   const leftSidebarWidth = leftSidebarCollapsed ? 64 : 280;
   const rightSidebarWidth = viewMode === 'tree' ? 280 : 64;
 
   const isCompact = !!selectedBuilding;
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: colors.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: tc.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
+      {/* Mobile backdrop — always rendered, hidden on desktop via CSS */}
+      <Box
+        ref={mobileBackdropRef}
+        onClick={closeMobileNav}
+        sx={{
+          display: 'none',
+          '@media (max-width: 926px)': {
+            display: 'block',
+          },
+          position: 'fixed',
+          inset: 0,
+          bgcolor: 'rgba(0,0,0,0.5)',
+          zIndex: 1499,
+          opacity: 0,
+          pointerEvents: 'none',
+          transition: 'opacity 0.3s ease',
+          '&[data-open]': {
+            opacity: 1,
+            pointerEvents: 'auto',
+          },
+        }}
+      />
       {/* Left Sidebar */}
-      <Box component="aside" sx={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: leftSidebarWidth, borderRight: 1, borderColor: 'divider', zIndex: 1500, transition: 'width 0.3s ease' }}>
-        <Sidebar
+      <Box ref={mobileNavRef} component="aside" sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        width: leftSidebarWidth,
+        borderRight: 1,
+        borderColor: 'divider',
+        zIndex: 1500,
+        transition: 'width 0.3s ease, transform 0.3s ease',
+        bgcolor: 'background.paper',
+        '@media (max-width: 926px)': {
+          width: 280,
+          transform: 'translateX(-100%)',
+          '&[data-open]': {
+            transform: 'translateX(0)',
+          },
+        },
+      }}>
+        <Sidebar data-annotation-id="app-navigatie"
           selectedBuilding={selectedBuilding}
           selectedMetric={selectedMetric}
           onBuildingSelect={setSelectedBuilding}
-          onMetricSelect={(metric) => setSelection(metric as MetricType)}
+          onMetricSelect={handleSidebarMetricSelect}
+          selectedTenant={selectedTenant}
+          onTenantChange={setSelectedTenant}
           favorites={favorites}
           onFavoritesChange={setFavorites}
           selection={selection}
-          onSelectionChange={(s) => setSelection(s)}
+          onSelectionChange={handleSidebarSelectionChange}
           isCollapsed={leftSidebarCollapsed}
           onToggleCollapse={handleLeftSidebarToggle}
           currentPage={currentPage}
           onPageChange={handlePageChange}
-          onDashboardNavigate={(id) => setPendingDashboardId(id)}
-          onAssetExplorerToggle={() => {
-            setIsAssetExplorerOpen(!isAssetExplorerOpen);
-            if (!isAssetExplorerOpen && isInspectMode) {
-              setIsInspectMode(false);
-            }
-          }}
+          onDashboardNavigate={handleDashboardNavigate}
+          onAssetExplorerToggle={handleAssetExplorerToggle}
           isAssetExplorerOpen={isAssetExplorerOpen}
           notificationsPanelOpen={notificationsPanelOpen}
-          onNotificationsPanelToggle={() => {
-            const opening = !notificationsPanelOpen;
-            setNotificationsPanelOpen(opening);
-            if (opening) {
-              setHasUnreadNotifications(false);
-              setDataExplorerOpen(false);
-            }
-          }}
+          onNotificationsPanelToggle={handleNotificationsPanelToggle}
           hasUnreadNotifications={hasUnreadNotifications}
           dataExplorerOpen={dataExplorerOpen}
-          onDataExplorerToggle={() => {
-            const opening = !dataExplorerOpen;
-            setDataExplorerOpen(opening);
-            if (opening) setNotificationsPanelOpen(false);
-          }}
+          onDataExplorerToggle={handleDataExplorerToggle}
         />
       </Box>
 
@@ -918,7 +1005,7 @@ export default function Home() {
       {/* Data Explorer Panel */}
       <DataExplorerPanel
         open={dataExplorerOpen}
-        onClose={() => setDataExplorerOpen(false)}
+        onClose={() => { setDataExplorerOpen(false); setLocalQuickviewAsset(null); setURLParams({ asset: '', assetTab: '0' }); }}
         sidebarWidth={leftSidebarWidth}
         onAssetSelect={(node) => {
           if (node) {
@@ -934,6 +1021,7 @@ export default function Home() {
             setURLParams({ asset: asset.id, assetTab: '0' });
           }
         }}
+        onWidthChange={setDataExplorerWidth}
       />
 
       {/* Scrim/Backdrop when Asset Explorer is open */}
@@ -995,13 +1083,14 @@ export default function Home() {
       <Box
         sx={{
           position: 'fixed',
-          top: '56px',
-          left: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? `${leftSidebarWidth + 280}px` : `calc(-100% + ${leftSidebarWidth + 280}px)`,
-          width: `calc(100% - ${leftSidebarWidth + 280}px)`,
-          height: 'calc(100vh - 56px)',
+          top: 0,
+          left: `${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px`,
+          width: `calc(100% - ${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px)`,
+          height: '100vh',
           zIndex: 1425,
-          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          bgcolor: '#fff',
+          clipPath: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
+          transition: 'clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          bgcolor: tc.bgPrimary,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -1082,7 +1171,7 @@ export default function Home() {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          bgcolor: '#fff',
+          bgcolor: tc.bgPrimary,
         }}
       >
         <Tooltip title={isInspectMode ? "Exit Inspect Mode" : "Inspect Assets"} placement="left">
@@ -1097,11 +1186,11 @@ export default function Home() {
               width: 48,
               height: 48,
               borderRadius: 0,
-              bgcolor: isInspectMode ? colors.brand : '#fff',
-              color: isInspectMode ? '#fff' : 'text.primary',
+              bgcolor: isInspectMode ? tc.brand : tc.bgPrimary,
+              color: isInspectMode ? tc.bgPrimary : 'text.primary',
               border: isInspectMode ? '2px dashed rgba(255, 255, 255, 0.5)' : 'none',
               '&:hover': {
-                bgcolor: isInspectMode ? '#1565c0' : colors.bgPrimaryHover,
+                bgcolor: isInspectMode ? '#1565c0' : tc.bgPrimaryHover,
               }
             }}
           >
@@ -1150,8 +1239,8 @@ export default function Home() {
             minWidth: 280,
             maxWidth: 320,
             pointerEvents: 'none',
-            bgcolor: '#fff',
-            border: `2px dashed ${colors.brand}`,
+            bgcolor: tc.bgPrimary,
+            border: `2px dashed ${tc.brand}`,
           }}
         >
           {hoveredBuilding ? (
@@ -1191,7 +1280,7 @@ export default function Home() {
               )}
             </>
           )}
-          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: colors.brand, fontWeight: 500 }}>
+          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: tc.brand, fontWeight: 500 }}>
             Click to inspect →
           </Typography>
         </Paper>
@@ -1202,12 +1291,13 @@ export default function Home() {
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        ml: (isAssetExplorerOpen && viewingAssetDetail) ? `${leftSidebarWidth + 280}px` : `${leftSidebarWidth}px`,
+        ml: viewingAssetDetail ? `${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px` : `${leftSidebarWidth}px`,
+        '@media (max-width: 926px)': { ml: 0 },
         transition: 'margin-left 0.3s ease, border-color 0.3s ease',
         position: 'relative',
         zIndex: 1,
         border: '3px dashed',
-        borderColor: isInspectMode ? colors.brand : 'transparent',
+        borderColor: isInspectMode ? tc.brand : 'transparent',
         minWidth: 0,
         overflow: 'hidden'
       }}>
@@ -1237,26 +1327,19 @@ export default function Home() {
             onPageChange={handlePageChange}
             isCollapsed={leftSidebarCollapsed}
             onToggleCollapse={handleLeftSidebarToggle}
+
             onExport={handleExport}
             activeDashboardId={activeDashboardId}
             activeDashboardLabel={activeDashboardLabel}
-            isFilterTitleScrolled={
-              currentPage === 'dashboards'
-                ? false
-                : isFilterTitleScrolled && currentPage === 'portfolio'
-            }
-            filterSelectionLabel={
-              currentPage === 'dashboards'
-                ? undefined
-                : (SELECTION_LABELS[selection] ?? 'overall performance')
-            }
-            filterPeriodLabel={getPeriodDisplayLabel(dateRange)}
+            filterPeriodLabel={currentPage === 'portfolio' ? getPeriodDisplayLabel(dateRange) : undefined}
             filterBuildingLabel={
-              (currentPage === 'portfolio' && selectedBuilding) ? undefined : getTitleBuildingLabel()
+              (currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards'
+                ? getTitleBuildingLabel() : undefined
             }
-            onFilterDateClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
+            onFilterDateClick={currentPage === 'portfolio' ? (e) => setTitleDateRangeAnchor(e.currentTarget) : undefined}
             onFilterBuildingClick={
-              (currentPage === 'portfolio' && selectedBuilding) ? undefined : (e) => setTitleBuildingAnchor(e.currentTarget)
+              ((currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards')
+                ? (e) => setTitleBuildingAnchor(e.currentTarget) : undefined
             }
             contractFilter={contractFilter}
             onContractFilterChange={setContractFilter}
@@ -1291,16 +1374,22 @@ export default function Home() {
             onDashboardChange={(id, label) => { setActiveDashboardId(id); setActiveDashboardLabel(label); }}
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
+            selectedBuildingNames={titleBuildingNames}
           />
         )}
 
         {/* Page Content */}
         {currentPage !== 'dashboards' && (
-        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: 3 }}>
+        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
           {currentPage === 'exports' && <ExportsPage />}
+
+          {/* BMS Page */}
+          {currentPage === 'bms' && (
+            <BmsPage />
+          )}
 
           {/* Portfolio Page */}
           {currentPage === 'portfolio' && (
@@ -1351,7 +1440,7 @@ export default function Home() {
                       }}>
                         <Box>
                           <Typography variant="h5" sx={{
-                            color: '#fff',
+                            color: tc.bgPrimary,
                             fontWeight: 700,
                             textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                             mb: 0.5
@@ -1369,82 +1458,43 @@ export default function Home() {
                     </Box>
                   )}
 
-                  {/* ========== PAGE TITLE WITH INLINE FILTERS ========== */}
-                  {selectedBuilding && (
-                    <Box ref={pageTitleRef} sx={{ mb: 3 }}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                        Showing {SELECTION_LABELS[selection] ?? 'overall performance'} of
-                        <Box
-                          component="span"
-                          onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
-                          sx={inlineDropdownSx}
-                        >
-                          {getPeriodDisplayLabel(dateRange)}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                        </Box>
-                      </Typography>
-
-                    </Box>
-                  )}
-                  {!selectedBuilding && (
-                    <Box ref={pageTitleRef} sx={{ mb: 3 }}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                        Showing {SELECTION_LABELS[selection] ?? 'overall performance'} of
-                        <Box
-                          component="span"
-                          onClick={(e) => setTitleDateRangeAnchor(e.currentTarget)}
-                          sx={inlineDropdownSx}
-                        >
-                          {getPeriodDisplayLabel(dateRange)}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                        </Box>
-                        for
-                        <Box
-                          component="span"
-                          onClick={(e) => setTitleBuildingAnchor(e.currentTarget)}
-                          sx={inlineDropdownSx}
-                        >
-                          {getTitleBuildingLabel()}
-                          <KeyboardArrowDownIcon sx={{ fontSize: 16, ml: '-1px', verticalAlign: 'text-bottom', position: 'relative', top: '1px' }} />
-                        </Box>
-                      </Typography>
-
-                    </Box>
-                  )}
+                  {/* Spacer — filters are now in the sticky PageHeader */}
 
                   {/* ========== KPI METRICS SECTION ========== */}
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
-                  <Box sx={{
-                    display: 'flex', gap: 2, mb: 3, minWidth: 0,
+                  <Box className="kpi-metrics-section" sx={{
+                    display: 'flex', flexDirection: isNarrow ? 'column' : 'row', gap: 0, mb: 3, minWidth: 0,
                     '& > *': {
                       transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    },
+                    '&:has(.performance-card:hover) .bracket-arrow polygon': {
+                      fill: tc.bgSecondaryHover,
                     },
                   }}>
                     {/* Overall Score Card */}
                     <Box
+                      className="performance-card"
                       component="button"
                       onClick={() => { setSelection('overall'); }}
                       sx={{
                         p: isCompact ? 2 : 3,
-                        border: selection === 'overall' ? '2px solid' : '1px solid',
-                        borderColor: selection === 'overall' ? colors.brand : colors.borderTertiary,
-                        borderRadius: 2,
-                        bgcolor: colors.bgPrimary,
-                        width: 320,
-                        minHeight: isCompact ? 340 : 420,
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRight: isNarrow ? `1px solid ${tc.borderSecondary}` : 'none',
+                        borderBottom: isNarrow ? 'none' : 1,
+                        borderRadius: isNarrow ? '8px 8px 0 0' : '8px 0 0 8px',
+                        bgcolor: selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary,
+                        width: isNarrow ? '100%' : 280,
+                        alignSelf: 'stretch',
                         flexShrink: 0,
                         display: 'flex',
                         flexDirection: 'column',
                         cursor: 'pointer',
                         textAlign: 'left',
-                        boxShadow: selection === 'overall'
-                          ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
-                          : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                        boxShadow: 'none',
                         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          borderColor: selection === 'overall' ? colors.brand : colors.borderPrimary,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
-                          transform: 'translateY(-1px)',
+                          bgcolor: tc.bgSecondaryHover,
                         }
                       }}
                     >
@@ -1456,12 +1506,12 @@ export default function Home() {
                           </Typography>
                         </Box>
                         {selection === 'overall'
-                          ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
-                          : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                          ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: tc.brand }} />
+                          : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: tc.borderPrimary }} />}
                       </Box>
                       {(() => {
                         const overallScore = selectedBuilding
-                          ? Math.round([...PRIMARY_THEME_KEYS, ...OPERATIONS_KEYS].reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / (PRIMARY_THEME_KEYS.length + OPERATIONS_KEYS.length))
+                          ? Math.round([...activeThemeKeys, ...OPERATIONS_KEYS].reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / (activeThemeKeys.length + OPERATIONS_KEYS.length))
                           : Math.round([...periodMetrics.themes, ...periodMetrics.operations].reduce((sum, m) => sum + m.score, 0) / (periodMetrics.themes.length + periodMetrics.operations.length));
                         const overallRating = getPerformanceRating(overallScore);
                         // Generate sparkline data based on score
@@ -1533,34 +1583,45 @@ export default function Home() {
                       </Box>
                     </Box>
 
+
                     {/* KPI Groups Container — also gets sibling-dimming on hover */}
                     <Box sx={{
                       flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
-                      gap: isCompact ? 1.5 : 2, transition: 'gap 0.3s ease',
+                      gap: 0, transition: 'gap 0.3s ease',
                     }}>
 
                         <>
                           {/* ===== THEMES ROW ===== */}
                           <Box
                             className="kpi-group-panel"
+                            onClick={() => handleGroupToggle('themes')}
                             sx={{
                               p: isCompact ? 1.5 : 2,
-                              border: isThemesSelected ? '2px solid' : '1px solid',
-                              borderColor: isThemesSelected ? colors.brand : colors.borderTertiary,
-                              borderRadius: 2,
-                              bgcolor: colors.bgPrimary,
-                              boxShadow: isThemesSelected
-                                ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
-                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                              pb: isCompact ? 2.5 : 3,
+                              pl: isNarrow ? (isCompact ? 1.5 : 2) : (isCompact ? 5 : 6),
+                              borderTop: 1,
+                              borderRight: 1,
+                              borderBottom: 1,
+                              borderLeft: isNarrow ? 1 : 'none',
+                              borderColor: 'divider',
+                              borderRadius: isNarrow ? '0' : '0 8px 0 0',
+                              bgcolor: isThemesSelected ? brandAlpha(0.04) : tc.bgPrimary,
+                              position: 'relative',
+                              overflow: 'visible',
+                              boxShadow: 'none',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',
                               '&:hover': {
-                                borderColor: isThemesSelected ? colors.brand : colors.borderPrimary,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
-                                transform: 'translateY(-1px)',
+                                bgcolor: brandAlpha(0.06),
                               }
                             }}
                           >
+                            {/* Left bracket arrow — top half */}
+                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1, display: isNarrow ? 'none' : 'block' }} preserveAspectRatio="none" viewBox="0 0 20 100">
+                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary} />
+                              <polyline points="0,0 20,50" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polyline points="20,50 0,100" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                            </svg>
                             {/* Themes Header */}
                             <Box
                               component="button"
@@ -1571,31 +1632,38 @@ export default function Home() {
                                 width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
                               }}
                             >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                                 <StyleOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
                                 <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
                                   Theme KPIs
                                 </Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
                                   <AnimatedNumber value={themesScore} />%
                                 </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: themesTrend >= 0 ? 'success.main' : 'error.main' }}>
+                                  {themesTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+                                    {Math.abs(themesTrend)}%
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {isThemesSelected
-                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
-                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: tc.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: tc.borderPrimary }} />}
                               </Box>
                             </Box>
 
                             {/* Primary Theme KPIs — only clickable when themes are active */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
                               {periodMetrics.themes.map((metric, index) => {
                                 const metricKey = PRIMARY_THEME_KEYS[index];
+                                if (!activeThemeKeys.includes(metricKey)) return null;
                                 if (contractFilter && (metricKey === 'compliance' || metricKey === 'comfort')) return null;
                                 const score = selectedBuilding
                                   ? selectedBuilding.metrics[metricKey].green
@@ -1628,24 +1696,34 @@ export default function Home() {
                           {/* ===== OPERATIONS ROW ===== */}
                           <Box
                             className="kpi-group-panel"
+                            onClick={() => handleGroupToggle('operations')}
                             sx={{
                               p: isCompact ? 1.5 : 2,
-                              border: isOperationsSelected ? '2px solid' : '1px solid',
-                              borderColor: isOperationsSelected ? colors.brand : colors.borderTertiary,
-                              borderRadius: 2,
-                              bgcolor: colors.bgPrimary,
-                              boxShadow: isOperationsSelected
-                                ? `0 2px 8px ${brandAlpha(0.15)}, 0 1px 4px rgba(0,0,0,0.06)`
-                                : '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                              pb: isCompact ? 2.5 : 3,
+                              pl: isNarrow ? (isCompact ? 1.5 : 2) : (isCompact ? 5 : 6),
+                              borderTop: 'none',
+                              borderRight: 1,
+                              borderBottom: 1,
+                              borderLeft: isNarrow ? 1 : 'none',
+                              borderColor: 'divider',
+                              borderRadius: isNarrow ? '0 0 8px 8px' : '0 0 8px 0',
+                              bgcolor: isOperationsSelected ? brandAlpha(0.04) : tc.bgPrimary,
+                              position: 'relative',
+                              overflow: 'visible',
+                              boxShadow: 'none',
                               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'pointer',
                               '&:hover': {
-                                borderColor: isOperationsSelected ? colors.brand : colors.borderPrimary,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)',
-                                transform: 'translateY(-1px)',
+                                bgcolor: brandAlpha(0.06),
                               }
                             }}
                           >
+                            {/* Left bracket arrow — bottom half */}
+                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1, display: isNarrow ? 'none' : 'block' }} preserveAspectRatio="none" viewBox="0 0 20 100">
+                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary} />
+                              <polyline points="0,0 20,50" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polyline points="20,50 0,100" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                            </svg>
                             {/* Operations Header */}
                             <Box
                               component="button"
@@ -1656,26 +1734,32 @@ export default function Home() {
                                 width: '100%', border: 'none', bgcolor: 'transparent', cursor: 'pointer', p: 0, textAlign: 'left',
                               }}
                             >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                                 <EngineeringOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
                                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
                                   Operational KPIs
                                 </Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
                                   <AnimatedNumber value={operationsScore} />%
                                 </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: operationsTrend >= 0 ? 'success.main' : 'error.main' }}>
+                                  {operationsTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+                                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+                                    {Math.abs(operationsTrend)}%
+                                  </Typography>
+                                </Box>
+                              </Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {isOperationsSelected
-                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
-                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: tc.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: tc.borderPrimary }} />}
                               </Box>
                             </Box>
 
                             {/* Operations KPIs */}
                             <Box sx={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
                               gap: isCompact ? 1.5 : 2,
                               transition: 'gap 0.3s ease'
                             }}>
@@ -1734,7 +1818,7 @@ export default function Home() {
                           ]}
                         />
 
-                        {/* Sort Dropdown + Building/Cluster toggle — only on Buildings tab */}
+                        {/* Sort Dropdown + View Toggle — only on Buildings tab */}
                         {buildingsPanelTab === 'buildings' && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Chip
@@ -1746,7 +1830,7 @@ export default function Home() {
                               sx={{
                                 height: 32,
                                 borderRadius: '6px',
-                                backgroundColor: colors.bgPrimaryHover,
+                                backgroundColor: tc.bgPrimaryHover,
                                 '&:hover': { backgroundColor: '#e8e8e8' },
                                 '& .MuiChip-label': { px: 1, fontSize: '0.813rem', fontWeight: 500 }
                               }}
@@ -1763,6 +1847,21 @@ export default function Home() {
                               <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
                               <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
                             </Menu>
+                            <IconButton
+                              onClick={() => setBuildingsViewMode(buildingsViewMode === 'cards' ? 'list' : 'cards')}
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: '6px',
+                                bgcolor: tc.bgPrimaryHover,
+                                color: 'text.secondary',
+                                '&:hover': { bgcolor: tc.bgSecondaryHover },
+                              }}
+                            >
+                              {buildingsViewMode === 'cards'
+                                ? <FormatListBulletedIcon sx={{ fontSize: 18 }} />
+                                : <GridViewOutlinedIcon sx={{ fontSize: 18 }} />}
+                            </IconButton>
                           </Box>
                         )}
                       </Box>
@@ -1771,8 +1870,191 @@ export default function Home() {
                       <Box sx={{ pt: 2 }}>
                         {buildingsPanelTab === 'buildings' ? (
                           <>
-                            {/* Group Selection Banner */}
-                            {/* ===== BUILDINGS / CLUSTERS GRID ===== */}
+                            {buildingsViewMode === 'list' ? (
+                              /* ===== LIST VIEW ===== */
+                              (() => {
+                                // Compute topic headers from first item
+                                const firstItem = titleBuildingMode === 'clusters' ? clusterData[0] : filteredBuildings[0];
+                                const firstMetrics = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).metrics : (firstItem as typeof filteredBuildings[0]).metrics) : undefined;
+                                const firstTrends = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).trends : (firstItem as typeof filteredBuildings[0]).trends) : undefined;
+                                const topicHeaders = firstMetrics && firstTrends ? (
+                                  selection === 'themes_group' ? getThemesTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys)
+                                  : selection === 'operations_group' ? getOperationsTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
+                                  : selectedMetric === 'overall' ? getOverallTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys)
+                                  : selectedMetric === 'comfort' ? getComfortTopics(firstMetrics.comfort.green)
+                                  : selectedMetric === 'sustainability' ? getSustainabilityTopics(firstMetrics.sustainability.green)
+                                  : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(firstMetrics.asset_monitoring.green)
+                                  : selectedMetric === 'compliance' ? getComplianceTopics(firstMetrics.compliance.green)
+                                  : selectedMetric === 'maintenance' ? getMaintenanceTopics(firstMetrics.maintenance.green)
+                                  : selectedMetric === 'quotations' ? getQuotationsTopics(firstMetrics.quotations.green)
+                                  : selectedMetric === 'tickets' ? getTicketsTopics(firstMetrics.tickets.green)
+                                  : undefined
+                                ) : undefined;
+                                const colHeaderSx = { fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase' as const, fontSize: '0.7rem', letterSpacing: '0.05em' };
+
+                                return (
+                              <Box>
+                                {/* Table header */}
+                                <Box sx={{
+                                  display: 'flex',
+                                  gap: 1.5,
+                                  px: 2.5,
+                                  pb: 1,
+                                  borderBottom: 1,
+                                  borderColor: 'divider',
+                                }}>
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, flex: 2 }}>Building</Typography>
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, width: 90, flexShrink: 0 }}>Score</Typography>
+                                  {selectedMetric !== 'overall' && (
+                                    <Typography variant="caption" sx={{ ...colHeaderSx, width: 75, flexShrink: 0 }}>Overall</Typography>
+                                  )}
+                                  {topicHeaders?.map(t => (
+                                    <Typography key={t.label} variant="caption" sx={{ ...colHeaderSx, width: 105, flexShrink: 0, textAlign: 'center' }}>
+                                      {t.label}
+                                    </Typography>
+                                  ))}
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, width: 75, flexShrink: 0, textAlign: 'center' }}>Alerts</Typography>
+                                  <Typography variant="caption" sx={{ ...colHeaderSx, width: 80, flexShrink: 0, textAlign: 'right' }}>Trend</Typography>
+                                </Box>
+                                {/* Rows */}
+                                {(titleBuildingMode === 'clusters' ? clusterData : filteredBuildings).map((item) => {
+                                  const isCluster = titleBuildingMode === 'clusters';
+                                  const b = item as typeof filteredBuildings[0];
+                                  const c = item as typeof clusterData[0];
+                                  const name = isCluster ? c.name : b.name;
+                                  const subtitle = isCluster ? `${c.buildings.length} buildings` : b.address;
+                                  const image = isCluster ? c.images[0] : b.image;
+                                  const score = (isCluster ? c.metrics : b.metrics)[selectedMetric].green;
+                                  const overallScore = (isCluster ? c.metrics : b.metrics).overall.green;
+                                  const trend = (isCluster ? c.trends : b.trends)[selectedMetric];
+                                  const stats = !isCluster ? buildingOperationalStats[b.name] : undefined;
+                                  const rating = getPerformanceRating(score);
+                                  const overallRating = getPerformanceRating(overallScore);
+
+                                  const metrics = isCluster ? c.metrics : b.metrics;
+                                  const trends = isCluster ? c.trends : b.trends;
+                                  const topics = selection === 'themes_group' ? getThemesTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys)
+                                    : selection === 'operations_group' ? getOperationsTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
+                                    : selectedMetric === 'overall' ? getOverallTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys)
+                                    : selectedMetric === 'comfort' ? getComfortTopics(metrics.comfort.green)
+                                    : selectedMetric === 'sustainability' ? getSustainabilityTopics(metrics.sustainability.green)
+                                    : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(metrics.asset_monitoring.green)
+                                    : selectedMetric === 'compliance' ? getComplianceTopics(metrics.compliance.green)
+                                    : selectedMetric === 'maintenance' ? getMaintenanceTopics(metrics.maintenance.green)
+                                    : selectedMetric === 'quotations' ? getQuotationsTopics(metrics.quotations.green)
+                                    : selectedMetric === 'tickets' ? getTicketsTopics(metrics.tickets.green)
+                                    : undefined;
+
+                                  const energyRating = selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined;
+                                  const alertCount = selectedMetric === 'comfort' && stats ? stats.comfort.alerts
+                                    : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts
+                                    : selectedMetric === 'asset_monitoring' && stats ? stats.assetMonitoring.alerts
+                                    : undefined;
+
+                                  return (
+                                    <Box
+                                      key={name}
+                                      onClick={() => !isCluster && (isInspectMode ? undefined : setSelectedBuilding(b))}
+                                      sx={{
+                                        display: 'flex',
+                                        gap: 1.5,
+                                        px: 2.5,
+                                        py: 1.5,
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        borderBottom: 1,
+                                        borderColor: 'divider',
+                                        transition: 'background-color 0.15s ease',
+                                        '&:hover': { bgcolor: tc.bgPrimaryHover },
+                                        '&:last-child': { borderBottom: 'none' },
+                                      }}
+                                    >
+                                      {/* Name + address + WEII */}
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 2 }}>
+                                        <Box
+                                          component="img"
+                                          src={image}
+                                          alt={name}
+                                          sx={{ width: 40, height: 40, borderRadius: 1, objectFit: 'cover', flexShrink: 0 }}
+                                        />
+                                        <Box sx={{ minWidth: 0 }}>
+                                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                            <Typography variant="body2" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                              {name}
+                                            </Typography>
+                                            {energyRating && <EnergyLabel rating={energyRating} size="small" />}
+                                          </Box>
+                                          <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                                            {subtitle}
+                                          </Typography>
+                                        </Box>
+                                      </Box>
+
+                                      {/* Score with color-matched icon */}
+                                      <Box sx={{ width: 90, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Box sx={{ display: 'flex', color: rating.color, '& .MuiSvgIcon-root': { fontSize: 16, color: `${rating.color} !important` } }}>
+                                          {metricInfo[selectedMetric].icon}
+                                        </Box>
+                                        <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: rating.color }}>
+                                          {score}%
+                                        </Typography>
+                                      </Box>
+
+                                      {/* Overall score — hidden when viewing overall */}
+                                      {selectedMetric !== 'overall' && (
+                                        <Box sx={{ width: 75, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                          <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                          <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary' }}>
+                                            {overallScore}%
+                                          </Typography>
+                                        </Box>
+                                      )}
+
+                                      {/* Topic scores — each in own column, gray */}
+                                      {topics?.map(t => (
+                                        <Box key={t.label} sx={{ width: 105, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                          <Box sx={{ display: 'flex', color: 'text.secondary', '& .MuiSvgIcon-root': { fontSize: 16 } }}>{t.icon}</Box>
+                                          <Typography sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.8rem' }}>
+                                            {t.score}%
+                                          </Typography>
+                                        </Box>
+                                      ))}
+
+                                      {/* Alerts */}
+                                      <Box sx={{ width: 75, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                        {alertCount != null && alertCount > 0 ? (
+                                          <>
+                                            <NotificationsActiveOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                            <Typography sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.8rem' }}>
+                                              {alertCount}
+                                            </Typography>
+                                          </>
+                                        ) : (
+                                          <Typography sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>—</Typography>
+                                        )}
+                                      </Box>
+
+                                      {/* Trend */}
+                                      <Box sx={{ width: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                                        {trend >= 0
+                                          ? <TrendingUpIcon sx={{ fontSize: 16, color: tc.statusGood }} />
+                                          : <TrendingDownIcon sx={{ fontSize: 16, color: tc.statusPoor }} />}
+                                        <Typography sx={{
+                                          fontWeight: 600,
+                                          fontSize: '0.8rem',
+                                          color: trend >= 0 ? tc.statusGood : tc.statusPoor,
+                                        }}>
+                                          {trend >= 0 ? '+' : ''}{trend}%
+                                        </Typography>
+                                      </Box>
+                                    </Box>
+                                  );
+                                })}
+                              </Box>
+                                );
+                              })()
+                            ) : (
+                            /* ===== CARDS VIEW ===== */
                             <Box sx={{
                               display: 'grid',
                               gap: 2,
@@ -1800,11 +2082,11 @@ export default function Home() {
                                       performance={cluster.metrics[selectedMetric]}
                                       metricTitle={metricInfo[selectedMetric].title}
                                       metricIcon={metricInfo[selectedMetric].icon}
-                                      overallPerformance={cluster.metrics.overall}
+                                      overallPerformance={selectedMetric !== 'overall' ? cluster.metrics.overall : undefined}
                                       showOverall={selectedMetric !== 'overall'}
                                       trend={cluster.trends[selectedMetric]}
                                       periodLabel={periodMetrics.periodLabel}
-                                      topics={selection === 'themes_group' ? getThemesTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selection === 'operations_group' ? getOperationsTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selectedMetric === 'overall' ? getOverallTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(cluster.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(cluster.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(cluster.metrics.tickets.green) : undefined}
+                                      topics={selection === 'themes_group' ? getThemesTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys) : selection === 'operations_group' ? getOperationsTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selectedMetric === 'overall' ? getOverallTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys) : selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(cluster.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(cluster.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(cluster.metrics.tickets.green) : undefined}
                                     />
                                   </motion.div>
                                 ))
@@ -1848,7 +2130,7 @@ export default function Home() {
                                   onMouseLeave={() => handleBuildingHover(null)}
                                   style={{
                                     cursor: 'pointer',
-                                    outline: isInspectMode && hoveredBuilding === b ? `3px dashed ${colors.brand}` : 'none',
+                                    outline: isInspectMode && hoveredBuilding === b ? `3px dashed ${tc.brand}` : 'none',
                                     outlineOffset: '4px',
                                     borderRadius: '12px',
                                     transition: 'outline 0.2s ease, z-index 0.2s ease',
@@ -1864,12 +2146,12 @@ export default function Home() {
                                     performance={b.metrics[selectedMetric]}
                                     metricTitle={metricInfo[selectedMetric].title}
                                     metricIcon={metricInfo[selectedMetric].icon}
-                                    overallPerformance={b.metrics.overall}
+                                    overallPerformance={selectedMetric !== 'overall' ? b.metrics.overall : undefined}
                                     showOverall={selectedMetric !== 'overall'}
                                     operationalStats={operationalStats}
                                     trend={b.trends[selectedMetric]}
                                     periodLabel={periodMetrics.periodLabel}
-                                    topics={selection === 'themes_group' ? getThemesTopics(b.metrics, b.trends) : selection === 'operations_group' ? getOperationsTopics(b.metrics, b.trends) : selectedMetric === 'overall' ? getOverallTopics(b.metrics, b.trends) : selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(b.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
+                                    topics={selection === 'themes_group' ? getThemesTopics(b.metrics, b.trends, activeThemeKeys) : selection === 'operations_group' ? getOperationsTopics(b.metrics, b.trends) : selectedMetric === 'overall' ? getOverallTopics(b.metrics, b.trends, activeThemeKeys) : selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(b.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
                                     energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
                                     alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : selectedMetric === 'asset_monitoring' && stats ? stats.assetMonitoring.alerts : undefined}
                                   />
@@ -1878,6 +2160,7 @@ export default function Home() {
                             })
                               )}
                             </Box>
+                            )}
                           </>
                         ) : buildingsPanelTab === 'kpi_analysis' ? (
                           /* ===== KPI ANALYSIS VIEW ===== */
@@ -1889,6 +2172,7 @@ export default function Home() {
                             metricInfo={metricInfo}
                             onMetricSelect={handleMetricSelect}
                             periodMetrics={periodMetrics}
+                            themeKeys={activeThemeKeys}
                             onBuildingSelect={setSelectedBuilding}
                             onViewAllBuildings={(sort) => {
                               setBuildingsPanelTab('buildings');
@@ -1940,7 +2224,7 @@ export default function Home() {
                           </Box>
                           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                             <EnergyUseByBuildingChart buildingName={selectedBuilding.name} />
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 300 }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary, height: 300 }}>
                               <Typography variant="body2" color="text.secondary">Consumption and generation</Typography>
                             </Box>
                             <EnergyDistributionChart buildingName={selectedBuilding.name} />
@@ -2024,7 +2308,7 @@ export default function Home() {
                         <>
                           <UtilizationOverviewChart buildingName={selectedBuilding.name} />
                           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', bgcolor: tc.bgPrimary }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Space Allocation</Typography>
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 {['Open Workspace', 'Private Offices', 'Meeting Rooms', 'Common Areas', 'Storage'].map((space, i) => (
@@ -2033,14 +2317,14 @@ export default function Home() {
                                       <Typography variant="body2">{space}</Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{[45, 25, 15, 10, 5][i]}%</Typography>
                                     </Box>
-                                    <Box sx={{ height: 8, borderRadius: 4, bgcolor: colors.bgSecondaryHover, overflow: 'hidden' }}>
-                                      <Box sx={{ width: `${[45, 25, 15, 10, 5][i]}%`, height: '100%', bgcolor: colors.brand, transition: 'width 0.5s ease' }} />
+                                    <Box sx={{ height: 8, borderRadius: 4, bgcolor: tc.bgSecondaryHover, overflow: 'hidden' }}>
+                                      <Box sx={{ width: `${[45, 25, 15, 10, 5][i]}%`, height: '100%', bgcolor: tc.brand, transition: 'width 0.5s ease' }} />
                                     </Box>
                                   </Box>
                                 ))}
                               </Box>
                             </Box>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Occupancy Trends</Typography>
                               <Typography variant="body2" color="text.secondary">Peak hours, utilization patterns, and capacity insights</Typography>
                             </Box>
@@ -2049,23 +2333,23 @@ export default function Home() {
                       ) : selectedMetric === 'compliance' ? (
                         <>
                           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Compliance Score</Typography>
                               <Typography variant="h3" sx={{ fontWeight: 600, mb: 1 }}>94%</Typography>
                               <Typography variant="body2" color="success.main">+3% from last audit</Typography>
                             </Box>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Active Certifications</Typography>
                               <Typography variant="h3" sx={{ fontWeight: 600, mb: 1 }}>8</Typography>
                               <Typography variant="body2" color="text.secondary">ISO, LEED, BREEAM</Typography>
                             </Box>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Pending Actions</Typography>
                               <Typography variant="h3" sx={{ fontWeight: 600, mb: 1 }}>3</Typography>
                               <Typography variant="body2" color="warning.main">Due within 30 days</Typography>
                             </Box>
                           </Box>
-                          <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                          <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Compliance Areas</Typography>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                               {[
@@ -2076,8 +2360,8 @@ export default function Home() {
                               ].map((item) => (
                                 <Box key={item.area} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                   <Typography variant="body2" sx={{ minWidth: 150 }}>{item.area}</Typography>
-                                  <Box sx={{ flex: 1, height: 8, borderRadius: 4, bgcolor: colors.bgSecondaryHover, overflow: 'hidden' }}>
-                                    <Box sx={{ width: `${item.score}%`, height: '100%', bgcolor: item.score > 90 ? '#4caf50' : '#ffc107' }} />
+                                  <Box sx={{ flex: 1, height: 8, borderRadius: 4, bgcolor: tc.bgSecondaryHover, overflow: 'hidden' }}>
+                                    <Box sx={{ width: `${item.score}%`, height: '100%', bgcolor: item.score > 90 ? tc.statusGood : tc.statusModerate }} />
                                   </Box>
                                   <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 60 }}>{item.score}%</Typography>
                                   <Chip label={item.status} size="small" color={item.score > 90 ? 'success' : 'warning'} sx={{ minWidth: 80 }} />
@@ -2139,6 +2423,7 @@ function KPIAnalysisView({
   onViewAllBuildings,
   buildingMode = 'buildings',
   onNavigateToDashboard,
+  themeKeys = PRIMARY_THEME_KEYS,
 }: {
   selection: string;
   selectedMetric: MetricType;
@@ -2151,9 +2436,10 @@ function KPIAnalysisView({
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode;
   onNavigateToDashboard?: (dashboardId: string) => void;
+  themeKeys?: MetricType[];
 }) {
   // Determine which KPIs to show based on toggle state and selection
-  const visibleThemes = themesEnabled ? ALL_THEME_KEYS : [];
+  const visibleThemes = themesEnabled ? themeKeys : [];
   const visibleOps = operationsEnabled ? OPERATIONS_KEYS : [];
   const allVisible = [...visibleThemes, ...visibleOps];
 
@@ -2249,13 +2535,19 @@ function KPIAnalysisView({
 
 /* Summary stat card for performance indicators */
 function SummaryStatCard({ label, value, subtitle, trend }: { label: string; value: string; subtitle?: string; trend?: number }) {
+  const { themeColors: c } = useThemeMode();
   return (
     <Box sx={{
       p: 2.5,
-      border: 1,
-      borderColor: 'divider',
-      borderRadius: 1,
-      bgcolor: colors.bgSecondary,
+      border: `1px solid ${c.cardBorder}`,
+      borderRadius: '12px',
+      bgcolor: c.bgPrimary,
+      boxShadow: `0 2px 12px 0 ${c.shadow}`,
+      transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: `0 4px 20px 0 ${c.shadow}`,
+      },
     }}>
       <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, display: 'block', mb: 1 }}>
         {label}
@@ -2280,13 +2572,19 @@ function SummaryStatCard({ label, value, subtitle, trend }: { label: string; val
 
 /* Placeholder chart for performance indicators */
 function IndicatorChart({ title, type, color }: { title: string; type: string; color: string }) {
+  const { themeColors: c } = useThemeMode();
   return (
     <Box sx={{
       p: 3,
-      border: 1,
-      borderColor: 'divider',
-      borderRadius: 1,
-      bgcolor: colors.bgSecondary,
+      border: `1px solid ${c.cardBorder}`,
+      borderRadius: '12px',
+      bgcolor: c.bgPrimary,
+      boxShadow: `0 2px 12px 0 ${c.shadow}`,
+      transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: `0 4px 20px 0 ${c.shadow}`,
+      },
       minHeight: 240,
       display: 'flex',
       flexDirection: 'column',
@@ -2297,17 +2595,17 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
         {type === 'bar' && Array.from({ length: 12 }).map((_, i) => (
           <Box key={i} sx={{
             flex: 1,
-            height: `${30 + Math.random() * 60}%`,
+            height: `${30 + ((i * 37 + 13) % 60)}%`,
             bgcolor: color,
             borderRadius: '2px 2px 0 0',
-            opacity: 0.3 + Math.random() * 0.7,
+            opacity: 0.3 + ((i * 23 + 7) % 70) / 100,
             transition: 'height 0.3s ease',
           }} />
         ))}
         {type === 'line' && (
           <svg width="100%" height="100%" viewBox="0 0 200 100" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
             <path
-              d={`M 0,${70 - Math.random() * 30} ${Array.from({ length: 10 }).map((_, i) => `L ${(i + 1) * 20},${30 + Math.random() * 50}`).join(' ')}`}
+              d={`M 0,${70 - ((3 * 37 + 13) % 30)} ${Array.from({ length: 10 }).map((_, i) => `L ${(i + 1) * 20},${30 + ((i * 41 + 17) % 50)}`).join(' ')}`}
               fill="none"
               stroke={color}
               strokeWidth="2"
@@ -2322,7 +2620,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
                 <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: 16 }}>{i + 1}</Typography>
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" sx={{ fontSize: '0.813rem', fontWeight: 500 }}>{name}</Typography>
-                  <Box sx={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', bgcolor: colors.bgSecondaryHover, mt: 0.5 }}>
+                  <Box sx={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', bgcolor: c.bgSecondaryHover, mt: 0.5 }}>
                     <Box sx={{ width: `${90 - i * 8}%`, bgcolor: color, borderRadius: 2, opacity: 1 - i * 0.12 }} />
                   </Box>
                 </Box>
@@ -2334,7 +2632,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
         {type === 'pie' && (
           <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="140" height="140" viewBox="0 0 140 140">
-              <circle cx="70" cy="70" r="55" fill="none" stroke={colors.borderSecondary} strokeWidth="20" />
+              <circle cx="70" cy="70" r="55" fill="none" stroke={c.borderSecondary} strokeWidth="20" />
               <circle cx="70" cy="70" r="55" fill="none" stroke={color} strokeWidth="20"
                 strokeDasharray={`${0.72 * 345.6} ${0.28 * 345.6}`}
                 strokeDashoffset="86.4"
@@ -2351,6 +2649,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
 
 /* Theme-specific dashboards */
 function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings', onNavigateToDashboard }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void; buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode; onNavigateToDashboard?: (dashboardId: string) => void }) {
+  const { themeColors: c } = useThemeMode();
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey];
 
@@ -2382,7 +2681,7 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
           <IndicatorChart title="Energy Distribution by Source" type="pie" color="#ed6c02" />
           <IndicatorChart title="Peak Demand Times" type="bar" color="#ed6c02" />
-          <IndicatorChart title="Top Consumers" type="ranking" color="#f44336" />
+          <IndicatorChart title="Top Consumers" type="ranking" color={c.statusPoor} />
         </Box>
         <IndicatorChart title="Energy vs Temperature Correlation" type="line" color="#ed6c02" />
       </Box>
@@ -2419,13 +2718,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="System Uptime" value="99.8%" trend={0} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Access Activity (24 hours)" type="line" color={colors.brand} />
-          <IndicatorChart title="Access by Building" type="bar" color={colors.brand} />
+          <IndicatorChart title="Access Activity (24 hours)" type="line" color={c.brand} />
+          <IndicatorChart title="Access by Building" type="bar" color={c.brand} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Peak Access Times" type="bar" color={colors.brand} />
-          <IndicatorChart title="Card Status Distribution" type="pie" color={colors.brand} />
-          <IndicatorChart title="Security Events" type="ranking" color="#f44336" />
+          <IndicatorChart title="Peak Access Times" type="bar" color={c.brand} />
+          <IndicatorChart title="Card Status Distribution" type="pie" color={c.brand} />
+          <IndicatorChart title="Security Events" type="ranking" color={c.statusPoor} />
         </Box>
       </Box>
     );
@@ -2443,13 +2742,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="Conservation Rate" value="15%" trend={8} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Water Consumption Trend" type="line" color={colors.brand} />
-          <IndicatorChart title="Usage by Building" type="bar" color={colors.brand} />
+          <IndicatorChart title="Water Consumption Trend" type="line" color={c.brand} />
+          <IndicatorChart title="Usage by Building" type="bar" color={c.brand} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Leak Detection History" type="line" color="#f44336" />
-          <IndicatorChart title="Conservation Initiatives" type="bar" color="#4caf50" />
-          <IndicatorChart title="Top Water Consumers" type="ranking" color={colors.brand} />
+          <IndicatorChart title="Leak Detection History" type="line" color={c.statusPoor} />
+          <IndicatorChart title="Conservation Initiatives" type="bar" color={c.statusGood} />
+          <IndicatorChart title="Top Water Consumers" type="ranking" color={c.brand} />
         </Box>
       </Box>
     );
@@ -2467,13 +2766,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="System Health" value="97%" trend={2} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Incident Trends" type="line" color="#4caf50" />
-          <IndicatorChart title="Security Coverage by Zone" type="bar" color="#4caf50" />
+          <IndicatorChart title="Incident Trends" type="line" color={c.statusGood} />
+          <IndicatorChart title="Security Coverage by Zone" type="bar" color={c.statusGood} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Alert Types" type="pie" color="#4caf50" />
-          <IndicatorChart title="Response Times by Building" type="bar" color="#4caf50" />
-          <IndicatorChart title="Camera Health Status" type="ranking" color="#4caf50" />
+          <IndicatorChart title="Alert Types" type="pie" color={c.statusGood} />
+          <IndicatorChart title="Response Times by Building" type="bar" color={c.statusGood} />
+          <IndicatorChart title="Camera Health Status" type="ranking" color={c.statusGood} />
         </Box>
       </Box>
     );
@@ -2491,13 +2790,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="Meeting Room Usage" value="85%" trend={2} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Occupancy Trends (7 days)" type="line" color={colors.brand} />
-          <IndicatorChart title="Space Utilization by Floor" type="bar" color={colors.brand} />
+          <IndicatorChart title="Occupancy Trends (7 days)" type="line" color={c.brand} />
+          <IndicatorChart title="Space Utilization by Floor" type="bar" color={c.brand} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Peak Hours" type="bar" color={colors.brand} />
-          <IndicatorChart title="Space Types Distribution" type="pie" color={colors.brand} />
-          <IndicatorChart title="Booking Patterns" type="line" color={colors.brand} />
+          <IndicatorChart title="Peak Hours" type="bar" color={c.brand} />
+          <IndicatorChart title="Space Types Distribution" type="pie" color={c.brand} />
+          <IndicatorChart title="Booking Patterns" type="line" color={c.brand} />
         </Box>
       </Box>
     );
@@ -2669,6 +2968,7 @@ const themeCardData: Record<string, {
 
 /* Detailed summary card for each KPI in the overview */
 function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; onClick?: () => void }) {
+  const { themeColors: c } = useThemeMode();
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey] || themeCardData.energy;
 
@@ -2678,13 +2978,13 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
         border: 1,
         borderColor: 'divider',
         borderRadius: 2,
-        bgcolor: '#fff',
+        bgcolor: c.bgPrimary,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.2s ease',
         '&:hover': {
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          boxShadow: `0 4px 20px ${c.shadow}`,
           transform: 'translateY(-2px)',
         }
       }}
@@ -2718,8 +3018,8 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
                 size="small"
                 sx={{
                   height: 20,
-                  bgcolor: '#f44336',
-                  color: '#fff',
+                  bgcolor: c.statusPoor,
+                  color: c.bgPrimary,
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   '& .MuiChip-label': { px: 1 }
@@ -2759,7 +3059,7 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
               sx={{
                 height: 6,
                 borderRadius: 3,
-                bgcolor: colors.borderSecondary,
+                bgcolor: c.borderSecondary,
                 '& .MuiLinearProgress-bar': {
                   bgcolor: metric.color,
                   borderRadius: 3
@@ -2799,6 +3099,7 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
 
 /* Generic metric view for new themes that don't have dedicated chart components */
 function GenericMetricView({ metricKey, metricInfo, buildingName }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; buildingName: string }) {
+  const { themeColors: c } = useThemeMode();
   const info = metricInfo[metricKey];
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -2817,11 +3118,11 @@ function GenericMetricView({ metricKey, metricInfo, buildingName }: { metricKey:
       </Box>
 
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-        <IndicatorChart title={`${info.title} Trend — Last 12 Months`} type="line" color={colors.brand} />
-        <IndicatorChart title="Score Distribution" type="bar" color="#4caf50" />
+        <IndicatorChart title={`${info.title} Trend — Last 12 Months`} type="line" color={c.brand} />
+        <IndicatorChart title="Score Distribution" type="bar" color={c.statusGood} />
       </Box>
 
-      <IndicatorChart title="Performance Breakdown" type="ranking" color={colors.brand} />
+      <IndicatorChart title="Performance Breakdown" type="ranking" color={c.brand} />
     </Box>
   );
 }

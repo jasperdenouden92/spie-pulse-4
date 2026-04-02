@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+html[data-theme="dark"] {
+  --background: #121212;
+  --foreground: #e8e8e8;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,15 +17,26 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/*
+ * Force the annotation Inspector button to stack vertically (below the
+ * AnnotationButton) at top-left / top-right instead of horizontally.
+ * The library uses inline styles so we need !important.
+ */
+button[data-annotation-inspector] {
+  /* top-left: override left:72 → left:24, top:24 → top:72 */
+  &[style*="left: 72px"][style*="top: 24px"] {
+    left: 24px !important;
+    top: 72px !important;
+  }
+  /* top-right: override right:72 → right:24, top:24 → top:72 */
+  &[style*="right: 72px"][style*="top: 24px"] {
+    right: 24px !important;
+    top: 72px !important;
+  }
 }

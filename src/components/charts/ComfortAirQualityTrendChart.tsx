@@ -1,4 +1,6 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -28,19 +30,20 @@ const generateMockData = () => {
       id: 'Floor 6, Room Sensor 1 (D-3883)',
       data: dates.map((date, i) => ({
         x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 420 + i * 10 + Math.random() * 30
+        y: 420 + i * 10 + ((i * 37 + 13) % 30)
       }))
     }
   ];
 };
 
 export default function ComfortAirQualityTrendChart({ buildingName }: ComfortAirQualityTrendChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData();
 
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 3 }}>
       {/* Air Quality Chart */}
-      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Box sx={{
             width: 32,
@@ -95,12 +98,12 @@ export default function ComfortAirQualityTrendChart({ buildingName }: ComfortAir
               format: (value: number) => `${value}`,
               tickValues: 5,
             }}
-            colors={['#4caf50']}
+            colors={[c.statusGood]}
             lineWidth={2}
             pointSize={6}
-            pointColor="#4caf50"
+            pointColor={c.statusGood}
             pointBorderWidth={2}
-            pointBorderColor="#fff"
+            pointBorderColor={c.chartPointBorder}
             enableGridX={false}
             gridYValues={5}
             curve="monotoneX"
@@ -108,10 +111,10 @@ export default function ComfortAirQualityTrendChart({ buildingName }: ComfortAir
             enableArea={false}
             theme={{
               axis: {
-                domain: { line: { stroke: colors.borderSecondary, strokeWidth: 1 } },
-                ticks: { text: { fontSize: 11, fill: '#666' } },
+                domain: { line: { stroke: c.borderSecondary, strokeWidth: 1 } },
+                ticks: { text: { fontSize: 11, fill: c.chartAxisText } },
               },
-              grid: { line: { stroke: colors.bgSecondaryHover, strokeWidth: 1 } },
+              grid: { line: { stroke: c.chartGridLine, strokeWidth: 1 } },
             }}
           />
         </Box>
@@ -119,7 +122,7 @@ export default function ComfortAirQualityTrendChart({ buildingName }: ComfortAir
         {/* Legend */}
         <Box sx={{ display: 'flex', gap: 2, mt: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4caf50' }} />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: c.statusGood }} />
             <Typography variant="caption">Rooms</Typography>
           </Box>
           <Typography variant="caption" sx={{ opacity: 0.5 }}>
@@ -129,7 +132,7 @@ export default function ComfortAirQualityTrendChart({ buildingName }: ComfortAir
       </Box>
 
       {/* Air Quality Assessment */}
-      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+      <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Air quality (CO₂) assessment
@@ -144,7 +147,7 @@ export default function ComfortAirQualityTrendChart({ buildingName }: ComfortAir
 
         {/* Progress bar */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ height: 40, bgcolor: colors.brand, borderRadius: 1, position: 'relative' }}>
+          <Box sx={{ height: 40, bgcolor: c.brand, borderRadius: 1, position: 'relative' }}>
             <Typography
               variant="caption"
               sx={{
@@ -152,7 +155,7 @@ export default function ComfortAirQualityTrendChart({ buildingName }: ComfortAir
                 left: 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: '#fff',
+                color: c.bgPrimary,
                 fontWeight: 500
               }}
             >

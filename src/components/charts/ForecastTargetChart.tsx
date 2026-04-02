@@ -1,4 +1,6 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
+
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -21,7 +23,7 @@ const generateMockData = () => {
       color: '#2196f3',
       data: months.map((month, i) => ({
         x: month,
-        y: 20 + Math.random() * 40 + i * 2
+        y: 20 + ((i * 37 + 13) % 40) + i * 2
       }))
     },
     {
@@ -29,7 +31,7 @@ const generateMockData = () => {
       color: '#90caf9',
       data: months.map((month, i) => ({
         x: month,
-        y: 25 + Math.random() * 35 + i * 2
+        y: 25 + ((i * 41 + 7) % 35) + i * 2
       }))
     },
     {
@@ -37,7 +39,7 @@ const generateMockData = () => {
       color: '#ff9800',
       data: months.map((month, i) => ({
         x: month,
-        y: 28 + Math.random() * 30 + i * 2
+        y: 28 + ((i * 53 + 17) % 30) + i * 2
       }))
     },
     {
@@ -45,18 +47,19 @@ const generateMockData = () => {
       color: '#4caf50',
       data: months.map((month, i) => ({
         x: month,
-        y: 22 + Math.random() * 38 + i * 2
+        y: 22 + ((i * 59 + 23) % 38) + i * 2
       }))
     }
   ];
 };
 
 export default function ForecastTargetChart({ buildingName }: ForecastTargetChartProps) {
+  const { themeColors: c } = useThemeMode();
   const [degreeDayCorrection, setDegreeDayCorrection] = useState(false);
   const data = generateMockData();
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 360 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 360 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
         <Box>
@@ -146,27 +149,27 @@ export default function ForecastTargetChart({ buildingName }: ForecastTargetChar
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             grid: {
               line: {
-                stroke: colors.bgSecondaryHover,
+                stroke: c.chartGridLine,
                 strokeWidth: 1,
               },
             },
             legends: {
               text: {
                 fontSize: 11,
-                fill: '#666',
+                fill: c.chartAxisText,
               },
             },
           }}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -9,13 +9,13 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Collapse from '@mui/material/Collapse';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
@@ -48,7 +48,8 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { AssetNode, assetTree } from '@/data/assetTree';
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface DataExplorerPanelProps {
   open: boolean;
@@ -56,7 +57,11 @@ interface DataExplorerPanelProps {
   sidebarWidth: number;
   onAssetSelect?: (asset: AssetNode | null) => void;
   onOpenInMainApp?: (asset: AssetNode) => void;
+  onWidthChange?: (totalWidth: number) => void;
 }
+
+const MENU_WIDTH = 260;
+const SUBPANE_WIDTH = 340;
 
 const folders = [
   { id: 'alerts', label: 'Alert Overview', icon: <NotificationsActiveOutlinedIcon sx={{ fontSize: 18 }} />, count: 12 },
@@ -79,13 +84,34 @@ function countNodes(node: AssetNode): number {
   return node.children.reduce((sum, child) => sum + countNodes(child), 0);
 }
 
-export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenInMainApp }: DataExplorerPanelProps) {
+function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenInMainApp, onWidthChange }: DataExplorerPanelProps) {
+  const { themeColors: c } = useThemeMode();
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [treeExpanded, setTreeExpanded] = useState<string[]>([]);
   const [contextMenuAnchor, setContextMenuAnchor] = useState<{ element: HTMLElement; node: AssetNode } | null>(null);
 
   const treeData = assetTree;
+
+  const isSubPaneVisible = selectedCategory !== null;
+
+  // Report total width to parent
+  useEffect(() => {
+    if (!open) {
+      onWidthChange?.(0);
+    } else {
+      onWidthChange?.(MENU_WIDTH + (isSubPaneVisible ? SUBPANE_WIDTH : 0));
+    }
+  }, [open, isSubPaneVisible, onWidthChange]);
+
+  // Reset state when panel closes
+  useEffect(() => {
+    if (!open) {
+      setSelectedCategory(null);
+      setSearchQuery('');
+      setTreeExpanded([]);
+    }
+  }, [open]);
 
   const getNodeIcon = (node: AssetNode) => {
     const iconProps = { sx: { fontSize: 16 } };
@@ -116,11 +142,11 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'operational': return '#4caf50';
-      case 'maintenance': return '#ff9800';
-      case 'offline': return '#9e9e9e';
-      case 'failed': return '#f44336';
-      default: return '#9e9e9e';
+      case 'operational': return c.statusGood;
+      case 'maintenance': return c.statusModerate;
+      case 'offline': return c.statusOffline;
+      case 'failed': return c.statusPoor;
+      default: return c.statusOffline;
     }
   };
 
@@ -181,7 +207,7 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
                     height: 18,
                     fontSize: '0.688rem',
                     fontFamily: 'monospace',
-                    bgcolor: colors.bgPrimaryHover,
+                    bgcolor: c.bgPrimaryHover,
                     '& .MuiChip-label': { px: 0.5, py: 0 }
                   }}
                 />
@@ -224,153 +250,249 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
     setTreeExpanded(nodeIds);
   };
 
+  // Resolve selected category content for the sub-pane
+  const getSubPaneContent = () => {
+    if (!selectedCategory) return null;
+
+    const assetCategory = treeData.find(c => c.id === selectedCategory);
+    if (assetCategory) {
+      return { title: assetCategory.name, icon: assetCategoryIcons[assetCategory.id], children: assetCategory.children, type: 'tree' as const };
+    }
+
+    const folder = folders.find(f => f.id === selectedCategory);
+    if (folder) {
+      return { title: folder.label, icon: folder.icon, children: null, type: 'folder' as const, count: folder.count };
+    }
+
+    return null;
+  };
+
+  const subPaneContent = getSubPaneContent();
+  const isSubPaneOpen = selectedCategory !== null && subPaneContent !== null;
+
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: 0,
-        left: sidebarWidth,
-        width: 340,
-        height: '100vh',
-        bgcolor: '#fff',
-        borderRight: '1px solid',
-        borderColor: 'divider',
-        zIndex: 1250,
-        transform: open ? 'translateX(0)' : 'translateX(-100%)',
-        opacity: open ? 1 : 0,
-        pointerEvents: open ? 'auto' : 'none',
-        transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: open ? '4px 0 24px rgba(0,0,0,0.08)' : 'none',
-      }}
-    >
-      {/* Header */}
-      <Box sx={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, flexShrink: 0, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Data Explorer</Typography>
-        <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
-          <CloseIcon sx={{ fontSize: 18 }} />
-        </IconButton>
-      </Box>
-
-      {/* Quicksearch */}
-      <Box sx={{ px: 2, py: 1.5, flexShrink: 0 }}>
-        <TextField
-          size="small"
-          placeholder="Quick search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          fullWidth
+    <>
+      {/* Outer wrapper */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: sidebarWidth,
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'row',
+          zIndex: 1250,
+          transform: open ? 'translateX(0)' : 'translateX(-100%)',
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease',
+        }}
+      >
+        {/* Left pane — Menu */}
+        <Box
           sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: colors.bgPrimaryHover,
-              border: 'none',
-              '& fieldset': { border: 'none' }
-            },
-            '& .MuiOutlinedInput-input': {
-              padding: '8px 12px',
-              fontSize: '0.875rem',
-            }
+            width: MENU_WIDTH,
+            height: '100vh',
+            bgcolor: c.bgPrimary,
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            flexDirection: 'column',
+            flexShrink: 0,
+            boxShadow: !isSubPaneOpen ? '4px 0 24px rgba(0,0,0,0.08)' : 'none',
           }}
-        />
-      </Box>
+        >
+          {/* Header */}
+          <Box sx={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, flexShrink: 0, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Data Explorer</Typography>
+            <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
+              <CloseIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Box>
 
-      {/* All items in unified list */}
-      <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
-        <List disablePadding>
-          {/* Section: Buildings & Assets */}
-          <Typography variant="caption" sx={{ px: 2.5, pt: 1, pb: 0.5, display: 'block', color: 'text.secondary', fontWeight: 600, fontSize: '0.675rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Buildings & Assets
-          </Typography>
+          {/* Menu list */}
+          <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
+            <List data-annotation-id="dataexplorerpanel-lijst" disablePadding>
+              {/* Section: Buildings & Assets */}
+              <Typography variant="caption" sx={{ px: 2.5, pt: 1.5, pb: 0.5, display: 'block', color: 'text.secondary', fontWeight: 600, fontSize: '0.675rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Buildings & Assets
+              </Typography>
 
-          {/* Asset categories */}
-          {treeData.map((category) => {
-            const isExpanded = expandedCategory === category.id;
-            const nodeCount = countNodes(category);
-            return (
-              <React.Fragment key={category.id}>
-                <ListItemButton
-                  onClick={() => setExpandedCategory(isExpanded ? null : category.id)}
-                  sx={{
-                    mx: 1,
-                    borderRadius: '8px',
-                    mb: 0.25,
-                    py: 1,
-                    ...(isExpanded && { bgcolor: colors.bgActive, '&:hover': { bgcolor: colors.bgActiveHover } }),
-                    ...(!isExpanded && { '&:hover': { bgcolor: colors.bgPrimaryHover } }),
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36, color: isExpanded ? colors.brand : 'text.secondary' }}>
-                    {assetCategoryIcons[category.id] || <FolderIcon sx={{ fontSize: 18 }} />}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={category.name}
-                    primaryTypographyProps={{ variant: 'body2', fontWeight: isExpanded ? 600 : 400 }}
-                  />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                      {nodeCount}
-                    </Typography>
-                    {isExpanded ? (
-                      <ExpandMoreIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                    ) : (
-                      <ChevronRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                    )}
+              {treeData.map((category) => {
+                const isSelected = selectedCategory === category.id;
+                const nodeCount = countNodes(category);
+                return (
+                  <ListItemButton
+                    key={category.id}
+                    onClick={() => {
+                      setSelectedCategory(isSelected ? null : category.id);
+                      setSearchQuery('');
+                      setTreeExpanded([]);
+                    }}
+                    sx={{
+                      mx: 1,
+                      borderRadius: '8px',
+                      mb: 0.25,
+                      py: 1,
+                      ...(isSelected && { bgcolor: c.bgActive, '&:hover': { bgcolor: c.bgActiveHover } }),
+                      ...(!isSelected && { '&:hover': { bgcolor: c.bgPrimaryHover } }),
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 36, color: isSelected ? c.brand : 'text.secondary' }}>
+                      {assetCategoryIcons[category.id] || <FolderIcon sx={{ fontSize: 18 }} />}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={category.name}
+                      primaryTypographyProps={{ variant: 'body2', fontWeight: isSelected ? 600 : 400 }}
+                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                        {nodeCount}
+                      </Typography>
+                      <ChevronRightIcon sx={{ fontSize: 16, color: isSelected ? c.brand : 'text.secondary' }} />
+                    </Box>
+                  </ListItemButton>
+                );
+              })}
+
+              {/* Section: Other pages */}
+              <Typography variant="caption" sx={{ px: 2.5, pt: 2, pb: 0.5, display: 'block', color: 'text.secondary', fontWeight: 600, fontSize: '0.675rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Other pages
+              </Typography>
+
+              {folders.map((folder) => {
+                const isSelected = selectedCategory === folder.id;
+                return (
+                  <ListItemButton
+                    key={folder.id}
+                    onClick={() => {
+                      setSelectedCategory(isSelected ? null : folder.id);
+                      setSearchQuery('');
+                    }}
+                    sx={{
+                      mx: 1,
+                      borderRadius: '8px',
+                      mb: 0.25,
+                      py: 1,
+                      ...(isSelected && { bgcolor: c.bgActive, '&:hover': { bgcolor: c.bgActiveHover } }),
+                      ...(!isSelected && { '&:hover': { bgcolor: c.bgPrimaryHover } }),
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 36, color: isSelected ? c.brand : 'text.secondary' }}>
+                      {folder.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={folder.label}
+                      primaryTypographyProps={{ variant: 'body2', fontWeight: isSelected ? 600 : 400 }}
+                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                        {folder.count}
+                      </Typography>
+                      <ChevronRightIcon sx={{ fontSize: 16, color: isSelected ? c.brand : 'text.secondary' }} />
+                    </Box>
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          </Box>
+        </Box>
+
+        {/* Right pane — Sub-pane (animated width) */}
+        <Box
+          sx={{
+            width: isSubPaneOpen ? SUBPANE_WIDTH : 0,
+            transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            overflow: 'hidden',
+            flexShrink: 0,
+          }}
+        >
+          <Box
+            sx={{
+              width: SUBPANE_WIDTH,
+              height: '100vh',
+              bgcolor: c.bgPrimary,
+              borderRight: '1px solid',
+              borderColor: 'divider',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: `4px 0 24px ${c.shadow}`,
+            }}
+          >
+            {/* Sub-pane header */}
+            <Box sx={{ height: 56, display: 'flex', alignItems: 'center', gap: 1, px: 1.5, flexShrink: 0, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <IconButton size="small" onClick={() => setSelectedCategory(null)} sx={{ color: 'text.secondary' }}>
+                <ArrowBackIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              {subPaneContent && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+                  <Box sx={{ color: c.brand, display: 'flex', alignItems: 'center' }}>
+                    {subPaneContent.icon}
                   </Box>
-                </ListItemButton>
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {subPaneContent.title}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
 
-                <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                  <Box sx={{ pl: 1, pr: 0.5, pb: 1 }}>
-                    <SimpleTreeView
-                      expandedItems={treeExpanded}
-                      onExpandedItemsChange={handleExpandedItemsChange}
-                      slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
-                      sx={{
-                        '& .MuiTreeItem-content': { py: '3px', px: '4px', borderRadius: '3px' },
-                        '& .MuiTreeItem-iconContainer svg': { fontSize: 16 },
-                        '& .MuiTreeItem-group': { marginLeft: 0, paddingLeft: '24px', borderLeft: `1px solid ${colors.borderSecondary}` }
-                      }}
-                    >
-                      {category.children && renderTree(category.children)}
-                    </SimpleTreeView>
-                  </Box>
-                </Collapse>
-              </React.Fragment>
-            );
-          })}
-
-          {/* Section: Other pages */}
-          <Typography variant="caption" sx={{ px: 2.5, pt: 2, pb: 0.5, display: 'block', color: 'text.secondary', fontWeight: 600, fontSize: '0.675rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Other pages
-          </Typography>
-
-          {folders.map((folder) => (
-            <ListItemButton
-              key={folder.id}
-              sx={{
-                mx: 1,
-                borderRadius: '8px',
-                mb: 0.25,
-                py: 1,
-                '&:hover': { bgcolor: colors.bgPrimaryHover },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 36, color: 'text.secondary' }}>
-                {folder.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={folder.label}
-                primaryTypographyProps={{ variant: 'body2' }}
+            {/* Sub-pane search */}
+            <Box sx={{ px: 2, py: 1.5, flexShrink: 0 }}>
+              <TextField
+                size="small"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: c.bgPrimaryHover,
+                    border: 'none',
+                    '& fieldset': { border: 'none' }
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    padding: '8px 12px',
+                    fontSize: '0.875rem',
+                  }
+                }}
               />
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                  {folder.count}
-                </Typography>
-                <ChevronRightIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-              </Box>
-            </ListItemButton>
-          ))}
-        </List>
+            </Box>
+
+            {/* Sub-pane content */}
+            <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
+              {subPaneContent?.type === 'tree' && subPaneContent.children && (
+                <Box sx={{ pl: 1, pr: 0.5, pb: 1 }}>
+                  <SimpleTreeView
+                    expandedItems={treeExpanded}
+                    onExpandedItemsChange={handleExpandedItemsChange}
+                    slots={{ collapseIcon: ExpandMoreIcon, expandIcon: ChevronRightIcon }}
+                    sx={{
+                      '& .MuiTreeItem-content': { py: '3px', px: '4px', borderRadius: '3px' },
+                      '& .MuiTreeItem-iconContainer svg': { fontSize: 16 },
+                      '& .MuiTreeItem-group': { marginLeft: 0, paddingLeft: '24px', borderLeft: `1px solid ${c.borderSecondary}` }
+                    }}
+                  >
+                    {renderTree(subPaneContent.children)}
+                  </SimpleTreeView>
+                </Box>
+              )}
+
+              {subPaneContent?.type === 'folder' && (
+                <Box sx={{ px: 2.5, py: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
+                  <Box sx={{ color: c.brand, opacity: 0.6, '& svg': { fontSize: 40 } }}>
+                    {subPaneContent.icon}
+                  </Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {subPaneContent.title}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {'count' in subPaneContent ? `${subPaneContent.count} items` : ''}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Box>
       </Box>
 
       {/* Context Menu */}
@@ -381,16 +503,18 @@ export default function DataExplorerPanel({ open, onClose, sidebarWidth, onAsset
         <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
           <EditOutlinedIcon fontSize="small" /> Edit Properties
         </MenuItem>
-        {contextMenuAnchor?.node.type === 'asset' && (
+        {contextMenuAnchor?.node.type === 'asset' ? (
           <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
             <NotificationsOutlinedIcon fontSize="small" /> Alert Settings
           </MenuItem>
-        )}
+        ) : null}
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
           <ContentCopyOutlinedIcon fontSize="small" /> Copy ID
         </MenuItem>
       </Menu>
-    </Box>
+    </>
   );
 }
+
+export default React.memo(DataExplorerPanel);

@@ -1,5 +1,5 @@
 'use client';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -17,11 +17,9 @@ import SettingsInputComponentOutlinedIcon from '@mui/icons-material/SettingsInpu
 import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
 import DateRangeSelector from './DateRangeSelector';
-import { BuildingSelectorPopover } from './BuildingSelector';
 import { buildings as allBuildingsData } from '@/data/buildings';
-import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
-import Button from '@mui/material/Button';
 import {
   ElectricityConsumptionChart,
   GasConsumptionChart,
@@ -206,26 +204,6 @@ const DASHBOARD_THEMES: ThemeGroup[] = [
         ),
       },
       {
-        id: 'kpi_comfortniveaus_luchtkwaliteit',
-        label: 'KPI Comfortniveaus Luchtkwaliteit',
-        renderCharts: (b) => (
-          <>
-            <ChartCard span={2}><ComfortAirQualityTrendChart buildingName={b} /></ChartCard>
-            <ChartCard span={2}><PerformanceHeatmapChart buildingName={b} /></ChartCard>
-          </>
-        ),
-      },
-      {
-        id: 'kpi_comfortniveaus_ruimtetemperaturen',
-        label: 'KPI Comfortniveaus Ruimtetemperaturen',
-        renderCharts: (b) => (
-          <>
-            <ChartCard span={2}><ComfortTemperatureTrendChart buildingName={b} /></ChartCard>
-            <ChartCard span={2}><PerformanceHeatmapChart buildingName={b} /></ChartCard>
-          </>
-        ),
-      },
-      {
         id: 'locatieniveau_overzicht',
         label: 'Locatieniveau overzicht',
         renderCharts: (b) => (
@@ -288,6 +266,35 @@ const DASHBOARD_THEMES: ThemeGroup[] = [
           <>
             <ChartCard span={2}><PerformanceHeatmapChart buildingName={b} /></ChartCard>
             <ChartCard span={2}><AssetTrendChart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    theme: 'Compliance',
+    themeKey: 'compliance',
+    icon: <GavelOutlinedIcon sx={{ fontSize: 18 }} />,
+    dashboards: [
+      {
+        id: 'compliance_dashboard',
+        label: 'Compliance Dashboard',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><AssetTrendChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
+      {
+        id: 'bacs_overview',
+        label: 'BACS Overview',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><PerformanceHeatmapChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
           </>
         ),
       },
@@ -415,17 +422,17 @@ interface DashboardsPageProps {
   onInitialDashboardConsumed?: () => void;
   dateRange?: string;
   onDateRangeChange?: (value: string) => void;
+  selectedBuildingNames?: string[];
 }
 
-export default function DashboardsPage({ onDashboardChange, initialDashboardId, onInitialDashboardConsumed, dateRange, onDateRangeChange }: DashboardsPageProps) {
+export default function DashboardsPage({ onDashboardChange, initialDashboardId, onInitialDashboardConsumed, dateRange, onDateRangeChange, selectedBuildingNames = [] }: DashboardsPageProps) {
+  const { themeColors: c } = useThemeMode();
   const [selectedId, setSelectedId] = useState<string>(
     initialDashboardId ?? DASHBOARD_THEMES[0].dashboards[0].id
   );
   const [expandedGroups, setExpandedGroups] = useState<string[]>(
     DASHBOARD_THEMES.map(g => g.themeKey)
   );
-  const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
-  const [buildingAnchor, setBuildingAnchor] = useState<null | HTMLElement>(null);
 
   // Apply incoming dashboard navigation
   useEffect(() => {
@@ -468,7 +475,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
         borderRight: 1,
         borderColor: 'divider',
         overflowY: 'auto',
-        bgcolor: colors.bgSecondary,
+        bgcolor: c.bgSecondary,
         '&::-webkit-scrollbar': { width: '4px' },
         '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
       }}>
@@ -477,7 +484,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
             Dashboards
           </Typography>
         </Box>
-        <List dense disablePadding sx={{ pb: 2 }}>
+        <List data-annotation-id="dashboardspage-lijst" dense disablePadding sx={{ pb: 2 }}>
           {DASHBOARD_THEMES.map((group) => {
             const isOpen = expandedGroups.includes(group.themeKey);
             const hasActiveChild = group.dashboards.some(d => d.id === selectedId);
@@ -489,7 +496,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                     onClick={() => toggleGroup(group.themeKey)}
                     sx={{ py: 0.75, px: 2, gap: 1.5 }}
                   >
-                    <Box sx={{ color: hasActiveChild ? colors.brand : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <Box sx={{ color: hasActiveChild ? c.brand : 'text.secondary', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                       {group.icon}
                     </Box>
                     <ListItemText
@@ -498,7 +505,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                         variant: 'body2',
                         fontWeight: 600,
                         fontSize: '0.8125rem',
-                        color: hasActiveChild ? colors.brand : 'text.primary',
+                        color: hasActiveChild ? c.brand : 'text.primary',
                       }}
                     />
                     <ExpandMoreIcon sx={{
@@ -512,7 +519,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                 </ListItem>
 
                 {/* Dashboard items */}
-                <Collapse in={isOpen} unmountOnExit>
+                <Collapse data-annotation-id="dashboardspage-accordion" in={isOpen} unmountOnExit>
                   {group.dashboards.map((dash) => {
                     const isActive = dash.id === selectedId;
                     return (
@@ -523,9 +530,9 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                             pl: 5.5,
                             pr: 2,
                             py: 0.5,
-                            bgcolor: isActive ? colors.bgActive : 'transparent',
-                            borderRight: isActive ? `2px solid ${colors.brand}` : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgSecondaryHover },
+                            bgcolor: isActive ? c.bgActive : 'transparent',
+                            borderRight: isActive ? `2px solid ${c.brand}` : '2px solid transparent',
+                            '&:hover': { bgcolor: isActive ? c.bgActive : c.bgSecondaryHover },
                           }}
                         >
                           <ListItemText
@@ -534,7 +541,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
                               variant: 'body2',
                               fontSize: '0.8125rem',
                               fontWeight: isActive ? 600 : 400,
-                              color: isActive ? colors.brand : 'text.primary',
+                              color: isActive ? c.brand : 'text.primary',
                               sx: { lineHeight: 1.4 },
                             }}
                           />
@@ -558,88 +565,32 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
             <>
               {/* Dashboard header */}
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
-                  {selectedDashboard.label}
-                </Typography>
                 {selectedGroup && (
                   <Typography variant="caption" color="text.secondary">
                     {selectedGroup.theme}
                   </Typography>
                 )}
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+                  {selectedDashboard.label}
+                </Typography>
               </Box>
 
-              {/* Inline filters: building card + period range card */}
+              {/* Date range selector - full width */}
               {dateRange && onDateRangeChange && (
-                <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-                  {/* Building card */}
-                  <Box sx={{
-                    bgcolor: '#fff',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-                    p: 2,
-                    width: 180,
-                    flexShrink: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}>
-                    {/* Header */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                      <ApartmentOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary' }}>
-                        Buildings
-                      </Typography>
-                    </Box>
-
-                    {/* Count */}
-                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Typography sx={{ fontSize: '2rem', fontWeight: 700, lineHeight: 1 }}>
-                        {selectedBuildingNames.length === 0 ? 'All' : selectedBuildingNames.length}
-                      </Typography>
-                    </Box>
-
-                    {/* Filter button */}
-                    <Button
-                      size="small"
-                      variant="text"
-                      fullWidth
-                      onClick={(e) => setBuildingAnchor(e.currentTarget)}
-                      sx={{
-                        fontSize: '0.75rem',
-                        textTransform: 'none',
-                        color: 'text.secondary',
-                        fontWeight: 500,
-                        '&:hover': { bgcolor: 'action.hover' },
-                      }}
-                    >
-                      Filter
-                    </Button>
-                    <BuildingSelectorPopover
-                      anchorEl={buildingAnchor}
-                      onClose={() => setBuildingAnchor(null)}
-                      selectedNames={selectedBuildingNames}
-                      onSelectionChange={setSelectedBuildingNames}
-                      mode="buildings"
-                    />
-                  </Box>
-
-                  {/* Period range card */}
-                  <Box sx={{
-                    bgcolor: '#fff',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-                    p: 2,
-                    flexShrink: 0,
-                  }}>
-                    <DateRangeSelector
-                      inline
-                      value={dateRange}
-                      onChange={onDateRangeChange}
-                    />
-                  </Box>
+                <Box sx={{
+                  mb: 4,
+                  bgcolor: c.bgPrimary,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+                  p: 2,
+                }}>
+                  <DateRangeSelector
+                    inline
+                    value={dateRange}
+                    onChange={onDateRangeChange}
+                  />
                 </Box>
               )}
 

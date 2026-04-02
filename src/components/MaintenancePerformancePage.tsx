@@ -22,7 +22,7 @@ import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
@@ -262,6 +262,7 @@ interface MaintenancePerformancePageProps {
 }
 
 export default function MaintenancePerformancePage({ themeScore = 78, themeTrend = 3, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: MaintenancePerformancePageProps) {
+  const { themeColors: c } = useThemeMode();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -311,7 +312,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
 
   const themeSeries = useMemo(() => ({
     label: 'Maintenance KPI',
-    color: colors.brand,
+    color: c.brand,
     data: generateKpiTimeSeries(`maintenance_theme_${complianceLevel}`, adjustedThemeScore),
   }), [adjustedThemeScore, complianceLevel]);
 
@@ -384,7 +385,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* ═══ SECTION 0: Compliance Level Selector ═══ */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
           {COMPLIANCE_OPTIONS.map(opt => {
             const isActive = complianceLevel === opt.key;
             return (
@@ -394,9 +395,9 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
                 sx={{
                   px: 1.5, py: 0.5, fontSize: '0.75rem', fontWeight: 600, borderRadius: '6px',
                   cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
-                  bgcolor: isActive ? 'white' : 'transparent',
+                  bgcolor: isActive ? c.bgPrimary : 'transparent',
                   color: isActive ? 'text.primary' : 'text.secondary',
-                  boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  boxShadow: isActive ? c.shadow : 'none',
                 }}
               >
                 {opt.label}
@@ -408,70 +409,66 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
 
       {/* ═══ SECTION 1: Theme KPI + Topic KPI Cards ═══ */}
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+          <BuildOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+          <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>
             Maintenance Performance
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {adjustedThemeScore}%
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+            {adjustedThemeScore}%
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: adjustedThemeTrend >= 0 ? 'success.main' : 'error.main' }}>
+            {adjustedThemeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+              {Math.abs(adjustedThemeTrend)}%
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: adjustedThemeTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {adjustedThemeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(adjustedThemeTrend)}%
-              </Typography>
-            </Box>
           </Box>
         </Box>
 
         {/* Topic cards */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
           {topics.map(topic => (
             <Paper
               key={topic.key}
               elevation={0}
               sx={{
                 p: 2.5,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
+                border: `1px solid ${c.cardBorder}`,
+                borderRadius: '12px',
+                bgcolor: c.bgPrimary,
+                boxShadow: c.cardShadow,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 1.5,
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+                },
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ color: 'text.secondary', display: 'flex' }}>{topic.icon}</Box>
-                <Typography variant="subtitle2" fontWeight={600} sx={{ flex: 1 }}>{topic.label}</Typography>
+              {/* Row 1: Icon + Title */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box sx={{ color: 'text.secondary', display: 'flex', '& .MuiSvgIcon-root': { fontSize: '18px !important' } }}>{topic.icon}</Box>
+                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{topic.label}</Typography>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                  <Typography variant="h5" fontWeight={700}>{topic.score}%</Typography>
+              {/* Row 2+3 left: Score + Trend/Label, right: Sparkline */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1.15rem', lineHeight: 1.2 }}>{topic.score}%</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
-                    {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
-                    <Typography variant="caption" fontWeight={600}>{Math.abs(topic.trend)}%</Typography>
+                    {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 12 }} /> : <TrendingDownIcon sx={{ fontSize: 12 }} />}
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>{Math.abs(topic.trend)}%</Typography>
                   </Box>
                 </Box>
-                <Box sx={{ ml: 'auto' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  <Chip label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)} size="small" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 600, bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`, color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove), '& .MuiChip-label': { px: 0.75 } }} />
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                   {renderSparkline(topic.sparkline, getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove))}
                 </Box>
               </Box>
-
-              <Chip
-                label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)}
-                size="small"
-                sx={{
-                  alignSelf: 'flex-start',
-                  height: 20,
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`,
-                  color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove),
-                  '& .MuiChip-label': { px: 1 },
-                }}
-              />
             </Paper>
           ))}
         </Box>
@@ -487,17 +484,17 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
       </Box>
 
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
         {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
               <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? 'white' : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('best')}>Best Performing</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? 'white' : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setLeftListMode('improved')}>Most Improved</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -537,7 +534,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
                       )}
                     </Box>
                   </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
                     <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
                   </Box>
                 </Box>
@@ -554,15 +551,15 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
         </Paper>
 
         {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
               <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${colors.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? 'white' : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('worst')}>Worst Performing</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? 'white' : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }} onClick={() => setRightListMode('deteriorated')}>Most Deteriorated</Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
+              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
             </Box>
           </Box>
           {(buildingMode === 'clusters'
@@ -602,7 +599,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
                       )}
                     </Box>
                   </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: '#f0f0f0', borderRadius: 2 }}>
+                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
                     <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
                   </Box>
                 </Box>
@@ -619,10 +616,10 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
         </Paper>
 
         {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', borderRadius: 1, display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: colors.brand }} />
+              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
               <Typography variant="subtitle2" fontWeight={600}>KPI Score Over Time</Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
@@ -636,14 +633,14 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
                       display: 'flex', alignItems: 'center', gap: 0.75,
                       px: 1.5, py: 0.75, borderRadius: 1,
                       cursor: 'pointer', userSelect: 'none',
-                      bgcolor: isActive ? `${colors.brand}14` : 'transparent',
+                      bgcolor: isActive ? `${c.brand}14` : 'transparent',
                       transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: isActive ? `${colors.brand}20` : 'action.hover' },
+                      '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
                     }}
                   >
                     <Box sx={{
                       display: 'flex',
-                      color: isActive ? colors.brand : 'text.disabled',
+                      color: isActive ? c.brand : 'text.disabled',
                       transition: 'color 0.15s ease',
                     }}>
                       {item.icon}
@@ -651,7 +648,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
                     <Typography variant="body2" sx={{
                       fontSize: '0.8rem',
                       fontWeight: isActive ? 600 : 400,
-                      color: isActive ? colors.brand : 'text.secondary',
+                      color: isActive ? c.brand : 'text.secondary',
                       transition: 'all 0.15s ease',
                     }}>
                       {item.label}
@@ -670,10 +667,10 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
             const lineGradientId = `threshold-gradient-maint-line`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart
-                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
-                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
+                <LineChart data-annotation-id="maintenanceperformancepage-grafiek"
+                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
+                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
+                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: c.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
                   height={370}
                   margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
                   grid={{ horizontal: true }}
@@ -681,9 +678,9 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
                   slotProps={{ tooltip: { trigger: 'none' } }}
                   axisHighlight={{ x: 'none', y: 'none' }}
                   sx={{
-                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : colors.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
+                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : c.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
                     [`& .${lineClasses.area}`]: { fill: showThresholds ? `url(#${gradientId})` : undefined, filter: 'none', opacity: 0.15 },
-                    '& .MuiChartsGrid-line': { stroke: '#e8e8e8', strokeWidth: 1 },
+                    '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
                     '& .MuiChartsAxis-line': { stroke: 'transparent' },
                     '& .MuiChartsAxis-tick': { stroke: 'transparent' },
                   }}
@@ -712,10 +709,10 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
 
       {/* ═══ SECTION 3: Maintenance Dashboards ═══ */}
       <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem', mb: 1.5 }}>
+        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
           Maintenance Dashboards
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1.5 }}>
           {MAINTENANCE_DASHBOARDS.map(dash => (
             <Paper
               key={dash.id}
@@ -724,18 +721,19 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
               sx={{
                 py: 1.5,
                 px: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 1,
+                border: `1px solid ${c.cardBorder}`,
+                borderRadius: '12px',
+                bgcolor: c.bgPrimary,
+                boxShadow: c.cardShadow,
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 1.5,
-                flex: '0 1 auto',
                 '&:hover': {
-                  bgcolor: 'action.hover',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
                 },
               }}
             >

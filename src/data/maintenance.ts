@@ -1,4 +1,4 @@
-import { randomFromArray, randomDate, randomInt, weightedRandom, padNumber, addDays, randomDecimal, STAFF_POOL, BUILDING_POOL } from './generators';
+import { randomFromArray, randomDate, randomInt, weightedRandom, padNumber, addDays, randomDecimal, seededRandom, STAFF_POOL, BUILDING_POOL } from './generators';
 
 export interface MaintenanceSchedule {
   id: string;
@@ -180,7 +180,7 @@ function generateMaintenanceSchedules(): MaintenanceSchedule[] {
 
     // Calculate last completed based on frequency
     let lastCompleted: string | undefined;
-    if (status !== 'Scheduled' || Math.random() > 0.3) {
+    if (status !== 'Scheduled' || seededRandom() > 0.3) {
       const frequencyDays = {
         'Daily': 1,
         'Weekly': 7,

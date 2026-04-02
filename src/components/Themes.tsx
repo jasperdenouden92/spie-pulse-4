@@ -17,6 +17,7 @@ import NatureIcon from '@mui/icons-material/Nature';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { colors, secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface Theme {
   id: string;
@@ -35,7 +36,8 @@ interface Theme {
   buildings: number;
 }
 
-export default function Themes() {
+function Themes() {
+  const { themeColors: c } = useThemeMode();
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 
   const themes: Theme[] = [
@@ -146,13 +148,13 @@ export default function Themes() {
         gap: 3
       }}>
         {themes.map((theme) => (
-          <Card
+          <Card data-annotation-id="themes-card-4"
             key={theme.id}
               sx={{
                 height: '100%',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                border: selectedTheme === theme.id ? `2px solid ${theme.color}` : `1px solid ${colors.borderSecondary}`,
+                border: selectedTheme === theme.id ? `2px solid ${theme.color}` : `1px solid ${c.borderSecondary}`,
                 '&:hover': {
                   boxShadow: 4,
                   transform: 'translateY(-4px)',
@@ -160,7 +162,7 @@ export default function Themes() {
               }}
               onClick={() => setSelectedTheme(theme.id === selectedTheme ? null : theme.id)}
             >
-              <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent data-annotation-id="themes-card-3" sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ flex: 1 }}>
                   {/* Header */}
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
@@ -226,7 +228,7 @@ export default function Themes() {
                                 mt: 1,
                                 height: 6,
                                 borderRadius: 1,
-                                bgcolor: colors.bgSecondaryHover,
+                                bgcolor: c.bgSecondaryHover,
                                 '& .MuiLinearProgress-bar': {
                                   bgcolor: theme.color,
                                   borderRadius: 1,
@@ -265,23 +267,23 @@ export default function Themes() {
         ))}
 
         {/* Add New Theme Card */}
-        <Card
+        <Card data-annotation-id="themes-card-2"
           sx={{
             height: '100%',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             border: '2px dashed',
-            borderColor: colors.borderPrimary,
+            borderColor: c.borderPrimary,
             bgcolor: 'rgba(250, 250, 250, 0.5)',
             '&:hover': {
-              borderColor: colors.brand,
+              borderColor: c.brand,
               bgcolor: secondaryAlpha(0.02),
               transform: 'translateY(-4px)',
             }
           }}
           onClick={() => console.log('Create new theme')}
         >
-          <CardContent sx={{
+          <CardContent data-annotation-id="themes-card" sx={{
             p: 3,
             height: '100%',
             display: 'flex',
@@ -295,7 +297,7 @@ export default function Themes() {
                 width: 80,
                 height: 80,
                 borderRadius: 2,
-                bgcolor: colors.bgPrimaryHover,
+                bgcolor: c.bgPrimaryHover,
                 color: '#999',
                 display: 'flex',
                 alignItems: 'center',
@@ -329,3 +331,6 @@ export default function Themes() {
     </Box>
   );
 }
+
+
+export default React.memo(Themes);

@@ -1,4 +1,6 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
+import type { ColorTokens } from '@/colors';
+
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -30,13 +32,13 @@ const generateMockData = (): AssetUtilization[] => {
       Array.from({ length: hours }, (_, hourIndex) => {
         // Business hours have higher utilization
         if (hourIndex >= 8 && hourIndex <= 17) {
-          const rand = Math.random();
-          if (rand < 0.3) return (intensity + 1) as UtilizationLevel;
-          if (rand < 0.7) return intensity as UtilizationLevel;
+          const hash = (dayIndex * 37 + hourIndex * 53 + intensity * 17) % 10;
+          if (hash < 3) return (Math.min(5, intensity + 1)) as UtilizationLevel;
+          if (hash < 7) return intensity as UtilizationLevel;
           return Math.max(0, intensity - 1) as UtilizationLevel;
         }
         // Off hours have lower utilization
-        return Math.floor(Math.random() * 2) as UtilizationLevel;
+        return ((dayIndex * 41 + hourIndex * 29) % 2) as UtilizationLevel;
       })
     );
   };
@@ -59,13 +61,13 @@ const generateMockData = (): AssetUtilization[] => {
   ];
 };
 
-const getUtilizationColor = (level: UtilizationLevel): string => {
+const getUtilizationColor = (level: UtilizationLevel, c: ColorTokens): string => {
   const scale = [
-    colors.bgPrimaryHover, // 0 - No utilization
+    c.bgPrimaryHover, // 0 - No utilization
     '#bbdefb', // 1 - Very low
     '#64b5f6', // 2 - Low
     '#2196f3', // 3 - Medium
-    colors.brand, // 4 - High
+    c.brand, // 4 - High
     '#0d47a1'  // 5 - Very high
   ];
   return scale[level];
@@ -74,11 +76,12 @@ const getUtilizationColor = (level: UtilizationLevel): string => {
 const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 export default function UtilizationOverviewChart({ buildingName }: UtilizationOverviewChartProps) {
+  const { themeColors: c } = useThemeMode();
   const [viewMode, setViewMode] = useState<'hourly' | 'daily'>('hourly');
   const data = generateMockData();
 
   return (
-    <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+    <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
       {/* Header */}
       <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -170,7 +173,7 @@ export default function UtilizationOverviewChart({ buildingName }: UtilizationOv
                   <Box
                     key={hourIndex}
                     sx={{
-                      bgcolor: getUtilizationColor(level),
+                      bgcolor: getUtilizationColor(level, c),
                       height: 24,
                       borderRadius: 0.5,
                       transition: 'all 0.2s ease',
@@ -197,25 +200,25 @@ export default function UtilizationOverviewChart({ buildingName }: UtilizationOv
             Utilization:
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(0), borderRadius: 0.5, border: 1, borderColor: 'divider' }} />
+            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(0, c), borderRadius: 0.5, border: 1, borderColor: 'divider' }} />
             <Typography variant="caption" sx={{ color: 'text.secondary', mr: 2 }}>
               0%
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(2), borderRadius: 0.5 }} />
+            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(2, c), borderRadius: 0.5 }} />
             <Typography variant="caption" sx={{ color: 'text.secondary', mr: 2 }}>
               40%
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(3), borderRadius: 0.5 }} />
+            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(3, c), borderRadius: 0.5 }} />
             <Typography variant="caption" sx={{ color: 'text.secondary', mr: 2 }}>
               60%
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(5), borderRadius: 0.5 }} />
+            <Box sx={{ width: 40, height: 16, bgcolor: getUtilizationColor(5, c), borderRadius: 0.5 }} />
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               100%
             </Typography>

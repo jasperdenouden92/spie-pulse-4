@@ -1,5 +1,5 @@
 'use client';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -202,12 +202,24 @@ const DASHBOARD_GROUPS: ThemeGroup[] = [
     themeKey: 'compliance',
     dashboards: [
       {
-        id: 'compliance_overview',
-        label: 'Compliance overview',
+        id: 'compliance_dashboard',
+        label: 'Compliance Dashboard',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><AssetTrendChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
+      {
+        id: 'bacs_overview',
+        label: 'BACS Overview',
         renderCharts: (b) => (
           <>
             <ChartCard span={2}><PerformanceHeatmapChart buildingName={b} /></ChartCard>
-            <ChartCard span={2}><MaintenanceOverviewTable buildingName={b} title="Compliance Records" /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
           </>
         ),
       },
@@ -258,6 +270,7 @@ const THEME_KEY_MAP: Record<string, string> = {
 };
 
 export default function DashboardsView({ selection, selectedBuilding }: DashboardsViewProps) {
+  const { themeColors: c } = useThemeMode();
   const buildingName = selectedBuilding?.name;
 
   // Filter groups based on active theme selection
@@ -302,11 +315,11 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
         borderRight: 1,
         borderColor: 'divider',
         overflowY: 'auto',
-        bgcolor: colors.bgSecondary,
+        bgcolor: c.bgSecondary,
         '&::-webkit-scrollbar': { width: '4px' },
         '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
       }}>
-        <List dense disablePadding sx={{ py: 1 }}>
+        <List data-annotation-id="dashboardsview-lijst" dense disablePadding sx={{ py: 1 }}>
           {visibleGroups.map((group) => {
             const isOpen = expandedGroups.includes(group.themeKey);
             return (
@@ -332,7 +345,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                 </ListItem>
 
                 {/* Dashboard items */}
-                <Collapse in={isOpen} unmountOnExit>
+                <Collapse data-annotation-id="dashboardsview-accordion" in={isOpen} unmountOnExit>
                   {group.dashboards.map((dash) => {
                     const isActive = dash.id === selectedId;
                     return (
@@ -343,9 +356,9 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                             pl: 4.5,
                             pr: 2,
                             py: 0.625,
-                            bgcolor: isActive ? colors.bgActive : 'transparent',
-                            borderRight: isActive ? `2px solid ${colors.brand}` : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgSecondaryHover },
+                            bgcolor: isActive ? c.bgActive : 'transparent',
+                            borderRight: isActive ? `2px solid ${c.brand}` : '2px solid transparent',
+                            '&:hover': { bgcolor: isActive ? c.bgActive : c.bgSecondaryHover },
                           }}
                         >
                           <ListItemText
@@ -354,7 +367,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                               variant: 'body2',
                               fontSize: '0.8125rem',
                               fontWeight: isActive ? 600 : 400,
-                              color: isActive ? colors.brand : 'text.primary',
+                              color: isActive ? c.brand : 'text.primary',
                               sx: { lineHeight: 1.4 },
                             }}
                           />

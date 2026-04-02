@@ -1,4 +1,5 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
+
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -54,11 +55,11 @@ const generateMockData = (assetFilter?: string): MaintenanceRecord[] => {
     location: 'Demo project',
     equipment: eq,
     failureMode: failureModes[index % 2],
-    value: `${Math.floor(Math.random() * 100 + 10)} Pa`,
-    upperLimit: `${Math.floor(Math.random() * 50 + 50)} Pa`,
-    daysSince: `${Math.floor(Math.random() * 50 + 80)} day`,
-    upperLimitDays: `${Math.floor(Math.random() * 400 + 300)} day`,
-    remainingWeeks: index % 3 === 0 ? '0.00 wk' : `${Math.floor(Math.random() * 20 + 5)}.0wk`,
+    value: `${Math.floor(((index * 37 + 13) % 100) + 10)} Pa`,
+    upperLimit: `${Math.floor(((index * 41 + 7) % 50) + 50)} Pa`,
+    daysSince: `${Math.floor(((index * 53 + 17) % 50) + 80)} day`,
+    upperLimitDays: `${Math.floor(((index * 59 + 23) % 400) + 300)} day`,
+    remainingWeeks: index % 3 === 0 ? '0.00 wk' : `${Math.floor(((index * 43 + 11) % 20) + 5)}.0wk`,
     advisedDate: index % 3 === 0 ? `${26 + index}.01.2026` : `> 29.07.2026`,
     plannedDate: 'geen OH gepland',
     lastMaintenance: `00100128${index + 30}34`
@@ -70,6 +71,7 @@ export default function MaintenanceOverviewTable({
   assetFilter,
   title = 'Maintenance overview air filters'
 }: MaintenanceOverviewTableProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData(assetFilter);
 
   return (
@@ -77,7 +79,7 @@ export default function MaintenanceOverviewTable({
       border: 1,
       borderColor: 'divider',
       borderRadius: 1,
-      bgcolor: '#fff',
+      bgcolor: c.bgPrimary,
       display: 'flex',
       flexDirection: 'column',
       maxHeight: 600
@@ -116,40 +118,40 @@ export default function MaintenanceOverviewTable({
           },
         },
       }}>
-        <Table stickyHeader size="small">
+        <Table data-annotation-id="maintenanceoverviewtable-tabel" stickyHeader size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Locatie
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Equipment
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Faalvorm
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Waarde
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 BovenGrens
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Dagen sinds...
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 BovenGrens
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Resterende...
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Advies OM d...
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 Gepland OM i...
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                 laatste OM t...
               </TableCell>
             </TableRow>
@@ -158,7 +160,7 @@ export default function MaintenanceOverviewTable({
             {data.map((row, index) => (
               <TableRow
                 key={index}
-                sx={{ '&:hover': { bgcolor: colors.bgPrimaryHover } }}
+                sx={{ '&:hover': { bgcolor: c.bgPrimaryHover } }}
               >
                 <TableCell sx={{ fontSize: '0.813rem' }}>{row.location}</TableCell>
                 <TableCell sx={{ fontSize: '0.813rem' }}>{row.equipment}</TableCell>
@@ -196,7 +198,7 @@ export default function MaintenanceOverviewTable({
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', display: 'flex', gap: 2 }}>
         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: colors.brand }} />
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: c.brand }} />
             Distributie Aanvoertemperatuur, CV na buffer - S2TT12
           </Box>
         </Typography>
@@ -209,7 +211,7 @@ export default function MaintenanceOverviewTable({
       </Box>
 
       {/* Guidelines info */}
-      <Box sx={{ p: 2, bgcolor: colors.bgPrimaryHover, display: 'flex', gap: 2 }}>
+      <Box sx={{ p: 2, bgcolor: c.bgPrimaryHover, display: 'flex', gap: 2 }}>
         <Typography variant="caption" sx={{ color: 'text.secondary' }}>
           <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
             <InfoOutlinedIcon sx={{ fontSize: 12 }} />
