@@ -109,7 +109,7 @@ export default function BuildingRankingCard({
             )}
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
+                <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem', minWidth: 0 }}>{b.name}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, ml: 1 }}>
                   <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>{b.score}%</Typography>
                   {showTrend && (
