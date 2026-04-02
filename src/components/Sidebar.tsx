@@ -750,6 +750,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton
+                    id="appearance-toggle"
                     onMouseEnter={(e) => {
                       safeTriangleCleanupRef.current?.();
                       setUserAnchorEl(e.currentTarget);
@@ -917,6 +918,7 @@ export default function Sidebar({ selectedBuilding, selectedMetric, onBuildingSe
               </Tooltip>
               <Tooltip title={userAnchorEl ? '' : 'Account'} placement="right">
                 <IconButton
+                  data-annotation-id="appearance-toggle"
                   onMouseEnter={(e) => {
                     safeTriangleCleanupRef.current?.();
                     setUserAnchorEl(e.currentTarget);
