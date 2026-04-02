@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, DashboardLinksCard, toRanked } from '@/components/performance';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, DashboardLinksCard, KpiScoreOverTimeCard, toRanked } from '@/components/performance';
 import type { DashboardLink } from '@/components/performance';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -389,95 +389,18 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
       />
 
       {/* ═══ KPI Score Over Time ═══ */}
-      <GridCard
-        size="md"
-        icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
-        title="KPI Score Over Time"
-        headerRight={
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5, flexShrink: 0 }}>
-              {menuItems.map(item => {
-                const isActive = chartView === item.key;
-                return (
-                  <Box
-                    key={item.key}
-                    onClick={() => setChartView(item.key)}
-                    sx={{
-                      display: 'flex', alignItems: 'center', gap: 0.75,
-                      px: 1.5, py: 0.75, borderRadius: 1,
-                      cursor: 'pointer', userSelect: 'none',
-                      bgcolor: isActive ? `${c.brand}14` : 'transparent',
-                      transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
-                    }}
-                  >
-                    <Box sx={{
-                      display: 'flex',
-                      color: isActive ? c.brand : 'text.disabled',
-                      transition: 'color 0.15s ease',
-                    }}>
-                      {item.icon}
-                    </Box>
-                    <Typography variant="body2" sx={{
-                      fontSize: '0.8rem',
-                      fontWeight: isActive ? 600 : 400,
-                      color: isActive ? c.brand : 'text.secondary',
-                      transition: 'all 0.15s ease',
-                    }}>
-                      {item.label}
-                    </Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-        }
-      >
-
-          {(() => {
-            const currentData = chartSeries.length === 1 ? chartSeries[0].data : chartSeries[0].data;
-            const goodAbove = showThresholds ? (activeThresholdZones.find(z => z.label === 'Good')?.min ?? 75) : 75;
-            const modAbove = showThresholds ? (activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55) : 55;
-            const gradientId = `threshold-gradient-am-area`;
-            const lineGradientId = `threshold-gradient-am-line`;
-            return (
-              <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart data-annotation-id="assetmonitoringperformancepage-grafiek"
-                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
-                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: c.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
-                  height={370}
-                  margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
-                  grid={{ horizontal: true }}
-                  hideLegend
-                  slotProps={{ tooltip: { trigger: 'none' } }}
-                  axisHighlight={{ x: 'none', y: 'none' }}
-                  sx={{
-                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : c.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-                    [`& .${lineClasses.area}`]: { fill: showThresholds ? `url(#${gradientId})` : undefined, filter: 'none', opacity: 0.15 },
-                    '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
-                    '& .MuiChartsAxis-line': { stroke: 'transparent' },
-                    '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-                  }}
-                >
-                  {showThresholds && (
-                    <>
-                      <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={gradientId} />
-                      <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-                      <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
-                      <InteractiveThresholdLine y={modAbove} label={`Moderate: ${modAbove}–${goodAbove}%`} />
-                    </>
-                  )}
-                  {showThresholds && (
-                    <ChartHoverOverlay
-                      data={currentData}
-                      labels={MONTHS}
-                      getColor={(v) => v >= goodAbove ? '#66bb6a' : v >= modAbove ? '#ffa726' : '#ef5350'}
-                    />
-                  )}
-                </LineChart>
-              </Box>
-            );
-          })()}
-        </GridCard>
+      <KpiScoreOverTimeCard
+        menuItems={menuItems}
+        activeView={chartView}
+        onViewChange={(key) => setChartView(key as ViewMode)}
+        chartSeries={chartSeries}
+        showThresholds={showThresholds}
+        goodAbove={activeThresholdZones.find(z => z.label === 'Good')?.min ?? 75}
+        moderateAbove={activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55}
+        yRange={yRange}
+        gradientId="threshold-gradient-am"
+        annotationId="assetmonitoringperformancepage-grafiek"
+      />
 
       {/* ═══ SECTION 3: Related Dashboards ═══ */}
       <DashboardLinksCard title="Asset Monitoring Dashboards" dashboards={ASSET_MONITORING_DASHBOARDS} onNavigate={onNavigateToDashboard} />

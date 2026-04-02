@@ -7,4 +7,6 @@ export { default as BuildingRankingCard, toRanked } from './BuildingRankingCard'
 export { default as PerformanceChartCard } from './PerformanceChartCard';
 export { default as DashboardLinksCard } from './DashboardLinksCard';
 export type { DashboardLink } from './DashboardLinksCard';
+export { default as KpiScoreOverTimeCard } from './KpiScoreOverTimeCard';
+export type { ViewMenuItem } from './KpiScoreOverTimeCard';
 export type { RankedEntry } from './BuildingRankingCard';
