@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
+import { PerformanceGrid, GridCard, PerformanceChartCard, KpiScoreOverTimeCard } from '@/components/performance';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
@@ -314,72 +314,33 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <PerformanceGrid>
       {/* ═══ Operational KPIs Combined Score Over Time (card) ═══ */}
-      <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
-            Operational KPI Performance
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {overallScore}%
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: overallTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {overallTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(overallTrend)}%
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+      <PerformanceChartCard
+        icon={<BuildOutlinedIcon sx={{ color: c.brand }} />}
+        title="Operational KPI Performance"
+        score={overallScore}
+        trend={overallTrend}
+        data={opsSeries.data}
+        label="Operational KPIs"
+        goodAbove={OPS_GOOD_ABOVE}
+        moderateAbove={OPS_MODERATE_ABOVE}
+        gradientId="threshold-gradient-ops"
+        annotationId="operationsperformancepage-grafiek-2"
+      />
 
-        <Box sx={{ flex: 1, minHeight: 340 }}>
-          <LineChart data-annotation-id="operationsperformancepage-grafiek-2"
-            xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
-            yAxis={[{ min: Math.max(0, Math.floor((Math.min(...opsSeries.data, OPS_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-            series={[{ data: opsSeries.data, label: 'Operational KPIs', color: c.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
-            height={370}
-            margin={{ top: 48, right: isNarrow ? 16 : 80, bottom: 28, left: isNarrow ? 40 : 80 }}
-            grid={{ horizontal: true }}
-            hideLegend
-            slotProps={{ tooltip: { trigger: 'none' } }}
-            axisHighlight={{ x: 'none', y: 'none' }}
-            sx={{
-              '& .MuiLineElement-root': { stroke: 'url(#threshold-gradient-ops-line)', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-              [`& .${lineClasses.area}`]: { fill: 'url(#threshold-gradient-ops-combined)', filter: 'none', opacity: 0.15 },
-              '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
-              '& .MuiChartsAxis-line': { stroke: 'transparent' },
-              '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-            }}
-          >
-            <HorizontalThresholdGradient data={opsSeries.data} goodAbove={OPS_GOOD_ABOVE} moderateAbove={OPS_MODERATE_ABOVE} id="threshold-gradient-ops-combined" />
-            <HorizontalThresholdGradient data={opsSeries.data} goodAbove={OPS_GOOD_ABOVE} moderateAbove={OPS_MODERATE_ABOVE} id="threshold-gradient-ops-line" goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-            <InteractiveThresholdLine y={OPS_GOOD_ABOVE} label={`Good: ${OPS_GOOD_ABOVE}–100%`} />
-            <InteractiveThresholdLine y={OPS_MODERATE_ABOVE} label={`Moderate: ${OPS_MODERATE_ABOVE}–${OPS_GOOD_ABOVE}%`} />
-            <ChartHoverOverlay
-              data={opsSeries.data}
-              labels={MONTHS}
-              getColor={(v) => v >= OPS_GOOD_ABOVE ? '#66bb6a' : v >= OPS_MODERATE_ABOVE ? '#ffa726' : '#ef5350'}
-            />
-          </LineChart>
-        </Box>
-      </Paper>
-
-      {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
-        {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
-            </Box>
+      {/* ═══ Top Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
+        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
           </Box>
+        }
+      >
           {(buildingMode === 'clusters'
             ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
             : (leftListMode === 'best' ? sortedBest : sortedMostImproved)
@@ -425,20 +386,20 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             );
           })}
           <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
-        </Paper>
+      </GridCard>
 
-        {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
-            </Box>
+      {/* ═══ Worst Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />}
+        title={buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
           </Box>
+        }
+      >
           {(buildingMode === 'clusters'
             ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
             : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated)
@@ -484,87 +445,21 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             );
           })}
           <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
-        </Paper>
+      </GridCard>
 
-        {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
-              <Typography variant="body2" fontWeight={600}>KPI Score Over Time</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-              {menuItems.map(item => {
-                const isActive = chartView === item.key;
-                return (
-                  <Box
-                    key={item.key}
-                    onClick={() => setChartView(item.key)}
-                    sx={{
-                      display: 'flex', alignItems: 'center', gap: 0.75,
-                      px: 1.5, py: 0.75, borderRadius: 1,
-                      cursor: 'pointer', userSelect: 'none',
-                      bgcolor: isActive ? `${c.brand}14` : 'transparent',
-                      transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', color: isActive ? c.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
-                    <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? c.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-
-          {(() => {
-            const currentData = chartSeries[0].data;
-            const goodAbove = activeThresholdZones.find(z => z.label === 'Good')?.min ?? 80;
-            const modAbove = activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 60;
-            const gradientId = `threshold-gradient-sub-${chartView}`;
-            const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
-            return (
-              <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart data-annotation-id="operationsperformancepage-grafiek"
-                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
-                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: c.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
-                  height={370}
-                  margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
-                  grid={{ horizontal: true }}
-                  hideLegend
-                  slotProps={{ tooltip: { trigger: 'none' } }}
-                  axisHighlight={{ x: 'none', y: 'none' }}
-                  sx={{
-                    '& .MuiLineElement-root': { stroke: showThresholds ? `url(#${lineGradientId})` : c.brand, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-                    [`& .${lineClasses.area}`]: { fill: showThresholds ? `url(#${gradientId})` : undefined, filter: 'none', opacity: 0.15 },
-                    '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
-                    '& .MuiChartsAxis-line': { stroke: 'transparent' },
-                    '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-                  }}
-                >
-                  {showThresholds && (
-                    <>
-                      <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={gradientId} />
-                      <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-                      <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
-                      <InteractiveThresholdLine y={modAbove} label={`Moderate: ${modAbove}–${goodAbove}%`} />
-                    </>
-                  )}
-                  {showThresholds && (
-                    <ChartHoverOverlay
-                      data={currentData}
-                      labels={MONTHS}
-                      getColor={(v) => v >= goodAbove ? '#66bb6a' : v >= modAbove ? '#ffa726' : '#ef5350'}
-                    />
-                  )}
-                </LineChart>
-              </Box>
-            );
-          })()}
-        </Paper>
-      </Box>
-
-    </Box>
+      {/* ═══ KPI Score Over Time ═══ */}
+      <KpiScoreOverTimeCard
+        menuItems={menuItems}
+        activeView={chartView}
+        onViewChange={(key) => setChartView(key as ViewMode)}
+        chartSeries={chartSeries}
+        showThresholds={showThresholds}
+        goodAbove={activeThresholdZones.find(z => z.label === 'Good')?.min ?? 80}
+        moderateAbove={activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 60}
+        yRange={yRange}
+        gradientId={`threshold-gradient-sub-${chartView}`}
+        annotationId="operationsperformancepage-grafiek"
+      />
+    </PerformanceGrid>
   );
 }

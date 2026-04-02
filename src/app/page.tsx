@@ -1798,21 +1798,15 @@ export default function Home() {
                   {/* ========== BUILDINGS / PERFORMANCE INDICATORS PANEL ========== */}
                   {!selectedBuilding ? (
                     <Box sx={{
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: '12px',
-                      bgcolor: tc.bgPrimary,
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      mt: 4
                     }}>
                       {/* Panel Header with Tabs */}
                       <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        p: 1.5,
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        bgcolor: tc.bgSecondary
+                        px: 0,
                       }}>
                         <AppTabs
                           value={buildingsPanelTab}
@@ -1873,7 +1867,7 @@ export default function Home() {
                       </Box>
 
                       {/* Panel Content */}
-                      <Box sx={{ p: buildingsPanelTab === 'buildings' && buildingsViewMode === 'list' ? '12px 0 0 0' : 2.5 }}>
+                      <Box sx={{ pt: 2 }}>
                         {buildingsPanelTab === 'buildings' ? (
                           <>
                             {buildingsViewMode === 'list' ? (
