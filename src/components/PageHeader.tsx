@@ -21,6 +21,7 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Chip from '@mui/material/Chip';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Tooltip from '@mui/material/Tooltip';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import TuneIcon from '@mui/icons-material/Tune';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import { AssetNode } from '@/data/assetTree';
@@ -132,6 +133,7 @@ function PageHeader({
   metricItems = [],
 }: PageHeaderProps) {
   const { themeColors: c } = useThemeMode();
+  const isNarrow = useMediaQuery('(max-width:960px)');
   // Breadcrumb popover anchors
   const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
   const [groupCaretAnchor, setGroupCaretAnchor] = useState<null | HTMLElement>(null);
@@ -223,8 +225,8 @@ function PageHeader({
           )}
         </AnimatePresence>
 
-        {/* Root breadcrumb segment */}
-        {currentPage === 'portfolio' ? (
+        {/* Root breadcrumb segment — hidden on narrow screens */}
+        {isNarrow ? null : currentPage === 'portfolio' ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography
               variant="h6"
@@ -315,7 +317,7 @@ function PageHeader({
         )}
 
         {/* Smart contextual breadcrumbs for Portfolio page */}
-        {currentPage === 'portfolio' && (
+        {!isNarrow && currentPage === 'portfolio' && (
           <>
             {/* Building segment (when a building is selected) */}
             <AnimatePresence>

@@ -10,6 +10,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Drawer from '@mui/material/Drawer';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -295,6 +296,7 @@ function getComplianceTopics(complianceGreen: number): TopicScore[] {
 
 export default function Home() {
   const { themeColors: tc } = useThemeMode();
+  const isNarrow = useMediaQuery('(max-width:960px)');
   // ── URL state ──────────────────────────────────────────────────────────────
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1378,7 +1380,7 @@ export default function Home() {
 
         {/* Page Content */}
         {currentPage !== 'dashboards' && (
-        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: 3 }}>
+        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
@@ -1461,7 +1463,7 @@ export default function Home() {
                   {/* ========== KPI METRICS SECTION ========== */}
                   {/* Parent wrapper: on hover, dim siblings so the hovered panel pops */}
                   <Box className="kpi-metrics-section" sx={{
-                    display: 'flex', gap: 0, mb: 3, minWidth: 0,
+                    display: 'flex', flexDirection: isNarrow ? 'column' : 'row', gap: 0, mb: 3, minWidth: 0,
                     '& > *': {
                       transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                     },
@@ -1478,10 +1480,11 @@ export default function Home() {
                         p: isCompact ? 2 : 3,
                         border: 1,
                         borderColor: 'divider',
-                        borderRight: 'none',
-                        borderRadius: '8px 0 0 8px',
+                        borderRight: isNarrow ? `1px solid ${tc.borderSecondary}` : 'none',
+                        borderBottom: isNarrow ? 'none' : 1,
+                        borderRadius: isNarrow ? '8px 8px 0 0' : '8px 0 0 8px',
                         bgcolor: selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary,
-                        width: 280,
+                        width: isNarrow ? '100%' : 280,
                         alignSelf: 'stretch',
                         flexShrink: 0,
                         display: 'flex',
@@ -1595,13 +1598,13 @@ export default function Home() {
                             sx={{
                               p: isCompact ? 1.5 : 2,
                               pb: isCompact ? 2.5 : 3,
-                              pl: isCompact ? 5 : 6,
+                              pl: isNarrow ? (isCompact ? 1.5 : 2) : (isCompact ? 5 : 6),
                               borderTop: 1,
                               borderRight: 1,
                               borderBottom: 1,
+                              borderLeft: isNarrow ? 1 : 'none',
                               borderColor: 'divider',
-                              borderLeft: 'none',
-                              borderRadius: '0 8px 0 0',
+                              borderRadius: isNarrow ? '0' : '0 8px 0 0',
                               bgcolor: isThemesSelected ? brandAlpha(0.04) : tc.bgPrimary,
                               position: 'relative',
                               overflow: 'visible',
@@ -1614,7 +1617,7 @@ export default function Home() {
                             }}
                           >
                             {/* Left bracket arrow — top half */}
-                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1 }} preserveAspectRatio="none" viewBox="0 0 20 100">
+                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1, display: isNarrow ? 'none' : 'block' }} preserveAspectRatio="none" viewBox="0 0 20 100">
                               <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary} />
                               <polyline points="0,0 20,50" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                               <polyline points="20,50 0,100" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
@@ -1697,13 +1700,13 @@ export default function Home() {
                             sx={{
                               p: isCompact ? 1.5 : 2,
                               pb: isCompact ? 2.5 : 3,
-                              pl: isCompact ? 5 : 6,
+                              pl: isNarrow ? (isCompact ? 1.5 : 2) : (isCompact ? 5 : 6),
                               borderTop: 'none',
                               borderRight: 1,
                               borderBottom: 1,
+                              borderLeft: isNarrow ? 1 : 'none',
                               borderColor: 'divider',
-                              borderLeft: 'none',
-                              borderRadius: '0 0 8px 0',
+                              borderRadius: isNarrow ? '0 0 8px 8px' : '0 0 8px 0',
                               bgcolor: isOperationsSelected ? brandAlpha(0.04) : tc.bgPrimary,
                               position: 'relative',
                               overflow: 'visible',
@@ -1716,7 +1719,7 @@ export default function Home() {
                             }}
                           >
                             {/* Left bracket arrow — bottom half */}
-                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1 }} preserveAspectRatio="none" viewBox="0 0 20 100">
+                            <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1, display: isNarrow ? 'none' : 'block' }} preserveAspectRatio="none" viewBox="0 0 20 100">
                               <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary} />
                               <polyline points="0,0 20,50" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                               <polyline points="20,50 0,100" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
