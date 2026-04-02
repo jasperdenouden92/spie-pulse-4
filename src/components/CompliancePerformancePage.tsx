@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard } from '@/components/performance';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -364,96 +365,30 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
   ];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <PerformanceGrid>
       {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-          <GavelOutlinedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-          <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>
-            Compliance Performance
-          </Typography>
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
-            {themeScore}%
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themeTrend >= 0 ? 'success.main' : 'error.main' }}>
-            {themeTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
-              {Math.abs(themeTrend)}%
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 2 }}>
-          {topics.map(topic => (
-            <Paper
-              key={topic.key}
-              elevation={0}
-              sx={{
-                p: 2.5,
-                border: `1px solid ${c.cardBorder}`,
-                borderRadius: '12px',
-                bgcolor: c.bgPrimary,
-                boxShadow: c.cardShadow,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
-                },
-              }}
-            >
-              {/* Row 1: Icon + Title */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Box sx={{ color: 'text.secondary', display: 'flex', '& .MuiSvgIcon-root': { fontSize: '18px !important' } }}>{topic.icon}</Box>
-                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{topic.label}</Typography>
-              </Box>
-
-              {/* Row 2+3 left: Score + Trend/Label, right: Sparkline */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1.15rem', lineHeight: 1.2 }}>{topic.score}%</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
-                    {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 12 }} /> : <TrendingDownIcon sx={{ fontSize: 12 }} />}
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>{Math.abs(topic.trend)}%</Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  <Chip label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)} size="small" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 600, bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`, color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove), '& .MuiChip-label': { px: 0.75 } }} />
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  {renderSparkline(topic.sparkline, getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove))}
-                </Box>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-          <Button
-            size="small"
-            endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
-          >
-            View performance indicators
-          </Button>
-        </Box>
-      </Box>
+      <PerformanceIndicatorsCard
+        icon={<GavelOutlinedIcon sx={{ color: c.brand }} />}
+        title="Compliance Performance"
+        score={themeScore}
+        trend={themeTrend}
+        topics={topics}
+      />
 
       {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
-        {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-              <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+      {/* ═══ Top/Worst Buildings + KPI Over Time ═══ */}
+      {/* ═══ Top Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
+        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
             </Box>
-          </Box>
+        }
+      >
           {(buildingMode === 'clusters'
             ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
             : (leftListMode === 'best' ? sortedBest : sortedMostImproved)
@@ -505,20 +440,20 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
           >
             View all
           </Button>
-        </Paper>
+        </GridCard>
 
-        {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
-              <Typography variant="subtitle2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+      {/* ═══ Worst Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />}
+        title={buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
               <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
             </Box>
-          </Box>
+        }
+      >
           {(buildingMode === 'clusters'
             ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
             : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated)
@@ -570,17 +505,15 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
           >
             View all
           </Button>
-        </Paper>
+        </GridCard>
 
-        {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
-              <Typography variant="subtitle2" fontWeight={600}>KPI Score Over Time</Typography>
-            </Box>
-            {/* View selector */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
+      {/* ═══ KPI Score Over Time ═══ */}
+      <GridCard
+        size="md"
+        icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
+        title="KPI Score Over Time"
+        headerRight={
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5, flexShrink: 0 }}>
               {menuItems.map(item => {
                 const isActive = chartView === item.key;
                 return (
@@ -615,7 +548,8 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
                 );
               })}
             </Box>
-          </Box>
+        }
+      >
 
           {(() => {
             const currentData = chartSeries.length === 1 ? chartSeries[0].data : chartSeries[0].data;
@@ -662,8 +596,7 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
               </Box>
             );
           })()}
-        </Paper>
-      </Box>
+        </GridCard>
 
       {/* ═══ SECTION 3: Related Dashboards ═══ */}
       <Box>
@@ -706,6 +639,6 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
           ))}
         </Box>
       </Box>
-    </Box>
+    </PerformanceGrid>
   );
 }

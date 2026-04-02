@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
@@ -13,12 +12,12 @@ import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { useThemeMode } from '@/theme-mode-context';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
+import { PerformanceGrid, GridCard } from '@/components/performance';
 
 // ── Helpers ──
 
@@ -142,7 +141,6 @@ export default function OverallPerformancePage({
   onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings',
 }: OverallPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
-  const isNarrow = useMediaQuery('(max-width:960px)');
   const [chartView, setChartView] = useState<ViewMode>('themes');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -191,238 +189,215 @@ export default function OverallPerformancePage({
     { key: 'operations', label: 'Operational KPIs', icon: <EngineeringOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* ═══ Theme & Operations Score Cards ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <StyleOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>Theme KPIs</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {themesScore}%
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: themesTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {themesTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(themesTrend)}%
-              </Typography>
-            </Box>
-          </Box>
-        </Paper>
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <EngineeringOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>Operational KPIs</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              {operationsScore}%
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: operationsTrend >= 0 ? 'success.main' : 'error.main' }}>
-              {operationsTrend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                {Math.abs(operationsTrend)}%
-              </Typography>
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-
-      {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
-        {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
-            </Box>
-          </Box>
-          {(buildingMode === 'clusters'
-            ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
-            : (leftListMode === 'best' ? sortedBest : sortedMostImproved)
-          ).map((b, i) => {
-            const score = 'metrics' in b ? getAvgOverallScore(b as Building) : (b as ClusterEntry).score;
-            const trend = 'trends' in b ? getAvgOverallTrend(b as Building) : (b as ClusterEntry).trend;
-            const showTrend = leftListMode === 'improved';
-            const barColor = getStatusColor(score, 75, 55);
-            return (
-              <Box
-                key={b.name}
-                onClick={() => buildingMode === 'buildings' && 'metrics' in b ? onBuildingSelect?.(b as Building) : undefined}
-                sx={{
-                  display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
-                  borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
-                  '&:hover': { bgcolor: 'action.hover' },
-                }}
-              >
-                <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-                {buildingMode === 'clusters' && 'images' in b ? (
-                  <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
-                ) : (
-                  <Avatar src={(b as Building).image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
-                )}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, ml: 1 }}>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>{score}%</Typography>
-                      {showTrend && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
-                          {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 13 }} /> : <TrendingDownIcon sx={{ fontSize: 13 }} />}
-                          <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem', lineHeight: 1 }}>{Math.abs(trend)}%</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
-                    <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
-                  </Box>
-                </Box>
-              </Box>
-            );
-          })}
-          <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
-        </Paper>
-
-        {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
-            </Box>
-          </Box>
-          {(buildingMode === 'clusters'
-            ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
-            : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated)
-          ).map((b, i) => {
-            const score = 'metrics' in b ? getAvgOverallScore(b as Building) : (b as ClusterEntry).score;
-            const trend = 'trends' in b ? getAvgOverallTrend(b as Building) : (b as ClusterEntry).trend;
-            const showTrend = rightListMode === 'deteriorated';
-            const barColor = getStatusColor(score, 75, 55);
-            return (
-              <Box
-                key={b.name}
-                onClick={() => buildingMode === 'buildings' && 'metrics' in b ? onBuildingSelect?.(b as Building) : undefined}
-                sx={{
-                  display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
-                  borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default', transition: 'background-color 0.15s ease',
-                  '&:hover': { bgcolor: 'action.hover' },
-                }}
-              >
-                <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
-                {buildingMode === 'clusters' && 'images' in b ? (
-                  <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
-                ) : (
-                  <Avatar src={(b as Building).image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
-                )}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, ml: 1 }}>
-                      <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>{score}%</Typography>
-                      {showTrend && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
-                          {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 13 }} /> : <TrendingDownIcon sx={{ fontSize: 13 }} />}
-                          <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem', lineHeight: 1 }}>{Math.abs(trend)}%</Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Box>
-                  <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
-                    <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
-                  </Box>
-                </Box>
-              </Box>
-            );
-          })}
-          <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
-        </Paper>
-
-        {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
-              <Typography variant="body2" fontWeight={600}>KPI Score Over Time</Typography>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
-              {menuItems.map(item => {
-                const isActive = chartView === item.key;
-                return (
-                  <Box
-                    key={item.key}
-                    onClick={() => setChartView(item.key)}
-                    sx={{
-                      display: 'flex', alignItems: 'center', gap: 0.75,
-                      px: 1.5, py: 0.75, borderRadius: 1,
-                      cursor: 'pointer', userSelect: 'none',
-                      bgcolor: isActive ? `${c.brand}14` : 'transparent',
-                      transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', color: isActive ? c.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
-                    <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? c.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-
-          {(() => {
-            const currentData = chartSeries[0].data;
-            const goodAbove = activeThresholdZones.find(z => z.label === 'Good')?.min ?? 75;
-            const modAbove = activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55;
-            const gradientId = `threshold-gradient-sub-${chartView}`;
-            const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
-            return (
-              <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart data-annotation-id="overallperformancepage-grafiek"
-                  xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
-                  yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
-                  series={chartSeries.map(s => ({ data: s.data, label: s.label, color: s.color, curve: 'catmullRom' as const, showMark: false, area: true }))}
-                  height={370}
-                  margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
-                  grid={{ horizontal: true }}
-                  hideLegend
-                  slotProps={{ tooltip: { trigger: 'none' } }}
-                  axisHighlight={{ x: 'none', y: 'none' }}
-                  sx={{
-                    '& .MuiLineElement-root': { stroke: `url(#${lineGradientId})`, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
-                    [`& .${lineClasses.area}`]: { fill: `url(#${gradientId})`, filter: 'none', opacity: 0.15 },
-                    '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
-                    '& .MuiChartsAxis-line': { stroke: 'transparent' },
-                    '& .MuiChartsAxis-tick': { stroke: 'transparent' },
-                  }}
-                >
-                  <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={gradientId} />
-                  <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-                  <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
-                  <InteractiveThresholdLine y={modAbove} label={`Moderate: ${modAbove}–${goodAbove}%`} />
-                  <ChartHoverOverlay
-                    data={currentData}
-                    labels={MONTHS}
-                    getColor={(v) => v >= goodAbove ? '#66bb6a' : v >= modAbove ? '#ffa726' : '#ef5350'}
-                  />
-                </LineChart>
-              </Box>
-            );
-          })()}
-        </Paper>
+  // Score+trend display helper
+  const ScoreTrend = ({ score, trend }: { score: number; trend: number }) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
+        {score}%
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
+        {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
+        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+          {Math.abs(trend)}%
+        </Typography>
       </Box>
     </Box>
+  );
+
+  // Toggle button helper
+  const ToggleButton = ({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) => (
+    <Box
+      sx={{
+        px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px',
+        cursor: 'pointer', transition: 'all 0.15s',
+        bgcolor: active ? c.bgPrimary : 'transparent',
+        color: active ? 'text.primary' : 'text.secondary',
+        boxShadow: active ? c.shadow : 'none',
+      }}
+      onClick={onClick}
+    />
+  );
+
+  // Building list renderer
+  const renderBuildingList = (
+    items: (Building | ClusterEntry)[],
+    showTrend: boolean,
+  ) => items.map((b, i) => {
+    const score = 'metrics' in b ? getAvgOverallScore(b as Building) : (b as ClusterEntry).score;
+    const trend = 'trends' in b ? getAvgOverallTrend(b as Building) : (b as ClusterEntry).trend;
+    const barColor = getStatusColor(score, 75, 55);
+    return (
+      <Box
+        key={b.name}
+        onClick={() => buildingMode === 'buildings' && 'metrics' in b ? onBuildingSelect?.(b as Building) : undefined}
+        sx={{
+          display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1, mx: -1,
+          borderRadius: 0.5, cursor: buildingMode === 'buildings' ? 'pointer' : 'default',
+          transition: 'background-color 0.15s ease',
+          '&:hover': { bgcolor: 'action.hover' },
+        }}
+      >
+        <Typography variant="caption" sx={{ width: 12, fontWeight: 600, color: 'text.secondary' }}>{i + 1}</Typography>
+        {buildingMode === 'clusters' && 'images' in b ? (
+          <StackedImages images={(b as ClusterEntry).images} base={24} scaleStep={0.8} peek={4} />
+        ) : (
+          <Avatar src={(b as Building).image} variant="rounded" sx={{ width: 28, height: 28, flexShrink: 0 }} />
+        )}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant="body2" noWrap fontWeight={500} sx={{ fontSize: '0.8rem' }}>{b.name}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, ml: 1 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>{score}%</Typography>
+              {showTrend && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
+                  {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 13 }} /> : <TrendingDownIcon sx={{ fontSize: 13 }} />}
+                  <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem', lineHeight: 1 }}>{Math.abs(trend)}%</Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+          <Box sx={{ width: '100%', height: 4, bgcolor: c.bgSecondaryHover, borderRadius: 2 }}>
+            <Box sx={{ width: `${score}%`, height: '100%', bgcolor: barColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
+          </Box>
+        </Box>
+      </Box>
+    );
+  });
+
+  return (
+    <PerformanceGrid>
+      {/* ═══ Theme KPIs Score Card ═══ */}
+      <GridCard
+        size="md"
+        icon={<StyleOutlinedIcon />}
+        title="Theme KPIs"
+        headerRight={<ScoreTrend score={themesScore} trend={themesTrend} />}
+      >
+        <Box />
+      </GridCard>
+
+      {/* ═══ Operational KPIs Score Card ═══ */}
+      <GridCard
+        size="md"
+        icon={<EngineeringOutlinedIcon />}
+        title="Operational KPIs"
+        headerRight={<ScoreTrend score={operationsScore} trend={operationsTrend} />}
+      >
+        <Box />
+      </GridCard>
+
+      {/* ═══ Top Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
+        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
+          </Box>
+        }
+      >
+        {renderBuildingList(
+          buildingMode === 'clusters'
+            ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
+            : (leftListMode === 'best' ? sortedBest : sortedMostImproved),
+          leftListMode === 'improved',
+        )}
+        <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+      </GridCard>
+
+      {/* ═══ Worst Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />}
+        title={buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
+          </Box>
+        }
+      >
+        {renderBuildingList(
+          buildingMode === 'clusters'
+            ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
+            : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated),
+          rightListMode === 'deteriorated',
+        )}
+        <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+      </GridCard>
+
+      {/* ═══ KPI Score Over Time ═══ */}
+      <GridCard
+        size="md"
+        icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
+        title="KPI Score Over Time"
+        headerRight={
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5, flexShrink: 0 }}>
+            {menuItems.map(item => {
+              const isActive = chartView === item.key;
+              return (
+                <Box
+                  key={item.key}
+                  onClick={() => setChartView(item.key)}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 0.75,
+                    px: 1.5, py: 0.75, borderRadius: 1,
+                    cursor: 'pointer', userSelect: 'none',
+                    bgcolor: isActive ? `${c.brand}14` : 'transparent',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', color: isActive ? c.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
+                  <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? c.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        }
+      >
+        {(() => {
+          const currentData = chartSeries[0].data;
+          const goodAbove = activeThresholdZones.find(z => z.label === 'Good')?.min ?? 75;
+          const modAbove = activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55;
+          const gradientId = `threshold-gradient-sub-${chartView}`;
+          const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
+          return (
+            <Box sx={{ flex: 1, minHeight: 370 }}>
+              <LineChart data-annotation-id="overallperformancepage-grafiek"
+                xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
+                yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
+                series={chartSeries.map(s => ({ data: s.data, label: s.label, color: s.color, curve: 'catmullRom' as const, showMark: false, area: true }))}
+                height={370}
+                margin={{ top: 48, right: 50, bottom: 28, left: 50 }}
+                grid={{ horizontal: true }}
+                hideLegend
+                slotProps={{ tooltip: { trigger: 'none' } }}
+                axisHighlight={{ x: 'none', y: 'none' }}
+                sx={{
+                  '& .MuiLineElement-root': { stroke: `url(#${lineGradientId})`, strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: 'none !important' },
+                  [`& .${lineClasses.area}`]: { fill: `url(#${gradientId})`, filter: 'none', opacity: 0.15 },
+                  '& .MuiChartsGrid-line': { stroke: c.chartGridLine, strokeWidth: 1 },
+                  '& .MuiChartsAxis-line': { stroke: 'transparent' },
+                  '& .MuiChartsAxis-tick': { stroke: 'transparent' },
+                }}
+              >
+                <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={gradientId} />
+                <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={modAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
+                <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
+                <InteractiveThresholdLine y={modAbove} label={`Moderate: ${modAbove}–${goodAbove}%`} />
+                <ChartHoverOverlay
+                  data={currentData}
+                  labels={MONTHS}
+                  getColor={(v) => v >= goodAbove ? '#66bb6a' : v >= modAbove ? '#ffa726' : '#ef5350'}
+                />
+              </LineChart>
+            </Box>
+          );
+        })()}
+      </GridCard>
+    </PerformanceGrid>
   );
 }

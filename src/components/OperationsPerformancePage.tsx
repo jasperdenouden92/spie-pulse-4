@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
+import { PerformanceGrid, GridCard } from '@/components/performance';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
@@ -314,13 +314,12 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <PerformanceGrid>
       {/* ═══ Operational KPIs Combined Score Over Time (card) ═══ */}
-      <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
-            Operational KPI Performance
-          </Typography>
+      <GridCard
+        size="lg"
+        title="Operational KPI Performance"
+        headerRight={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
               {overallScore}%
@@ -332,8 +331,8 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
               </Typography>
             </Box>
           </Box>
-        </Box>
-
+        }
+      >
         <Box sx={{ flex: 1, minHeight: 340 }}>
           <LineChart data-annotation-id="operationsperformancepage-grafiek-2"
             xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: c.chartAxisText, fontWeight: 500 } }]}
@@ -364,22 +363,20 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             />
           </LineChart>
         </Box>
-      </Paper>
+      </GridCard>
 
-      {/* ═══ SECTION 2: Best/Worst + KPI Over Time ═══ */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
-        {/* Best performing / Most improved */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EmojiEventsOutlinedIcon sx={{ fontSize: 18, color: '#66bb6a' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
-            </Box>
+      {/* ═══ Top Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
+        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
           </Box>
+        }
+      >
           {(buildingMode === 'clusters'
             ? (leftListMode === 'best' ? clusterSortedBest : clusterSortedMostImproved)
             : (leftListMode === 'best' ? sortedBest : sortedMostImproved)
@@ -425,20 +422,20 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             );
           })}
           <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
-        </Paper>
+      </GridCard>
 
-        {/* Worst performing / Most deteriorated */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <WarningAmberOutlinedIcon sx={{ fontSize: 18, color: '#ef5350' }} />
-              <Typography variant="body2" fontWeight={600}>{buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
-              <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
-            </Box>
+      {/* ═══ Worst Buildings ═══ */}
+      <GridCard
+        size="sm"
+        icon={<WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />}
+        title={buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}
+        headerRight={
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
           </Box>
+        }
+      >
           {(buildingMode === 'clusters'
             ? (rightListMode === 'worst' ? clusterSortedWorst : clusterSortedMostDeteriorated)
             : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated)
@@ -484,38 +481,38 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
             );
           })}
           <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
-        </Paper>
+      </GridCard>
 
-        {/* KPI Score over time */}
-        <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ShowChartOutlinedIcon sx={{ fontSize: 18, color: c.brand }} />
-              <Typography variant="body2" fontWeight={600}>KPI Score Over Time</Typography>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
-              {menuItems.map(item => {
-                const isActive = chartView === item.key;
-                return (
-                  <Box
-                    key={item.key}
-                    onClick={() => setChartView(item.key)}
-                    sx={{
-                      display: 'flex', alignItems: 'center', gap: 0.75,
-                      px: 1.5, py: 0.75, borderRadius: 1,
-                      cursor: 'pointer', userSelect: 'none',
-                      bgcolor: isActive ? `${c.brand}14` : 'transparent',
-                      transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', color: isActive ? c.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
-                    <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? c.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
-                  </Box>
-                );
-              })}
-            </Box>
+      {/* ═══ KPI Score Over Time ═══ */}
+      <GridCard
+        size="md"
+        icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
+        title="KPI Score Over Time"
+        headerRight={
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5, flexShrink: 0 }}>
+            {menuItems.map(item => {
+              const isActive = chartView === item.key;
+              return (
+                <Box
+                  key={item.key}
+                  onClick={() => setChartView(item.key)}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 0.75,
+                    px: 1.5, py: 0.75, borderRadius: 1,
+                    cursor: 'pointer', userSelect: 'none',
+                    bgcolor: isActive ? `${c.brand}14` : 'transparent',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { bgcolor: isActive ? `${c.brand}20` : 'action.hover' },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', color: isActive ? c.brand : 'text.disabled', transition: 'color 0.15s ease' }}>{item.icon}</Box>
+                  <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: isActive ? 600 : 400, color: isActive ? c.brand : 'text.secondary', transition: 'all 0.15s ease' }}>{item.label}</Typography>
+                </Box>
+              );
+            })}
           </Box>
+        }
+      >
 
           {(() => {
             const currentData = chartSeries[0].data;
@@ -562,9 +559,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
               </Box>
             );
           })()}
-        </Paper>
-      </Box>
-
-    </Box>
+      </GridCard>
+    </PerformanceGrid>
   );
 }
