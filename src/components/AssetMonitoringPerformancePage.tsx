@@ -3,8 +3,8 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, toRanked } from '@/components/performance';
-import Paper from '@mui/material/Paper';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, DashboardLinksCard, toRanked } from '@/components/performance';
+import type { DashboardLink } from '@/components/performance';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -228,13 +228,6 @@ const THEME_GOOD_ABOVE = 75;
 const THEME_MODERATE_ABOVE = 55;
 
 // ── Dashboard links ──
-
-interface DashboardLink {
-  id: string;
-  label: string;
-  subtitle: string;
-  icon: React.ReactNode;
-}
 
 const ASSET_MONITORING_DASHBOARDS: DashboardLink[] = [
   { id: 'asset_trend', label: 'Asset Trend', subtitle: 'Asset health and performance over time', icon: <TimelineOutlinedIcon /> },
@@ -487,46 +480,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
         </GridCard>
 
       {/* ═══ SECTION 3: Related Dashboards ═══ */}
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
-          Asset Monitoring Dashboards
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1.5 }}>
-          {ASSET_MONITORING_DASHBOARDS.map(dash => (
-            <Paper
-              key={dash.id}
-              elevation={0}
-              onClick={() => onNavigateToDashboard?.(dash.id)}
-              sx={{
-                py: 1.5,
-                px: 2,
-                border: `1px solid ${c.cardBorder}`,
-                borderRadius: '12px',
-                bgcolor: c.bgPrimary,
-                boxShadow: c.cardShadow,
-                cursor: 'pointer',
-                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 1.5,
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
-                },
-              }}
-            >
-              <Box sx={{ color: 'text.secondary', display: 'flex', flexShrink: 0 }}>
-                {dash.icon}
-              </Box>
-              <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <Typography variant="body2" fontWeight={500} sx={{ lineHeight: 1.3, fontSize: '0.8rem', mb: 0 }}>{dash.label}</Typography>
-                <Typography variant="caption" sx={{ lineHeight: 1.3, fontSize: '0.7rem', color: 'text.secondary', mt: 0 }}>{dash.subtitle}</Typography>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-      </Box>
+      <DashboardLinksCard title="Asset Monitoring Dashboards" dashboards={ASSET_MONITORING_DASHBOARDS} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

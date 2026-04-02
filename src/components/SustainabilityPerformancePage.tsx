@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, toRanked } from '@/components/performance';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, DashboardLinksCard, toRanked } from '@/components/performance';
+import type { DashboardLink } from '@/components/performance';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -298,13 +299,6 @@ function getConsumptionColor(value: number): string {
 }
 
 // ── Sustainability dashboard links ──
-
-interface DashboardLink {
-  id: string;
-  label: string;
-  subtitle: string;
-  icon: React.ReactNode;
-}
 
 const SUSTAINABILITY_DASHBOARDS: DashboardLink[] = [
   { id: 'gebouwtrend', label: 'Building Trend', subtitle: 'Asset trend and energy distribution', icon: <TimelineOutlinedIcon /> },
@@ -997,80 +991,35 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
           })()}
         </GridCard>
 
-      {/* ═══ SECTION 3: Sustainability Dashboards ═══ */}
-      {/* ═══ Sustainability Key Dashboards ═══ */}
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
-          Sustainability Key Dashboards
-        </Typography>
-        <Paper elevation={0} sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 360px', height: 528, overflow: 'hidden' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <SpeedOutlinedIcon sx={{ fontSize: 18, color: '#2e7d32' }} />
-                  <Typography variant="subtitle2" fontWeight={600}>WEii Energy Performance</Typography>
-                </Box>
-                <Button
-                  size="small"
-                  endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-                  sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
-                >
-                  View details
-                </Button>
-              </Box>
-              <Box sx={{ px: 2.5, pb: 0, flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'flex-start' }}>
-                <WeiiScatterChart data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
-              </Box>
-            </Box>
-            <Box sx={{ borderLeft: '1px solid rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <WeiiSidebar data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} groupMode={weiiSidebarGroupMode} onGroupModeChange={setWeiiSidebarGroupMode} />
+      {/* ═══ WEii Energy Performance ═══ */}
+      <GridCard
+        size="lg"
+        icon={<SpeedOutlinedIcon sx={{ color: '#2e7d32' }} />}
+        title="WEii Energy Performance"
+        headerRight={
+          <Button
+            size="small"
+            endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+          >
+            View details
+          </Button>
+        }
+      >
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 360px', height: 528, overflow: 'hidden', mx: -2.5, mb: -2.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ px: 2.5, pb: 0, flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'flex-start' }}>
+              <WeiiScatterChart data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} />
             </Box>
           </Box>
-        </Paper>
-      </Box>
+          <Box sx={{ borderLeft: '1px solid rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <WeiiSidebar data={buildingMode === 'clusters' ? weiiClusterData : weiiChartData} onBuildingClick={buildingMode === 'buildings' ? onBuildingSelect : undefined} hoveredName={hoveredWeiiBuilding} onHover={setHoveredWeiiBuilding} groupMode={weiiSidebarGroupMode} onGroupModeChange={setWeiiSidebarGroupMode} />
+          </Box>
+        </Box>
+      </GridCard>
 
       {/* ═══ Other Sustainability Dashboards ═══ */}
-      <Box>
-        <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', mb: 1.5 }}>
-          Other Sustainability Dashboards
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1.5 }}>
-          {SUSTAINABILITY_DASHBOARDS.map(dash => (
-            <Paper
-              key={dash.id}
-              elevation={0}
-              onClick={() => onNavigateToDashboard?.(dash.id)}
-              sx={{
-                py: 1.5,
-                px: 2,
-                border: `1px solid ${c.cardBorder}`,
-                borderRadius: '12px',
-                bgcolor: c.bgPrimary,
-                boxShadow: c.cardShadow,
-                cursor: 'pointer',
-                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 1.5,
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
-                },
-              }}
-            >
-              <Box sx={{ color: 'text.secondary', display: 'flex', flexShrink: 0 }}>
-                {dash.icon}
-              </Box>
-              <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <Typography variant="body2" fontWeight={500} sx={{ lineHeight: 1.3, fontSize: '0.8rem', mb: 0 }}>{dash.label}</Typography>
-                <Typography variant="caption" sx={{ lineHeight: 1.3, fontSize: '0.7rem', color: 'text.secondary', mt: 0 }}>{dash.subtitle}</Typography>
-              </Box>
-            </Paper>
-          ))}
-        </Box>
-      </Box>
+      <DashboardLinksCard title="Other Sustainability Dashboards" dashboards={SUSTAINABILITY_DASHBOARDS} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

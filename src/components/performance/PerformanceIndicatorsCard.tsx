@@ -74,24 +74,35 @@ export default function PerformanceIndicatorsCard({ icon, title, score, trend, t
   const { themeColors: c } = useThemeMode();
 
   return (
-    <GridCard
-      size="lg"
-      icon={icon}
-      title={title}
-      headerRight={
+    <GridCard size="lg">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+        {icon && (
+          <Box sx={{ display: 'flex', color: 'text.secondary', '& .MuiSvgIcon-root': { fontSize: 18 } }}>
+            {icon}
+          </Box>
+        )}
+        <Typography variant="body2" fontWeight={600}>
+          {title}
+        </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
             {score}%
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, color: trend >= 0 ? 'success.main' : 'error.main' }}>
-            {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 14 }} /> : <TrendingDownIcon sx={{ fontSize: 14 }} />}
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
+            {trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 16 }} /> : <TrendingDownIcon sx={{ fontSize: 16 }} />}
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
               {Math.abs(trend)}%
             </Typography>
           </Box>
         </Box>
-      }
-    >
+        <Button
+          size="small"
+          endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+          sx={{ ml: 'auto', textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+        >
+          View performance indicators
+        </Button>
+      </Box>
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }}>
         {topics.map(topic => (
           <Paper
@@ -135,15 +146,6 @@ export default function PerformanceIndicatorsCard({ icon, title, score, trend, t
             </Box>
           </Paper>
         ))}
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-        <Button
-          size="small"
-          endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-          sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
-        >
-          View performance indicators
-        </Button>
       </Box>
     </GridCard>
   );

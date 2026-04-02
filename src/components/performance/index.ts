@@ -5,4 +5,6 @@ export { getStatusColor, getStatusLabel } from './PerformanceIndicatorsCard';
 export type { TopicDef } from './PerformanceIndicatorsCard';
 export { default as BuildingRankingCard, toRanked } from './BuildingRankingCard';
 export { default as PerformanceChartCard } from './PerformanceChartCard';
+export { default as DashboardLinksCard } from './DashboardLinksCard';
+export type { DashboardLink } from './DashboardLinksCard';
 export type { RankedEntry } from './BuildingRankingCard';
