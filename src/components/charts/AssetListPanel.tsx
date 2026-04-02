@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -125,6 +125,7 @@ const generateMockData = (): AssetCategory[] => {
 };
 
 export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
+  const { themeColors: c } = useThemeMode();
   const [categories, setCategories] = useState(generateMockData());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRow, setSelectedRow] = useState<string | null>(null);
@@ -144,7 +145,7 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
         border: 1,
         borderColor: 'divider',
         borderRadius: 1,
-        bgcolor: '#fff',
+        bgcolor: c.bgPrimary,
         display: 'flex',
         flexDirection: 'column'
       }}>
@@ -199,7 +200,7 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
                   cursor: 'pointer',
                   borderRadius: 1,
                   '&:hover': {
-                    bgcolor: colors.bgPrimaryHover
+                    bgcolor: c.bgPrimaryHover
                   }
                 }}
               >
@@ -229,9 +230,9 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
                         px: 1,
                         cursor: 'pointer',
                         borderRadius: 1,
-                        bgcolor: selectedRow === `${index}-${itemIndex}` ? colors.bgActive : 'transparent',
+                        bgcolor: selectedRow === `${index}-${itemIndex}` ? c.bgActive : 'transparent',
                         '&:hover': {
-                          bgcolor: selectedRow === `${index}-${itemIndex}` ? colors.bgActive : colors.bgPrimaryHover
+                          bgcolor: selectedRow === `${index}-${itemIndex}` ? c.bgActive : c.bgPrimaryHover
                         }
                       }}
                       onClick={() => setSelectedRow(`${index}-${itemIndex}`)}
@@ -253,7 +254,7 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
         border: 1,
         borderColor: 'divider',
         borderRadius: 1,
-        bgcolor: '#fff',
+        bgcolor: c.bgPrimary,
         display: 'flex',
         flexDirection: 'column'
       }}>
@@ -272,28 +273,28 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
           <Table data-annotation-id="assetlistpanel-tabel" stickyHeader size="small">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Equipment ID
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Manufacturer
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Room
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Capacity
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Year
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Number
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Unit
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: c.bgPrimary }}>
                   Klant ID
                 </TableCell>
               </TableRow>
@@ -306,7 +307,7 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
                   <TableRow
                     key={index}
                     sx={{
-                      '&:hover': { bgcolor: colors.bgPrimaryHover },
+                      '&:hover': { bgcolor: c.bgPrimaryHover },
                       cursor: 'pointer'
                     }}
                   >

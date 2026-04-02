@@ -1,4 +1,5 @@
-import { colors, secondaryAlpha } from '@/colors';
+import { secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
@@ -53,11 +54,12 @@ const generateMockData = () => {
 };
 
 export default function ForecastTargetChart({ buildingName }: ForecastTargetChartProps) {
+  const { themeColors: c } = useThemeMode();
   const [degreeDayCorrection, setDegreeDayCorrection] = useState(false);
   const data = generateMockData();
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 360 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 360 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
         <Box>
@@ -147,27 +149,27 @@ export default function ForecastTargetChart({ buildingName }: ForecastTargetChar
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             grid: {
               line: {
-                stroke: colors.bgSecondaryHover,
+                stroke: c.chartGridLine,
                 strokeWidth: 1,
               },
             },
             legends: {
               text: {
                 fontSize: 11,
-                fill: '#666',
+                fill: c.chartAxisText,
               },
             },
           }}

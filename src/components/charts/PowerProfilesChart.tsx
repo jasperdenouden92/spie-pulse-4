@@ -1,4 +1,4 @@
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React from 'react';
 import Box from '@mui/material/Box';
@@ -34,10 +34,11 @@ const generateMockData = () => {
 };
 
 export default function PowerProfilesChart({ buildingName }: PowerProfilesChartProps) {
+  const { themeColors: c } = useThemeMode();
   const data = generateMockData();
 
   return (
-    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 300 }}>
+    <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 300 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
         <Box>
@@ -112,27 +113,27 @@ export default function PowerProfilesChart({ buildingName }: PowerProfilesChartP
             axis: {
               domain: {
                 line: {
-                  stroke: colors.borderSecondary,
+                  stroke: c.borderSecondary,
                   strokeWidth: 1,
                 },
               },
               ticks: {
                 text: {
                   fontSize: 11,
-                  fill: '#666',
+                  fill: c.chartAxisText,
                 },
               },
             },
             grid: {
               line: {
-                stroke: colors.bgSecondaryHover,
+                stroke: c.chartGridLine,
                 strokeWidth: 1,
               },
             },
             legends: {
               text: {
                 fontSize: 11,
-                fill: '#666',
+                fill: c.chartAxisText,
               },
             },
           }}

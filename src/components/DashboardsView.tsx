@@ -1,5 +1,5 @@
 'use client';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
@@ -270,6 +270,7 @@ const THEME_KEY_MAP: Record<string, string> = {
 };
 
 export default function DashboardsView({ selection, selectedBuilding }: DashboardsViewProps) {
+  const { themeColors: c } = useThemeMode();
   const buildingName = selectedBuilding?.name;
 
   // Filter groups based on active theme selection
@@ -314,7 +315,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
         borderRight: 1,
         borderColor: 'divider',
         overflowY: 'auto',
-        bgcolor: colors.bgSecondary,
+        bgcolor: c.bgSecondary,
         '&::-webkit-scrollbar': { width: '4px' },
         '&::-webkit-scrollbar-thumb': { background: '#ddd', borderRadius: '4px' },
       }}>
@@ -355,9 +356,9 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                             pl: 4.5,
                             pr: 2,
                             py: 0.625,
-                            bgcolor: isActive ? colors.bgActive : 'transparent',
-                            borderRight: isActive ? `2px solid ${colors.brand}` : '2px solid transparent',
-                            '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgSecondaryHover },
+                            bgcolor: isActive ? c.bgActive : 'transparent',
+                            borderRight: isActive ? `2px solid ${c.brand}` : '2px solid transparent',
+                            '&:hover': { bgcolor: isActive ? c.bgActive : c.bgSecondaryHover },
                           }}
                         >
                           <ListItemText
@@ -366,7 +367,7 @@ export default function DashboardsView({ selection, selectedBuilding }: Dashboar
                               variant: 'body2',
                               fontSize: '0.8125rem',
                               fontWeight: isActive ? 600 : 400,
-                              color: isActive ? colors.brand : 'text.primary',
+                              color: isActive ? c.brand : 'text.primary',
                               sx: { lineHeight: 1.4 },
                             }}
                           />

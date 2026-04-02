@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Chip from '@mui/material/Chip';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -311,6 +311,7 @@ const toLinear = (year: number, month: number) => year * 12 + month;
 const fromLinear = (lm: number) => ({ year: Math.floor(lm / 12), month: lm % 12 });
 
 export default function DateRangeSelector({ value, onChange, anchorEl, onClose, hidePresets = false, inline = false }: DateRangeSelectorProps) {
+  const { themeColors: c } = useThemeMode();
   const open = inline || Boolean(anchorEl);
   const currentYear = TODAY.getFullYear();
 
@@ -577,7 +578,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   }, [dayDrag, effectiveRangeGranular, commitRange]);
 
   const granularCanGoBack = displayMonth > new Date(MIN_YEAR, 0, 1);
-  const granularCanGoForward = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 2, 1) <= TODAY;
+  const granularCanGoForward = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) <= TODAY;
 
   const handleGranularNav = useCallback((dir: -1 | 1) => {
     setDisplayMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + dir, 1));
@@ -625,7 +626,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
               left: leftPct,
               width: widthPct,
               height: '100%',
-              bgcolor: colors.bgActive,
+              bgcolor: c.bgActive,
               borderRadius: `${highlight.roundLeft ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundLeft ? 6 : 0}px`,
               zIndex: 0,
               pointerEvents: 'none',
@@ -644,7 +645,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                 width: 6,
                 height: 28,
                 borderRadius: '3px',
-                bgcolor: colors.brand,
+                bgcolor: c.brand,
                 opacity: dragState?.mode === 'resize-left' ? 0.9 : 0.5,
                 cursor: 'ew-resize',
                 zIndex: 3,
@@ -666,7 +667,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                 width: 6,
                 height: 28,
                 borderRadius: '3px',
-                bgcolor: colors.brand,
+                bgcolor: c.brand,
                 opacity: dragState?.mode === 'resize-right' ? 0.9 : 0.5,
                 cursor: 'ew-resize',
                 zIndex: 3,
@@ -700,13 +701,13 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                     userSelect: 'none',
                     transition: 'background-color 0.1s',
                     borderRadius: '4px',
-                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                    '&:hover': !isFuture ? { bgcolor: c.bgPrimaryHover } : {},
                   }}
                 >
                   <Typography sx={{
                     fontSize: '0.8rem',
                     fontWeight: inRange ? 600 : 400,
-                    color: isFuture ? colors.textDisabled : inRange ? colors.brand : colors.textSecondary,
+                    color: isFuture ? c.textDisabled : inRange ? c.brand : c.textSecondary,
                     transition: 'color 0.1s',
                   }}>
                     {name}
@@ -742,13 +743,13 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                     userSelect: 'none',
                     transition: 'background-color 0.1s',
                     borderRadius: '4px',
-                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                    '&:hover': !isFuture ? { bgcolor: c.bgPrimaryHover } : {},
                   }}
                 >
                   <Typography sx={{
                     fontSize: '0.8rem',
                     fontWeight: fullyInRange ? 600 : 500,
-                    color: isFuture ? colors.textDisabled : fullyInRange ? colors.brand : colors.textSecondary,
+                    color: isFuture ? c.textDisabled : fullyInRange ? c.brand : c.textSecondary,
                     transition: 'color 0.1s',
                   }}>
                     Q{q + 1}
@@ -821,7 +822,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                   disabled={!canGoBack}
                   sx={{ p: 0.25 }}
                 >
-                  <ChevronLeftIcon sx={{ fontSize: '1rem', color: !canGoBack ? colors.textDisabled : colors.brand }} />
+                  <ChevronLeftIcon sx={{ fontSize: '1rem', color: !canGoBack ? c.textDisabled : c.brand }} />
                 </IconButton>
                 <Typography
                   onClick={() => handleYearClick(year)}
@@ -830,10 +831,10 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                     fontWeight: 600,
                     cursor: new Date(year, 0, 1) > TODAY ? 'default' : 'pointer',
                     color: (from <= new Date(year, 0, 1) && to >= new Date(year, 11, 31))
-                      ? colors.brand : colors.textPrimary,
+                      ? c.brand : c.textPrimary,
                     mx: 0.75,
                     userSelect: 'none',
-                    '&:hover': new Date(year, 0, 1) <= TODAY ? { color: colors.brand } : {},
+                    '&:hover': new Date(year, 0, 1) <= TODAY ? { color: c.brand } : {},
                     transition: 'color 0.1s',
                   }}
                 >
@@ -845,7 +846,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                   disabled={!canGoForward}
                   sx={{ p: 0.25 }}
                 >
-                  <ChevronRightIcon sx={{ fontSize: '1rem', color: !canGoForward ? colors.textDisabled : colors.brand }} />
+                  <ChevronRightIcon sx={{ fontSize: '1rem', color: !canGoForward ? c.textDisabled : c.brand }} />
                 </IconButton>
               </>
             );
@@ -858,7 +859,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   // ── Render month block (granular mode) ──────────────────────────────
   // Mirrors renderYearBlock: days row → week row → month nav
 
-  const renderMonthBlock = (monthDate: Date, side: 'left' | 'right') => {
+  const renderMonthBlock = (monthDate: Date) => {
     const year = monthDate.getFullYear();
     const month = monthDate.getMonth();
     const daysInMonth = endOfMonth(monthDate).getDate();
@@ -890,7 +891,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
               left: leftPct,
               width: widthPct,
               height: '100%',
-              bgcolor: colors.bgActive,
+              bgcolor: c.bgActive,
               borderRadius: `${highlight.roundLeft ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundRight ? 6 : 0}px ${highlight.roundLeft ? 6 : 0}px`,
               zIndex: 0,
               pointerEvents: 'none',
@@ -922,13 +923,13 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                     userSelect: 'none',
                     transition: 'background-color 0.1s',
                     borderRadius: '3px',
-                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                    '&:hover': !isFuture ? { bgcolor: c.bgPrimaryHover } : {},
                   }}
                 >
                   <Typography sx={{
                     fontSize: '0.65rem',
                     fontWeight: inRange ? 600 : 400,
-                    color: isFuture ? colors.textDisabled : inRange ? colors.brand : colors.textSecondary,
+                    color: isFuture ? c.textDisabled : inRange ? c.brand : c.textSecondary,
                     transition: 'color 0.1s',
                   }}>
                     {day}
@@ -963,13 +964,13 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                     userSelect: 'none',
                     transition: 'background-color 0.1s',
                     borderRadius: '3px',
-                    '&:hover': !isFuture ? { bgcolor: 'rgba(0,0,0,0.04)' } : {},
+                    '&:hover': !isFuture ? { bgcolor: c.bgPrimaryHover } : {},
                   }}
                 >
                   <Typography sx={{
                     fontSize: '0.7rem',
                     fontWeight: fullyInRange ? 600 : 500,
-                    color: isFuture ? colors.textDisabled : fullyInRange ? colors.brand : colors.textSecondary,
+                    color: isFuture ? c.textDisabled : fullyInRange ? c.brand : c.textSecondary,
                     transition: 'color 0.1s',
                   }}>
                     {w.label}
@@ -987,55 +988,38 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
           alignItems: 'center',
           pt: 0.75,
         }}>
-          {(() => {
-            const canGoBack = side === 'left'
-              ? granularCanGoBack
-              : new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) > new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1);
-            const canGoForward = side === 'left'
-              ? new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1) < new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1)
-              : granularCanGoForward;
-
-            return (
-              <>
-                {side === 'left' && (
-                  <IconButton
-                    size="small"
-                    onClick={() => handleGranularNav(-1)}
-                    disabled={!granularCanGoBack}
-                    sx={{ p: 0.25 }}
-                  >
-                    <ChevronLeftIcon sx={{ fontSize: '1rem', color: !granularCanGoBack ? colors.textDisabled : colors.brand }} />
-                  </IconButton>
-                )}
-                <Typography
-                  onClick={() => handleMonthClick(monthDate)}
-                  sx={{
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: monthStart > TODAY ? 'default' : 'pointer',
-                    color: (range.from <= monthStart && range.to >= monthEnd)
-                      ? colors.brand : colors.textPrimary,
-                    mx: 0.75,
-                    userSelect: 'none',
-                    '&:hover': monthStart <= TODAY ? { color: colors.brand } : {},
-                    transition: 'color 0.1s',
-                  }}
-                >
-                  {MONTHS_SHORT[month]} {year}
-                </Typography>
-                {side === 'right' && (
-                  <IconButton
-                    size="small"
-                    onClick={() => handleGranularNav(1)}
-                    disabled={!granularCanGoForward}
-                    sx={{ p: 0.25 }}
-                  >
-                    <ChevronRightIcon sx={{ fontSize: '1rem', color: !granularCanGoForward ? colors.textDisabled : colors.brand }} />
-                  </IconButton>
-                )}
-              </>
-            );
-          })()}
+          <IconButton
+            size="small"
+            onClick={() => handleGranularNav(-1)}
+            disabled={!granularCanGoBack}
+            sx={{ p: 0.25 }}
+          >
+            <ChevronLeftIcon sx={{ fontSize: '1rem', color: !granularCanGoBack ? c.textDisabled : c.brand }} />
+          </IconButton>
+          <Typography
+            onClick={() => handleMonthClick(monthDate)}
+            sx={{
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: monthStart > TODAY ? 'default' : 'pointer',
+              color: (range.from <= monthStart && range.to >= monthEnd)
+                ? c.brand : c.textPrimary,
+              mx: 0.75,
+              userSelect: 'none',
+              '&:hover': monthStart <= TODAY ? { color: c.brand } : {},
+              transition: 'color 0.1s',
+            }}
+          >
+            {MONTHS_SHORT[month]} {year}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={() => handleGranularNav(1)}
+            disabled={!granularCanGoForward}
+            sx={{ p: 0.25 }}
+          >
+            <ChevronRightIcon sx={{ fontSize: '1rem', color: !granularCanGoForward ? c.textDisabled : c.brand }} />
+          </IconButton>
         </Box>
       </Box>
     );
@@ -1046,14 +1030,14 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
   const segmentSx = (active: boolean) => ({
     px: 1.5, py: 0.5, fontSize: '0.75rem', fontWeight: 600, borderRadius: '6px',
     cursor: 'pointer', transition: 'all 0.15s',
-    bgcolor: active ? 'white' : 'transparent',
-    color: active ? colors.brand : 'text.secondary',
-    boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-    '&:hover': { color: active ? colors.brand : 'text.primary' },
+    bgcolor: active ? c.bgPrimary : 'transparent',
+    color: active ? c.brand : 'text.secondary',
+    boxShadow: active ? `0 1px 3px ${c.shadow}` : 'none',
+    '&:hover': { color: active ? c.brand : 'text.primary' },
   });
 
   const segmentedControl = (
-    <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: colors.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${colors.borderTertiary}` }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', flexShrink: 0, border: `1px solid ${c.borderTertiary}` }}>
       <Box sx={segmentSx(viewMode === 'standard')} onClick={() => setViewMode('standard')}>
         Monthly
       </Box>
@@ -1085,11 +1069,11 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
                   fontWeight: isActive ? 600 : 500,
                   fontSize: '0.8rem',
                   cursor: 'pointer',
-                  bgcolor: isActive ? colors.bgActive : 'transparent',
-                  color: isActive ? colors.brand : colors.textSecondary,
+                  bgcolor: isActive ? c.bgActive : 'transparent',
+                  color: isActive ? c.brand : c.textSecondary,
                   border: '1px solid',
-                  borderColor: isActive ? colors.brand : colors.borderSecondary,
-                  '&:hover': { bgcolor: isActive ? colors.bgActive : colors.bgPrimaryHover },
+                  borderColor: isActive ? c.brand : c.borderSecondary,
+                  '&:hover': { bgcolor: isActive ? c.bgActive : c.bgPrimaryHover },
                 }}
               />
             );
@@ -1118,7 +1102,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
           {renderYearBlock(leftYear, 'left')}
           <Box sx={{
             width: '1px',
-            bgcolor: colors.borderTertiary,
+            bgcolor: c.borderTertiary,
             mx: '4px',
             my: 0.5,
             flexShrink: 0,
@@ -1133,20 +1117,10 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
             display: 'flex',
             px: inline ? 0 : 3,
             py: inline ? 1.5 : 2.5,
-            gap: 2,
             userSelect: 'none',
           }}
         >
-          {renderMonthBlock(displayMonth, 'left')}
-          <Box sx={{
-            width: '1px',
-            bgcolor: colors.borderTertiary,
-            flexShrink: 0,
-          }} />
-          {renderMonthBlock(
-            new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1),
-            'right',
-          )}
+          {renderMonthBlock(displayMonth)}
         </Box>
       )}
     </>
@@ -1168,7 +1142,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
           mt: 0.5,
           width: 920,
           borderRadius: '12px',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
+          boxShadow: `0 4px 24px ${c.shadowMedium}`,
           overflow: 'hidden',
         },
       }}

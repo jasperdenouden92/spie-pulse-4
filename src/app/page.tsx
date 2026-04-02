@@ -151,6 +151,7 @@ import {
 } from '@/components/charts';
 import type { ToggleState } from '@/components/KPIToggle';
 import { colors, brandAlpha, secondaryAlpha } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import { BuildingSelectorPopover, getBuildingSelectorLabel, ContractFilterToggle, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
 
 type MetricType = keyof Building['metrics'];
@@ -293,6 +294,7 @@ function getComplianceTopics(complianceGreen: number): TopicScore[] {
 }
 
 export default function Home() {
+  const { themeColors: tc } = useThemeMode();
   // ── URL state ──────────────────────────────────────────────────────────────
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -921,7 +923,7 @@ export default function Home() {
   const isCompact = !!selectedBuilding;
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: colors.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: tc.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
       {/* Mobile backdrop — always rendered, hidden on desktop via CSS */}
       <Box
         ref={mobileBackdropRef}
@@ -1086,7 +1088,7 @@ export default function Home() {
           zIndex: 1425,
           clipPath: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
           transition: 'clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          bgcolor: '#fff',
+          bgcolor: tc.bgPrimary,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -1167,7 +1169,7 @@ export default function Home() {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          bgcolor: '#fff',
+          bgcolor: tc.bgPrimary,
         }}
       >
         <Tooltip title={isInspectMode ? "Exit Inspect Mode" : "Inspect Assets"} placement="left">
@@ -1182,11 +1184,11 @@ export default function Home() {
               width: 48,
               height: 48,
               borderRadius: 0,
-              bgcolor: isInspectMode ? colors.brand : '#fff',
-              color: isInspectMode ? '#fff' : 'text.primary',
+              bgcolor: isInspectMode ? tc.brand : tc.bgPrimary,
+              color: isInspectMode ? tc.bgPrimary : 'text.primary',
               border: isInspectMode ? '2px dashed rgba(255, 255, 255, 0.5)' : 'none',
               '&:hover': {
-                bgcolor: isInspectMode ? '#1565c0' : colors.bgPrimaryHover,
+                bgcolor: isInspectMode ? '#1565c0' : tc.bgPrimaryHover,
               }
             }}
           >
@@ -1235,8 +1237,8 @@ export default function Home() {
             minWidth: 280,
             maxWidth: 320,
             pointerEvents: 'none',
-            bgcolor: '#fff',
-            border: `2px dashed ${colors.brand}`,
+            bgcolor: tc.bgPrimary,
+            border: `2px dashed ${tc.brand}`,
           }}
         >
           {hoveredBuilding ? (
@@ -1276,7 +1278,7 @@ export default function Home() {
               )}
             </>
           )}
-          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: colors.brand, fontWeight: 500 }}>
+          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: tc.brand, fontWeight: 500 }}>
             Click to inspect →
           </Typography>
         </Paper>
@@ -1293,7 +1295,7 @@ export default function Home() {
         position: 'relative',
         zIndex: 1,
         border: '3px dashed',
-        borderColor: isInspectMode ? colors.brand : 'transparent',
+        borderColor: isInspectMode ? tc.brand : 'transparent',
         minWidth: 0,
         overflow: 'hidden'
       }}>
@@ -1436,7 +1438,7 @@ export default function Home() {
                       }}>
                         <Box>
                           <Typography variant="h5" sx={{
-                            color: '#fff',
+                            color: tc.bgPrimary,
                             fontWeight: 700,
                             textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                             mb: 0.5
@@ -1464,7 +1466,7 @@ export default function Home() {
                       transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                     },
                     '&:has(.performance-card:hover) .bracket-arrow polygon': {
-                      fill: '#eef0f3',
+                      fill: tc.bgSecondaryHover,
                     },
                   }}>
                     {/* Overall Score Card */}
@@ -1478,7 +1480,7 @@ export default function Home() {
                         borderColor: 'divider',
                         borderRight: 'none',
                         borderRadius: '8px 0 0 8px',
-                        bgcolor: selection === 'overall' ? '#f5f6f8' : colors.bgPrimary,
+                        bgcolor: selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary,
                         width: 280,
                         alignSelf: 'stretch',
                         flexShrink: 0,
@@ -1489,7 +1491,7 @@ export default function Home() {
                         boxShadow: 'none',
                         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          bgcolor: '#eef0f3',
+                          bgcolor: tc.bgSecondaryHover,
                         }
                       }}
                     >
@@ -1501,8 +1503,8 @@ export default function Home() {
                           </Typography>
                         </Box>
                         {selection === 'overall'
-                          ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
-                          : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                          ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: tc.brand }} />
+                          : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: tc.borderPrimary }} />}
                       </Box>
                       {(() => {
                         const overallScore = selectedBuilding
@@ -1600,7 +1602,7 @@ export default function Home() {
                               borderColor: 'divider',
                               borderLeft: 'none',
                               borderRadius: '0 8px 0 0',
-                              bgcolor: isThemesSelected ? brandAlpha(0.04) : colors.bgPrimary,
+                              bgcolor: isThemesSelected ? brandAlpha(0.04) : tc.bgPrimary,
                               position: 'relative',
                               overflow: 'visible',
                               boxShadow: 'none',
@@ -1613,9 +1615,9 @@ export default function Home() {
                           >
                             {/* Left bracket arrow — top half */}
                             <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1 }} preserveAspectRatio="none" viewBox="0 0 20 100">
-                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? '#f5f6f8' : colors.bgPrimary} />
-                              <polyline points="0,0 20,50" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                              <polyline points="20,50 0,100" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary} />
+                              <polyline points="0,0 20,50" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polyline points="20,50 0,100" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                             </svg>
                             {/* Themes Header */}
                             <Box
@@ -1644,8 +1646,8 @@ export default function Home() {
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {isThemesSelected
-                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
-                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: tc.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: tc.borderPrimary }} />}
                               </Box>
                             </Box>
 
@@ -1702,7 +1704,7 @@ export default function Home() {
                               borderColor: 'divider',
                               borderLeft: 'none',
                               borderRadius: '0 0 8px 0',
-                              bgcolor: isOperationsSelected ? brandAlpha(0.04) : colors.bgPrimary,
+                              bgcolor: isOperationsSelected ? brandAlpha(0.04) : tc.bgPrimary,
                               position: 'relative',
                               overflow: 'visible',
                               boxShadow: 'none',
@@ -1715,9 +1717,9 @@ export default function Home() {
                           >
                             {/* Left bracket arrow — bottom half */}
                             <svg className="bracket-arrow" style={{ position: 'absolute', left: 0, top: 0, width: 20, height: '100%', zIndex: 1 }} preserveAspectRatio="none" viewBox="0 0 20 100">
-                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? '#f5f6f8' : colors.bgPrimary} />
-                              <polyline points="0,0 20,50" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                              <polyline points="20,50 0,100" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polygon points="0,0 20,50 0,100" fill={selection === 'overall' ? tc.bgPrimaryHover : tc.bgPrimary} />
+                              <polyline points="0,0 20,50" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+                              <polyline points="20,50 0,100" fill="none" stroke={tc.borderSecondary} strokeWidth="1" vectorEffect="non-scaling-stroke" />
                             </svg>
                             {/* Operations Header */}
                             <Box
@@ -1746,8 +1748,8 @@ export default function Home() {
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {isOperationsSelected
-                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: colors.brand }} />
-                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: '#bdbdbd' }} />}
+                                  ? <RadioButtonCheckedIcon sx={{ fontSize: 20, color: tc.brand }} />
+                                  : <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: tc.borderPrimary }} />}
                               </Box>
                             </Box>
 
@@ -1796,7 +1798,7 @@ export default function Home() {
                       border: 1,
                       borderColor: 'divider',
                       borderRadius: '12px',
-                      bgcolor: '#fff',
+                      bgcolor: tc.bgPrimary,
                       overflow: 'hidden'
                     }}>
                       {/* Panel Header with Tabs */}
@@ -1807,7 +1809,7 @@ export default function Home() {
                         p: 1.5,
                         borderBottom: 1,
                         borderColor: 'divider',
-                        bgcolor: colors.bgSecondary
+                        bgcolor: tc.bgSecondary
                       }}>
                         <AppTabs
                           value={buildingsPanelTab}
@@ -1831,7 +1833,7 @@ export default function Home() {
                               sx={{
                                 height: 32,
                                 borderRadius: '6px',
-                                backgroundColor: colors.bgPrimaryHover,
+                                backgroundColor: tc.bgPrimaryHover,
                                 '&:hover': { backgroundColor: '#e8e8e8' },
                                 '& .MuiChip-label': { px: 1, fontSize: '0.813rem', fontWeight: 500 }
                               }}
@@ -1854,9 +1856,9 @@ export default function Home() {
                                 width: 32,
                                 height: 32,
                                 borderRadius: '6px',
-                                bgcolor: colors.bgPrimaryHover,
+                                bgcolor: tc.bgPrimaryHover,
                                 color: 'text.secondary',
-                                '&:hover': { bgcolor: '#e8e8e8' },
+                                '&:hover': { bgcolor: tc.bgSecondaryHover },
                               }}
                             >
                               {buildingsViewMode === 'cards'
@@ -1966,7 +1968,7 @@ export default function Home() {
                                         borderBottom: 1,
                                         borderColor: 'divider',
                                         transition: 'background-color 0.15s ease',
-                                        '&:hover': { bgcolor: colors.bgPrimaryHover },
+                                        '&:hover': { bgcolor: tc.bgPrimaryHover },
                                         '&:last-child': { borderBottom: 'none' },
                                       }}
                                     >
@@ -2038,12 +2040,12 @@ export default function Home() {
                                       {/* Trend */}
                                       <Box sx={{ width: 80, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
                                         {trend >= 0
-                                          ? <TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50' }} />
-                                          : <TrendingDownIcon sx={{ fontSize: 16, color: '#f44336' }} />}
+                                          ? <TrendingUpIcon sx={{ fontSize: 16, color: tc.statusGood }} />
+                                          : <TrendingDownIcon sx={{ fontSize: 16, color: tc.statusPoor }} />}
                                         <Typography sx={{
                                           fontWeight: 600,
                                           fontSize: '0.8rem',
-                                          color: trend >= 0 ? '#4caf50' : '#f44336',
+                                          color: trend >= 0 ? tc.statusGood : tc.statusPoor,
                                         }}>
                                           {trend >= 0 ? '+' : ''}{trend}%
                                         </Typography>
@@ -2131,7 +2133,7 @@ export default function Home() {
                                   onMouseLeave={() => handleBuildingHover(null)}
                                   style={{
                                     cursor: 'pointer',
-                                    outline: isInspectMode && hoveredBuilding === b ? `3px dashed ${colors.brand}` : 'none',
+                                    outline: isInspectMode && hoveredBuilding === b ? `3px dashed ${tc.brand}` : 'none',
                                     outlineOffset: '4px',
                                     borderRadius: '12px',
                                     transition: 'outline 0.2s ease, z-index 0.2s ease',
@@ -2225,7 +2227,7 @@ export default function Home() {
                           </Box>
                           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
                             <EnergyUseByBuildingChart buildingName={selectedBuilding.name} />
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff', height: 300 }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary, height: 300 }}>
                               <Typography variant="body2" color="text.secondary">Consumption and generation</Typography>
                             </Box>
                             <EnergyDistributionChart buildingName={selectedBuilding.name} />
@@ -2309,7 +2311,7 @@ export default function Home() {
                         <>
                           <UtilizationOverviewChart buildingName={selectedBuilding.name} />
                           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', bgcolor: tc.bgPrimary }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Space Allocation</Typography>
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 {['Open Workspace', 'Private Offices', 'Meeting Rooms', 'Common Areas', 'Storage'].map((space, i) => (
@@ -2318,14 +2320,14 @@ export default function Home() {
                                       <Typography variant="body2">{space}</Typography>
                                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{[45, 25, 15, 10, 5][i]}%</Typography>
                                     </Box>
-                                    <Box sx={{ height: 8, borderRadius: 4, bgcolor: colors.bgSecondaryHover, overflow: 'hidden' }}>
-                                      <Box sx={{ width: `${[45, 25, 15, 10, 5][i]}%`, height: '100%', bgcolor: colors.brand, transition: 'width 0.5s ease' }} />
+                                    <Box sx={{ height: 8, borderRadius: 4, bgcolor: tc.bgSecondaryHover, overflow: 'hidden' }}>
+                                      <Box sx={{ width: `${[45, 25, 15, 10, 5][i]}%`, height: '100%', bgcolor: tc.brand, transition: 'width 0.5s ease' }} />
                                     </Box>
                                   </Box>
                                 ))}
                               </Box>
                             </Box>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Occupancy Trends</Typography>
                               <Typography variant="body2" color="text.secondary">Peak hours, utilization patterns, and capacity insights</Typography>
                             </Box>
@@ -2334,23 +2336,23 @@ export default function Home() {
                       ) : selectedMetric === 'compliance' ? (
                         <>
                           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Compliance Score</Typography>
                               <Typography variant="h3" sx={{ fontWeight: 600, mb: 1 }}>94%</Typography>
                               <Typography variant="body2" color="success.main">+3% from last audit</Typography>
                             </Box>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Active Certifications</Typography>
                               <Typography variant="h3" sx={{ fontWeight: 600, mb: 1 }}>8</Typography>
                               <Typography variant="body2" color="text.secondary">ISO, LEED, BREEAM</Typography>
                             </Box>
-                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                            <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>Pending Actions</Typography>
                               <Typography variant="h3" sx={{ fontWeight: 600, mb: 1 }}>3</Typography>
                               <Typography variant="body2" color="warning.main">Due within 30 days</Typography>
                             </Box>
                           </Box>
-                          <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: '#fff' }}>
+                          <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: tc.bgPrimary }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Compliance Areas</Typography>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                               {[
@@ -2361,8 +2363,8 @@ export default function Home() {
                               ].map((item) => (
                                 <Box key={item.area} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                   <Typography variant="body2" sx={{ minWidth: 150 }}>{item.area}</Typography>
-                                  <Box sx={{ flex: 1, height: 8, borderRadius: 4, bgcolor: colors.bgSecondaryHover, overflow: 'hidden' }}>
-                                    <Box sx={{ width: `${item.score}%`, height: '100%', bgcolor: item.score > 90 ? '#4caf50' : '#ffc107' }} />
+                                  <Box sx={{ flex: 1, height: 8, borderRadius: 4, bgcolor: tc.bgSecondaryHover, overflow: 'hidden' }}>
+                                    <Box sx={{ width: `${item.score}%`, height: '100%', bgcolor: item.score > 90 ? tc.statusGood : tc.statusModerate }} />
                                   </Box>
                                   <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 60 }}>{item.score}%</Typography>
                                   <Chip label={item.status} size="small" color={item.score > 90 ? 'success' : 'warning'} sx={{ minWidth: 80 }} />
@@ -2536,17 +2538,18 @@ function KPIAnalysisView({
 
 /* Summary stat card for performance indicators */
 function SummaryStatCard({ label, value, subtitle, trend }: { label: string; value: string; subtitle?: string; trend?: number }) {
+  const { themeColors: c } = useThemeMode();
   return (
     <Box sx={{
       p: 2.5,
-      border: 'none',
+      border: `1px solid ${c.cardBorder}`,
       borderRadius: '12px',
-      bgcolor: '#ffffff',
-      boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
+      bgcolor: c.bgPrimary,
+      boxShadow: `0 2px 12px 0 ${c.shadow}`,
       transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
       '&:hover': {
         transform: 'translateY(-2px)',
-        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+        boxShadow: `0 4px 20px 0 ${c.shadow}`,
       },
     }}>
       <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500, display: 'block', mb: 1 }}>
@@ -2572,17 +2575,18 @@ function SummaryStatCard({ label, value, subtitle, trend }: { label: string; val
 
 /* Placeholder chart for performance indicators */
 function IndicatorChart({ title, type, color }: { title: string; type: string; color: string }) {
+  const { themeColors: c } = useThemeMode();
   return (
     <Box sx={{
       p: 3,
-      border: 'none',
+      border: `1px solid ${c.cardBorder}`,
       borderRadius: '12px',
-      bgcolor: '#ffffff',
-      boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
+      bgcolor: c.bgPrimary,
+      boxShadow: `0 2px 12px 0 ${c.shadow}`,
       transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
       '&:hover': {
         transform: 'translateY(-2px)',
-        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.12)',
+        boxShadow: `0 4px 20px 0 ${c.shadow}`,
       },
       minHeight: 240,
       display: 'flex',
@@ -2619,7 +2623,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
                 <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: 16 }}>{i + 1}</Typography>
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" sx={{ fontSize: '0.813rem', fontWeight: 500 }}>{name}</Typography>
-                  <Box sx={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', bgcolor: colors.bgSecondaryHover, mt: 0.5 }}>
+                  <Box sx={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', bgcolor: c.bgSecondaryHover, mt: 0.5 }}>
                     <Box sx={{ width: `${90 - i * 8}%`, bgcolor: color, borderRadius: 2, opacity: 1 - i * 0.12 }} />
                   </Box>
                 </Box>
@@ -2631,7 +2635,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
         {type === 'pie' && (
           <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="140" height="140" viewBox="0 0 140 140">
-              <circle cx="70" cy="70" r="55" fill="none" stroke={colors.borderSecondary} strokeWidth="20" />
+              <circle cx="70" cy="70" r="55" fill="none" stroke={c.borderSecondary} strokeWidth="20" />
               <circle cx="70" cy="70" r="55" fill="none" stroke={color} strokeWidth="20"
                 strokeDasharray={`${0.72 * 345.6} ${0.28 * 345.6}`}
                 strokeDashoffset="86.4"
@@ -2648,6 +2652,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
 
 /* Theme-specific dashboards */
 function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings', onNavigateToDashboard }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void; buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode; onNavigateToDashboard?: (dashboardId: string) => void }) {
+  const { themeColors: c } = useThemeMode();
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey];
 
@@ -2679,7 +2684,7 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
           <IndicatorChart title="Energy Distribution by Source" type="pie" color="#ed6c02" />
           <IndicatorChart title="Peak Demand Times" type="bar" color="#ed6c02" />
-          <IndicatorChart title="Top Consumers" type="ranking" color="#f44336" />
+          <IndicatorChart title="Top Consumers" type="ranking" color={c.statusPoor} />
         </Box>
         <IndicatorChart title="Energy vs Temperature Correlation" type="line" color="#ed6c02" />
       </Box>
@@ -2716,13 +2721,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="System Uptime" value="99.8%" trend={0} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Access Activity (24 hours)" type="line" color={colors.brand} />
-          <IndicatorChart title="Access by Building" type="bar" color={colors.brand} />
+          <IndicatorChart title="Access Activity (24 hours)" type="line" color={c.brand} />
+          <IndicatorChart title="Access by Building" type="bar" color={c.brand} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Peak Access Times" type="bar" color={colors.brand} />
-          <IndicatorChart title="Card Status Distribution" type="pie" color={colors.brand} />
-          <IndicatorChart title="Security Events" type="ranking" color="#f44336" />
+          <IndicatorChart title="Peak Access Times" type="bar" color={c.brand} />
+          <IndicatorChart title="Card Status Distribution" type="pie" color={c.brand} />
+          <IndicatorChart title="Security Events" type="ranking" color={c.statusPoor} />
         </Box>
       </Box>
     );
@@ -2740,13 +2745,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="Conservation Rate" value="15%" trend={8} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Water Consumption Trend" type="line" color={colors.brand} />
-          <IndicatorChart title="Usage by Building" type="bar" color={colors.brand} />
+          <IndicatorChart title="Water Consumption Trend" type="line" color={c.brand} />
+          <IndicatorChart title="Usage by Building" type="bar" color={c.brand} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Leak Detection History" type="line" color="#f44336" />
-          <IndicatorChart title="Conservation Initiatives" type="bar" color="#4caf50" />
-          <IndicatorChart title="Top Water Consumers" type="ranking" color={colors.brand} />
+          <IndicatorChart title="Leak Detection History" type="line" color={c.statusPoor} />
+          <IndicatorChart title="Conservation Initiatives" type="bar" color={c.statusGood} />
+          <IndicatorChart title="Top Water Consumers" type="ranking" color={c.brand} />
         </Box>
       </Box>
     );
@@ -2764,13 +2769,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="System Health" value="97%" trend={2} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Incident Trends" type="line" color="#4caf50" />
-          <IndicatorChart title="Security Coverage by Zone" type="bar" color="#4caf50" />
+          <IndicatorChart title="Incident Trends" type="line" color={c.statusGood} />
+          <IndicatorChart title="Security Coverage by Zone" type="bar" color={c.statusGood} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Alert Types" type="pie" color="#4caf50" />
-          <IndicatorChart title="Response Times by Building" type="bar" color="#4caf50" />
-          <IndicatorChart title="Camera Health Status" type="ranking" color="#4caf50" />
+          <IndicatorChart title="Alert Types" type="pie" color={c.statusGood} />
+          <IndicatorChart title="Response Times by Building" type="bar" color={c.statusGood} />
+          <IndicatorChart title="Camera Health Status" type="ranking" color={c.statusGood} />
         </Box>
       </Box>
     );
@@ -2788,13 +2793,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
           <SummaryStatCard label="Meeting Room Usage" value="85%" trend={2} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-          <IndicatorChart title="Occupancy Trends (7 days)" type="line" color={colors.brand} />
-          <IndicatorChart title="Space Utilization by Floor" type="bar" color={colors.brand} />
+          <IndicatorChart title="Occupancy Trends (7 days)" type="line" color={c.brand} />
+          <IndicatorChart title="Space Utilization by Floor" type="bar" color={c.brand} />
         </Box>
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <IndicatorChart title="Peak Hours" type="bar" color={colors.brand} />
-          <IndicatorChart title="Space Types Distribution" type="pie" color={colors.brand} />
-          <IndicatorChart title="Booking Patterns" type="line" color={colors.brand} />
+          <IndicatorChart title="Peak Hours" type="bar" color={c.brand} />
+          <IndicatorChart title="Space Types Distribution" type="pie" color={c.brand} />
+          <IndicatorChart title="Booking Patterns" type="line" color={c.brand} />
         </Box>
       </Box>
     );
@@ -2966,6 +2971,7 @@ const themeCardData: Record<string, {
 
 /* Detailed summary card for each KPI in the overview */
 function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; onClick?: () => void }) {
+  const { themeColors: c } = useThemeMode();
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey] || themeCardData.energy;
 
@@ -2975,13 +2981,13 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
         border: 1,
         borderColor: 'divider',
         borderRadius: 2,
-        bgcolor: '#fff',
+        bgcolor: c.bgPrimary,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         transition: 'all 0.2s ease',
         '&:hover': {
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          boxShadow: `0 4px 20px ${c.shadow}`,
           transform: 'translateY(-2px)',
         }
       }}
@@ -3015,8 +3021,8 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
                 size="small"
                 sx={{
                   height: 20,
-                  bgcolor: '#f44336',
-                  color: '#fff',
+                  bgcolor: c.statusPoor,
+                  color: c.bgPrimary,
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   '& .MuiChip-label': { px: 1 }
@@ -3056,7 +3062,7 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
               sx={{
                 height: 6,
                 borderRadius: 3,
-                bgcolor: colors.borderSecondary,
+                bgcolor: c.borderSecondary,
                 '& .MuiLinearProgress-bar': {
                   bgcolor: metric.color,
                   borderRadius: 3
@@ -3096,6 +3102,7 @@ function IndicatorSummaryCard({ metricKey, metricInfo, onClick }: { metricKey: M
 
 /* Generic metric view for new themes that don't have dedicated chart components */
 function GenericMetricView({ metricKey, metricInfo, buildingName }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; buildingName: string }) {
+  const { themeColors: c } = useThemeMode();
   const info = metricInfo[metricKey];
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -3114,11 +3121,11 @@ function GenericMetricView({ metricKey, metricInfo, buildingName }: { metricKey:
       </Box>
 
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-        <IndicatorChart title={`${info.title} Trend — Last 12 Months`} type="line" color={colors.brand} />
-        <IndicatorChart title="Score Distribution" type="bar" color="#4caf50" />
+        <IndicatorChart title={`${info.title} Trend — Last 12 Months`} type="line" color={c.brand} />
+        <IndicatorChart title="Score Distribution" type="bar" color={c.statusGood} />
       </Box>
 
-      <IndicatorChart title="Performance Breakdown" type="ranking" color={colors.brand} />
+      <IndicatorChart title="Performance Breakdown" type="ranking" color={c.brand} />
     </Box>
   );
 }

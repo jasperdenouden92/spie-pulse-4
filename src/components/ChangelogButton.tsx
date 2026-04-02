@@ -10,7 +10,7 @@ import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
 import AppTabs from '@/components/AppTabs';
-import { colors } from '@/colors';
+import { useThemeMode } from '@/theme-mode-context';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import HistoryIcon from '@mui/icons-material/History';
@@ -41,12 +41,14 @@ interface HighlightsData {
   sections: { type: ChangeType; items: string[] }[];
 }
 
-const TYPE_CONFIG: Record<ChangeType, { label: string; color: string; bg: string; border: string }> = {
-  feature:     { label: 'New',         color: colors.brand, bg: colors.bgActive, border: '#c7d7f5' },
-  improvement: { label: 'Improved',    color: '#7c3aed', bg: '#f3e8ff', border: '#d8b4fe' },
-  fix:         { label: 'Fixed',       color: '#b45309', bg: '#fef3c7', border: '#fcd34d' },
-  design:      { label: 'Design',      color: '#0f766e', bg: '#f0fdfa', border: '#99f6e4' },
-};
+function getTypeConfig(c: { brand: string; bgActive: string }): Record<ChangeType, { label: string; color: string; bg: string; border: string }> {
+  return {
+    feature:     { label: 'New',         color: c.brand, bg: c.bgActive, border: '#c7d7f5' },
+    improvement: { label: 'Improved',    color: '#7c3aed', bg: '#f3e8ff', border: '#d8b4fe' },
+    fix:         { label: 'Fixed',       color: '#b45309', bg: '#fef3c7', border: '#fcd34d' },
+    design:      { label: 'Design',      color: '#0f766e', bg: '#f0fdfa', border: '#99f6e4' },
+  };
+}
 
 const TYPE_ICON: Record<ChangeType, React.ReactNode> = {
   feature:     <AddCircleOutlineIcon sx={{ fontSize: 15 }} />,
@@ -118,6 +120,8 @@ function getChangelogPosition(panelCorner: string): React.CSSProperties {
 }
 
 export default function ChangelogButton() {
+  const { themeColors: c } = useThemeMode();
+  const TYPE_CONFIG = getTypeConfig(c);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'highlights' | 'commits'>('highlights');
   const { panelCorner, setPanelCorner } = useAnnotationsSafe();
@@ -196,9 +200,9 @@ export default function ChangelogButton() {
           width: 40,
           height: 40,
           borderRadius: '10px',
-          bgcolor: '#FFFFFF',
+          bgcolor: '#ffffff',
           color: '#344054',
-          border: '1px solid #D0D5DD',
+          border: '1px solid #e0e0e0',
           cursor: isDragging ? 'grabbing' : 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -206,7 +210,7 @@ export default function ChangelogButton() {
           boxShadow: '0 1px 2px rgba(16,24,40,0.05), 0 1px 3px rgba(16,24,40,0.1)',
           transition: isDragging ? 'none' : 'all 0.15s ease',
           p: 0,
-          '&:hover': { bgcolor: '#F9FAFB' },
+          '&:hover': { bgcolor: '#f5f5f5' },
         }}
       >
         <HistoryIcon sx={{ fontSize: 20, color: '#667085' }} />
@@ -221,8 +225,8 @@ export default function ChangelogButton() {
               height: 18,
               borderRadius: '9px',
               bgcolor: '#7c3aed',
-              border: '2px solid #FFFFFF',
-              color: '#FFFFFF',
+              border: `2px solid ${c.bgPrimary}`,
+              color: c.bgPrimary,
               fontSize: 10,
               fontWeight: 600,
               display: 'flex',
@@ -294,7 +298,7 @@ export default function ChangelogButton() {
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                       {highlights.authors.map((author) => (
                         <Chip key={author} label={author} size="small"
-                          sx={{ height: 20, fontSize: '0.7rem', fontWeight: 500, bgcolor: colors.bgPrimaryHover, '& .MuiChip-label': { px: 1 } }} />
+                          sx={{ height: 20, fontSize: '0.7rem', fontWeight: 500, bgcolor: c.bgPrimaryHover, '& .MuiChip-label': { px: 1 } }} />
                       ))}
                     </Box>
                   </Box>
@@ -313,13 +317,13 @@ export default function ChangelogButton() {
                             {tc.label}
                           </Typography>
                           <Box sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: tc.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Typography variant="caption" sx={{ fontSize: '0.625rem', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                            <Typography variant="caption" sx={{ fontSize: '0.625rem', fontWeight: 700, color: c.bgPrimary, lineHeight: 1 }}>
                               {section.items.length}
                             </Typography>
                           </Box>
                         </Box>
                         {/* Items */}
-                        <Box sx={{ bgcolor: '#fff' }}>
+                        <Box sx={{ bgcolor: c.bgPrimary }}>
                           {section.items.map((item, i) => (
                             <Box key={i} sx={{
                               px: 2, py: 1,
@@ -363,7 +367,7 @@ export default function ChangelogButton() {
                       return (
                         <Box key={entry.sha} sx={{ display: 'flex', gap: 1.5 }}>
                           <Avatar src={entry.authorAvatar ?? undefined}
-                            sx={{ width: 28, height: 28, fontSize: '0.6rem', fontWeight: 700, bgcolor: colors.brand, flexShrink: 0, mt: 0.25 }}>
+                            sx={{ width: 28, height: 28, fontSize: '0.6rem', fontWeight: 700, bgcolor: c.brand, flexShrink: 0, mt: 0.25 }}>
                             {entry.author.slice(0, 2).toUpperCase()}
                           </Avatar>
                           <Box sx={{ flex: 1, minWidth: 0 }}>

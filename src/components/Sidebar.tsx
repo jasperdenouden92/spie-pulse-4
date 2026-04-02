@@ -65,7 +65,12 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { colors } from '@/colors';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import SettingsBrightnessOutlined from '@mui/icons-material/SettingsBrightnessOutlined';
+import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
+import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
+import { useThemeMode } from '@/theme-mode-context';
 
 interface Favorite {
   id: string;
@@ -113,9 +118,10 @@ interface NavItemProps {
 }
 
 function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExpand, size = 28, iconBoxBgColor, alwaysAccent, buttonRef }: NavItemProps) {
+  const { themeColors: c } = useThemeMode();
   const hasChevron = onToggleExpand !== undefined;
   const isDot = !icon && !alwaysAccent;
-  const accentColor = colors.brand;
+  const accentColor = c.brand;
   const isAccent = active || alwaysAccent;
 
   return (
@@ -128,10 +134,10 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
           paddingLeft: '4px',
           gap: 1,
           borderRadius: '6px',
-          backgroundColor: active ? colors.bgActive : 'transparent',
+          backgroundColor: active ? c.bgActive : 'transparent',
           transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            backgroundColor: active ? colors.bgActiveHover : colors.bgPrimaryHover,
+            backgroundColor: active ? c.bgActiveHover : c.bgPrimaryHover,
           },
           ...(hasChevron && {
             '&:hover .nav-icon': { opacity: 0 },
@@ -184,7 +190,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
           }}
         />
         {shortcut && (
-          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: colors.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
+          <Typography variant="caption" sx={{ fontSize: '0.625rem', color: 'text.disabled', bgcolor: c.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, letterSpacing: 0, flexShrink: 0 }}>
             {shortcut}
           </Typography>
         )}
@@ -202,6 +208,7 @@ interface SortableFavoriteItemProps {
 }
 
 function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave, onRemove }: SortableFavoriteItemProps) {
+  const { themeColors: c } = useThemeMode();
   const {
     attributes,
     listeners,
@@ -235,7 +242,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
             top: 0,
             bottom: 0,
             width: 40,
-            background: 'linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1))',
+            background: `linear-gradient(to right, transparent, ${c.bgPrimary})`,
             pointerEvents: 'none',
             zIndex: 1,
           }}
@@ -337,6 +344,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const [newMenuAnchorEl, setNewMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
+  const { preference: themePreference, setThemePreference, themeColors: c } = useThemeMode();
   const newButtonRef = useRef<HTMLDivElement>(null);
 
   const NEW_MENU_ITEMS = [
@@ -582,7 +590,10 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      bgcolor: '#fff',
+      bgcolor: c.bgPrimary,
+      borderRight: 1,
+      borderColor: 'divider',
+      transition: 'width 0.3s ease',
       // Collapsed state — hide labels, favorites, shortcuts; center icons
       ...(isCollapsed && {
         '& .MuiListItemText-root': { display: 'none' },
@@ -596,11 +607,11 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
           {/* Tenant selector */}
           <Box sx={{ height: 56, display: 'flex', alignItems: 'center', px: isCollapsed ? 1.5 : 2, justifyContent: isCollapsed ? 'center' : 'flex-start', flexShrink: 0 }}>
             <Box
-              sx={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between', gap: 1, flex: isCollapsed ? undefined : 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between', gap: 1, flex: isCollapsed ? undefined : 1, cursor: 'pointer', px: 0.5, py: 1, borderRadius: '6px', transition: 'background-color 0.2s', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
               onClick={(e) => setCustomerAnchorEl(e.currentTarget)}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: isCollapsed ? undefined : 1 }}>
-                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+                <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: c.bgSecondaryHover }}>
                   <img src={tenantLogos[selectedCustomer]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 </Box>
                 <Typography className="sidebar-hide-collapsed" variant="subtitle1" sx={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -676,7 +687,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
           {/* Drag handle + Favorites — hidden when collapsed */}
             <Box className="sidebar-hide-collapsed"
               onMouseDown={handleSectionResize}
-              sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: colors.bgPrimaryHover }, '&:hover .resize-icon': { opacity: 0.6 } }}
+              sx={{ height: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'ns-resize', userSelect: 'none', '&:hover': { bgcolor: c.bgPrimaryHover }, '&:hover .resize-icon': { opacity: 0.6 } }}
             >
               <Box className="resize-icon" sx={{ opacity: 0.2, lineHeight: 0, transition: 'opacity 0.15s' }}>
                 <DragIndicatorIcon sx={{ fontSize: 14, color: 'text.secondary', transform: 'rotate(90deg)' }} />
@@ -709,7 +720,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onDataExplorerToggle?.()}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: dataExplorerOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: dataExplorerOpen ? c.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <ExploreOutlinedIcon sx={{ fontSize: 16 }} />
@@ -720,7 +731,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onNotificationsPanelToggle?.()}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? colors.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? c.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
@@ -731,7 +742,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}>
+                  <ListItemButton sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}>
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <HelpOutlineIcon sx={{ fontSize: 16 }} />
                     </Box>
@@ -740,12 +751,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton
+                    id="appearance-toggle"
                     onMouseEnter={(e) => {
                       safeTriangleCleanupRef.current?.();
                       setUserAnchorEl(e.currentTarget);
                     }}
                     onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: colors.bgPrimaryHover } }}
+                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                     <ListItemText primary="Account" primaryTypographyProps={{ variant: 'body2' }} />
@@ -789,7 +801,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               primaryTypographyProps={{ variant: 'body2', fontSize: '0.875rem' }}
               sx={{ flex: 1 }}
             />
-            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: colors.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
+            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: c.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
               Press {item.key}
             </Typography>
           </MenuItem>
@@ -809,11 +821,11 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             selected={selectedCustomer === customer.name}
             sx={{
               display: 'flex', gap: 1, py: 0.75, px: 1.5, mx: 0.5, borderRadius: '6px',
-              '&:hover': { backgroundColor: colors.bgPrimaryHover },
-              '&.Mui-selected': { backgroundColor: colors.bgActive, '&:hover': { backgroundColor: colors.bgActiveHover } }
+              '&:hover': { backgroundColor: c.bgPrimaryHover },
+              '&.Mui-selected': { backgroundColor: c.bgActive, '&:hover': { backgroundColor: c.bgActiveHover } }
             }}
           >
-            <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: colors.bgSecondaryHover }}>
+            <Box sx={{ width: 24, height: 24, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', bgcolor: c.bgSecondaryHover }}>
               <img src={tenantLogos[customer.name]} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
             </Box>
             <Typography variant="body2" sx={{ fontWeight: 500 }}>{customer.name}</Typography>
@@ -840,6 +852,22 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
         <Box sx={{ px: 1.5, py: 1 }}>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>Admin User</Typography>
           <Typography variant="caption" color="text.secondary">admin@spie.com</Typography>
+        </Box>
+        <Divider sx={{ my: 0.5 }} />
+        <Box sx={{ px: 1.5, py: 0.75 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Appearance</Typography>
+          <ToggleButtonGroup
+            value={themePreference}
+            exclusive
+            onChange={(_, val) => { if (val) setThemePreference(val); }}
+            size="small"
+            fullWidth
+            sx={{ mt: 0.75, '& .MuiToggleButton-root': { textTransform: 'none', fontSize: '0.75rem', py: 0.5, gap: 0.5 } }}
+          >
+            <ToggleButton value="system"><SettingsBrightnessOutlined sx={{ fontSize: 16 }} />System</ToggleButton>
+            <ToggleButton value="light"><LightModeOutlined sx={{ fontSize: 16 }} />Light</ToggleButton>
+            <ToggleButton value="dark"><DarkModeOutlined sx={{ fontSize: 16 }} />Dark</ToggleButton>
+          </ToggleButtonGroup>
         </Box>
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Settings</MenuItem>
