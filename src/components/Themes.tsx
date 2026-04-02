@@ -146,7 +146,7 @@ export default function Themes() {
         gap: 3
       }}>
         {themes.map((theme) => (
-          <Card
+          <Card data-annotation-id="themes-card-4"
             key={theme.id}
               sx={{
                 height: '100%',
@@ -160,7 +160,7 @@ export default function Themes() {
               }}
               onClick={() => setSelectedTheme(theme.id === selectedTheme ? null : theme.id)}
             >
-              <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent data-annotation-id="themes-card-3" sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ flex: 1 }}>
                   {/* Header */}
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
@@ -265,7 +265,7 @@ export default function Themes() {
         ))}
 
         {/* Add New Theme Card */}
-        <Card
+        <Card data-annotation-id="themes-card-2"
           sx={{
             height: '100%',
             cursor: 'pointer',
@@ -281,7 +281,7 @@ export default function Themes() {
           }}
           onClick={() => console.log('Create new theme')}
         >
-          <CardContent sx={{
+          <CardContent data-annotation-id="themes-card" sx={{
             p: 3,
             height: '100%',
             display: 'flex',

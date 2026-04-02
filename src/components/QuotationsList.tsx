@@ -69,7 +69,7 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
             bgcolor: '#fff'
           }}
         >
-          <Table>
+          <Table data-annotation-id="quotationslist-tabel">
             <TableHead>
               <TableRow sx={{ bgcolor: compact ? 'transparent' : colors.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>

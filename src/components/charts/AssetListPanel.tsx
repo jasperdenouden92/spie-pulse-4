@@ -269,7 +269,7 @@ export default function AssetListPanel({ buildingName }: AssetListPanelProps) {
 
         {/* Table */}
         <TableContainer sx={{ flex: 1 }}>
-          <Table stickyHeader size="small">
+          <Table data-annotation-id="assetlistpanel-tabel" stickyHeader size="small">
             <TableHead>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', bgcolor: '#fff' }}>

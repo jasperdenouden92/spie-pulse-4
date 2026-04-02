@@ -76,7 +76,7 @@ export default function MaintenanceScheduleList({ schedules, buildingName, compa
             bgcolor: '#fff'
           }}
         >
-          <Table>
+          <Table data-annotation-id="maintenanceschedulelist-tabel">
             <TableHead>
               <TableRow sx={{ bgcolor: compact ? 'transparent' : colors.bgSecondary }}>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>

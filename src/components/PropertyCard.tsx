@@ -378,7 +378,7 @@ export default function PropertyCard(props: PropertyCardProps) {
   );
 
   return (
-    <Card sx={{
+    <Card data-annotation-id="propertycard-card-2" sx={{
       borderRadius: '12px',
       boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.08)',
       transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease',
@@ -425,7 +425,7 @@ export default function PropertyCard(props: PropertyCardProps) {
         </Box>
       )}
 
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+      <CardContent data-annotation-id="propertycard-card" sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         {/* ── Cluster: inline header with stacked images ── */}
         {!isBuilding && (
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: hasTopics ? 1.5 : 1 }}>

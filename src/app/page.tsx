@@ -878,7 +878,7 @@ export default function Home() {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: colors.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
       {/* Left Sidebar */}
       <Box component="aside" sx={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: leftSidebarWidth, borderRight: 1, borderColor: 'divider', zIndex: 1500, transition: 'width 0.3s ease' }}>
-        <Sidebar
+        <Sidebar data-annotation-id="app-navigatie"
           selectedBuilding={selectedBuilding}
           selectedMetric={selectedMetric}
           onBuildingSelect={setSelectedBuilding}

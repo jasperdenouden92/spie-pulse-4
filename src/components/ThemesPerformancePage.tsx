@@ -380,7 +380,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
         </Box>
 
         <Box sx={{ flex: 1, minHeight: 340 }}>
-          <LineChart
+          <LineChart data-annotation-id="themesperformancepage-grafiek-2"
             xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
             yAxis={[{ min: Math.max(0, Math.floor((Math.min(...themeSeries.data, THEME_MODERATE_ABOVE) - 10) / 10) * 10), max: 100, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
             series={[{ data: themeSeries.data, label: 'Theme KPIs', color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: true }]}
@@ -570,7 +570,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
             const lineGradientId = `threshold-gradient-sub-line-${chartView}`;
             return (
               <Box sx={{ flex: 1, minHeight: 370 }}>
-                <LineChart
+                <LineChart data-annotation-id="themesperformancepage-grafiek"
                   xAxis={[{ data: MONTHS, scaleType: 'point', tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 } }]}
                   yAxis={[{ min: yRange.min, max: yRange.max, tickLabelStyle: { fontSize: 10, fill: '#888', fontWeight: 500 }, valueFormatter: (v: number | null) => `${v}%` }]}
                   series={chartSeries.map(s => ({ data: s.data, label: s.label, color: colors.brand, curve: 'catmullRom' as const, showMark: false, area: showThresholds }))}
