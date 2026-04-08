@@ -7,27 +7,24 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { PieChart } from '@mui/x-charts/PieChart';
 import GridCard from './GridCard';
 
-export type TicketStatus = 'Received' | 'In operation' | 'Function restored' | 'Completed' | 'Invoiced' | 'To approve';
-
 export interface StatusCount {
-  status: TicketStatus;
+  status: string;
   count: number;
   color: string;
 }
 
-interface TicketStatusOverviewCardProps {
+interface StatusOverviewCardProps {
   statusCounts: StatusCount[];
   onStatusFilter?: (status: string) => void;
 }
 
-export default function TicketStatusOverviewCard({ statusCounts, onStatusFilter }: TicketStatusOverviewCardProps) {
+export default function StatusOverviewCard({ statusCounts, onStatusFilter }: StatusOverviewCardProps) {
   const total = statusCounts.reduce((sum, s) => sum + s.count, 0);
 
   return (
     <GridCard title="Status Overview" sx={{ gridColumn: { md: 'span 2', lg: 'span 1' } }}>
       <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
         <PieChart
-          data-annotation-id="ticketsperformancepage-grafiek"
           series={[{
             data: statusCounts.map((s, i) => ({ id: i, value: s.count, label: s.status, color: s.color })),
             innerRadius: 46,

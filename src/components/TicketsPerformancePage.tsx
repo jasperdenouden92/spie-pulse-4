@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, TicketStatusOverviewCard, TicketActiveListCard } from '@/components/performance';
-import type { TicketItem, StatusCount } from '@/components/performance';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, StatusOverviewCard, ActiveListCard } from '@/components/performance';
+import type { StatusCount, ActiveListItem } from '@/components/performance';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -220,6 +222,16 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Ticket status data ─────────────────────────────────────────────────────
 
+interface TicketItem extends ActiveListItem {
+  building: string;
+  category: string;
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  createdDate: string;
+  assignee: string;
+  werkbon: string;
+  referentie: string;
+}
+
 const STATUS_COUNTS: StatusCount[] = [
   { status: 'Received', count: 8, color: '#2196f3' },
   { status: 'In operation', count: 5, color: '#ff9800' },
@@ -414,14 +426,72 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
       />
 
       {/* ═══ SECTION 3: Tickets Overview ═══ */}
-      <TicketStatusOverviewCard
+      <StatusOverviewCard
         statusCounts={STATUS_COUNTS}
         onStatusFilter={onStatusFilter}
       />
-      <TicketActiveListCard
+      <ActiveListCard
         size="lg"
-        tickets={ACTIVE_TICKETS}
+        title="Active Tickets"
+        items={ACTIVE_TICKETS}
         statusCounts={STATUS_COUNTS}
+        activeStatuses={['Received', 'In operation', 'To approve', 'Function restored']}
+        actionRequiredStatuses={['To approve']}
+        renderMeta={(item) => {
+          const t = item as TicketItem;
+          return (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <LocationOnOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.building}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <CalendarTodayOutlinedIcon sx={{ fontSize: 11, color: 'text.secondary' }} />
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.createdDate}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <ReceiptLongOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.werkbon}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TagOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.referentie}</Typography>
+              </Box>
+            </>
+          );
+        }}
+        renderChip={(item) => {
+          const t = item as TicketItem;
+          return (
+            <Chip
+              icon={t.category === 'Storing'
+                ? <ErrorOutlineIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
+                : <SupportAgentOutlinedIcon sx={{ fontSize: 13, color: 'text.secondary' }} />}
+              label={t.category}
+              size="small"
+              sx={{
+                height: 20, fontSize: '0.65rem', fontWeight: 500,
+                bgcolor: 'action.hover', color: 'text.secondary',
+                '& .MuiChip-label': { px: 0.5 },
+                '& .MuiChip-icon': { ml: 0.5, mr: 0 },
+                flexShrink: 0,
+              }}
+            />
+          );
+        }}
+        renderRowActions={(item) => {
+          if (item.status !== 'To approve') return null;
+          return (
+            <>
+              <IconButton size="small" onClick={(e) => e.stopPropagation()} sx={{ width: 24, height: 24, bgcolor: '#4caf5014', color: '#4caf50', '&:hover': { bgcolor: '#4caf5028' } }}>
+                <CheckIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+              <IconButton size="small" onClick={(e) => e.stopPropagation()} sx={{ width: 24, height: 24, bgcolor: '#ef535014', color: '#ef5350', '&:hover': { bgcolor: '#ef535028' } }}>
+                <CloseIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </>
+          );
+        }}
       />
     </PerformanceGrid>
   );

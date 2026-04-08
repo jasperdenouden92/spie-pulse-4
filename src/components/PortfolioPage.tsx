@@ -87,7 +87,7 @@ function BuildingTile({ building, query = '', onClick }: { building: typeof buil
     <Card
       onClick={onClick}
       sx={{
-        borderRadius: '12px',
+        borderRadius: '6px',
         border: `1px solid ${c.cardBorder}`,
         boxShadow: `0 2px 12px 0 ${c.shadow}`,
         cursor: onClick ? 'pointer' : 'default',
@@ -98,38 +98,45 @@ function BuildingTile({ building, query = '', onClick }: { building: typeof buil
         } : {},
       }}
     >
-      {/* Image */}
-      <Box sx={{ position: 'relative', height: 130, overflow: 'hidden', borderRadius: '12px 12px 0 0', bgcolor: c.bgSecondary }}>
-        {building.image ? (
-          <Box
-            component="img"
-            src={building.image}
-            alt={building.name}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        ) : (
-          <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ApartmentOutlinedIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {/* Square image */}
+        <Box
+          sx={{
+            flexShrink: 0,
+            width: 56,
+            height: 56,
+            borderRadius: '4px',
+            overflow: 'hidden',
+            bgcolor: c.bgSecondary,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {building.image ? (
+            <Box
+              component="img"
+              src={building.image}
+              alt={building.name}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          ) : (
+            <ApartmentOutlinedIcon sx={{ fontSize: 28, color: 'text.disabled' }} />
+          )}
+        </Box>
+
+        {/* Content */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 0.5 }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.3, mb: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <HighlightText text={building.name} query={query} />
+            </Typography>
+            {energyRating && <EnergyLabel rating={energyRating} size="small" />}
           </Box>
-        )}
-
-
-        {/* Energy label */}
-        {energyRating && (
-          <Box sx={{ position: 'absolute', bottom: 8, right: 8 }}>
-            <EnergyLabel rating={energyRating} size="small" />
-          </Box>
-        )}
-      </Box>
-
-      {/* Content */}
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.3, mb: 0.25 }}>
-          <HighlightText text={building.name} query={query} />
-        </Typography>
-        <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>
-          <HighlightText text={building.address} query={query} />
-        </Typography>
+          <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>
+            {building.address ? <HighlightText text={building.address} query={query} /> : 'Unknown location'}
+          </Typography>
+        </Box>
       </CardContent>
     </Card>
   );
@@ -495,7 +502,7 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
                 <Box
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                     gap: 2,
                     mb: groupBy !== 'none' ? 4 : 0,
                   }}
