@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildNotionCommentProperties, parseNotionComment } from "@jasperdenouden92/annotations/server";
 
 const NOTION_API = "https://api.notion.com/v1";
 const NOTION_VERSION = "2022-06-28";
@@ -74,15 +75,7 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await response.json();
-
-    const comments = (data.results ?? []).map((page: any) => ({
-      id: page.id,
-      auteur: page.properties.Auteur?.rich_text?.[0]?.plain_text ?? "",
-      comment: page.properties.Comment?.rich_text?.[0]?.plain_text ?? "",
-      status: page.properties.Status?.select?.name ?? "Open",
-      antwoord: page.properties.Antwoord?.rich_text?.[0]?.plain_text ?? null,
-      aangemaakt: page.properties.Aangemaakt?.created_time ?? page.created_time,
-    }));
+    const comments = (data.results ?? []).map(parseNotionComment);
 
     return NextResponse.json(comments, { headers: corsHeaders });
   } catch (err) {
@@ -98,27 +91,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: env.error }, { status: 500, headers: corsHeaders });
     }
 
-    const { auteur, comment, annotationId, label } = await req.json();
+    const { auteur, comment, annotationId, pagina, label } = await req.json();
 
     if (!auteur || !comment) {
       return NextResponse.json({ error: "auteur and comment are required" }, { status: 400, headers: corsHeaders });
     }
 
-    const properties: any = {
-      Naam: { title: [{ text: { content: comment } }] },
-      Auteur: { rich_text: [{ text: { content: auteur } }] },
-      Comment: { rich_text: [{ text: { content: comment } }] },
-      Status: { select: { name: "Open" } },
-      Project: { relation: [{ id: env.projectId }] },
-    };
-
-    if (annotationId) {
-      properties["Annotatie ID"] = { rich_text: [{ text: { content: String(annotationId) } }] };
-    }
-
-    if (label) {
-      properties.Label = { rich_text: [{ text: { content: String(label) } }] };
-    }
+    const properties = buildNotionCommentProperties(
+      { annotationId, auteur, comment, pagina, label },
+      env.projectId,
+    );
 
     const response = await fetch(`${NOTION_API}/pages`, {
       method: "POST",
@@ -137,14 +119,7 @@ export async function POST(req: NextRequest) {
 
     const page = await response.json();
 
-    return NextResponse.json({
-      id: page.id,
-      auteur,
-      comment,
-      status: "Open",
-      antwoord: null,
-      aangemaakt: page.created_time,
-    }, { status: 201, headers: corsHeaders });
+    return NextResponse.json(parseNotionComment(page), { status: 201, headers: corsHeaders });
   } catch (err) {
     console.error("Comments POST error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500, headers: corsHeaders });
