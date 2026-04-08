@@ -97,6 +97,7 @@ import AssetMonitoringPerformancePage from '@/components/AssetMonitoringPerforma
 import CompliancePerformancePage from '@/components/CompliancePerformancePage';
 import ThemesPerformancePage from '@/components/ThemesPerformancePage';
 import OperationsPerformancePage from '@/components/OperationsPerformancePage';
+import PortfolioPage from '@/components/PortfolioPage';
 import OverallPerformancePage from '@/components/OverallPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
@@ -762,7 +763,7 @@ export default function Home() {
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'portfolio_overview') return 'Buildings & Assets';
+    if (currentPage === 'portfolio_overview') return 'Portfolio';
     if (currentPage === 'bms') return 'BMS';
     if (currentPage === 'operations') return 'Operations';
     if (selectedBuilding) return selectedBuilding.name;
@@ -1395,6 +1396,11 @@ export default function Home() {
           {/* BMS Page */}
           {currentPage === 'bms' && (
             <BmsPage />
+          )}
+
+          {/* Portfolio Overview Page */}
+          {currentPage === 'portfolio_overview' && (
+            <PortfolioPage tenant={selectedTenant} />
           )}
 
           {/* Portfolio Page */}

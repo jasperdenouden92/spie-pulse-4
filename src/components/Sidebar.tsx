@@ -670,7 +670,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               onClick={() => onPageChange?.('insights')}
             />
             <NavItem
-              label="Buildings & Assets"
+              label="Portfolio"
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={currentPage === 'portfolio_overview'}
               onClick={() => onPageChange?.('portfolio_overview')}
