@@ -77,23 +77,24 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 // ── Building tile ──
 
-function BuildingTile({ building, query = '' }: { building: typeof buildings[0]; query?: string }) {
+function BuildingTile({ building, query = '', onClick }: { building: typeof buildings[0]; query?: string; onClick?: () => void }) {
   const { themeColors: c } = useThemeMode();
   const stats = buildingOperationalStats[building.name];
   const energyRating = stats?.sustainability?.weiiRating;
 
   return (
     <Card
+      onClick={onClick}
       sx={{
         borderRadius: '12px',
         border: `1px solid ${c.cardBorder}`,
         boxShadow: `0 2px 12px 0 ${c.shadow}`,
-        cursor: 'pointer',
+        cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        '&:hover': {
+        '&:hover': onClick ? {
           transform: 'translateY(-2px)',
           boxShadow: `0 4px 20px 0 ${c.shadowMedium}`,
-        },
+        } : {},
       }}
     >
       {/* Image */}
@@ -168,7 +169,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ── Main component ──
 
-export default function PortfolioPage({ tenant }: { tenant: string }) {
+export default function PortfolioPage({ tenant, onBuildingClick }: { tenant: string; onBuildingClick?: (building: typeof buildings[0]) => void }) {
   const { themeColors: c } = useThemeMode();
   const tenantBuildings = useMemo(() => buildings.filter(b => b.tenant === tenant), [tenant]);
 
@@ -552,7 +553,7 @@ export default function PortfolioPage({ tenant }: { tenant: string }) {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <BuildingTile building={building} query={search} />
+                      <BuildingTile building={building} query={search} onClick={onBuildingClick ? () => onBuildingClick(building) : undefined} />
                     </motion.div>
                   ))}
                 </Box>
