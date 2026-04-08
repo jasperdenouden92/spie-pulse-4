@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -13,7 +13,9 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import MenuIcon from '@mui/icons-material/Menu';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import type { Building } from '@/data/buildings';
+import { BuildingSelectorPopover } from './BuildingSelector';
 
 export type BuildingDetailTab = 'overview' | 'performance' | 'assets' | 'tickets' | 'quotations';
 
@@ -32,6 +34,7 @@ interface BuildingDetailPageProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onBreadcrumbBack?: () => void;
+  onBuildingChange?: (buildingName: string) => void;
 }
 
 export default function BuildingDetailPage({
@@ -41,8 +44,10 @@ export default function BuildingDetailPage({
   isCollapsed = false,
   onToggleCollapse,
   onBreadcrumbBack,
+  onBuildingChange,
 }: BuildingDetailPageProps) {
   const isNarrow = useMediaQuery('(max-width:960px)');
+  const [buildingAnchorEl, setBuildingAnchorEl] = useState<HTMLElement | null>(null);
 
   return (
     <Box
@@ -134,6 +139,7 @@ export default function BuildingDetailPage({
 
           {/* Breadcrumb */}
           {!isNarrow && (
+            <>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1, minWidth: 0 }}>
               <Typography
                 sx={{
@@ -165,18 +171,44 @@ export default function BuildingDetailPage({
                 Buildings
               </Typography>
               <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
-              <Typography
-                noWrap
+              <Box
+                onClick={(e) => setBuildingAnchorEl(e.currentTarget)}
                 sx={{
-                  color: '#fff',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  fontFamily: '"Inter", sans-serif',
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  cursor: 'pointer', px: 0.75, py: 0.25, mx: -0.75, borderRadius: 1,
+                  transition: 'background-color 0.15s ease',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
+                  minWidth: 0,
                 }}
               >
-                {building.name}
-              </Typography>
+                <Typography
+                  noWrap
+                  sx={{
+                    color: '#fff',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    fontFamily: '"Inter", sans-serif',
+                  }}
+                >
+                  {building.name}
+                </Typography>
+                <UnfoldMoreIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', flexShrink: 0 }} />
+              </Box>
             </Box>
+            <BuildingSelectorPopover
+              anchorEl={buildingAnchorEl}
+              onClose={() => setBuildingAnchorEl(null)}
+              selectedNames={[]}
+              onSelectionChange={(names) => {
+                const selected = names[0];
+                if (selected && selected !== building.name && onBuildingChange) {
+                  onBuildingChange(selected);
+                }
+                setBuildingAnchorEl(null);
+              }}
+              mode="buildings"
+            />
+            </>
           )}
 
           {/* Spacer when narrow (no breadcrumb) */}
