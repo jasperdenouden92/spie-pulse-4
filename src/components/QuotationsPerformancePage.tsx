@@ -3,9 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked } from '@/components/performance';
-import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip';
+import { PerformanceGrid, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, StatusOverviewCard, ActiveListCard } from '@/components/performance';
+import type { ActiveListItem } from '@/components/performance';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
@@ -17,16 +16,11 @@ import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import Avatar from '@mui/material/Avatar';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
-import { PieChart } from '@mui/x-charts/PieChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
 import { useThemeMode } from '@/theme-mode-context';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
-import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
 
@@ -214,9 +208,7 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Quotation status data ─────────────────────────────────────────────────────
 
-type QuotationStatus = 'In progress' | 'Open' | 'Assigned' | 'Rejected' | 'Received';
-
-const STATUS_COUNTS: { status: QuotationStatus; count: number; color: string }[] = [
+const STATUS_COUNTS = [
   { status: 'In progress', count: 6, color: '#2196f3' },
   { status: 'Open', count: 2, color: '#ff9800' },
   { status: 'Assigned', count: 5, color: '#7c4dff' },
@@ -224,12 +216,8 @@ const STATUS_COUNTS: { status: QuotationStatus; count: number; color: string }[]
   { status: 'Received', count: 7, color: '#4caf50' },
 ];
 
-interface QuotationItem {
-  id: string;
-  title: string;
+interface QuotationItem extends ActiveListItem {
   building: string;
-  status: QuotationStatus;
-  amount: number;
   validFrom: string;
   validUntil: string;
   assignee: string;
@@ -257,13 +245,6 @@ const ACTIVE_QUOTATIONS: QuotationItem[] = [
   { id: 'Q044901017', title: 'Sprinkler system test', building: 'TU Eindhoven', status: 'Received', amount: 3400, validFrom: '10-05-2024', validUntil: '10-06-2024', assignee: 'M. Neuten' },
   { id: 'Q044901013', title: 'BMS controller replacement', building: 'TU Eindhoven', status: 'Received', amount: 14200, validFrom: '06-05-2024', validUntil: '06-06-2024', assignee: 'H.C.M. Mond' },
 ];
-
-const ACTIVE_STATUSES: QuotationStatus[] = ['In progress', 'Open', 'Assigned', 'Received'];
-const ACTION_REQUIRED_STATUSES: QuotationStatus[] = ['Open', 'Assigned'];
-
-function getQuotationStatusColor(status: QuotationStatus): string {
-  return STATUS_COUNTS.find(s => s.status === status)?.color ?? '#888';
-}
 
 function formatDeadline(ddmmyyyy: string): string {
   const [d, m, y] = ddmmyyyy.split('-').map(Number);
@@ -300,7 +281,6 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
-  const [quotationsActionFilter, setQuotationsActionFilter] = useState(false);
 
   // Sparkline renderer
   const renderSparkline = (data: number[], color: string, w = 80, h = 28) => {
@@ -448,150 +428,31 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
       />
 
       {/* ═══ SECTION 3: Quotations Overview ═══ */}
-      <GridCard
-        size="xl"
-        icon={<RequestQuoteOutlinedIcon sx={{ color: c.brand }} />}
-        title="Quotations Overview"
-      >
-        <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 7fr', gap: 2 }}>
-          {/* Card 1: Status distribution donut */}
-          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>Status Overview</Typography>
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-              <PieChart data-annotation-id="quotationsperformancepage-grafiek"
-                series={[{
-                  data: STATUS_COUNTS.map((s, i) => ({ id: i, value: s.count, label: s.status, color: s.color })),
-                  innerRadius: 46,
-                  outerRadius: 70,
-                  paddingAngle: 2,
-                  cornerRadius: 3,
-                }]}
-                width={180}
-                height={160}
-                hideLegend
-                margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
-              />
-              <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1 }}>
-                  {STATUS_COUNTS.reduce((s, c) => s + c.count, 0)}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>total</Typography>
-              </Box>
-            </Box>
-
-            {/* Legend */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1 }}>
-              {STATUS_COUNTS.map(s => (
-                <Box
-                  key={s.status}
-                  onClick={() => onStatusFilter?.(s.status)}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1,
-                    px: 1, py: 0.5, mx: -1, borderRadius: 0.5,
-                    cursor: 'pointer', transition: 'background-color 0.15s ease',
-                    '&:hover': { bgcolor: 'action.hover' },
-                  }}
-                >
-                  <FiberManualRecordIcon sx={{ fontSize: 8, color: s.color }} />
-                  <Typography variant="caption" sx={{ flex: 1, fontSize: '0.75rem' }}>{s.status}</Typography>
-                  <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.75rem' }}>{s.count}</Typography>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-
-          {/* Card 2: Active quotations list */}
-          <Paper elevation={0} sx={{ p: 2.5, border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="subtitle2" fontWeight={600}>Active Quotations</Typography>
-                <Chip
-                  icon={<FilterListIcon sx={{ fontSize: 13 }} />}
-                  label="Action required"
-                  size="small"
-                  onClick={() => setQuotationsActionFilter(f => !f)}
-                  sx={{
-                    height: 22, fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer',
-                    bgcolor: quotationsActionFilter ? `${c.brand}14` : 'transparent',
-                    color: quotationsActionFilter ? c.brand : 'text.secondary',
-                    border: '1px solid', borderColor: quotationsActionFilter ? c.brand : 'divider',
-                    '& .MuiChip-icon': { ml: 0.5, mr: -0.25, color: quotationsActionFilter ? c.brand : 'text.secondary' },
-                    '& .MuiChip-label': { px: 0.75 },
-                  }}
-                />
-              </Box>
-              <Button
-                size="small"
-                endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
-                sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
-              >
-                View all
-              </Button>
-            </Box>
-            <Box sx={{ flex: 1, overflow: 'auto', maxHeight: 320, display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {ACTIVE_QUOTATIONS.filter(q => quotationsActionFilter ? ACTION_REQUIRED_STATUSES.includes(q.status) : ACTIVE_STATUSES.includes(q.status)).map(q => (
-                <Box
-                  key={q.id}
-                  sx={{
-                    display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, px: 1.5,
-                    borderBottom: '1px solid', borderColor: 'divider',
-                    borderRadius: 0.5,
-                    cursor: 'pointer', transition: 'background-color 0.15s ease',
-                    '&:hover': { bgcolor: 'action.hover' },
-                    '&:last-child': { borderBottom: 'none' },
-                  }}
-                >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap sx={{ fontSize: '0.8rem' }}>
-                        {q.id}
-                      </Typography>
-                      <Typography variant="body2" fontWeight={500} noWrap sx={{ fontSize: '0.8rem', color: 'text.primary' }}>
-                        {q.title}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                        {q.building}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                        {formatCreationDate(q.validFrom)}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                        •
-                      </Typography>
-                      <Typography variant="caption" fontWeight={500} sx={{ fontSize: '0.7rem', color: formatDeadline(q.validUntil).includes('overdue') ? '#ef5350' : 'text.secondary' }}>
-                        {formatDeadline(q.validUntil)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  {q.amount > 0 && (
-                    <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem', flexShrink: 0, minWidth: 70, textAlign: 'right' }}>
-                      €{q.amount.toLocaleString('nl-NL')}
-                    </Typography>
-                  )}
-                  <Chip
-                    label={q.status}
-                    size="small"
-                    sx={{
-                      height: 20,
-                      fontSize: '0.65rem',
-                      fontWeight: 600,
-                      bgcolor: `${getQuotationStatusColor(q.status)}14`,
-                      color: getQuotationStatusColor(q.status),
-                      '& .MuiChip-label': { px: 0.75 },
-                      flexShrink: 0,
-                      minWidth: 80,
-                      justifyContent: 'center',
-                    }}
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        </Box>
-      </GridCard>
+      <StatusOverviewCard
+        statusCounts={STATUS_COUNTS}
+        onStatusFilter={onStatusFilter}
+      />
+      <ActiveListCard
+        size="lg"
+        title="Active Quotations"
+        items={ACTIVE_QUOTATIONS}
+        statusCounts={STATUS_COUNTS}
+        activeStatuses={['In progress', 'Open', 'Assigned', 'Received']}
+        actionRequiredStatuses={['Open', 'Assigned']}
+        renderMeta={(item) => {
+          const q = item as QuotationItem;
+          return (
+            <>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{q.building}</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{formatCreationDate(q.validFrom)}</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>•</Typography>
+              <Typography variant="caption" fontWeight={500} sx={{ fontSize: '0.7rem', color: formatDeadline(q.validUntil).includes('overdue') ? '#ef5350' : 'text.secondary' }}>
+                {formatDeadline(q.validUntil)}
+              </Typography>
+            </>
+          );
+        }}
+      />
     </PerformanceGrid>
   );
 }
