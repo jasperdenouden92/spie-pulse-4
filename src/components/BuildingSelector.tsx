@@ -19,7 +19,7 @@ import { useThemeMode } from '@/theme-mode-context';
 export type BuildingFilterMode = 'buildings' | 'clusters';
 export type ContractFilter = boolean;
 
-const getKbdSx = (c: ColorTokens) => ({
+export const getKbdSx = (c: ColorTokens) => ({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',

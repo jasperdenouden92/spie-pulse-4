@@ -1,4 +1,5 @@
 import { locations } from './locations';
+import { cityCoordinates } from './cityCoordinates';
 
 export interface PerformanceMetric {
   green: number;
@@ -16,6 +17,8 @@ export interface Building {
   tenant: string;
   image: string;
   hasContract: boolean;
+  lat: number;
+  lng: number;
   performance: PerformanceMetric;
   metrics: Record<MetricKeys, PerformanceMetric>;
   trends: Record<MetricKeys, number>;
@@ -118,14 +121,52 @@ function pickImage(tenant: string, indexInTenant: number, seed: number): string 
   return pool[indexInTenant % pool.length];
 }
 
+// Resolve a city for coordinate lookup — handles empty-city entries by extracting
+// from the building name, or falls back to the Netherlands centre.
+const NETHERLANDS_CENTER: [number, number] = [5.2913, 52.1326];
+
+function resolveCity(name: string, city: string): string {
+  if (city && cityCoordinates[city]) return city;
+  // Try to extract city from building name (e.g. "SPIE Amsterdam" → "Amsterdam")
+  for (const known of Object.keys(cityCoordinates)) {
+    if (name.toLowerCase().includes(known.toLowerCase())) return known;
+  }
+  return '';
+}
+
+// Deterministic jitter so buildings in the same city don't all stack on one point
+function jitterCoord(base: number, seed: number, spread = 0.004): number {
+  const rng = createSeededRng(seed);
+  return base + (rng() - 0.5) * 2 * spread;
+}
+
+// Pre-count buildings per resolved city so jitter spread scales with density
+const cityTotals: Record<string, number> = {};
+for (const loc of locations) {
+  const city = resolveCity(loc.name, loc.city);
+  cityTotals[city] = (cityTotals[city] ?? 0) + 1;
+}
+
 // Generate buildings from location data
 // Track per-tenant index for image cycling
 const tenantCounters: Record<string, number> = {};
+const cityCounters: Record<string, number> = {};
+
 const buildings: Building[] = locations.map((loc, i) => {
   const rng = createSeededRng(i * 97 + 13);
   const { performance, metrics } = genAllMetrics(i * 53 + 7);
   const tenantIdx = tenantCounters[loc.tenant] ?? 0;
   tenantCounters[loc.tenant] = tenantIdx + 1;
+
+  const resolvedCity = resolveCity(loc.name, loc.city);
+  const [baseLng, baseLat] = cityCoordinates[resolvedCity] ?? NETHERLANDS_CENTER;
+  const cityIdx = cityCounters[resolvedCity] ?? 0;
+  cityCounters[resolvedCity] = cityIdx + 1;
+  // Spread increases slightly with more buildings in the same city
+  const spread = 0.002 + Math.min(cityTotals[resolvedCity] ?? 1, 20) * 0.0003;
+  const lat = jitterCoord(baseLat, i * 211 + 7, spread);
+  const lng = jitterCoord(baseLng, i * 311 + 13, spread);
+
   return {
     name: loc.name,
     address: loc.address,
@@ -134,6 +175,8 @@ const buildings: Building[] = locations.map((loc, i) => {
     tenant: loc.tenant,
     image: pickImage(loc.tenant, tenantIdx, i * 41 + 3),
     hasContract: rng() > 0.35,
+    lat,
+    lng,
     performance,
     metrics,
     trends: genTrends(i * 137 + 42),
