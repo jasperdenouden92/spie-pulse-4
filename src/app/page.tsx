@@ -97,6 +97,7 @@ import AssetMonitoringPerformancePage from '@/components/AssetMonitoringPerforma
 import CompliancePerformancePage from '@/components/CompliancePerformancePage';
 import ThemesPerformancePage from '@/components/ThemesPerformancePage';
 import OperationsPerformancePage from '@/components/OperationsPerformancePage';
+import OperationsPage from '@/components/OperationsPage';
 import OverallPerformancePage from '@/components/OverallPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
@@ -1395,6 +1396,11 @@ export default function Home() {
           {/* BMS Page */}
           {currentPage === 'bms' && (
             <BmsPage />
+          )}
+
+          {/* Operations Page */}
+          {currentPage === 'operations' && (
+            <OperationsPage />
           )}
 
           {/* Portfolio Page */}
