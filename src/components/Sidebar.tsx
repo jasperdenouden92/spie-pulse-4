@@ -87,8 +87,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
+  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -672,7 +672,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             <NavItem
               label="Portfolio"
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'portfolio_overview'}
+              active={currentPage === 'portfolio_overview' || currentPage === 'building_detail'}
               onClick={() => onPageChange?.('portfolio_overview')}
             />
             <NavItem
