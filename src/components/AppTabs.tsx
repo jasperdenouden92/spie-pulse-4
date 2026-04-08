@@ -18,47 +18,84 @@ interface AppTabsProps {
   onChange: (value: any) => void;
   tabs: TabItem[];
   size?: 'small' | 'medium';
+  variant?: 'pill' | 'underline';
   sx?: SxProps<Theme>;
   indicatorColor?: string;
 }
 
-export default function AppTabs({ value, onChange, tabs, size = 'medium', sx, indicatorColor }: AppTabsProps) {
+export default function AppTabs({ value, onChange, tabs, size = 'medium', variant = 'pill', sx, indicatorColor }: AppTabsProps) {
   const { themeColors: c } = useThemeMode();
   const fontSize = size === 'small' ? '0.8125rem' : '0.875rem';
   const py = size === 'small' ? 0.625 : 1;
   const px = size === 'small' ? 1.25 : 1.5;
 
+  const pillSx = {
+    minHeight: 'unset',
+    '& .MuiTabs-flexContainer': {
+      gap: 0.25,
+    },
+    '& .MuiTab-root': {
+      minHeight: 'unset',
+      minWidth: 'unset',
+      py,
+      px,
+      textTransform: 'none',
+      fontWeight: 500,
+      fontSize,
+      borderRadius: '999px',
+      color: 'text.secondary',
+      transition: 'background-color 0.15s ease, color 0.15s ease',
+      '&:hover': {
+        bgcolor: secondaryAlpha(0.08),
+        color: 'text.primary',
+      },
+      '&.Mui-selected': {
+        bgcolor: secondaryAlpha(0.15),
+        color: c.brand,
+        fontWeight: 600,
+      },
+    },
+  };
+
+  const underlineSx = {
+    minHeight: 'unset',
+    borderBottom: `1px solid ${c.borderSecondary}`,
+    '& .MuiTabs-flexContainer': {
+      gap: 0,
+    },
+    '& .MuiTab-root': {
+      minHeight: 'unset',
+      minWidth: 'unset',
+      py,
+      px,
+      textTransform: 'none',
+      fontWeight: 500,
+      fontSize,
+      borderRadius: 0,
+      color: 'text.secondary',
+      transition: 'color 0.15s ease',
+      '&:hover': {
+        color: 'text.primary',
+        bgcolor: 'transparent',
+      },
+      '&.Mui-selected': {
+        color: c.brand,
+        fontWeight: 600,
+      },
+    },
+    '& .MuiTabs-indicator': {
+      backgroundColor: indicatorColor ?? c.brand,
+      height: 2,
+    },
+  };
+
   return (
     <MuiTabs
       value={value}
       onChange={(_, v) => onChange(v)}
-      TabIndicatorProps={{ style: { display: 'none' } }}
+      TabIndicatorProps={variant === 'pill' ? { style: { display: 'none' } } : undefined}
       sx={{
-        minHeight: 'unset',
-        '& .MuiTabs-flexContainer': {
-          gap: 0.25,
-        },
-        '& .MuiTab-root': {
-          minHeight: 'unset',
-          minWidth: 'unset',
-          py,
-          px,
-          textTransform: 'none',
-          fontWeight: 500,
-          fontSize,
-          borderRadius: '999px',
-          color: 'text.secondary',
-          transition: 'background-color 0.15s ease, color 0.15s ease',
-          '&:hover': {
-            bgcolor: secondaryAlpha(0.08),
-            color: 'text.primary',
-          },
-          '&.Mui-selected': {
-            bgcolor: secondaryAlpha(0.15),
-            color: c.brand,
-            fontWeight: 600,
-          },
-        },
+        ...(variant === 'pill' ? pillSx : underlineSx),
         ...sx,
       }}
     >

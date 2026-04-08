@@ -97,6 +97,9 @@ import AssetMonitoringPerformancePage from '@/components/AssetMonitoringPerforma
 import CompliancePerformancePage from '@/components/CompliancePerformancePage';
 import ThemesPerformancePage from '@/components/ThemesPerformancePage';
 import OperationsPerformancePage from '@/components/OperationsPerformancePage';
+import OperationsPage from '@/components/OperationsPage';
+import TicketsPage from '@/components/TicketsPage';
+import QuotationsPage from '@/components/QuotationsPage';
 import PortfolioPage from '@/components/PortfolioPage';
 import BuildingDetailPage from '@/components/BuildingDetailPage';
 import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
@@ -355,7 +358,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -804,7 +807,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
@@ -1402,6 +1405,17 @@ export default function Home() {
           {/* BMS Page */}
           {currentPage === 'bms' && (
             <BmsPage />
+          )}
+
+          {/* Operations pages */}
+          {currentPage === 'operations' && (
+            <OperationsPage onNavigate={handlePageChange} />
+          )}
+          {currentPage === 'operations_tickets' && (
+            <TicketsPage />
+          )}
+          {currentPage === 'operations_quotations' && (
+            <QuotationsPage />
           )}
 
           {/* Portfolio Overview Page */}

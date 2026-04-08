@@ -87,8 +87,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
+  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -346,6 +346,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const { preference: themePreference, setThemePreference, themeColors: c } = useThemeMode();
   const newButtonRef = useRef<HTMLDivElement>(null);
+  const [operationsExpanded, setOperationsExpanded] = useState(() => Boolean(currentPage?.startsWith('operations')));
 
   const NEW_MENU_ITEMS = [
     { label: 'Report issue', key: '1' },
@@ -678,9 +679,19 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             <NavItem
               label="Operations"
               icon={<EngineeringOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'operations'}
-              onClick={() => onPageChange?.('operations')}
+              active={currentPage?.startsWith('operations')}
+              onClick={() => { onPageChange?.('operations_tickets'); setOperationsExpanded(true); }}
+              expanded={operationsExpanded}
+              onToggleExpand={() => setOperationsExpanded((v) => !v)}
             />
+            {!isCollapsed && operationsExpanded && (
+              <>
+                <NavItem label="Tickets" active={currentPage === 'operations_tickets'} onClick={() => onPageChange?.('operations_tickets')} />
+                <NavItem label="Quotations" active={currentPage === 'operations_quotations'} onClick={() => onPageChange?.('operations_quotations')} />
+                <NavItem label="Documents" active={currentPage === 'operations_docs'} onClick={() => onPageChange?.('operations_docs')} />
+                <NavItem label="Maintenance" active={currentPage === 'operations_maintenance'} onClick={() => onPageChange?.('operations_maintenance')} />
+              </>
+            )}
             <NavItem
               label="Dashboards"
               icon={<DashboardOutlinedIcon sx={{ fontSize: 16 }} />}
