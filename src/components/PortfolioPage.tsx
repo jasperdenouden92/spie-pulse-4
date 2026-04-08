@@ -112,22 +112,6 @@ function BuildingTile({ building, query = '', onClick }: { building: typeof buil
           </Box>
         )}
 
-        {/* Contract dot */}
-        <Tooltip title={building.hasContract ? 'Active contract' : 'No contract'} placement="top">
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 10,
-              left: 10,
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              bgcolor: building.hasContract ? c.statusGood : c.statusOffline,
-              border: `2px solid ${c.bgPrimary}`,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-            }}
-          />
-        </Tooltip>
 
         {/* Energy label */}
         {energyRating && (
@@ -169,12 +153,12 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ── Main component ──
 
-export default function PortfolioPage({ tenant, onBuildingClick }: { tenant: string; onBuildingClick?: (building: typeof buildings[0]) => void }) {
+export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'grid', onViewModeChange }: { tenant: string; onBuildingClick?: (building: typeof buildings[0]) => void; viewMode?: ViewMode; onViewModeChange?: (v: ViewMode) => void }) {
   const { themeColors: c } = useThemeMode();
   const tenantBuildings = useMemo(() => buildings.filter(b => b.tenant === tenant), [tenant]);
+  const setViewMode = (v: ViewMode) => onViewModeChange?.(v);
 
   // View & grouping
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [groupBy, setGroupBy] = useState<GroupBy>('none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -270,7 +254,14 @@ export default function PortfolioPage({ tenant, onBuildingClick }: { tenant: str
   const availableToAdd = additionalFilterOptions.filter(f => !f.visible);
 
   return (
-    <Box>
+    <Box sx={viewMode === 'map' ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' } : {}}>
+      {/* ── Title ── */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+          Buildings
+        </Typography>
+      </Box>
+
       {/* ── Toolbar ── */}
       <Box
         sx={{
@@ -517,7 +508,9 @@ export default function PortfolioPage({ tenant, onBuildingClick }: { tenant: str
 
       {/* ── Content ── */}
       {viewMode === 'map' ? (
-        <PortfolioMap buildings={filtered} />
+        <Box sx={{ flex: 1, minHeight: 0 }}>
+          <PortfolioMap buildings={filtered} onBuildingClick={onBuildingClick} />
+        </Box>
       ) : (
       <Box sx={{ pt: 3 }}>
         {filtered.length === 0 ? (
