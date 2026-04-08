@@ -31,7 +31,7 @@ import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import PageHeader from '@/components/PageHeader';
+import TopBar from '@/components/TopBar';
 import PropertyCard, { TopicScore, EnergyLabel } from '@/components/PropertyCard';
 import ThermostatOutlinedIcon from '@mui/icons-material/ThermostatOutlined';
 import AirOutlinedIcon from '@mui/icons-material/AirOutlined';
@@ -1325,7 +1325,7 @@ export default function Home() {
         minWidth: 0,
         overflow: 'hidden'
       }}>
-        {currentPage !== 'building_detail' && <PageHeader
+        {currentPage !== 'building_detail' && <TopBar
             currentPage={currentPage}
             selectedBuilding={selectedBuilding}
             selectedAsset={selectedAsset}

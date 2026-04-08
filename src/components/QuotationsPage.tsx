@@ -26,6 +26,7 @@ import FilterDropdown from '@/components/FilterDropdown';
 import FilterRangeDropdown from '@/components/FilterRangeDropdown';
 import type { RangeValue } from '@/components/FilterRangeDropdown';
 import Button from '@/components/Button';
+import PageHeader from '@/components/PageHeader';
 import { quotations } from '@/data/quotations';
 import type { Quotation } from '@/data/quotations';
 
@@ -202,32 +203,14 @@ export default function QuotationsPage() {
 
   return (
     <Box>
-      {/* ── Title ── */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
-          Quotations
-        </Typography>
-      </Box>
-
-      {/* ── Filter toolbar ── */}
-      <Box
-        sx={{
-          position: 'sticky',
-          top: 56,
-          zIndex: 100,
-          bgcolor: c.bgSecondary,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          py: 1.25,
-          mx: -3,
-          px: 3,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          flexWrap: 'wrap',
-        }}
+      <PageHeader
+        title="Quotations"
+        actions={
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+            {filtered.length} quotation{filtered.length !== 1 ? 's' : ''}
+          </Typography>
+        }
       >
-        {/* Status — default, multi select */}
         <FilterChip
           label="Status"
           value={statusChipValue}
@@ -242,8 +225,6 @@ export default function QuotationsPage() {
           onChange={setSelectedStatuses}
           placeholder="Search statuses…"
         />
-
-        {/* Building — optional */}
         {showBuilding && (
           <Box ref={buildingChipRef} sx={{ display: 'inline-flex' }}>
             <FilterChip
@@ -264,8 +245,6 @@ export default function QuotationsPage() {
           onRemove={() => setShowBuilding(false)}
           placeholder="Search buildings…"
         />
-
-        {/* Category — optional */}
         {showCategory && (
           <Box ref={categoryChipRef} sx={{ display: 'inline-flex' }}>
             <FilterChip
@@ -286,8 +265,6 @@ export default function QuotationsPage() {
           onRemove={() => setShowCategory(false)}
           placeholder="Search categories…"
         />
-
-        {/* Vendor — optional */}
         {showVendor && (
           <Box ref={vendorChipRef} sx={{ display: 'inline-flex' }}>
             <FilterChip
@@ -308,8 +285,6 @@ export default function QuotationsPage() {
           onRemove={() => setShowVendor(false)}
           placeholder="Search vendors…"
         />
-
-        {/* Amount — optional */}
         {showAmount && (
           <Box ref={amountChipRef} sx={{ display: 'inline-flex' }}>
             <FilterChip
@@ -331,8 +306,6 @@ export default function QuotationsPage() {
           onChange={setAmountRange}
           onRemove={() => setShowAmount(false)}
         />
-
-        {/* Expiry date — optional */}
         {showDate && (
           <Box ref={dateChipRef} sx={{ display: 'inline-flex' }}>
             <FilterChip
@@ -353,8 +326,6 @@ export default function QuotationsPage() {
           onChange={setDateRange}
           onRemove={() => setShowDate(false)}
         />
-
-        {/* Add filter */}
         {availableToAdd.length > 0 && (
           <>
             <Button
@@ -380,14 +351,7 @@ export default function QuotationsPage() {
             </Menu>
           </>
         )}
-
-        {/* Result count */}
-        <Box sx={{ ml: 'auto', flexShrink: 0 }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
-            {filtered.length} quotation{filtered.length !== 1 ? 's' : ''}
-          </Typography>
-        </Box>
-      </Box>
+      </PageHeader>
 
       {/* ── Table ── */}
       <Box sx={{ pt: 3 }}>
