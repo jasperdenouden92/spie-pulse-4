@@ -1442,6 +1442,10 @@ export default function Home() {
                       isCollapsed={leftSidebarCollapsed}
                       onToggleCollapse={handleLeftSidebarToggle}
                       onBreadcrumbBack={() => handlePageChange('portfolio_overview')}
+                      onBuildingChange={(name) => {
+                        const b = allBuildings.find(b => b.name === name);
+                        if (b) setSelectedBuilding(b);
+                      }}
                     />
                   )}
 
