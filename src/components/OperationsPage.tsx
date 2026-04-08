@@ -10,7 +10,7 @@ import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useThemeMode } from '@/theme-mode-context';
 
-type PageKey = 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+type PageKey = 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
 
 interface OperationsPageProps {
   onNavigate?: (page: PageKey) => void;

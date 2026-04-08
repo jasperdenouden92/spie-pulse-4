@@ -32,7 +32,7 @@ import { ContractFilterToggle, type ContractFilter } from '@/components/Building
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
 interface PageHeaderProps {
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   selectedBuilding?: { name: string } | null;
   selectedAsset?: AssetNode | null;
   onBack?: () => void;
@@ -55,7 +55,7 @@ interface PageHeaderProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onExport?: () => void;
@@ -256,15 +256,77 @@ function PageHeader({
             {currentPage === 'insights' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Insights</Typography>
             )}
-            {currentPage === 'portfolio_overview' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Portfolio</Typography>
+            {currentPage === 'portfolio_buildings' && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  onClick={() => onPageChange?.('portfolio_buildings')}
+                >
+                  Portfolio
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Buildings</Typography>
+              </>
+            )}
+            {currentPage === 'portfolio_clusters' && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  onClick={() => onPageChange?.('portfolio_buildings')}
+                >
+                  Portfolio
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Clusters</Typography>
+              </>
+            )}
+            {currentPage === 'portfolio_zones' && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  onClick={() => onPageChange?.('portfolio_buildings')}
+                >
+                  Portfolio
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Zones</Typography>
+              </>
+            )}
+            {currentPage === 'portfolio_assets' && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  onClick={() => onPageChange?.('portfolio_buildings')}
+                >
+                  Portfolio
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Assets</Typography>
+              </>
+            )}
+            {currentPage === 'portfolio_equipment_types' && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  onClick={() => onPageChange?.('portfolio_buildings')}
+                >
+                  Portfolio
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Equipment Types</Typography>
+              </>
             )}
             {currentPage === 'building_detail' && (
               <>
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('portfolio_overview')}
+                  onClick={() => onPageChange?.('portfolio_buildings')}
                 >
                   Portfolio
                 </Typography>
@@ -272,7 +334,7 @@ function PageHeader({
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('portfolio_overview')}
+                  onClick={() => onPageChange?.('portfolio_buildings')}
                 >
                   Buildings
                 </Typography>

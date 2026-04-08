@@ -101,6 +101,10 @@ import OperationsPage from '@/components/OperationsPage';
 import TicketsPage from '@/components/TicketsPage';
 import QuotationsPage from '@/components/QuotationsPage';
 import PortfolioPage from '@/components/PortfolioPage';
+import PortfolioClustersPage from '@/components/PortfolioClustersPage';
+import PortfolioZonesPage from '@/components/PortfolioZonesPage';
+import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
+import PortfolioEquipmentTypesPage from '@/components/PortfolioEquipmentTypesPage';
 import BuildingDetailPage from '@/components/BuildingDetailPage';
 import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
 import OverallPerformancePage from '@/components/OverallPerformancePage';
@@ -358,7 +362,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -410,6 +414,8 @@ export default function Home() {
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
   const buildingsViewMode = (searchParams.get('bview') ?? 'cards') as 'cards' | 'list';
   const setBuildingsViewMode = (v: 'cards' | 'list') => setURLParams({ bview: v });
+  const portfolioViewMode = (searchParams.get('pview') ?? 'grid') as 'grid' | 'map';
+  const setPortfolioViewMode = useCallback((v: 'grid' | 'map') => setURLParams({ pview: v }), [setURLParams]);
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
@@ -771,7 +777,11 @@ export default function Home() {
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'portfolio_overview') return 'Portfolio';
+    if (currentPage === 'portfolio_buildings') return 'Portfolio';
+    if (currentPage === 'portfolio_clusters') return 'Clusters';
+    if (currentPage === 'portfolio_zones') return 'Zones';
+    if (currentPage === 'portfolio_assets') return 'Assets';
+    if (currentPage === 'portfolio_equipment_types') return 'Equipment Types';
     if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
     if (currentPage === 'bms') return 'BMS';
     if (currentPage === 'operations') return 'Operations';
@@ -807,7 +817,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
@@ -1102,13 +1112,13 @@ export default function Home() {
           width: `calc(100% - ${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px)`,
           height: '100vh',
           zIndex: 1425,
-          clipPath: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
+          clipPath: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_buildings' ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
           transition: 'clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           bgcolor: tc.bgPrimary,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          pointerEvents: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'auto' : 'none',
+          pointerEvents: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_buildings' ? 'auto' : 'none',
         }}
       >
         {/* Header with breadcrumb, actions, and close button */}
@@ -1396,7 +1406,7 @@ export default function Home() {
 
         {/* Page Content */}
         {currentPage !== 'dashboards' && (
-        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: currentPage === 'building_detail' ? 0 : '56px', pt: currentPage === 'building_detail' ? 0 : 2, px: isNarrow ? 0.5 : 3 }}>
+        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: currentPage === 'building_detail' ? 0 : '56px', pt: currentPage === 'building_detail' ? 0 : 2, px: isNarrow ? 0.5 : 3, ...(currentPage === 'portfolio_buildings' && portfolioViewMode === 'map' ? { display: 'flex', flexDirection: 'column', pb: 0, overflow: 'hidden' } : {}) }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
@@ -1418,13 +1428,19 @@ export default function Home() {
             <QuotationsPage />
           )}
 
-          {/* Portfolio Overview Page */}
-          {currentPage === 'portfolio_overview' && (
+          {/* Portfolio sub-pages */}
+          {currentPage === 'portfolio_buildings' && (
             <PortfolioPage
               tenant={selectedTenant}
               onBuildingClick={(b) => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' })}
+              viewMode={portfolioViewMode}
+              onViewModeChange={setPortfolioViewMode}
             />
           )}
+          {currentPage === 'portfolio_clusters' && <PortfolioClustersPage />}
+          {currentPage === 'portfolio_zones' && <PortfolioZonesPage />}
+          {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
+          {currentPage === 'portfolio_equipment_types' && <PortfolioEquipmentTypesPage />}
 
           {/* Portfolio Page + Building Detail Performance Tab */}
           {(currentPage === 'portfolio' || (currentPage === 'building_detail' && btab === 'performance')) && (
@@ -1441,7 +1457,7 @@ export default function Home() {
                       onTabChange={(t) => setBtab(t)}
                       isCollapsed={leftSidebarCollapsed}
                       onToggleCollapse={handleLeftSidebarToggle}
-                      onBreadcrumbBack={() => handlePageChange('portfolio_overview')}
+                      onBreadcrumbBack={() => handlePageChange('portfolio_buildings')}
                       onBuildingChange={(name) => {
                         const b = allBuildings.find(b => b.name === name);
                         if (b) setSelectedBuilding(b);
@@ -2440,7 +2456,7 @@ export default function Home() {
               onTabChange={(t) => setBtab(t)}
               isCollapsed={leftSidebarCollapsed}
               onToggleCollapse={handleLeftSidebarToggle}
-              onBreadcrumbBack={() => handlePageChange('portfolio_overview')}
+              onBreadcrumbBack={() => handlePageChange('portfolio_buildings')}
             />
           )}
         </Container>

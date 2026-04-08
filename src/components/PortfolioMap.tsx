@@ -23,13 +23,13 @@ interface PopupState {
 
 // ── Popup card ──
 
-function BuildingPopup({ building }: { building: Building }) {
+function BuildingPopup({ building, onOpen, onMouseEnter, onMouseLeave }: { building: Building; onOpen?: () => void; onMouseEnter?: () => void; onMouseLeave?: () => void }) {
   const { themeColors: c } = useThemeMode();
   const stats = buildingOperationalStats[building.name];
   const energyRating = stats?.sustainability?.weiiRating;
 
   return (
-    <Box sx={{ width: 210 }}>
+    <Box sx={{ width: 210 }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       {building.image && (
         <Box
           component="img"
@@ -50,15 +50,30 @@ function BuildingPopup({ building }: { building: Building }) {
             {building.address}
           </Typography>
         )}
-        <Box sx={{ mt: 0.75, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Box sx={{
-            width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-            bgcolor: building.hasContract ? c.statusGood : c.statusOffline,
-          }} />
-          <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>
-            {building.hasContract ? 'Active contract' : 'No contract'}
-          </Typography>
-        </Box>
+        {onOpen && (
+          <Box
+            component="button"
+            onClick={onOpen}
+            sx={{
+              mt: 1,
+              width: '100%',
+              py: 0.75,
+              px: 1.5,
+              border: '1px solid',
+              borderColor: c.borderPrimary,
+              borderRadius: '6px',
+              bgcolor: c.bgPrimary,
+              color: 'text.primary',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              '&:hover': { bgcolor: c.bgPrimaryHover },
+            }}
+          >
+            Show details
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -69,17 +84,29 @@ function BuildingPopup({ building }: { building: Building }) {
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY ?? '';
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 const INTERACTIVE_LAYERS = ['clusters', 'unclustered-point'];
+const HIDE_DELAY_MS = 200;
 
 // ── Main component ──
 
 interface PortfolioMapProps {
   buildings: Building[];
+  onBuildingClick?: (building: Building) => void;
 }
 
-export default function PortfolioMap({ buildings }: PortfolioMapProps) {
+export default function PortfolioMap({ buildings, onBuildingClick }: PortfolioMapProps) {
   const { themeColors: c } = useThemeMode();
   const mapRef = useRef<MapRef>(null);
   const [popup, setPopup] = useState<PopupState | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleHide = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setPopup(null), HIDE_DELAY_MS);
+  }, []);
+
+  const cancelHide = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+  }, []);
 
   // Build GeoJSON — one feature per building using pre-computed coordinates
   const geojson = useMemo<FeatureCollection<Point>>(() => ({
@@ -87,11 +114,11 @@ export default function PortfolioMap({ buildings }: PortfolioMapProps) {
     features: buildings.map(b => ({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [b.lng, b.lat] },
-      properties: { name: b.name, hasContract: b.hasContract },
+      properties: { name: b.name },
     })),
   }), [buildings]);
 
-  // Build a lookup map for O(1) access on click
+  // Build a lookup map for O(1) access
   const buildingByName = useMemo(
     () => new Map(buildings.map(b => [b.name, b])),
     [buildings]
@@ -110,34 +137,42 @@ export default function PortfolioMap({ buildings }: PortfolioMapProps) {
 
   const handleClick = useCallback((e: MapLayerMouseEvent) => {
     const feature = e.features?.[0];
-    if (!feature) { setPopup(null); return; }
-
+    if (!feature) return;
     const [lng, lat] = (feature.geometry as Point).coordinates;
-
     if (feature.layer.id === 'clusters') {
       const clusterId = feature.properties?.cluster_id;
       const source = mapRef.current?.getSource('buildings') as GeoJSONSource | undefined;
       source?.getClusterExpansionZoom(clusterId).then(zoom => {
         mapRef.current?.easeTo({ center: [lng, lat], zoom: zoom + 0.5, duration: 400 });
       });
-    } else if (feature.layer.id === 'unclustered-point') {
+    }
+  }, []);
+
+  const handleMouseMove = useCallback((e: MapLayerMouseEvent) => {
+    const feature = e.features?.[0];
+    if (feature?.layer.id === 'unclustered-point') {
+      cancelHide();
+      const [lng, lat] = (feature.geometry as Point).coordinates;
       const building = buildingByName.get(feature.properties?.name);
       if (building) setPopup({ building, longitude: lng, latitude: lat });
+      if (mapRef.current) mapRef.current.getCanvas().style.cursor = 'pointer';
+    } else {
+      scheduleHide();
+      if (mapRef.current) {
+        mapRef.current.getCanvas().style.cursor = feature?.layer.id === 'clusters' ? 'pointer' : '';
+      }
     }
-  }, [buildingByName]);
-
-  const handleMouseEnter = useCallback(() => {
-    if (mapRef.current) mapRef.current.getCanvas().style.cursor = 'pointer';
-  }, []);
+  }, [buildingByName, cancelHide, scheduleHide]);
 
   const handleMouseLeave = useCallback(() => {
+    scheduleHide();
     if (mapRef.current) mapRef.current.getCanvas().style.cursor = '';
-  }, []);
+  }, [scheduleHide]);
 
   if (!MAPTILER_KEY) {
     return (
       <Box sx={{
-        height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column',
+        height: '100%', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 1,
         bgcolor: c.bgSecondary, borderRadius: '12px', border: '1px dashed', borderColor: 'divider',
       }}>
@@ -152,23 +187,18 @@ export default function PortfolioMap({ buildings }: PortfolioMapProps) {
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 140px)',
+        height: '100%',
         borderRadius: '12px',
         overflow: 'hidden',
         border: '1px solid',
         borderColor: 'divider',
-        mt: 3,
         '& .maplibregl-popup-content': {
           padding: 0,
           borderRadius: '10px',
           overflow: 'hidden',
           boxShadow: `0 4px 20px ${c.shadowMedium}`,
         },
-        '& .maplibregl-popup-close-button': {
-          fontSize: '16px',
-          color: c.textSecondary,
-          padding: '4px 8px',
-        },
+        '& .maplibregl-popup-tip': { display: 'none' },
         '& .maplibregl-ctrl-group': {
           borderRadius: '8px',
           overflow: 'hidden',
@@ -184,10 +214,9 @@ export default function PortfolioMap({ buildings }: PortfolioMapProps) {
         mapStyle={MAP_STYLE}
         interactiveLayerIds={INTERACTIVE_LAYERS}
         onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
+        onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-
         <NavigationControl position="bottom-right" showCompass={false} />
 
         <Source
@@ -230,7 +259,7 @@ export default function PortfolioMap({ buildings }: PortfolioMapProps) {
             type="circle"
             filter={['!', ['has', 'point_count']]}
             paint={{
-              'circle-color': ['case', ['==', ['get', 'hasContract'], true], c.brand, c.statusOffline],
+              'circle-color': c.brand,
               'circle-radius': 9,
               'circle-stroke-width': 2.5,
               'circle-stroke-color': '#ffffff',
@@ -244,11 +273,16 @@ export default function PortfolioMap({ buildings }: PortfolioMapProps) {
             latitude={popup.latitude}
             anchor="bottom"
             offset={14}
-            closeButton
+            closeButton={false}
             closeOnClick={false}
             onClose={() => setPopup(null)}
           >
-            <BuildingPopup building={popup.building} />
+            <BuildingPopup
+              building={popup.building}
+              onOpen={onBuildingClick ? () => onBuildingClick(popup.building) : undefined}
+              onMouseEnter={cancelHide}
+              onMouseLeave={scheduleHide}
+            />
           </Popup>
         )}
       </MapGL>
