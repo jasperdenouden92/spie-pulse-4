@@ -99,6 +99,7 @@ import ThemesPerformancePage from '@/components/ThemesPerformancePage';
 import OperationsPerformancePage from '@/components/OperationsPerformancePage';
 import OperationsPage from '@/components/OperationsPage';
 import TicketsPage from '@/components/TicketsPage';
+import QuotationsPage from '@/components/QuotationsPage';
 import PortfolioPage from '@/components/PortfolioPage';
 import OverallPerformancePage from '@/components/OverallPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
@@ -1406,6 +1407,9 @@ export default function Home() {
           )}
           {currentPage === 'operations_tickets' && (
             <TicketsPage />
+          )}
+          {currentPage === 'operations_quotations' && (
+            <QuotationsPage />
           )}
 
           {/* Portfolio Overview Page */}
