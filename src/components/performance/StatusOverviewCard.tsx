@@ -22,7 +22,7 @@ export default function StatusOverviewCard({ statusCounts, onStatusFilter }: Sta
   const total = statusCounts.reduce((sum, s) => sum + s.count, 0);
 
   return (
-    <GridCard title="Status Overview">
+    <GridCard title="Status Overview" sx={{ gridColumn: { md: 'span 2', lg: 'span 1' } }}>
       <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
         <PieChart
           series={[{

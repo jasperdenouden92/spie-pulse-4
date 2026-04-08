@@ -97,6 +97,16 @@ import AssetMonitoringPerformancePage from '@/components/AssetMonitoringPerforma
 import CompliancePerformancePage from '@/components/CompliancePerformancePage';
 import ThemesPerformancePage from '@/components/ThemesPerformancePage';
 import OperationsPerformancePage from '@/components/OperationsPerformancePage';
+import OperationsPage from '@/components/OperationsPage';
+import TicketsPage from '@/components/TicketsPage';
+import QuotationsPage from '@/components/QuotationsPage';
+import PortfolioPage from '@/components/PortfolioPage';
+import PortfolioClustersPage from '@/components/PortfolioClustersPage';
+import PortfolioZonesPage from '@/components/PortfolioZonesPage';
+import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
+import PortfolioEquipmentTypesPage from '@/components/PortfolioEquipmentTypesPage';
+import BuildingDetailPage from '@/components/BuildingDetailPage';
+import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
 import OverallPerformancePage from '@/components/OverallPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
@@ -323,6 +333,7 @@ export default function Home() {
     themes: '0',
     assetTab: '0',
     panel: 'buildings',
+    btab: 'performance',
   };
 
   const buildParams = (updates: Record<string, string>) => {
@@ -351,7 +362,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -366,6 +377,7 @@ export default function Home() {
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
+  const btab = (searchParams.get('btab') ?? 'performance') as 'overview' | 'performance' | 'assets' | 'tickets' | 'quotations';
 
   // URL-based asset (from asset explorer / tree)
   const urlAsset = assetId ? getAssetById(assetId) : null;
@@ -402,6 +414,8 @@ export default function Home() {
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
   const buildingsViewMode = (searchParams.get('bview') ?? 'cards') as 'cards' | 'list';
   const setBuildingsViewMode = (v: 'cards' | 'list') => setURLParams({ bview: v });
+  const portfolioViewMode = (searchParams.get('pview') ?? 'grid') as 'grid' | 'map';
+  const setPortfolioViewMode = useCallback((v: 'grid' | 'map') => setURLParams({ pview: v }), [setURLParams]);
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
@@ -443,6 +457,7 @@ export default function Home() {
   const setIsInspectMode = useCallback((v: boolean) => setURLParams({ inspect: v ? '1' : '0' }), [setURLParams]);
   const setIsAssetExplorerOpen = useCallback((v: boolean) => setURLParams({ explorer: v ? '1' : '0' }), [setURLParams]);
   const setAssetTab = useCallback((n: number) => setURLParams({ assetTab: String(n) }), [setURLParams]);
+  const setBtab = useCallback((t: string) => setURLParams({ btab: t }), [setURLParams]);
   // Open a URL-serialisable asset (from the tree)
   const setQuickviewAsset = (a: AssetNode | null) => {
     setLocalQuickviewAsset(null);
@@ -762,7 +777,12 @@ export default function Home() {
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'portfolio_overview') return 'Buildings & Assets';
+    if (currentPage === 'portfolio_buildings') return 'Portfolio';
+    if (currentPage === 'portfolio_clusters') return 'Clusters';
+    if (currentPage === 'portfolio_zones') return 'Zones';
+    if (currentPage === 'portfolio_assets') return 'Assets';
+    if (currentPage === 'portfolio_equipment_types') return 'Equipment Types';
+    if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
     if (currentPage === 'bms') return 'BMS';
     if (currentPage === 'operations') return 'Operations';
     if (selectedBuilding) return selectedBuilding.name;
@@ -797,7 +817,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0' };
     if (page !== 'portfolio') {
@@ -1092,13 +1112,13 @@ export default function Home() {
           width: `calc(100% - ${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px)`,
           height: '100vh',
           zIndex: 1425,
-          clipPath: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
+          clipPath: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_buildings' ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
           transition: 'clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           bgcolor: tc.bgPrimary,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          pointerEvents: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_overview' ? 'auto' : 'none',
+          pointerEvents: isAssetQuickviewOpen && quickviewAsset && currentPage !== 'portfolio_buildings' ? 'auto' : 'none',
         }}
       >
         {/* Header with breadcrumb, actions, and close button */}
@@ -1305,7 +1325,7 @@ export default function Home() {
         minWidth: 0,
         overflow: 'hidden'
       }}>
-        <PageHeader
+        {currentPage !== 'building_detail' && <PageHeader
             currentPage={currentPage}
             selectedBuilding={selectedBuilding}
             selectedAsset={selectedAsset}
@@ -1349,7 +1369,7 @@ export default function Home() {
             onContractFilterChange={setContractFilter}
             selectionScore={selectionScore}
             metricItems={metricItems}
-          />
+          />}
 
         {/* ========== Shared filter menus (used by inline title & header compact filter) ========== */}
         <DateRangeSelector
@@ -1386,7 +1406,7 @@ export default function Home() {
 
         {/* Page Content */}
         {currentPage !== 'dashboards' && (
-        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
+        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: currentPage === 'building_detail' ? 0 : '56px', pt: currentPage === 'building_detail' ? 0 : 2, px: isNarrow ? 0.5 : 3, ...(currentPage === 'portfolio_buildings' && portfolioViewMode === 'map' ? { display: 'flex', flexDirection: 'column', pb: 0, overflow: 'hidden' } : {}) }}>
           {currentPage === 'home' && <HomePage />}
           {currentPage === 'insights' && <InsightsPage />}
           {currentPage === 'themes' && <ThemesPage />}
@@ -1397,15 +1417,56 @@ export default function Home() {
             <BmsPage />
           )}
 
-          {/* Portfolio Page */}
-          {currentPage === 'portfolio' && (
+          {/* Operations pages */}
+          {currentPage === 'operations' && (
+            <OperationsPage onNavigate={handlePageChange} />
+          )}
+          {currentPage === 'operations_tickets' && (
+            <TicketsPage />
+          )}
+          {currentPage === 'operations_quotations' && (
+            <QuotationsPage />
+          )}
+
+          {/* Portfolio sub-pages */}
+          {currentPage === 'portfolio_buildings' && (
+            <PortfolioPage
+              tenant={selectedTenant}
+              onBuildingClick={(b) => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' })}
+              viewMode={portfolioViewMode}
+              onViewModeChange={setPortfolioViewMode}
+            />
+          )}
+          {currentPage === 'portfolio_clusters' && <PortfolioClustersPage />}
+          {currentPage === 'portfolio_zones' && <PortfolioZonesPage />}
+          {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
+          {currentPage === 'portfolio_equipment_types' && <PortfolioEquipmentTypesPage />}
+
+          {/* Portfolio Page + Building Detail Performance Tab */}
+          {(currentPage === 'portfolio' || (currentPage === 'building_detail' && btab === 'performance')) && (
             <>
-              {viewingAssetDetail && selectedAsset?.type === 'asset' ? (
+              {viewingAssetDetail && selectedAsset?.type === 'asset' && currentPage === 'portfolio' ? (
                 <AssetDetail asset={selectedAsset} tab={assetTab} onTabChange={setAssetTab} />
               ) : (
                 <>
-                  {/* ========== BUILDING HERO BANNER ========== */}
-                  {selectedBuilding && (
+                  {/* ========== BUILDING DETAIL PAGE HEADER ========== */}
+                  {currentPage === 'building_detail' && selectedBuilding && (
+                    <BuildingDetailPage
+                      building={selectedBuilding}
+                      tab={btab as BuildingDetailTab}
+                      onTabChange={(t) => setBtab(t)}
+                      isCollapsed={leftSidebarCollapsed}
+                      onToggleCollapse={handleLeftSidebarToggle}
+                      onBreadcrumbBack={() => handlePageChange('portfolio_buildings')}
+                      onBuildingChange={(name) => {
+                        const b = allBuildings.find(b => b.name === name);
+                        if (b) setSelectedBuilding(b);
+                      }}
+                    />
+                  )}
+
+                  {/* ========== BUILDING HERO BANNER (Control Room only) ========== */}
+                  {selectedBuilding && currentPage === 'portfolio' && (
                     <Box sx={{
                       width: '100%',
                       height: 80,
@@ -1960,7 +2021,7 @@ export default function Home() {
                                   return (
                                     <Box
                                       key={name}
-                                      onClick={() => !isCluster && (isInspectMode ? undefined : setSelectedBuilding(b))}
+                                      onClick={() => !isCluster && (isInspectMode ? undefined : navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }))}
                                       sx={{
                                         display: 'flex',
                                         gap: 1.5,
@@ -2131,7 +2192,7 @@ export default function Home() {
                                     opacity: { duration: 0.3 },
                                     scale: { duration: 0.3 }
                                   }}
-                                  onClick={(e) => isInspectMode ? handleInspectBuilding(b, e) : setSelectedBuilding(b)}
+                                  onClick={(e) => isInspectMode ? handleInspectBuilding(b, e) : navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' })}
                                   onMouseEnter={(e) => handleBuildingHover(b, e)}
                                   onMouseLeave={() => handleBuildingHover(null)}
                                   style={{
@@ -2179,7 +2240,7 @@ export default function Home() {
                             onMetricSelect={handleMetricSelect}
                             periodMetrics={periodMetrics}
                             themeKeys={activeThemeKeys}
-                            onBuildingSelect={setSelectedBuilding}
+                            onBuildingSelect={(b) => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' })}
                             onViewAllBuildings={(sort) => {
                               setBuildingsPanelTab('buildings');
                               setURLParams({ sort });
@@ -2385,6 +2446,18 @@ export default function Home() {
                 </>
               )}
             </>
+          )}
+
+          {/* Building Detail — header for non-performance tabs (content coming later) */}
+          {currentPage === 'building_detail' && selectedBuilding && btab !== 'performance' && (
+            <BuildingDetailPage
+              building={selectedBuilding}
+              tab={btab as BuildingDetailTab}
+              onTabChange={(t) => setBtab(t)}
+              isCollapsed={leftSidebarCollapsed}
+              onToggleCollapse={handleLeftSidebarToggle}
+              onBreadcrumbBack={() => handlePageChange('portfolio_buildings')}
+            />
           )}
         </Container>
         )}

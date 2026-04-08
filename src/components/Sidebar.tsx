@@ -87,8 +87,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
+  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -346,6 +346,8 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const { preference: themePreference, setThemePreference, themeColors: c } = useThemeMode();
   const newButtonRef = useRef<HTMLDivElement>(null);
+  const [operationsExpanded, setOperationsExpanded] = useState(() => Boolean(currentPage?.startsWith('operations')));
+  const [portfolioExpanded, setPortfolioExpanded] = useState(() => Boolean(currentPage?.startsWith('portfolio_') || currentPage === 'building_detail'));
 
   const NEW_MENU_ITEMS = [
     { label: 'Report issue', key: '1' },
@@ -670,17 +672,38 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               onClick={() => onPageChange?.('insights')}
             />
             <NavItem
-              label="Buildings & Assets"
+              label="Portfolio"
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'portfolio_overview'}
-              onClick={() => onPageChange?.('portfolio_overview')}
+              active={currentPage?.startsWith('portfolio_') || currentPage === 'building_detail'}
+              onClick={() => { onPageChange?.('portfolio_buildings'); setPortfolioExpanded(true); }}
+              expanded={portfolioExpanded}
+              onToggleExpand={() => setPortfolioExpanded((v) => !v)}
             />
+            {!isCollapsed && portfolioExpanded && (
+              <>
+                <NavItem label="Clusters" active={currentPage === 'portfolio_clusters'} onClick={() => onPageChange?.('portfolio_clusters')} />
+                <NavItem label="Buildings" active={currentPage === 'portfolio_buildings' || currentPage === 'building_detail'} onClick={() => onPageChange?.('portfolio_buildings')} />
+                <NavItem label="Zones" active={currentPage === 'portfolio_zones'} onClick={() => onPageChange?.('portfolio_zones')} />
+                <NavItem label="Assets" active={currentPage === 'portfolio_assets'} onClick={() => onPageChange?.('portfolio_assets')} />
+                <NavItem label="Equipment Types" active={currentPage === 'portfolio_equipment_types'} onClick={() => onPageChange?.('portfolio_equipment_types')} />
+              </>
+            )}
             <NavItem
               label="Operations"
               icon={<EngineeringOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'operations'}
-              onClick={() => onPageChange?.('operations')}
+              active={currentPage?.startsWith('operations')}
+              onClick={() => { onPageChange?.('operations_tickets'); setOperationsExpanded(true); }}
+              expanded={operationsExpanded}
+              onToggleExpand={() => setOperationsExpanded((v) => !v)}
             />
+            {!isCollapsed && operationsExpanded && (
+              <>
+                <NavItem label="Tickets" active={currentPage === 'operations_tickets'} onClick={() => onPageChange?.('operations_tickets')} />
+                <NavItem label="Quotations" active={currentPage === 'operations_quotations'} onClick={() => onPageChange?.('operations_quotations')} />
+                <NavItem label="Documents" active={currentPage === 'operations_docs'} onClick={() => onPageChange?.('operations_docs')} />
+                <NavItem label="Maintenance" active={currentPage === 'operations_maintenance'} onClick={() => onPageChange?.('operations_maintenance')} />
+              </>
+            )}
             <NavItem
               label="Dashboards"
               icon={<DashboardOutlinedIcon sx={{ fontSize: 16 }} />}
