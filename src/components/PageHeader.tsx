@@ -32,7 +32,7 @@ import { ContractFilterToggle, type ContractFilter } from '@/components/Building
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
 interface PageHeaderProps {
-  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  currentPage?: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   selectedBuilding?: { name: string } | null;
   selectedAsset?: AssetNode | null;
   onBack?: () => void;
@@ -55,7 +55,7 @@ interface PageHeaderProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_overview' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onExport?: () => void;
@@ -135,7 +135,6 @@ function PageHeader({
   const { themeColors: c } = useThemeMode();
   const isNarrow = useMediaQuery('(max-width:960px)');
   // Breadcrumb popover anchors
-  const [buildingCaretAnchor, setBuildingCaretAnchor] = useState<null | HTMLElement>(null);
   const [groupCaretAnchor, setGroupCaretAnchor] = useState<null | HTMLElement>(null);
   const [childCaretAnchor, setChildCaretAnchor] = useState<null | HTMLElement>(null);
   // Filter dropdown anchor
@@ -211,7 +210,7 @@ function PageHeader({
           <MenuOpenIcon sx={{ display: 'block', '@media (max-width: 926px)': { display: 'none' }, transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
         </IconButton>
         <AnimatePresence>
-          {(selectedBuilding || selectedAsset) && (
+          {(selectedBuilding || selectedAsset) && currentPage !== 'building_detail' && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -259,6 +258,29 @@ function PageHeader({
             )}
             {currentPage === 'portfolio_overview' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Portfolio</Typography>
+            )}
+            {currentPage === 'building_detail' && (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  onClick={() => onPageChange?.('portfolio_overview')}
+                >
+                  Portfolio
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                  onClick={() => onPageChange?.('portfolio_overview')}
+                >
+                  Buildings
+                </Typography>
+                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
+                  {selectedBuilding?.name ?? ''}
+                </Typography>
+              </>
             )}
             {currentPage === 'bms' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>BMS</Typography>
@@ -319,66 +341,6 @@ function PageHeader({
         {/* Smart contextual breadcrumbs for Portfolio page */}
         {!isNarrow && currentPage === 'portfolio' && (
           <>
-            {/* Building segment (when a building is selected) */}
-            <AnimatePresence>
-              {selectedBuilding && (
-                <motion.div
-                  key="building-breadcrumb"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
-                  <ApartmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.5 }} />
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontFamily: '"Inter", sans-serif',
-                      fontWeight: 600,
-                      fontSize: '0.8rem',
-                      color: (selectedAsset?.type === 'asset' || showGroupSegment) ? 'text.secondary' : 'text.primary',
-                      cursor: selectedAsset?.type === 'asset' ? 'pointer' : 'default',
-                      '&:hover': selectedAsset?.type === 'asset' ? { textDecoration: 'underline' } : {}
-                    }}
-                    onClick={selectedAsset?.type === 'asset' ? onAssetBack : undefined}
-                  >
-                    {selectedBuilding.name}
-                  </Typography>
-                  {buildings.length > 1 && (
-                    <>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => setBuildingCaretAnchor(e.currentTarget)}
-                        sx={{ color: 'text.secondary', p: 0.25 }}
-                      >
-                        <UnfoldMoreIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
-                      <Menu
-                        anchorEl={buildingCaretAnchor}
-                        open={Boolean(buildingCaretAnchor)}
-                        onClose={() => setBuildingCaretAnchor(null)}
-                      >
-                        {buildings.map((b) => (
-                          <MenuItem
-                            key={b.name}
-                            selected={selectedBuilding?.name === b.name}
-                            onClick={() => {
-                              onBuildingSelect?.(b);
-                              setBuildingCaretAnchor(null);
-                            }}
-                          >
-                            {b.name}
-                          </MenuItem>
-                        ))}
-                      </Menu>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* Asset breadcrumb */}
             <AnimatePresence>
               {selectedAsset?.type === 'asset' && (
