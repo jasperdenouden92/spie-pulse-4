@@ -6,6 +6,7 @@ export interface Ticket {
   building: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   status: 'Open' | 'In Progress' | 'On Hold' | 'Completed' | 'Cancelled';
+  type: 'Corrective' | 'Preventive' | 'Request' | 'Improvement';
   category: string;
   assignedTo: string;
   createdDate: string;
@@ -14,6 +15,7 @@ export interface Ticket {
   description: string;
   estimatedHours?: number;
   actualHours?: number;
+  amount?: number;
 }
 
 // Categories for tickets
@@ -140,6 +142,10 @@ function generateTickets(): Ticket[] {
       ['Open', 'In Progress', 'On Hold', 'Completed', 'Cancelled'],
       [35, 25, 5, 30, 5]
     );
+    const type = weightedRandom<Ticket['type']>(
+      ['Corrective', 'Preventive', 'Request', 'Improvement'],
+      [40, 30, 20, 10]
+    );
 
     // Generate title from templates
     const templates = TASK_TEMPLATES[category];
@@ -167,12 +173,14 @@ function generateTickets(): Ticket[] {
       building: randomFromArray(BUILDING_POOL),
       priority,
       status,
+      type,
       category,
       assignedTo: randomFromArray(STAFF_POOL),
       createdDate,
       dueDate,
       description: `${title} - Scheduled maintenance and inspection`,
-      estimatedHours: randomDecimal(1, 8, 1)
+      estimatedHours: randomDecimal(1, 8, 1),
+      amount: randomInt(0, 4) > 0 ? Math.round(randomDecimal(25, 4500, 2) * 100) / 100 : undefined,
     };
 
     // Add completion details for completed/cancelled orders
@@ -202,13 +210,15 @@ export const tickets: Ticket[] = [
     building: 'Skyline Plaza',
     priority: 'High',
     status: 'In Progress',
+    type: 'Preventive',
     category: 'HVAC',
     assignedTo: 'John Smith',
     createdDate: '2024-01-15',
     dueDate: '2024-01-22',
     description: 'Routine maintenance and filter replacement for HVAC units on floor 3',
     estimatedHours: 4,
-    actualHours: 2.5
+    actualHours: 2.5,
+    amount: 380.00,
   },
   {
     id: 'WO-2024-002',
@@ -216,11 +226,13 @@ export const tickets: Ticket[] = [
     building: 'Urban Tower',
     priority: 'Medium',
     status: 'Open',
+    type: 'Request',
     category: 'Electrical',
     assignedTo: 'Marie Johnson',
     createdDate: '2024-01-18',
     dueDate: '2024-01-25',
-    description: 'Adjust lighting levels in main lobby area'
+    description: 'Adjust lighting levels in main lobby area',
+    amount: 125.50,
   },
   {
     id: 'WO-2024-003',
@@ -228,13 +240,15 @@ export const tickets: Ticket[] = [
     building: 'Metro Heights',
     priority: 'Critical',
     status: 'In Progress',
+    type: 'Corrective',
     category: 'Plumbing',
     assignedTo: 'Tom Anderson',
     createdDate: '2024-01-20',
     dueDate: '2024-01-21',
     description: 'Emergency repair of toilet facilities on first floor',
     estimatedHours: 3,
-    actualHours: 1.5
+    actualHours: 1.5,
+    amount: 210.00,
   },
   {
     id: 'WO-2024-004',
@@ -242,6 +256,7 @@ export const tickets: Ticket[] = [
     building: 'Innovation Hub',
     priority: 'Medium',
     status: 'Completed',
+    type: 'Preventive',
     category: 'Building Envelope',
     assignedTo: 'Lisa Chen',
     createdDate: '2024-01-10',
@@ -249,7 +264,8 @@ export const tickets: Ticket[] = [
     completedDate: '2024-01-16',
     description: 'Replace deteriorated window seals on north facade',
     estimatedHours: 8,
-    actualHours: 7.5
+    actualHours: 7.5,
+    amount: 740.00,
   },
   {
     id: 'WO-2024-005',
@@ -257,12 +273,13 @@ export const tickets: Ticket[] = [
     building: 'Riverside Complex',
     priority: 'High',
     status: 'Open',
+    type: 'Preventive',
     category: 'Safety',
     assignedTo: 'Robert Williams',
     createdDate: '2024-01-22',
     dueDate: '2024-01-29',
     description: 'Quarterly fire alarm system testing and inspection',
-    estimatedHours: 6
+    estimatedHours: 6,
   },
   {
     id: 'WO-2024-006',
@@ -270,6 +287,7 @@ export const tickets: Ticket[] = [
     building: 'Skyline Plaza',
     priority: 'High',
     status: 'Completed',
+    type: 'Preventive',
     category: 'Vertical Transportation',
     assignedTo: 'David Park',
     createdDate: '2024-01-08',
@@ -277,7 +295,8 @@ export const tickets: Ticket[] = [
     completedDate: '2024-01-14',
     description: 'Monthly elevator maintenance and safety inspection',
     estimatedHours: 5,
-    actualHours: 4.5
+    actualHours: 4.5,
+    amount: 520.00,
   },
   {
     id: 'WO-2024-007',
@@ -285,12 +304,14 @@ export const tickets: Ticket[] = [
     building: 'Gateway Center',
     priority: 'Medium',
     status: 'On Hold',
+    type: 'Corrective',
     category: 'Electrical',
     assignedTo: 'Sarah Martinez',
     createdDate: '2024-01-19',
     dueDate: '2024-01-26',
     description: 'Replace non-functioning lights in parking area - awaiting parts',
-    estimatedHours: 4
+    estimatedHours: 4,
+    amount: 290.00,
   },
   {
     id: 'WO-2024-008',
@@ -298,12 +319,14 @@ export const tickets: Ticket[] = [
     building: 'Parkside Office',
     priority: 'Low',
     status: 'Open',
+    type: 'Improvement',
     category: 'Building Automation',
     assignedTo: 'Michael Lee',
     createdDate: '2024-01-21',
     dueDate: '2024-02-05',
     description: 'Software update for building management system controllers',
-    estimatedHours: 3
+    estimatedHours: 3,
+    amount: 1200.00,
   },
   // Generated tickets
   ...generateTickets()
