@@ -1459,8 +1459,14 @@ export default function Home() {
           {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} onZoneClick={(id, e) => handleSidePeekClick(e,
             () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
             () => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' }),
+          )} onBuildingLabelClick={(name, e) => handleSidePeekClick(e,
+            () => { const b = allBuildings.find(b => b.name === name); if (b) { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); } },
+            () => navigateTo({ page: 'building_detail', building: name, btab: 'overview' }),
           )} />}
-          {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
+          {currentPage === 'portfolio_assets' && <PortfolioAssetsPage onBuildingLabelClick={(name, e) => handleSidePeekClick(e,
+            () => { const b = allBuildings.find(b => b.name === name); if (b) { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); } },
+            () => navigateTo({ page: 'building_detail', building: name, btab: 'overview' }),
+          )} />}
 
           {/* Portfolio Page + Building Detail Performance Tab */}
           {(currentPage === 'portfolio' || (currentPage === 'building_detail' && btab === 'performance')) && (

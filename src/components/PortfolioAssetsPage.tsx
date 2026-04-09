@@ -168,10 +168,21 @@ function getSortValue(asset: EnrichedAsset, key: SortKey): string {
 type GroupBy = 'none' | 'building' | 'category' | 'status';
 
 // ── Section header (matches Zones pattern) ──
-function SectionHeader({ label, count }: { label: string; count: number }) {
+function SectionHeader({ label, count, onClick }: { label: string; count: number; onClick?: (e: React.MouseEvent) => void }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, mt: 1 }}>
-      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', textTransform: 'capitalize' }}>
+      <Typography
+        variant="body2"
+        onClick={onClick}
+        sx={{
+          fontWeight: 600,
+          fontSize: '0.8125rem',
+          color: onClick ? 'text.primary' : 'text.secondary',
+          textTransform: 'capitalize',
+          cursor: onClick ? 'pointer' : 'default',
+          '&:hover': onClick ? { textDecoration: 'underline' } : {},
+        }}
+      >
         {label}
       </Typography>
       <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
@@ -183,12 +194,12 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 }
 
 // ── Asset table (flat — grouping handled by parent) ──
-function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: EnrichedAsset[]; query?: string; hideBuildingCol?: boolean }) {
+function AssetTable({ assets, query = '', hiddenCols = [] }: { assets: EnrichedAsset[]; query?: string; hiddenCols?: SortKey[] }) {
   const { themeColors: c } = useThemeMode();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  const visibleColumns = useMemo(() => hideBuildingCol ? COLUMNS.filter(col => col.key !== 'building') : COLUMNS, [hideBuildingCol]);
+  const visibleColumns = useMemo(() => hiddenCols.length ? COLUMNS.filter(col => !hiddenCols.includes(col.key)) : COLUMNS, [hiddenCols]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -251,16 +262,18 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
                       <HighlightText text={asset.name} query={query} />
                     </Typography>
                   </TableCell>
-                  {!hideBuildingCol && (
+                  {!hiddenCols.includes('building') && (
                     <TableCell sx={{ py: 1.25 }}>
                       <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         <HighlightText text={asset.building} query={query} />
                       </Typography>
                     </TableCell>
                   )}
-                  <TableCell sx={{ py: 1.25 }}>
-                    <CategoryCell category={asset.metadata?.category} />
-                  </TableCell>
+                  {!hiddenCols.includes('category') && (
+                    <TableCell sx={{ py: 1.25 }}>
+                      <CategoryCell category={asset.metadata?.category} />
+                    </TableCell>
+                  )}
                   <TableCell sx={{ py: 1.25 }}>
                     <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {asset.metadata?.manufacturer
@@ -287,9 +300,11 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
                       {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
                     </Typography>
                   </TableCell>
-                  <TableCell sx={{ py: 1.25 }}>
-                    <StatusCell status={asset.metadata?.status} />
-                  </TableCell>
+                  {!hiddenCols.includes('status') && (
+                    <TableCell sx={{ py: 1.25 }}>
+                      <StatusCell status={asset.metadata?.status} />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -301,7 +316,7 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
 }
 
 // ── Main component ──
-export default function PortfolioAssetsPage({ buildingName }: { buildingName?: string } = {}) {
+export default function PortfolioAssetsPage({ buildingName, onBuildingLabelClick }: { buildingName?: string; onBuildingLabelClick?: (buildingName: string, e?: React.MouseEvent) => void } = {}) {
   const { themeColors: c } = useThemeMode();
 
   const baseAssets = useMemo(
@@ -573,12 +588,20 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
         ) : grouped ? (
           grouped.map(({ key, label, items }) => (
             <Box key={key} sx={{ mb: 4 }}>
-              <SectionHeader label={label} count={items.length} />
-              <AssetTable assets={items} query={search} hideBuildingCol={!!buildingName} />
+              <SectionHeader
+                label={label}
+                count={items.length}
+                onClick={groupBy === 'building' && onBuildingLabelClick ? (e) => onBuildingLabelClick(key, e) : undefined}
+              />
+              <AssetTable assets={items} query={search} hiddenCols={[
+                ...(buildingName || groupBy === 'building' ? ['building' as SortKey] : []),
+                ...(groupBy === 'category' ? ['category' as SortKey] : []),
+                ...(groupBy === 'status' ? ['status' as SortKey] : []),
+              ]} />
             </Box>
           ))
         ) : (
-          <AssetTable assets={filtered} query={search} hideBuildingCol={!!buildingName} />
+          <AssetTable assets={filtered} query={search} hiddenCols={buildingName ? ['building'] : []} />
         )}
       </Box>
     </Box>

@@ -70,10 +70,20 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 // ── Section header for grouped view ──
 
-function SectionHeader({ label, count }: { label: string; count: number }) {
+function SectionHeader({ label, count, onClick }: { label: string; count: number; onClick?: (e: React.MouseEvent) => void }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, mt: 1 }}>
-      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary' }}>
+      <Typography
+        variant="body2"
+        onClick={onClick}
+        sx={{
+          fontWeight: 600,
+          fontSize: '0.8125rem',
+          color: onClick ? 'text.primary' : 'text.secondary',
+          cursor: onClick ? 'pointer' : 'default',
+          '&:hover': onClick ? { textDecoration: 'underline' } : {},
+        }}
+      >
         {label}
       </Typography>
       <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
@@ -86,21 +96,23 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ── List view ──
 
-function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
+function ZonesTable({ zones, query, hideBuilding, hideCity, hideFloor, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; hideFloor?: boolean; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
 
-  const colWidths = hideBuilding && hideCity
-    ? ['40%', '30%', '30%']
-    : hideBuilding
-      ? ['30%', '20%', '25%', '25%']
-      : hideCity
-        ? ['30%', '25%', '20%', '25%']
-        : ['25%', '20%', '15%', '20%', '20%'];
+  const colWidths =
+    hideBuilding && hideCity && hideFloor ? ['60%', '40%'] :
+    hideBuilding && hideCity ? ['45%', '30%', '25%'] :
+    hideBuilding && hideFloor ? ['45%', '30%', '25%'] :
+    hideCity && hideFloor ? ['45%', '30%', '25%'] :
+    hideBuilding ? ['30%', '20%', '25%', '25%'] :
+    hideCity ? ['30%', '25%', '20%', '25%'] :
+    hideFloor ? ['30%', '25%', '20%', '25%'] :
+    ['25%', '20%', '15%', '20%', '20%'];
 
   const headers = [
     'Zone',
     ...(!hideBuilding ? ['Building'] : []),
-    'Floor',
+    ...(!hideFloor ? ['Floor'] : []),
     ...(!hideCity ? ['City'] : []),
     'Assets',
   ];
@@ -165,11 +177,13 @@ function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zon
                       </Typography>
                     </TableCell>
                   )}
-                  <TableCell sx={{ py: 1 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
-                      {zone.floor}
-                    </Typography>
-                  </TableCell>
+                  {!hideFloor && (
+                    <TableCell sx={{ py: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                        {zone.floor}
+                      </Typography>
+                    </TableCell>
+                  )}
                   {!hideCity && (
                     <TableCell sx={{ py: 1 }}>
                       <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
@@ -194,7 +208,7 @@ function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zon
 
 // ── Main component ──
 
-export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }: { tenant: string; buildingName?: string; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
+export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, onBuildingLabelClick }: { tenant: string; buildingName?: string; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void; onBuildingLabelClick?: (buildingName: string, e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
   const tenantZones = useMemo(
     () => allZones.filter(z => z.buildingTenant === tenant && (!buildingName || z.buildingName === buildingName)),
@@ -439,8 +453,12 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }
         ) : groupBy !== 'none' ? (
           grouped.map(({ key, label, items }) => (
             <Box key={key} sx={{ mb: 4 }}>
-              <SectionHeader label={label} count={items.length} />
-              <ZonesTable zones={items} query={search} hideBuilding={!!buildingName} hideCity={!!buildingName} onZoneClick={onZoneClick} />
+              <SectionHeader
+                label={label}
+                count={items.length}
+                onClick={groupBy === 'building' && onBuildingLabelClick ? (e) => onBuildingLabelClick(key, e) : undefined}
+              />
+              <ZonesTable zones={items} query={search} hideBuilding={!!buildingName || groupBy === 'building'} hideCity={!!buildingName || groupBy === 'city'} hideFloor={groupBy === 'floor'} onZoneClick={onZoneClick} />
             </Box>
           ))
         ) : (
