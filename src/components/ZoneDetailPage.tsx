@@ -10,6 +10,9 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import Tooltip from '@mui/material/Tooltip';
 import SearchIcon from '@mui/icons-material/Search';
 import CheckIcon from '@mui/icons-material/Check';
 import type { Zone } from '@/data/zones';
@@ -147,6 +150,8 @@ interface ZoneDetailPageProps {
   onBackToCluster?: () => void;
   onBackToBuilding?: () => void;
   onZoneChange?: (zoneId: string) => void;
+  onPanelClose?: () => void;
+  onPanelFullscreen?: () => void;
 }
 
 export default function ZoneDetailPage({
@@ -159,9 +164,30 @@ export default function ZoneDetailPage({
   onBackToCluster,
   onBackToBuilding,
   onZoneChange,
+  onPanelClose,
+  onPanelFullscreen,
 }: ZoneDetailPageProps) {
   const zoneColor = getZoneColor(zone.name);
   const [zoneAnchorEl, setZoneAnchorEl] = useState<HTMLElement | null>(null);
+
+  const panelActions = (onPanelClose || onPanelFullscreen) ? (
+    <>
+      {onPanelClose && (
+        <Tooltip title="Close panel">
+          <IconButton size="small" onClick={onPanelClose} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+            <KeyboardDoubleArrowRightIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+      )}
+      {onPanelFullscreen && (
+        <Tooltip title="Open fullscreen">
+          <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+            <OpenInFullIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+      )}
+    </>
+  ) : undefined;
 
   return (
     <PageHeader
@@ -175,6 +201,7 @@ export default function ZoneDetailPage({
       onTabChange={(v) => onTabChange(v as ZoneDetailTab)}
       isCollapsed={isCollapsed}
       onToggleCollapse={onToggleCollapse}
+      panelActions={panelActions}
       breadcrumb={
         <>
           <Typography

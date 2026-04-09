@@ -42,6 +42,8 @@ interface PageHeaderProps {
   breadcrumb?: React.ReactNode;
   /** Actions rendered on the right of the hero top bar overlay (e.g. star icon). */
   heroActions?: React.ReactNode;
+  /** When provided, renders these actions in place of the sidebar collapse toggle button. */
+  panelActions?: React.ReactNode;
 
   // Entity variant
   /** Icon element rendered inside the entity icon container. */
@@ -112,6 +114,7 @@ function HeroHeader({
   onToggleCollapse,
   breadcrumb,
   heroActions,
+  panelActions,
 }: PageHeaderProps) {
   const isNarrow = useMediaQuery('(max-width:960px)');
 
@@ -175,26 +178,32 @@ function HeroHeader({
             zIndex: 2,
           }}
         >
-          <IconButton
-            size="small"
-            onClick={onToggleCollapse}
-            sx={{
-              color: 'rgba(255,255,255,0.85)',
-              flexShrink: 0,
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' },
-            }}
-          >
-            <MenuIcon sx={{ display: 'none', fontSize: 20, '@media (max-width: 926px)': { display: 'block' } }} />
-            <MenuOpenIcon
+          {panelActions ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+              {panelActions}
+            </Box>
+          ) : (
+            <IconButton
+              size="small"
+              onClick={onToggleCollapse}
               sx={{
-                display: 'block',
-                fontSize: 20,
-                '@media (max-width: 926px)': { display: 'none' },
-                transform: isCollapsed ? 'rotate(180deg)' : 'none',
-                transition: 'transform 0.3s ease',
+                color: 'rgba(255,255,255,0.85)',
+                flexShrink: 0,
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' },
               }}
-            />
-          </IconButton>
+            >
+              <MenuIcon sx={{ display: 'none', fontSize: 20, '@media (max-width: 926px)': { display: 'block' } }} />
+              <MenuOpenIcon
+                sx={{
+                  display: 'block',
+                  fontSize: 20,
+                  '@media (max-width: 926px)': { display: 'none' },
+                  transform: isCollapsed ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.3s ease',
+                }}
+              />
+            </IconButton>
+          )}
 
           {!isNarrow && breadcrumb && (
             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
@@ -320,6 +329,7 @@ function EntityHeader({
   entityIcon,
   entityIconBgColor,
   entityType,
+  panelActions,
 }: PageHeaderProps) {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
@@ -331,9 +341,7 @@ function EntityHeader({
         width: isNarrow ? 'calc(100% + 8px)' : 'calc(100% + 48px)',
         mb: 3,
         bgcolor: '#fff',
-        borderBottomLeftRadius: '48px',
         borderBottom: '1px solid',
-        borderLeft: '1px solid',
         borderColor: 'divider',
         overflow: 'hidden',
       }}
@@ -348,26 +356,32 @@ function EntityHeader({
           gap: 0.5,
         }}
       >
-        <IconButton
-          size="small"
-          onClick={onToggleCollapse}
-          sx={{
-            color: 'text.secondary',
-            flexShrink: 0,
-            '&:hover': { bgcolor: 'action.hover' },
-          }}
-        >
-          <MenuIcon sx={{ display: 'none', fontSize: 20, '@media (max-width: 926px)': { display: 'block' } }} />
-          <MenuOpenIcon
+        {panelActions ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+            {panelActions}
+          </Box>
+        ) : (
+          <IconButton
+            size="small"
+            onClick={onToggleCollapse}
             sx={{
-              display: 'block',
-              fontSize: 20,
-              '@media (max-width: 926px)': { display: 'none' },
-              transform: isCollapsed ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.3s ease',
+              color: 'text.secondary',
+              flexShrink: 0,
+              '&:hover': { bgcolor: 'action.hover' },
             }}
-          />
-        </IconButton>
+          >
+            <MenuIcon sx={{ display: 'none', fontSize: 20, '@media (max-width: 926px)': { display: 'block' } }} />
+            <MenuOpenIcon
+              sx={{
+                display: 'block',
+                fontSize: 20,
+                '@media (max-width: 926px)': { display: 'none' },
+                transform: isCollapsed ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.3s ease',
+              }}
+            />
+          </IconButton>
+        )}
 
         {!isNarrow && breadcrumb && (
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>

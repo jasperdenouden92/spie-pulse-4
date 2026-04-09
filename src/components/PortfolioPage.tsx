@@ -74,7 +74,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 // ── Building tile ──
 
-function BuildingTile({ building, query = '', onClick }: { building: typeof buildings[0]; query?: string; onClick?: () => void }) {
+function BuildingTile({ building, query = '', onClick }: { building: typeof buildings[0]; query?: string; onClick?: (e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
   const stats = buildingOperationalStats[building.name];
   const energyRating = stats?.sustainability?.weiiRating;
@@ -157,7 +157,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ── Main component ──
 
-export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'grid', onViewModeChange }: { tenant: string; onBuildingClick?: (building: typeof buildings[0]) => void; viewMode?: ViewMode; onViewModeChange?: (v: ViewMode) => void }) {
+export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'grid', onViewModeChange }: { tenant: string; onBuildingClick?: (building: typeof buildings[0], e?: React.MouseEvent) => void; viewMode?: ViewMode; onViewModeChange?: (v: ViewMode) => void }) {
   const { themeColors: c } = useThemeMode();
   const tenantBuildings = useMemo(() => buildings.filter(b => b.tenant === tenant), [tenant]);
   const setViewMode = (v: ViewMode) => onViewModeChange?.(v);
@@ -510,7 +510,7 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <BuildingTile building={building} query={search} onClick={onBuildingClick ? () => onBuildingClick(building) : undefined} />
+                      <BuildingTile building={building} query={search} onClick={onBuildingClick ? (e) => onBuildingClick(building, e) : undefined} />
                     </motion.div>
                   ))}
                 </Box>
