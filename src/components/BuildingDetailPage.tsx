@@ -8,6 +8,9 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import Tooltip from '@mui/material/Tooltip';
 import type { Building } from '@/data/buildings';
 import { BuildingSelectorPopover } from './BuildingSelector';
 import PageHeader from '@/components/PageHeader';
@@ -30,7 +33,6 @@ interface BuildingDetailPageProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onBackToPortfolio?: () => void;
-  onBackToCluster?: () => void;
   onBuildingChange?: (buildingName: string) => void;
   onPanelClose?: () => void;
   onPanelFullscreen?: () => void;
@@ -43,11 +45,31 @@ export default function BuildingDetailPage({
   isCollapsed = false,
   onToggleCollapse,
   onBackToPortfolio,
-  onBackToCluster,
   onBuildingChange,
+  onPanelClose,
+  onPanelFullscreen,
 }: BuildingDetailPageProps) {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const [buildingAnchorEl, setBuildingAnchorEl] = useState<HTMLElement | null>(null);
+
+  const panelActions = (onPanelClose || onPanelFullscreen) ? (
+    <>
+      {onPanelClose && (
+        <Tooltip title="Close panel">
+          <IconButton size="small" onClick={onPanelClose} sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}>
+            <KeyboardDoubleArrowRightIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+      )}
+      {onPanelFullscreen && (
+        <Tooltip title="Open fullscreen">
+          <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}>
+            <OpenInFullIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+      )}
+    </>
+  ) : undefined;
 
   return (
     <PageHeader
@@ -60,6 +82,7 @@ export default function BuildingDetailPage({
       onTabChange={(v) => onTabChange(v as BuildingDetailTab)}
       isCollapsed={isCollapsed}
       onToggleCollapse={onToggleCollapse}
+      panelActions={panelActions}
       breadcrumb={
         <>
           <Typography
@@ -67,14 +90,6 @@ export default function BuildingDetailPage({
             onClick={onBackToPortfolio}
           >
             Portfolio
-          </Typography>
-          <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
-          <Typography
-            noWrap
-            sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}
-            onClick={onBackToCluster}
-          >
-            {building.group}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <Box

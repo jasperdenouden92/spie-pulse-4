@@ -74,7 +74,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 // ── Building tile ──
 
-function BuildingTile({ building, query = '', onClick }: { building: typeof buildings[0]; query?: string; onClick?: (e: React.MouseEvent) => void }) {
+function BuildingTile({ building, query = '', onClick }: { building: typeof buildings[0]; query?: string; onClick?: (e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
   const stats = buildingOperationalStats[building.name];
   const energyRating = stats?.sustainability?.weiiRating;
