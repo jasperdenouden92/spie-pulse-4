@@ -86,7 +86,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ── List view ──
 
-function ZonesTable({ zones, query, hideBuilding, hideCity }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean }) {
+function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; onZoneClick?: (zoneId: string) => void }) {
   const { themeColors: c } = useThemeMode();
 
   return (
@@ -112,11 +112,12 @@ function ZonesTable({ zones, query, hideBuilding, hideCity }: { zones: Zone[]; q
             return (
               <TableRow
                 key={zone.id}
+                onClick={() => onZoneClick?.(zone.id)}
                 sx={{
                   bgcolor: idx % 2 === 0 ? 'transparent' : `color-mix(in srgb, ${c.bgSecondary} 50%, transparent)`,
                   '&:hover': { bgcolor: `color-mix(in srgb, ${c.brandSecondary} 6%, transparent)` },
                   '&:last-child td': { borderBottom: 0 },
-                  cursor: 'pointer',
+                  cursor: onZoneClick ? 'pointer' : 'default',
                   transition: 'background-color 0.1s ease',
                 }}
               >
@@ -150,7 +151,7 @@ function ZonesTable({ zones, query, hideBuilding, hideCity }: { zones: Zone[]; q
 
 // ── Main component ──
 
-export default function PortfolioZonesPage({ tenant, buildingName }: { tenant: string; buildingName?: string }) {
+export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }: { tenant: string; buildingName?: string; onZoneClick?: (zoneId: string) => void }) {
   const { themeColors: c } = useThemeMode();
   const tenantZones = useMemo(
     () => allZones.filter(z => z.buildingTenant === tenant && (!buildingName || z.buildingName === buildingName)),
@@ -458,11 +459,11 @@ export default function PortfolioZonesPage({ tenant, buildingName }: { tenant: s
           grouped.map(({ key, label, items }) => (
             <Box key={key} sx={{ mb: 4 }}>
               <SectionHeader label={label} count={items.length} />
-              <ZonesTable zones={items} query={search} hideBuilding={!!buildingName} hideCity={!!buildingName} />
+              <ZonesTable zones={items} query={search} hideBuilding={!!buildingName} hideCity={!!buildingName} onZoneClick={onZoneClick} />
             </Box>
           ))
         ) : (
-          <ZonesTable zones={filtered} query={search} hideBuilding={!!buildingName} hideCity={!!buildingName} />
+          <ZonesTable zones={filtered} query={search} hideBuilding={!!buildingName} hideCity={!!buildingName} onZoneClick={onZoneClick} />
         )}
       </Box>
     </Box>
