@@ -89,63 +89,106 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
 
+  const colWidths = hideBuilding && hideCity
+    ? ['40%', '30%', '30%']
+    : hideBuilding
+      ? ['30%', '20%', '25%', '25%']
+      : hideCity
+        ? ['30%', '25%', '20%', '25%']
+        : ['25%', '20%', '15%', '20%', '20%'];
+
+  const headers = [
+    'Zone',
+    ...(!hideBuilding ? ['Building'] : []),
+    'Floor',
+    ...(!hideCity ? ['City'] : []),
+    'Assets',
+  ];
+
+  const colgroup = (
+    <colgroup>
+      {colWidths.map((w, i) => (
+        <col key={i} style={{ width: w }} />
+      ))}
+    </colgroup>
+  );
+
   return (
-    <TableContainer
-      sx={{
-        border: `1px solid ${c.cardBorder}`,
-        borderRadius: '6px',
-        bgcolor: c.bgPrimary,
-      }}
-    >
-      <Table size="small">
+    <Box>
+      {/* Header row outside the card */}
+      <Table sx={{ tableLayout: 'fixed' }}>
+        {colgroup}
         <TableHead>
-          <TableRow sx={{ bgcolor: c.bgSecondary }}>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25, pl: 2 }}>Zone</TableCell>
-            {!hideBuilding && <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>Building</TableCell>}
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>Floor</TableCell>
-            {!hideCity && <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>City</TableCell>}
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25, pr: 2 }} align="right">Assets</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {zones.map((zone: Zone, idx: number) => {
-            return (
-              <TableRow
-                key={zone.id}
-                onClick={(e) => onZoneClick?.(zone.id, e)}
+          <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+            {headers.map((h, i) => (
+              <TableCell
+                key={h}
                 sx={{
-                  bgcolor: idx % 2 === 0 ? 'transparent' : `color-mix(in srgb, ${c.bgSecondary} 50%, transparent)`,
-                  '&:hover': { bgcolor: `color-mix(in srgb, ${c.brandSecondary} 6%, transparent)` },
-                  '&:last-child td': { borderBottom: 0 },
-                  cursor: onZoneClick ? 'pointer' : 'default',
-                  transition: 'background-color 0.1s ease',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  color: 'text.secondary',
+                  py: 1,
+                  ...(i === 0 ? { pl: 2 } : {}),
+                  ...(i === headers.length - 1 ? { textAlign: 'right', pr: 2 } : {}),
                 }}
               >
-                <TableCell sx={{ py: 1, pl: 2, borderColor: c.cardBorder }}>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, lineHeight: 1 }}>
-                    {query ? <HighlightText text={zone.name} query={query} /> : zone.name}
-                  </Typography>
-                </TableCell>
-                {!hideBuilding && <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
-                  {query ? <HighlightText text={zone.buildingName} query={query} /> : zone.buildingName}
-                </TableCell>}
-                <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
-                  {zone.floor}
-                </TableCell>
-                {!hideCity && <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
-                  {zone.buildingCity || '—'}
-                </TableCell>}
-                <TableCell sx={{ py: 1, pr: 2, borderColor: c.cardBorder }} align="right">
-                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: c.brandSecondary }}>
-                    {zone.assetCount}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
+                {h}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
       </Table>
-    </TableContainer>
+      {/* Table body inside the card */}
+      <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+        <TableContainer>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            {colgroup}
+            <TableBody>
+              {zones.map((zone: Zone) => (
+                <TableRow
+                  key={zone.id}
+                  onClick={(e) => onZoneClick?.(zone.id, e)}
+                  sx={{
+                    '&:hover': { bgcolor: c.bgPrimaryHover },
+                    cursor: onZoneClick ? 'pointer' : 'default',
+                  }}
+                >
+                  <TableCell sx={{ py: 1, pl: 2 }}>
+                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600 }}>
+                      {query ? <HighlightText text={zone.name} query={query} /> : zone.name}
+                    </Typography>
+                  </TableCell>
+                  {!hideBuilding && (
+                    <TableCell sx={{ py: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                        {query ? <HighlightText text={zone.buildingName} query={query} /> : zone.buildingName}
+                      </Typography>
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ py: 1 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                      {zone.floor}
+                    </Typography>
+                  </TableCell>
+                  {!hideCity && (
+                    <TableCell sx={{ py: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                        {zone.buildingCity || '—'}
+                      </Typography>
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ py: 1, pr: 2, textAlign: 'right' }}>
+                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: c.brandSecondary }}>
+                      {zone.assetCount}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
 
