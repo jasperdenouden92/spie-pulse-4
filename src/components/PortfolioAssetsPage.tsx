@@ -22,6 +22,7 @@ import { useThemeMode } from '@/theme-mode-context';
 import PageHeader from '@/components/PageHeader';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown, { type FilterOption } from '@/components/FilterDropdown';
+import FilterRangeDropdown, { type RangeValue } from '@/components/FilterRangeDropdown';
 import Button from '@/components/Button';
 import { assetTree, type AssetNode } from '@/data/assetTree';
 
@@ -325,7 +326,6 @@ export default function PortfolioAssetsPage() {
   const allManufacturers = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.manufacturer).filter(Boolean) as string[])).sort(), []);
   const allModels     = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.model).filter(Boolean) as string[])).sort(), []);
   const allLocations  = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.zone).filter(Boolean) as string[])).sort(), []);
-  const allYears      = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.installDate?.slice(0, 4)).filter(Boolean) as string[])).sort().reverse(), []);
 
   // Always-visible filters
   const [search, setSearch] = useState('');
@@ -379,9 +379,9 @@ export default function PortfolioAssetsPage() {
     if (pendingLocationOpen && locationChipRef.current) { setLocationAnchor(locationChipRef.current); setPendingLocationOpen(false); }
   }, [pendingLocationOpen, showLocation]);
 
-  // Installed (year) filter
+  // Installed (date range) filter
   const [showInstalled, setShowInstalled] = useState(false);
-  const [selectedYears, setSelectedYears] = useState<string[]>([]);
+  const [installedRange, setInstalledRange] = useState<RangeValue>({ min: '', max: '' });
   const [installedAnchor, setInstalledAnchor] = useState<null | HTMLElement>(null);
   const installedChipRef = useRef<HTMLDivElement>(null);
   const [pendingInstalledOpen, setPendingInstalledOpen] = useState(false);
@@ -428,9 +428,10 @@ export default function PortfolioAssetsPage() {
     if (selectedManufacturers.length > 0) list = list.filter(a => selectedManufacturers.includes(a.metadata?.manufacturer ?? ''));
     if (selectedModels.length > 0)        list = list.filter(a => selectedModels.includes(a.metadata?.model ?? ''));
     if (selectedLocations.length > 0)     list = list.filter(a => selectedLocations.includes(a.metadata?.zone ?? ''));
-    if (selectedYears.length > 0)         list = list.filter(a => selectedYears.includes(a.metadata?.installDate?.slice(0, 4) ?? ''));
+    if (installedRange.min) list = list.filter(a => (a.metadata?.installDate ?? '') >= installedRange.min);
+    if (installedRange.max) list = list.filter(a => (a.metadata?.installDate ?? '') <= installedRange.max);
     return list;
-  }, [search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedLocations, selectedYears]);
+  }, [search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedLocations, installedRange]);
 
   // Chip display values
   const chipValue = (vals: string[], singular: string, plural: string) =>
@@ -442,7 +443,7 @@ export default function PortfolioAssetsPage() {
   const manufacturerChipValue = chipValue(selectedManufacturers, '', 'manufacturers');
   const modelChipValue        = chipValue(selectedModels,        '', 'models');
   const locationChipValue     = chipValue(selectedLocations,     '', 'zones');
-  const installedChipValue    = selectedYears.length === 0 ? null : selectedYears.length === 1 ? selectedYears[0] : `${selectedYears.length} years`;
+  const installedChipValue    = !installedRange.min && !installedRange.max ? null : installedRange.min && installedRange.max ? `${installedRange.min} – ${installedRange.max}` : installedRange.min ? `From ${installedRange.min}` : `Until ${installedRange.max}`;
 
   return (
     <Box>
@@ -574,14 +575,13 @@ export default function PortfolioAssetsPage() {
         {/* Optional: Installed */}
         {showInstalled && (
           <Box ref={installedChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip label="Installed" value={installedChipValue} onClick={(e) => setInstalledAnchor(e.currentTarget)} onClear={() => { setSelectedYears([]); setShowInstalled(false); }} />
+            <FilterChip label="Installed" value={installedChipValue} onClick={(e) => setInstalledAnchor(e.currentTarget)} onClear={() => { setInstalledRange({ min: '', max: '' }); setShowInstalled(false); }} />
           </Box>
         )}
-        <FilterDropdown
+        <FilterRangeDropdown
           anchorEl={installedAnchor} onClose={() => setInstalledAnchor(null)}
-          options={allYears.map(y => ({ value: y } satisfies FilterOption))}
-          multiple value={selectedYears} onChange={setSelectedYears}
-          onRemove={() => setShowInstalled(false)} placeholder="Search years…"
+          type="date" value={installedRange} onChange={setInstalledRange}
+          onRemove={() => setShowInstalled(false)}
         />
 
         {/* Add filter button */}
