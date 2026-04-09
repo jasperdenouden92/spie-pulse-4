@@ -2,6 +2,8 @@
 
 Facility management dashboard for SPIE. Built with Next.js 15, React 19, TypeScript, Material-UI v7, and Tailwind CSS v4.
 
+> **Maintenance rule:** This file must be updated with every PR to reflect the current state of the codebase. If your changes affect routing, directory structure, conventions, environment variables, or any other documented area, update the relevant section before merging.
+
 ---
 
 ## Tech Stack
