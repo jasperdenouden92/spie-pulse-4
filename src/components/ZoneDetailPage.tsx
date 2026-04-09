@@ -147,7 +147,6 @@ interface ZoneDetailPageProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onBackToPortfolio?: () => void;
-  onBackToCluster?: () => void;
   onBackToBuilding?: () => void;
   onZoneChange?: (zoneId: string) => void;
   onPanelClose?: () => void;
@@ -161,7 +160,6 @@ export default function ZoneDetailPage({
   isCollapsed = false,
   onToggleCollapse,
   onBackToPortfolio,
-  onBackToCluster,
   onBackToBuilding,
   onZoneChange,
   onPanelClose,
@@ -209,14 +207,6 @@ export default function ZoneDetailPage({
             onClick={onBackToPortfolio}
           >
             Portfolio
-          </Typography>
-          <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-          <Typography
-            noWrap
-            sx={{ color: 'text.secondary', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', maxWidth: 120, '&:hover': { color: 'text.primary' } }}
-            onClick={onBackToCluster}
-          >
-            {zone.buildingGroup}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
           <Typography
