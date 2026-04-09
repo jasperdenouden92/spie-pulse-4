@@ -887,9 +887,9 @@ export default function Home() {
 
   // Period-aware metrics based on selected date range (with contract variation when active)
   const periodMetrics = useMemo(() => {
-    const base = getMetricsForPeriod(dateRange);
+    const base = getMetricsForPeriod(dateRange, titleBuildingNames);
     return contractFilter ? applyContractVariation(base) : base;
-  }, [dateRange, contractFilter]);
+  }, [dateRange, contractFilter, titleBuildingNames]);
 
   // Calculate rolled-up scores for KPI groups
   const themesScore = selectedBuilding

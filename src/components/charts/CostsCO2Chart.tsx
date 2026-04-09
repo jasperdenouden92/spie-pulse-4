@@ -5,38 +5,44 @@ import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { ResponsiveBar } from '@nivo/bar';
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface CostsCO2ChartProps {
   buildingName?: string;
 }
 
 // Mock data - represents energy spend with two components
-const mockData = [
-  {
-    week: 'Energy spend · Week 1',
-    primary: 280,
-    secondary: 45,
-    primaryColor: '#9c27b0',
-    secondaryColor: '#ffa726'
-  },
-  {
-    week: 'Energy spend · Week 2',
-    primary: 180,
-    secondary: 25,
-    primaryColor: '#9c27b0',
-    secondaryColor: '#ffa726'
-  },
-  {
-    week: 'Energy spend · Week 3',
-    primary: 320,
-    secondary: 55,
-    primaryColor: '#9c27b0',
-    secondaryColor: '#ffa726'
-  }
-];
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const offset = (base: number) => rand ? Math.round(base + (rand() * 40 - 20)) : base;
+  return [
+    {
+      week: 'Energy spend · Week 1',
+      primary: offset(280),
+      secondary: offset(45),
+      primaryColor: '#9c27b0',
+      secondaryColor: '#ffa726'
+    },
+    {
+      week: 'Energy spend · Week 2',
+      primary: offset(180),
+      secondary: offset(25),
+      primaryColor: '#9c27b0',
+      secondaryColor: '#ffa726'
+    },
+    {
+      week: 'Energy spend · Week 3',
+      primary: offset(320),
+      secondary: offset(55),
+      primaryColor: '#9c27b0',
+      secondaryColor: '#ffa726'
+    }
+  ];
+};
 
 export default function CostsCO2Chart({ buildingName }: CostsCO2ChartProps) {
   const { themeColors: c } = useThemeMode();
+  const mockData = generateMockData(buildingName);
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 300 }}>
       {/* Header */}

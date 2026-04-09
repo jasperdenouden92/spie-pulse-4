@@ -8,13 +8,16 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import { ResponsiveLine } from '@nivo/line';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface ForecastTargetChartProps {
   buildingName?: string;
 }
 
 // Mock data
-const generateMockData = () => {
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const offset = (base: number) => rand ? Math.round(base + (rand() * 20 - 10)) : base;
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   return [
@@ -23,7 +26,7 @@ const generateMockData = () => {
       color: '#2196f3',
       data: months.map((month, i) => ({
         x: month,
-        y: 20 + ((i * 37 + 13) % 40) + i * 2
+        y: offset(20 + ((i * 37 + 13) % 40) + i * 2)
       }))
     },
     {
@@ -31,7 +34,7 @@ const generateMockData = () => {
       color: '#90caf9',
       data: months.map((month, i) => ({
         x: month,
-        y: 25 + ((i * 41 + 7) % 35) + i * 2
+        y: offset(25 + ((i * 41 + 7) % 35) + i * 2)
       }))
     },
     {
@@ -39,7 +42,7 @@ const generateMockData = () => {
       color: '#ff9800',
       data: months.map((month, i) => ({
         x: month,
-        y: 28 + ((i * 53 + 17) % 30) + i * 2
+        y: offset(28 + ((i * 53 + 17) % 30) + i * 2)
       }))
     },
     {
@@ -47,7 +50,7 @@ const generateMockData = () => {
       color: '#4caf50',
       data: months.map((month, i) => ({
         x: month,
-        y: 22 + ((i * 59 + 23) % 38) + i * 2
+        y: offset(22 + ((i * 59 + 23) % 38) + i * 2)
       }))
     }
   ];
@@ -56,7 +59,7 @@ const generateMockData = () => {
 export default function ForecastTargetChart({ buildingName }: ForecastTargetChartProps) {
   const { themeColors: c } = useThemeMode();
   const [degreeDayCorrection, setDegreeDayCorrection] = useState(false);
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 360 }}>

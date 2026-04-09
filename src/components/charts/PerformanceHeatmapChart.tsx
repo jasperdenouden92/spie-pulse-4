@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface PerformanceHeatmapChartProps {
   buildingName?: string;
@@ -15,8 +16,9 @@ interface PerformanceData {
 }
 
 // Generate mock performance data with percentages
-const generateMockData = (): PerformanceData[] => {
-  return [
+const generateMockData = (buildingName?: string): PerformanceData[] => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const baseData: PerformanceData[] = [
     { period: 'Nov 29 to Dec 5', values: [90, 93, 80, 90, 85, 93, 80] },
     { period: 'Dec 6 to Dec 12', values: [93, 80, 80, 82, 80, 86, 80] },
     { period: 'Dec 6 to Dec 12', values: [86, 91, 93, 88, 86, 93, 80] },
@@ -24,6 +26,13 @@ const generateMockData = (): PerformanceData[] => {
     { period: 'Dec 20 to Dec 26', values: [86, 86, 93, 94, 82, 93, 80] },
     { period: 'Dec 27 to Jan 2', values: [94, 86, 80, 88, 82, 86, 80] }
   ];
+
+  if (!rand) return baseData;
+
+  return baseData.map(row => ({
+    ...row,
+    values: row.values.map(v => Math.min(100, Math.max(70, Math.round(v + (rand() * 10 - 5)))))
+  }));
 };
 
 // Get color based on performance value
@@ -36,7 +45,7 @@ const getColor = (value: number): string => {
 
 export default function PerformanceHeatmapChart({ buildingName }: PerformanceHeatmapChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>

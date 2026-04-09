@@ -5,6 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { ResponsivePie } from '@nivo/pie';
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface AssetHealthDistributionChartProps {
   buildingName?: string;
@@ -12,20 +13,23 @@ interface AssetHealthDistributionChartProps {
 }
 
 // Mock data for asset health
-const generateMockData = (assetFilter?: string) => {
+const generateMockData = (assetFilter?: string, buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const offset = (base: number) => rand ? Math.round(base + (rand() * 20 - 10)) : base;
+
   if (assetFilter) {
     return [
-      { id: 'Healthy', label: 'Healthy', value: 85, color: '#66bb6a' },
-      { id: 'Warning', label: 'Warning', value: 12, color: '#ffa726' },
-      { id: 'Critical', label: 'Critical', value: 3, color: '#ef5350' }
+      { id: 'Healthy', label: 'Healthy', value: offset(85), color: '#66bb6a' },
+      { id: 'Warning', label: 'Warning', value: offset(12), color: '#ffa726' },
+      { id: 'Critical', label: 'Critical', value: offset(3), color: '#ef5350' }
     ];
   }
 
   return [
-    { id: 'Healthy', label: 'Healthy', value: 342, color: '#66bb6a' },
-    { id: 'Warning', label: 'Warning', value: 78, color: '#ffa726' },
-    { id: 'Critical', label: 'Critical', value: 23, color: '#ef5350' },
-    { id: 'Offline', label: 'Offline', value: 12, color: '#9e9e9e' }
+    { id: 'Healthy', label: 'Healthy', value: offset(342), color: '#66bb6a' },
+    { id: 'Warning', label: 'Warning', value: offset(78), color: '#ffa726' },
+    { id: 'Critical', label: 'Critical', value: offset(23), color: '#ef5350' },
+    { id: 'Offline', label: 'Offline', value: offset(12), color: '#9e9e9e' }
   ];
 };
 
@@ -34,7 +38,7 @@ export default function AssetHealthDistributionChart({
   assetFilter
 }: AssetHealthDistributionChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData(assetFilter);
+  const data = generateMockData(assetFilter, buildingName);
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (

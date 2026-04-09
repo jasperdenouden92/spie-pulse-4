@@ -8,29 +8,35 @@ import MenuItem from '@mui/material/MenuItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { ResponsivePie } from '@nivo/pie';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface EnergyDistributionChartProps {
   buildingName?: string;
 }
 
 // Mock data
-const mockData = [
-  {
-    id: 'Electricity',
-    label: 'Electricity',
-    value: 65,
-    color: '#2196f3'
-  },
-  {
-    id: 'Gas',
-    label: 'Gas',
-    value: 35,
-    color: '#90caf9'
-  }
-];
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const electricityValue = rand ? Math.round(65 + (rand() * 20 - 10)) : 65;
+  return [
+    {
+      id: 'Electricity',
+      label: 'Electricity',
+      value: electricityValue,
+      color: '#2196f3'
+    },
+    {
+      id: 'Gas',
+      label: 'Gas',
+      value: 100 - electricityValue,
+      color: '#90caf9'
+    }
+  ];
+};
 
 export default function EnergyDistributionChart({ buildingName }: EnergyDistributionChartProps) {
   const { themeColors: c } = useThemeMode();
+  const mockData = generateMockData(buildingName);
   const [selectedType, setSelectedType] = useState('Electricity');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 

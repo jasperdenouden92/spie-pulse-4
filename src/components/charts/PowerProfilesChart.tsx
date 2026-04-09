@@ -4,13 +4,16 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { ResponsiveLine } from '@nivo/line';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface PowerProfilesChartProps {
   buildingName?: string;
 }
 
 // Mock data
-const generateMockData = () => {
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const offset = (base: number) => rand ? Math.round(base + (rand() * 20 - 10)) : base;
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   return [
@@ -19,7 +22,7 @@ const generateMockData = () => {
       color: '#2196f3',
       data: months.map((month, i) => ({
         x: month,
-        y: 30 + ((i * 37 + 13) % 30)
+        y: offset(30 + ((i * 37 + 13) % 30))
       }))
     },
     {
@@ -27,7 +30,7 @@ const generateMockData = () => {
       color: '#64b5f6',
       data: months.map((month, i) => ({
         x: month,
-        y: 28 + ((i * 41 + 7) % 28)
+        y: offset(28 + ((i * 41 + 7) % 28))
       }))
     }
   ];
@@ -35,7 +38,7 @@ const generateMockData = () => {
 
 export default function PowerProfilesChart({ buildingName }: PowerProfilesChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 300 }}>

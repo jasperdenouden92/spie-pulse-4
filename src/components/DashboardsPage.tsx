@@ -651,7 +651,7 @@ export default function DashboardsPage({ onDashboardChange, initialDashboardId, 
             gridTemplateColumns: isNarrow ? '1fr' : 'repeat(2, 1fr)',
             gap: 3,
           }}>
-            {selectedDashboard.renderCharts(undefined)}
+            {selectedDashboard.renderCharts(selectedBuildingNames.length > 0 ? selectedBuildingNames[0] : undefined)}
           </Box>
         </>
       ) : (

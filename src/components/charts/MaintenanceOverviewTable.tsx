@@ -1,5 +1,5 @@
 import { useThemeMode } from '@/theme-mode-context';
-
+import { seededRandomFromKey } from '@/data/generators';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -34,7 +34,9 @@ interface MaintenanceRecord {
 }
 
 // Generate mock maintenance data
-const generateMockData = (assetFilter?: string): MaintenanceRecord[] => {
+const generateMockData = (assetFilter?: string, buildingName?: string): MaintenanceRecord[] => {
+  const rand = buildingName ? seededRandomFromKey(buildingName + 'maintenance') : null;
+  const offset = (base: number, mag: number) => rand ? Math.round(base + (rand() * 2 - 1) * mag) : base;
   const equipment = [
     'LBK A bouwdeel',
     'LBK B bouwdeel',
@@ -55,11 +57,11 @@ const generateMockData = (assetFilter?: string): MaintenanceRecord[] => {
     location: 'Demo project',
     equipment: eq,
     failureMode: failureModes[index % 2],
-    value: `${Math.floor(((index * 37 + 13) % 100) + 10)} Pa`,
-    upperLimit: `${Math.floor(((index * 41 + 7) % 50) + 50)} Pa`,
-    daysSince: `${Math.floor(((index * 53 + 17) % 50) + 80)} day`,
-    upperLimitDays: `${Math.floor(((index * 59 + 23) % 400) + 300)} day`,
-    remainingWeeks: index % 3 === 0 ? '0.00 wk' : `${Math.floor(((index * 43 + 11) % 20) + 5)}.0wk`,
+    value: `${offset(Math.floor(((index * 37 + 13) % 100) + 10), 15)} Pa`,
+    upperLimit: `${offset(Math.floor(((index * 41 + 7) % 50) + 50), 10)} Pa`,
+    daysSince: `${offset(Math.floor(((index * 53 + 17) % 50) + 80), 20)} day`,
+    upperLimitDays: `${offset(Math.floor(((index * 59 + 23) % 400) + 300), 50)} day`,
+    remainingWeeks: index % 3 === 0 ? '0.00 wk' : `${offset(Math.floor(((index * 43 + 11) % 20) + 5), 3)}.0wk`,
     advisedDate: index % 3 === 0 ? `${26 + index}.01.2026` : `> 29.07.2026`,
     plannedDate: 'geen OH gepland',
     lastMaintenance: `00100128${index + 30}34`
@@ -72,7 +74,7 @@ export default function MaintenanceOverviewTable({
   title = 'Maintenance overview air filters'
 }: MaintenanceOverviewTableProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData(assetFilter);
+  const data = generateMockData(assetFilter, buildingName);
 
   return (
     <Box sx={{

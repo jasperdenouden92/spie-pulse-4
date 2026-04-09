@@ -9,13 +9,15 @@ import MenuItem from '@mui/material/MenuItem';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ResponsiveScatterPlot } from '@nivo/scatterplot';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface EnergyTemperatureChartProps {
   buildingName?: string;
 }
 
 // Generate mock scatter data
-const generateMockData = () => {
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
   const points = [];
 
   // Generate clustered points showing correlation between temperature and energy
@@ -23,10 +25,11 @@ const generateMockData = () => {
     const temp = 10 + ((i * 37 + 13) % 15); // Temperature range 10-25
     const baseEnergy = 62 + (25 - temp) * 0.4; // Inverse correlation
     const energy = baseEnergy + (((i * 41 + 7) % 20) - 10) / 10; // Add some variance
+    const offsetEnergy = rand ? +(energy + (rand() * 4 - 2)).toFixed(1) : energy;
 
     points.push({
       x: temp,
-      y: energy
+      y: offsetEnergy
     });
   }
 
@@ -42,7 +45,7 @@ export default function EnergyTemperatureChart({ buildingName }: EnergyTemperatu
   const { themeColors: c } = useThemeMode();
   const [selectedMeter, setSelectedMeter] = useState('Meter');
   const [meterAnchorEl, setMeterAnchorEl] = useState<null | HTMLElement>(null);
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 400 }}>

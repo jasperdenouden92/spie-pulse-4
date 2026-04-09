@@ -1,4 +1,5 @@
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 import type { ColorTokens } from '@/colors';
 
 import React, { useState } from 'react';
@@ -23,22 +24,24 @@ interface AssetUtilization {
 }
 
 // Generate mock utilization data
-const generateMockData = (): AssetUtilization[] => {
+const generateMockData = (buildingName?: string): AssetUtilization[] => {
   const hours = 24;
   const days = 5; // Monday to Friday
+  const rand = buildingName ? seededRandomFromKey(buildingName + 'utilization') : null;
+  const extraOffset = rand ? Math.floor(rand() * 5) : 0;
 
   const createPattern = (intensity: number): UtilizationLevel[][] => {
     return Array.from({ length: days }, (_, dayIndex) =>
       Array.from({ length: hours }, (_, hourIndex) => {
         // Business hours have higher utilization
         if (hourIndex >= 8 && hourIndex <= 17) {
-          const hash = (dayIndex * 37 + hourIndex * 53 + intensity * 17) % 10;
+          const hash = (dayIndex * 37 + hourIndex * 53 + intensity * 17 + extraOffset) % 10;
           if (hash < 3) return (Math.min(5, intensity + 1)) as UtilizationLevel;
           if (hash < 7) return intensity as UtilizationLevel;
           return Math.max(0, intensity - 1) as UtilizationLevel;
         }
         // Off hours have lower utilization
-        return ((dayIndex * 41 + hourIndex * 29) % 2) as UtilizationLevel;
+        return (((dayIndex * 41 + hourIndex * 29 + extraOffset) % 2)) as UtilizationLevel;
       })
     );
   };
@@ -78,7 +81,7 @@ const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 export default function UtilizationOverviewChart({ buildingName }: UtilizationOverviewChartProps) {
   const { themeColors: c } = useThemeMode();
   const [viewMode, setViewMode] = useState<'hourly' | 'daily'>('hourly');
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>

@@ -1,4 +1,5 @@
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -28,7 +29,17 @@ interface CriticalAsset {
 }
 
 // Generate mock critical assets data
-const generateMockData = (assetFilter?: string): CriticalAsset[] => {
+const generateMockData = (assetFilter?: string, buildingName?: string): CriticalAsset[] => {
+  const rand = buildingName ? seededRandomFromKey(buildingName + 'critical') : null;
+  const shuffle = <T,>(arr: T[]): T[] => {
+    if (!rand) return arr;
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
   const assets: CriticalAsset[] = [
     {
       id: 'AHU-F6-01',
@@ -74,7 +85,8 @@ const generateMockData = (assetFilter?: string): CriticalAsset[] => {
     }
   ];
 
-  return assetFilter ? assets.slice(0, 2) : assets;
+  const shuffled = shuffle(assets);
+  return assetFilter ? shuffled.slice(0, 2) : shuffled;
 };
 
 export default function CriticalAssetsCard({
@@ -86,7 +98,7 @@ export default function CriticalAssetsCard({
   hoveredAssetId
 }: CriticalAssetsCardProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData(assetFilter);
+  const data = generateMockData(assetFilter, buildingName);
   const criticalCount = data.filter(a => a.severity === 'critical').length;
   const warningCount = data.filter(a => a.severity === 'warning').length;
 

@@ -7,13 +7,17 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { ResponsiveLine } from '@nivo/line';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface ElectricityConsumptionChartProps {
   buildingName?: string;
 }
 
 // Mock data - replace with real data
-const generateMockData = () => {
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const offset = (base: number) => rand ? Math.round(base + (rand() * 20 - 10)) : base;
+
   const dates = [];
   const startDate = new Date('2024-01-26');
   for (let i = 0; i < 7; i++) {
@@ -26,13 +30,13 @@ const generateMockData = () => {
     {
       id: 'electricity',
       data: [
-        { x: dates[0], y: 28 },
-        { x: dates[1], y: 42 },
-        { x: dates[2], y: 51 },
-        { x: dates[3], y: 58 },
-        { x: dates[4], y: 62 },
-        { x: dates[5], y: 56 },
-        { x: dates[6], y: 32 }
+        { x: dates[0], y: offset(28) },
+        { x: dates[1], y: offset(42) },
+        { x: dates[2], y: offset(51) },
+        { x: dates[3], y: offset(58) },
+        { x: dates[4], y: offset(62) },
+        { x: dates[5], y: offset(56) },
+        { x: dates[6], y: offset(32) }
       ]
     }
   ];
@@ -40,7 +44,7 @@ const generateMockData = () => {
 
 export default function ElectricityConsumptionChart({ buildingName }: ElectricityConsumptionChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 300 }}>
