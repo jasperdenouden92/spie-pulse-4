@@ -6,38 +6,44 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ResponsiveBar } from '@nivo/bar';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface EnergyUseByBuildingChartProps {
   buildingName?: string;
 }
 
 // Mock data
-const mockData = [
-  {
-    category: 'All energy',
-    used: 180,
-    available: 70,
-    usedColor: '#ff9800',
-    availableColor: '#ffc107'
-  },
-  {
-    category: 'Electricity',
-    used: 150,
-    available: 100,
-    usedColor: '#ff9800',
-    availableColor: '#ffc107'
-  },
-  {
-    category: 'Gas',
-    used: 220,
-    available: 30,
-    usedColor: '#9c27b0',
-    availableColor: '#ce93d8'
-  }
-];
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const offset = (base: number) => rand ? Math.round(base + (rand() * 40 - 20)) : base;
+  return [
+    {
+      category: 'All energy',
+      used: offset(180),
+      available: offset(70),
+      usedColor: '#ff9800',
+      availableColor: '#ffc107'
+    },
+    {
+      category: 'Electricity',
+      used: offset(150),
+      available: offset(100),
+      usedColor: '#ff9800',
+      availableColor: '#ffc107'
+    },
+    {
+      category: 'Gas',
+      used: offset(220),
+      available: offset(30),
+      usedColor: '#9c27b0',
+      availableColor: '#ce93d8'
+    }
+  ];
+};
 
 export default function EnergyUseByBuildingChart({ buildingName }: EnergyUseByBuildingChartProps) {
   const { themeColors: c } = useThemeMode();
+  const mockData = generateMockData(buildingName);
   const [selectedView, setSelectedView] = useState('Per m²');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 

@@ -157,9 +157,13 @@ export function applyContractVariation(metrics: PeriodMetrics): PeriodMetrics {
   };
 }
 
-export function getMetricsForPeriod(dateRange: string): PeriodMetrics {
-  if (dateRange === 'This Quarter') {
-    // Default period — return original data as-is
+export function getMetricsForPeriod(dateRange: string, buildingNames: string[] = []): PeriodMetrics {
+  // Include building selection in the seed so metrics vary when buildings change
+  const buildingSuffix = buildingNames.length > 0 ? '|' + [...buildingNames].sort().join(',') : '';
+  const seed = dateRange + buildingSuffix;
+
+  if (dateRange === 'This Quarter' && buildingNames.length === 0) {
+    // Default period with no building filter — return original data as-is
     return {
       overall: overallMetrics,
       themes: themeMetrics,
@@ -170,10 +174,10 @@ export function getMetricsForPeriod(dateRange: string): PeriodMetrics {
   }
 
   return {
-    overall: varyOverall(dateRange),
-    themes: themeMetrics.map(m => varyMetric(m, dateRange)),
-    expandedThemes: expandedThemeMetrics.map(m => varyMetric(m, dateRange)),
-    operations: operationsMetrics.map(m => varyMetric(m, dateRange)),
+    overall: varyOverall(seed),
+    themes: themeMetrics.map(m => varyMetric(m, seed)),
+    expandedThemes: expandedThemeMetrics.map(m => varyMetric(m, seed)),
+    operations: operationsMetrics.map(m => varyMetric(m, seed)),
     periodLabel: getPeriodLabel(dateRange),
   };
 }

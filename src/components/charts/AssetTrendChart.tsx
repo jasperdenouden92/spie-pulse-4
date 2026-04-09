@@ -1,5 +1,6 @@
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 
 import React from 'react';
 import Box from '@mui/material/Box';
@@ -17,7 +18,8 @@ interface AssetTrendChartProps {
 }
 
 // Generate mock data for asset metrics over time
-const generateMockData = (assetFilter?: string) => {
+const generateMockData = (assetFilter?: string, buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
   const hours = [];
   const baseDate = new Date('2025-01-26');
 
@@ -35,34 +37,50 @@ const generateMockData = (assetFilter?: string) => {
     {
       id: 'Supply Temperature - CV Buffer',
       color: '#ef5350',
-      data: hours.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 45 + ((i * 37 + 13) % 15)
-      }))
+      data: hours.map((date, i) => {
+        const base = 45 + ((i * 37 + 13) % 15);
+        const offset = rand ? Math.round(rand() * 6 - 3) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: base + offset
+        };
+      })
     },
     {
       id: 'Supply Temperature - CV Boiler',
       color: '#42a5f5',
-      data: hours.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 40 + ((i * 41 + 7) % 12)
-      }))
+      data: hours.map((date, i) => {
+        const base = 40 + ((i * 41 + 7) % 12);
+        const offset = rand ? Math.round(rand() * 6 - 3) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: base + offset
+        };
+      })
     },
     {
       id: 'Outside Temperature',
       color: '#66bb6a',
-      data: hours.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 5 + ((i * 53 + 17) % 10)
-      }))
+      data: hours.map((date, i) => {
+        const base = 5 + ((i * 53 + 17) % 10);
+        const offset = rand ? Math.round(rand() * 4 - 2) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: base + offset
+        };
+      })
     },
     {
       id: 'Return Temperature',
       color: '#ffa726',
-      data: hours.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 30 + ((i * 59 + 23) % 10)
-      }))
+      data: hours.map((date, i) => {
+        const base = 30 + ((i * 59 + 23) % 10);
+        const offset = rand ? Math.round(rand() * 6 - 3) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: base + offset
+        };
+      })
     }
   ];
 
@@ -71,7 +89,7 @@ const generateMockData = (assetFilter?: string) => {
 
 export default function AssetTrendChart({ buildingName, assetFilter }: AssetTrendChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData(assetFilter);
+  const data = generateMockData(assetFilter, buildingName);
 
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>

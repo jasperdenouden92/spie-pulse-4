@@ -1,5 +1,6 @@
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 
 import React from 'react';
 import Box from '@mui/material/Box';
@@ -15,7 +16,8 @@ interface ComfortATGChartProps {
 }
 
 // Generate mock data - Temperature with upper/lower bounds
-const generateMockData = () => {
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
   const dates = [];
   const baseDate = new Date('2024-01-26');
 
@@ -28,31 +30,43 @@ const generateMockData = () => {
   return [
     {
       id: 'Upper Limit',
-      data: dates.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 25 + ((i * 37 + 13) % 10) / 10
-      }))
+      data: dates.map((date, i) => {
+        const base = 25 + ((i * 37 + 13) % 10) / 10;
+        const offset = rand ? (rand() * 0.6 - 0.3) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: Math.round((base + offset) * 10) / 10
+        };
+      })
     },
     {
       id: 'Lower Limit',
-      data: dates.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 20 + ((i * 41 + 7) % 10) / 10
-      }))
+      data: dates.map((date, i) => {
+        const base = 20 + ((i * 41 + 7) % 10) / 10;
+        const offset = rand ? (rand() * 0.6 - 0.3) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: Math.round((base + offset) * 10) / 10
+        };
+      })
     },
     {
       id: 'Temperature',
-      data: dates.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 21.5 + ((i * 53 + 17) % 20) / 10
-      }))
+      data: dates.map((date, i) => {
+        const base = 21.5 + ((i * 53 + 17) % 20) / 10;
+        const offset = rand ? (rand() * 0.6 - 0.3) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: Math.round((base + offset) * 10) / 10
+        };
+      })
     }
   ];
 };
 
 export default function ComfortATGChart({ buildingName }: ComfortATGChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 3 }}>

@@ -12,6 +12,34 @@ function mulberry32(seed: number) {
 
 export const seededRandom = mulberry32(42);
 
+/** Hash a string into a numeric seed */
+function hashStr(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Create a seeded PRNG from a string key (e.g. building name).
+ * Returns a function that produces numbers in [0, 1).
+ */
+export function seededRandomFromKey(key: string): () => number {
+  return mulberry32(hashStr(key));
+}
+
+/**
+ * Generate a numeric offset from a building name, useful for shifting
+ * chart data points deterministically per building.
+ * Returns a value in [-magnitude, +magnitude].
+ */
+export function buildingOffset(buildingName: string | undefined, magnitude: number): number {
+  if (!buildingName) return 0;
+  const rand = mulberry32(hashStr(buildingName));
+  return (rand() * 2 - 1) * magnitude;
+}
+
 export const STAFF_POOL = [
   'John Smith',
   'Marie Johnson',

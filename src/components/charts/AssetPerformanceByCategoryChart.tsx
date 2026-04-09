@@ -5,6 +5,7 @@ import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { ResponsiveBar } from '@nivo/bar';
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 
 interface AssetPerformanceByCategoryChartProps {
   buildingName?: string;
@@ -12,41 +13,47 @@ interface AssetPerformanceByCategoryChartProps {
 }
 
 // Mock data for asset performance by category
-const generateMockData = () => {
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
+  const offset = (base: number) => {
+    if (!rand) return base;
+    return Math.min(100, Math.max(0, Math.round(base + (rand() * 10 - 5))));
+  };
+
   return [
     {
       category: 'HVAC',
-      performance: 87,
+      performance: offset(87),
       target: 90,
       performanceColor: '#42a5f5',
     },
     {
       category: 'Electrical',
-      performance: 92,
+      performance: offset(92),
       target: 90,
       performanceColor: '#66bb6a',
     },
     {
       category: 'Plumbing',
-      performance: 78,
+      performance: offset(78),
       target: 90,
       performanceColor: '#ffa726',
     },
     {
       category: 'Fire Safety',
-      performance: 95,
+      performance: offset(95),
       target: 90,
       performanceColor: '#66bb6a',
     },
     {
       category: 'Elevators',
-      performance: 84,
+      performance: offset(84),
       target: 90,
       performanceColor: '#42a5f5',
     },
     {
       category: 'Access Control',
-      performance: 89,
+      performance: offset(89),
       target: 90,
       performanceColor: '#42a5f5',
     }
@@ -58,7 +65,7 @@ export default function AssetPerformanceByCategoryChart({
   assetFilter
 }: AssetPerformanceByCategoryChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary, height: 380 }}>

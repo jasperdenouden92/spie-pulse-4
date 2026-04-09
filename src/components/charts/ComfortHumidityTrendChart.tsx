@@ -1,5 +1,6 @@
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { seededRandomFromKey } from '@/data/generators';
 
 import React from 'react';
 import Box from '@mui/material/Box';
@@ -15,7 +16,8 @@ interface ComfortHumidityTrendChartProps {
 }
 
 // Generate mock data
-const generateMockData = () => {
+const generateMockData = (buildingName?: string) => {
+  const rand = buildingName ? seededRandomFromKey(buildingName) : null;
   const dates = [];
   const baseDate = new Date('2024-01-26');
 
@@ -28,17 +30,21 @@ const generateMockData = () => {
   return [
     {
       id: 'Floor 6, Room Sensor 1 (D-3883)',
-      data: dates.map((date, i) => ({
-        x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
-        y: 25 + i * 0.5 + ((i * 41 + 7) % 5) / 10
-      }))
+      data: dates.map((date, i) => {
+        const base = 25 + i * 0.5 + ((i * 41 + 7) % 5) / 10;
+        const offset = rand ? (rand() * 2 - 1) : 0;
+        return {
+          x: date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' }),
+          y: Math.round((base + offset) * 10) / 10
+        };
+      })
     }
   ];
 };
 
 export default function ComfortHumidityTrendChart({ buildingName }: ComfortHumidityTrendChartProps) {
   const { themeColors: c } = useThemeMode();
-  const data = generateMockData();
+  const data = generateMockData(buildingName);
 
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 3 }}>
