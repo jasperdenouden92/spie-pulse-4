@@ -327,43 +327,32 @@ export default function PortfolioZonesPage({ tenant, buildingName }: { tenant: s
             onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
           />
           {zoneTypeFilterDropdown}
-          <Box
-            sx={{
-              display: 'flex',
-              border: '1px solid',
-              borderColor: c.borderPrimary,
-              borderRadius: '6px',
-              overflow: 'hidden',
-              height: 30,
-            }}
-          >
-            {([['none', 'None'], ['floor', 'Floor'], ['zone_type', 'Zone type']] as [GroupBy, string][]).map(([val, label], i, arr) => (
-              <React.Fragment key={val}>
-                <Box
-                  component="button"
-                  onClick={() => setGroupBy(val)}
-                  sx={{
-                    px: 1.5,
-                    height: 30,
-                    border: 0,
-                    borderRadius: 0,
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                    fontFamily: 'inherit',
-                    fontWeight: groupBy === val ? 600 : 400,
-                    bgcolor: groupBy === val ? c.bgActive : 'transparent',
-                    color: groupBy === val ? c.brandSecondary : 'text.secondary',
-                    transition: 'background-color 0.15s, color 0.15s',
-                    '&:hover': { bgcolor: groupBy === val ? c.bgActive : c.bgPrimaryHover },
-                  }}
-                >
-                  {label}
-                </Box>
-                {i < arr.length - 1 && <Box sx={{ width: '1px', bgcolor: 'divider' }} />}
-              </React.Fragment>
-            ))}
-          </Box>
           <Box sx={{ flex: 1 }} />
+          <Button
+            variant="secondary"
+            size="sm"
+            endIcon={<ExpandMoreIcon />}
+            onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
+          >
+            Group by
+          </Button>
+          <Menu
+            anchorEl={groupByMenuAnchor}
+            open={Boolean(groupByMenuAnchor)}
+            onClose={() => setGroupByMenuAnchor(null)}
+            slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+          >
+            <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
+              <ListItemText>No grouping</ListItemText>
+            </MenuItem>
+            <Divider />
+            <MenuItem selected={groupBy === 'floor'} onClick={() => { setGroupBy('floor'); setGroupByMenuAnchor(null); }}>
+              <ListItemText>Floor</ListItemText>
+            </MenuItem>
+            <MenuItem selected={groupBy === 'zone_type'} onClick={() => { setGroupBy('zone_type'); setGroupByMenuAnchor(null); }}>
+              <ListItemText>Zone type</ListItemText>
+            </MenuItem>
+          </Menu>
           {searchBox}
         </Box>
       ) : (
