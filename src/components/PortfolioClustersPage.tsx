@@ -206,39 +206,45 @@ export default function PortfolioClustersPage({ tenant }: { tenant: string }) {
   return (
     <Box>
       <PageHeader
-        title="Clusters"
-        actions={
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              height: 30,
-              borderRadius: '6px',
-              border: '1px solid',
-              borderColor: c.borderPrimary,
-              bgcolor: c.bgPrimary,
-              px: 1,
-              gap: 0.5,
-              '&:focus-within': { borderColor: c.brandSecondary },
-              transition: 'border-color 0.15s ease',
-            }}
-          >
-            <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-            <InputBase
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search clusters…"
-              sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
-              endAdornment={
-                search ? (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
-                      <CloseIcon sx={{ fontSize: 14 }} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null
-              }
-            />
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+              Clusters <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: 30,
+                  borderRadius: '6px',
+                  border: '1px solid',
+                  borderColor: c.borderPrimary,
+                  bgcolor: c.bgPrimary,
+                  px: 1,
+                  gap: 0.5,
+                  '&:focus-within': { borderColor: c.brandSecondary },
+                  transition: 'border-color 0.15s ease',
+                }}
+              >
+                <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+                <InputBase
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search clusters…"
+                  sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
+                  endAdornment={
+                    search ? (
+                      <InputAdornment position="end">
+                        <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+                          <CloseIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null
+                  }
+                />
+              </Box>
+            </Box>
           </Box>
         }
       />

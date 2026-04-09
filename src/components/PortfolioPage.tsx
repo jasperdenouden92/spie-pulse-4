@@ -261,110 +261,114 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
   return (
     <Box sx={viewMode === 'map' ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' } : {}}>
       <PageHeader
-        title="Buildings"
-        actions={
-          <>
-            <Button
-              variant="secondary"
-              size="sm"
-              endIcon={<ExpandMoreIcon />}
-              onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
-            >
-              Group by
-            </Button>
-            <Menu
-              anchorEl={groupByMenuAnchor}
-              open={Boolean(groupByMenuAnchor)}
-              onClose={() => setGroupByMenuAnchor(null)}
-              slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-            >
-              <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
-                <ListItemText>No grouping</ListItemText>
-              </MenuItem>
-              <Divider />
-              <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
-                <ListItemText>City</ListItemText>
-              </MenuItem>
-              <MenuItem selected={groupBy === 'group'} onClick={() => { setGroupBy('group'); setGroupByMenuAnchor(null); }}>
-                <ListItemText>Cluster</ListItemText>
-              </MenuItem>
-            </Menu>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                height: 30,
-                borderRadius: '6px',
-                border: '1px solid',
-                borderColor: c.borderPrimary,
-                bgcolor: c.bgPrimary,
-                px: 1,
-                gap: 0.5,
-                '&:focus-within': { borderColor: c.brandSecondary },
-                transition: 'border-color 0.15s ease',
-              }}
-            >
-              <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-              <InputBase
-                inputRef={searchRef}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search buildings…"
-                sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
-                endAdornment={
-                  search ? (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
-                        <CloseIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null
-                }
-              />
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+              Buildings <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                endIcon={<ExpandMoreIcon />}
+                onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
+              >
+                Group by
+              </Button>
+              <Menu
+                anchorEl={groupByMenuAnchor}
+                open={Boolean(groupByMenuAnchor)}
+                onClose={() => setGroupByMenuAnchor(null)}
+                slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+              >
+                <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
+                  <ListItemText>No grouping</ListItemText>
+                </MenuItem>
+                <Divider />
+                <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
+                  <ListItemText>City</ListItemText>
+                </MenuItem>
+                <MenuItem selected={groupBy === 'group'} onClick={() => { setGroupBy('group'); setGroupByMenuAnchor(null); }}>
+                  <ListItemText>Cluster</ListItemText>
+                </MenuItem>
+              </Menu>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: 30,
+                  borderRadius: '6px',
+                  border: '1px solid',
+                  borderColor: c.borderPrimary,
+                  bgcolor: c.bgPrimary,
+                  px: 1,
+                  gap: 0.5,
+                  '&:focus-within': { borderColor: c.brandSecondary },
+                  transition: 'border-color 0.15s ease',
+                }}
+              >
+                <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+                <InputBase
+                  inputRef={searchRef}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search buildings…"
+                  sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
+                  endAdornment={
+                    search ? (
+                      <InputAdornment position="end">
+                        <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+                          <CloseIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null
+                  }
+                />
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  border: '1px solid',
+                  borderColor: c.borderPrimary,
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  height: 30,
+                }}
+              >
+                <Tooltip title="Grid view">
+                  <IconButton
+                    size="small"
+                    onClick={() => setViewMode('grid')}
+                    sx={{
+                      borderRadius: 0,
+                      width: 30, height: 30,
+                      bgcolor: viewMode === 'grid' ? c.bgActive : 'transparent',
+                      color: viewMode === 'grid' ? c.brandSecondary : 'text.secondary',
+                      '&:hover': { bgcolor: viewMode === 'grid' ? c.bgActive : c.bgPrimaryHover },
+                    }}
+                  >
+                    <GridViewOutlinedIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Tooltip>
+                <Box sx={{ width: '1px', bgcolor: 'divider' }} />
+                <Tooltip title="Map view">
+                  <IconButton
+                    size="small"
+                    onClick={() => setViewMode('map')}
+                    sx={{
+                      borderRadius: 0,
+                      width: 30, height: 30,
+                      bgcolor: viewMode === 'map' ? c.bgActive : 'transparent',
+                      color: viewMode === 'map' ? c.brandSecondary : 'text.secondary',
+                      '&:hover': { bgcolor: viewMode === 'map' ? c.bgActive : c.bgPrimaryHover },
+                    }}
+                  >
+                    <MapOutlinedIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                border: '1px solid',
-                borderColor: c.borderPrimary,
-                borderRadius: '6px',
-                overflow: 'hidden',
-                height: 30,
-              }}
-            >
-              <Tooltip title="Grid view">
-                <IconButton
-                  size="small"
-                  onClick={() => setViewMode('grid')}
-                  sx={{
-                    borderRadius: 0,
-                    width: 30, height: 30,
-                    bgcolor: viewMode === 'grid' ? c.bgActive : 'transparent',
-                    color: viewMode === 'grid' ? c.brandSecondary : 'text.secondary',
-                    '&:hover': { bgcolor: viewMode === 'grid' ? c.bgActive : c.bgPrimaryHover },
-                  }}
-                >
-                  <GridViewOutlinedIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Tooltip>
-              <Box sx={{ width: '1px', bgcolor: 'divider' }} />
-              <Tooltip title="Map view">
-                <IconButton
-                  size="small"
-                  onClick={() => setViewMode('map')}
-                  sx={{
-                    borderRadius: 0,
-                    width: 30, height: 30,
-                    bgcolor: viewMode === 'map' ? c.bgActive : 'transparent',
-                    color: viewMode === 'map' ? c.brandSecondary : 'text.secondary',
-                    '&:hover': { bgcolor: viewMode === 'map' ? c.bgActive : c.bgPrimaryHover },
-                  }}
-                >
-                  <MapOutlinedIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </>
+          </Box>
         }
       >
         <FilterChip
