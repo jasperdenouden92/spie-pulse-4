@@ -107,6 +107,8 @@ import BuildingDetailPage from '@/components/BuildingDetailPage';
 import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
 import ZoneDetailPage from '@/components/ZoneDetailPage';
 import type { ZoneDetailTab } from '@/components/ZoneDetailPage';
+import AssetDetailPage from '@/components/AssetDetailPage';
+import type { AssetDetailTab } from '@/components/AssetDetailPage';
 import { zones as allZones } from '@/data/zones';
 import type { Zone } from '@/data/zones';
 import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
@@ -118,7 +120,7 @@ import ChangelogButton from '@/components/ChangelogButton';
 import { tickets } from '@/data/tickets';
 import { quotations } from '@/data/quotations';
 import { maintenanceSchedules } from '@/data/maintenance';
-import { AssetNode, getAssetById } from '@/data/assetTree';
+import { AssetNode, getAssetById, getPathToAsset } from '@/data/assetTree';
 import { buildingOperationalStats, formatCurrency } from '@/data/buildingOperationalStats';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
@@ -365,7 +367,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -384,6 +386,15 @@ export default function Home() {
   const zoneId = searchParams.get('zone') ?? '';
   const ztab = (searchParams.get('ztab') ?? 'overview') as 'overview' | 'assets' | 'tickets' | 'quotations';
   const selectedZone = zoneId ? (allZones.find(z => z.id === zoneId) ?? null) : null;
+  const assetDetailId = searchParams.get('assetdetail') ?? '';
+  const atab = (searchParams.get('atab') ?? 'overview') as 'overview' | 'tickets' | 'quotations';
+  const selectedDetailAsset = assetDetailId ? getAssetById(assetDetailId) : null;
+  const selectedDetailAssetPath = selectedDetailAsset ? (getPathToAsset(selectedDetailAsset.id) ?? []) : [];
+  const selectedDetailAssetBuilding = selectedDetailAssetPath.find(s => s.node.type === 'building')?.node ?? null;
+  const selectedDetailAssetZone = selectedDetailAssetPath.find(s => s.node.type === 'zone')?.node ?? null;
+  const selectedDetailAssetZoneRecord = selectedDetailAssetBuilding && selectedDetailAssetZone
+    ? (allZones.find(z => z.buildingName === selectedDetailAssetBuilding.name && z.name === selectedDetailAssetZone.name) ?? null)
+    : null;
 
   // URL-based asset (from asset explorer / tree)
   const urlAsset = assetId ? getAssetById(assetId) : null;
@@ -414,6 +425,8 @@ export default function Home() {
   const [sidePeekBuildingTab, setSidePeekBuildingTab] = useState<BuildingDetailTab>('overview');
   const [sidePeekZone, setSidePeekZone] = useState<Zone | null>(null);
   const [sidePeekZoneTab, setSidePeekZoneTab] = useState<ZoneDetailTab>('overview');
+  const [sidePeekAsset, setSidePeekAsset] = useState<AssetNode | null>(null);
+  const [sidePeekAssetTab, setSidePeekAssetTab] = useState<AssetDetailTab>('overview');
   const [favorites, setFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
@@ -469,6 +482,7 @@ export default function Home() {
   const setAssetTab = useCallback((n: number) => setURLParams({ assetTab: String(n) }), [setURLParams]);
   const setBtab = useCallback((t: string) => setURLParams({ btab: t }), [setURLParams]);
   const setZtab = useCallback((t: string) => setURLParams({ ztab: t }), [setURLParams]);
+  const setAtab = useCallback((t: string) => setURLParams({ atab: t }), [setURLParams]);
   // Open a URL-serialisable asset (from the tree)
   const setQuickviewAsset = (a: AssetNode | null) => {
     setLocalQuickviewAsset(null);
@@ -795,6 +809,7 @@ export default function Home() {
     if (currentPage === 'portfolio_assets') return 'Assets';
     if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
     if (currentPage === 'zone_detail') return selectedZone?.name ?? 'Zone';
+    if (currentPage === 'asset_detail') return selectedDetailAsset?.name ?? 'Asset';
     if (currentPage === 'bms' || currentPage === 'bms_access') return 'BMS - Access';
     if (currentPage === 'bms_logging') return 'BMS - Logging';
     if (currentPage === 'operations') return 'Operations';
@@ -830,7 +845,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     setSidePeekBuilding(null);
     setSidePeekZone(null);
@@ -1336,7 +1351,7 @@ export default function Home() {
         minWidth: 0,
         overflow: 'hidden'
       }}>
-        {currentPage !== 'building_detail' && currentPage !== 'zone_detail' && <TopBar
+        {currentPage !== 'building_detail' && currentPage !== 'zone_detail' && currentPage !== 'asset_detail' && <TopBar
             currentPage={currentPage}
             selectedBuilding={selectedBuilding}
             selectedAsset={selectedAsset}
@@ -1417,7 +1432,7 @@ export default function Home() {
 
         {/* Page Content */}
         {currentPage !== 'dashboards' && (
-        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: (currentPage === 'building_detail' || currentPage === 'zone_detail') ? 0 : '56px', pt: (currentPage === 'building_detail' || currentPage === 'zone_detail') ? 0 : 2, px: isNarrow ? 0.5 : 3, ...(currentPage === 'portfolio_buildings' && portfolioViewMode === 'map' ? { display: 'flex', flexDirection: 'column', pb: 0, overflow: 'hidden' } : {}) }}>
+        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: (currentPage === 'building_detail' || currentPage === 'zone_detail' || currentPage === 'asset_detail') ? 0 : '56px', pt: (currentPage === 'building_detail' || currentPage === 'zone_detail' || currentPage === 'asset_detail') ? 0 : 2, px: isNarrow ? 0.5 : 3, ...(currentPage === 'portfolio_buildings' && portfolioViewMode === 'map' ? { display: 'flex', flexDirection: 'column', pb: 0, overflow: 'hidden' } : {}) }}>
           {currentPage === 'home' && <HomePage />}
           {(currentPage === 'insights' || currentPage === 'insights_alerts') && <InsightsPage tab="alerts" />}
           {currentPage === 'insights_analyses' && <InsightsPage tab="analyses" />}
@@ -1463,10 +1478,16 @@ export default function Home() {
             () => { const b = allBuildings.find(b => b.name === name); if (b) { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); } },
             () => navigateTo({ page: 'building_detail', building: name, btab: 'overview' }),
           )} />}
-          {currentPage === 'portfolio_assets' && <PortfolioAssetsPage onBuildingLabelClick={(name, e) => handleSidePeekClick(e,
-            () => { const b = allBuildings.find(b => b.name === name); if (b) { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); } },
-            () => navigateTo({ page: 'building_detail', building: name, btab: 'overview' }),
-          )} />}
+          {currentPage === 'portfolio_assets' && <PortfolioAssetsPage
+            onBuildingLabelClick={(name, e) => handleSidePeekClick(e,
+              () => { const b = allBuildings.find(b => b.name === name); if (b) { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); } },
+              () => navigateTo({ page: 'building_detail', building: name, btab: 'overview' }),
+            )}
+            onAssetClick={(id, e) => handleSidePeekClick(e,
+              () => { const a = getAssetById(id); if (a) { setSidePeekAsset(a); setSidePeekAssetTab('overview'); } },
+              () => navigateTo({ page: 'asset_detail', assetdetail: id, atab: 'overview' }),
+            )}
+          />}
 
           {/* Portfolio Page + Building Detail Performance Tab */}
           {(currentPage === 'portfolio' || (currentPage === 'building_detail' && btab === 'performance')) && (
@@ -2534,7 +2555,31 @@ export default function Home() {
             />
           )}
           {currentPage === 'building_detail' && selectedBuilding && btab === 'assets' && (
-            <PortfolioAssetsPage buildingName={selectedBuilding.name} />
+            <PortfolioAssetsPage buildingName={selectedBuilding.name} onAssetClick={(id, e) => handleSidePeekClick(e,
+              () => { const a = getAssetById(id); if (a) { setSidePeekAsset(a); setSidePeekAssetTab('overview'); } },
+              () => navigateTo({ page: 'asset_detail', assetdetail: id, atab: 'overview' }),
+            )} />
+          )}
+
+          {/* Asset Detail Page */}
+          {currentPage === 'asset_detail' && selectedDetailAsset && (
+            <AssetDetailPage
+              asset={selectedDetailAsset}
+              tab={atab as AssetDetailTab}
+              onTabChange={(t) => setAtab(t)}
+              isCollapsed={leftSidebarCollapsed}
+              onToggleCollapse={handleLeftSidebarToggle}
+              onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
+              onBackToCluster={() => handlePageChange('portfolio_buildings')}
+              onBackToBuilding={() => {
+                const b = selectedDetailAssetBuilding ? allBuildings.find(b => b.name === selectedDetailAssetBuilding.name) : null;
+                if (b) { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }
+              }}
+              onBackToZone={() => {
+                if (selectedDetailAssetZoneRecord) { setSidePeekZone(selectedDetailAssetZoneRecord); setSidePeekZoneTab('overview'); }
+              }}
+              onAssetChange={(id) => navigateTo({ page: 'asset_detail', assetdetail: id, atab: 'overview' })}
+            />
           )}
         </Container>
         )}
@@ -2573,7 +2618,10 @@ export default function Home() {
               />
             )}
             {sidePeekBuildingTab === 'assets' && (
-              <PortfolioAssetsPage buildingName={sidePeekBuilding.name} />
+              <PortfolioAssetsPage buildingName={sidePeekBuilding.name} onAssetClick={(id) => {
+                const a = getAssetById(id);
+                if (a) { setSidePeekBuilding(null); setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
+              }} />
             )}
           </Box>
         )}
@@ -2608,6 +2656,50 @@ export default function Home() {
             />
           </Box>
         )}
+      </SidePeekPanel>
+
+      {/* Asset SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekAsset}
+        onClose={() => setSidePeekAsset(null)}
+      >
+        {sidePeekAsset && (() => {
+          const peekPath = getPathToAsset(sidePeekAsset.id) ?? [];
+          const peekBuilding = peekPath.find(s => s.node.type === 'building')?.node ?? null;
+          const peekZoneNode = peekPath.find(s => s.node.type === 'zone')?.node ?? null;
+          const peekZone = peekBuilding && peekZoneNode
+            ? (allZones.find(z => z.buildingName === peekBuilding.name && z.name === peekZoneNode.name) ?? null)
+            : null;
+          return (
+            <Box sx={{ px: 3 }}>
+              <AssetDetailPage
+                asset={sidePeekAsset}
+                tab={sidePeekAssetTab}
+                onTabChange={setSidePeekAssetTab}
+                onBackToPortfolio={() => setSidePeekAsset(null)}
+                onBackToCluster={() => setSidePeekAsset(null)}
+                onBackToBuilding={() => {
+                  setSidePeekAsset(null);
+                  const b = peekBuilding ? allBuildings.find(b => b.name === peekBuilding.name) : null;
+                  if (b) { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }
+                }}
+                onBackToZone={() => {
+                  setSidePeekAsset(null);
+                  if (peekZone) { setSidePeekZone(peekZone); setSidePeekZoneTab('overview'); }
+                }}
+                onAssetChange={(id) => {
+                  const a = getAssetById(id);
+                  if (a) setSidePeekAsset(a);
+                }}
+                onPanelClose={() => setSidePeekAsset(null)}
+                onPanelFullscreen={() => {
+                  navigateTo({ page: 'asset_detail', assetdetail: sidePeekAsset.id, atab: sidePeekAssetTab });
+                  setSidePeekAsset(null);
+                }}
+              />
+            </Box>
+          );
+        })()}
       </SidePeekPanel>
 
       <ChangelogButton />

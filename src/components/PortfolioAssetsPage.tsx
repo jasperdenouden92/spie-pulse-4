@@ -194,7 +194,7 @@ function SectionHeader({ label, count, onClick }: { label: string; count: number
 }
 
 // ── Asset table (flat — grouping handled by parent) ──
-function AssetTable({ assets, query = '', hiddenCols = [] }: { assets: EnrichedAsset[]; query?: string; hiddenCols?: SortKey[] }) {
+function AssetTable({ assets, query = '', hiddenCols = [], onAssetClick }: { assets: EnrichedAsset[]; query?: string; hiddenCols?: SortKey[]; onAssetClick?: (assetId: string, e: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -256,7 +256,7 @@ function AssetTable({ assets, query = '', hiddenCols = [] }: { assets: EnrichedA
             {colgroup}
             <TableBody>
               {sorted.map(asset => (
-                <TableRow key={asset.id} sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}>
+                <TableRow key={asset.id} onClick={(e) => onAssetClick?.(asset.id, e)} sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}>
                   <TableCell sx={{ py: 1.25 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <HighlightText text={asset.name} query={query} />
@@ -316,7 +316,7 @@ function AssetTable({ assets, query = '', hiddenCols = [] }: { assets: EnrichedA
 }
 
 // ── Main component ──
-export default function PortfolioAssetsPage({ buildingName, onBuildingLabelClick }: { buildingName?: string; onBuildingLabelClick?: (buildingName: string, e?: React.MouseEvent) => void } = {}) {
+export default function PortfolioAssetsPage({ buildingName, onAssetClick, onBuildingLabelClick }: { buildingName?: string; onAssetClick?: (assetId: string, e: React.MouseEvent) => void; onBuildingLabelClick?: (buildingName: string, e?: React.MouseEvent) => void } = {}) {
   const { themeColors: c } = useThemeMode();
 
   const baseAssets = useMemo(
@@ -597,11 +597,11 @@ export default function PortfolioAssetsPage({ buildingName, onBuildingLabelClick
                 ...(buildingName || groupBy === 'building' ? ['building' as SortKey] : []),
                 ...(groupBy === 'category' ? ['category' as SortKey] : []),
                 ...(groupBy === 'status' ? ['status' as SortKey] : []),
-              ]} />
+              ]} onAssetClick={onAssetClick} />
             </Box>
           ))
         ) : (
-          <AssetTable assets={filtered} query={search} hiddenCols={buildingName ? ['building'] : []} />
+          <AssetTable assets={filtered} query={search} hiddenCols={buildingName ? ['building'] : []} onAssetClick={onAssetClick} />
         )}
       </Box>
     </Box>
