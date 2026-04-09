@@ -32,6 +32,8 @@ interface BuildingDetailPageProps {
   onBackToPortfolio?: () => void;
   onBackToCluster?: () => void;
   onBuildingChange?: (buildingName: string) => void;
+  onPanelClose?: () => void;
+  onPanelFullscreen?: () => void;
 }
 
 export default function BuildingDetailPage({

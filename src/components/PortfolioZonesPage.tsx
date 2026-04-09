@@ -86,7 +86,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ── List view ──
 
-function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; onZoneClick?: (zoneId: string) => void }) {
+function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
 
   return (
@@ -112,7 +112,7 @@ function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zon
             return (
               <TableRow
                 key={zone.id}
-                onClick={() => onZoneClick?.(zone.id)}
+                onClick={(e) => onZoneClick?.(zone.id, e)}
                 sx={{
                   bgcolor: idx % 2 === 0 ? 'transparent' : `color-mix(in srgb, ${c.bgSecondary} 50%, transparent)`,
                   '&:hover': { bgcolor: `color-mix(in srgb, ${c.brandSecondary} 6%, transparent)` },
@@ -151,7 +151,7 @@ function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zon
 
 // ── Main component ──
 
-export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }: { tenant: string; buildingName?: string; onZoneClick?: (zoneId: string) => void }) {
+export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }: { tenant: string; buildingName?: string; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
   const tenantZones = useMemo(
     () => allZones.filter(z => z.buildingTenant === tenant && (!buildingName || z.buildingName === buildingName)),

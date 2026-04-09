@@ -147,6 +147,8 @@ interface ZoneDetailPageProps {
   onBackToCluster?: () => void;
   onBackToBuilding?: () => void;
   onZoneChange?: (zoneId: string) => void;
+  onPanelClose?: () => void;
+  onPanelFullscreen?: () => void;
 }
 
 export default function ZoneDetailPage({
