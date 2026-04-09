@@ -29,7 +29,8 @@ interface BuildingDetailPageProps {
   onTabChange: (tab: BuildingDetailTab) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  onBreadcrumbBack?: () => void;
+  onBackToPortfolio?: () => void;
+  onBackToCluster?: () => void;
   onBuildingChange?: (buildingName: string) => void;
 }
 
@@ -39,7 +40,8 @@ export default function BuildingDetailPage({
   onTabChange,
   isCollapsed = false,
   onToggleCollapse,
-  onBreadcrumbBack,
+  onBackToPortfolio,
+  onBackToCluster,
   onBuildingChange,
 }: BuildingDetailPageProps) {
   const isNarrow = useMediaQuery('(max-width:960px)');
@@ -60,16 +62,17 @@ export default function BuildingDetailPage({
         <>
           <Typography
             sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}
-            onClick={onBreadcrumbBack}
+            onClick={onBackToPortfolio}
           >
             Portfolio
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <Typography
+            noWrap
             sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}
-            onClick={onBreadcrumbBack}
+            onClick={onBackToCluster}
           >
-            Buildings
+            {building.group}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <Box
