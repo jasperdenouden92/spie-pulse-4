@@ -53,13 +53,14 @@ Navigation is URL query-param based — no file-based Next.js routes. State is d
 | `zone` | zone ID | Selected zone |
 | `asset` | asset ID | Selected asset |
 | `assetTab` | number | Asset panel tab |
+| `statusFilter` | comma-separated status values | Pre-filter tickets/quotations by status (e.g. `To approve` or `Open,Assigned`) |
 
 ### `currentPage` Type
 
 ```ts
 type CurrentPage =
   | 'home'
-  | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters'
+  | 'portfolio' | 'portfolio_buildings'
   | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types'
   | 'building_detail' | 'zone_detail'
   | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance'
@@ -210,6 +211,7 @@ const { colorMode, themeColors } = useThemeMode();
 - **`KPICard`** — metric display with custom SVG sparkline (Catmull-Rom interpolation, no external library)
 - **`PropertyCard`** — building card with `TopicScore` and `EnergyLabel` sub-components
 - Page-level components receive props from `page.tsx` and do not manage routing themselves
+- Navigation callbacks (`onViewAllTickets`, `onViewAllQuotations`) flow down from `page.tsx` through dashboard components to performance sub-pages, allowing deep-nested components to trigger top-level navigation with pre-applied `statusFilter`
 
 ---
 
