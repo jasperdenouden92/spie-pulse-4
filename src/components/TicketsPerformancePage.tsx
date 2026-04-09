@@ -301,10 +301,11 @@ const TICKETS_PAGES: DashboardLink[] = [
 
 // ── Active Tickets Table (matches tickets overview columns) ───────────────────
 
-function ActiveTicketsTable({ themeColors: c, items, statusCounts }: {
+function ActiveTicketsTable({ themeColors: c, items, statusCounts, onViewAll }: {
   themeColors: ReturnType<typeof useThemeMode>['themeColors'];
   items: TicketItem[];
   statusCounts: StatusCount[];
+  onViewAll?: (actionRequired: boolean) => void;
 }) {
   const [actionFilter, setActionFilter] = useState(false);
   const [page, setPage] = useState(0);
@@ -335,6 +336,7 @@ function ActiveTicketsTable({ themeColors: c, items, statusCounts }: {
             size="small"
             endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
+            onClick={() => onViewAll?.(actionFilter)}
           >
             View all
           </Button>
@@ -461,10 +463,11 @@ interface TicketsPerformancePageProps {
   onBuildingSelect?: (building: Building) => void;
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   onStatusFilter?: (status: string) => void;
+  onViewAllTickets?: (actionRequired: boolean) => void;
   buildingMode?: 'buildings' | 'clusters';
 }
 
-export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, onStatusFilter, buildingMode = 'buildings' }: TicketsPerformancePageProps) {
+export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, onStatusFilter, onViewAllTickets, buildingMode = 'buildings' }: TicketsPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
@@ -620,6 +623,7 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
         themeColors={c}
         items={ACTIVE_TICKETS}
         statusCounts={STATUS_COUNTS}
+        onViewAll={onViewAllTickets}
       />
 
       {/* ═══ SECTION 4: Related Tickets Pages ═══ */}
