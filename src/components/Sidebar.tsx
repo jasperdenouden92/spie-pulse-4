@@ -87,8 +87,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
+  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -690,11 +690,9 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             />
             {!isCollapsed && portfolioExpanded && (
               <>
-                <NavItem label="Clusters" active={currentPage === 'portfolio_clusters'} onClick={() => onPageChange?.('portfolio_clusters')} />
                 <NavItem label="Buildings" active={currentPage === 'portfolio_buildings' || currentPage === 'building_detail'} onClick={() => onPageChange?.('portfolio_buildings')} />
                 <NavItem label="Zones" active={currentPage === 'portfolio_zones' || currentPage === 'zone_detail'} onClick={() => onPageChange?.('portfolio_zones')} />
                 <NavItem label="Assets" active={currentPage === 'portfolio_assets'} onClick={() => onPageChange?.('portfolio_assets')} />
-                <NavItem label="Equipment Types" active={currentPage === 'portfolio_equipment_types'} onClick={() => onPageChange?.('portfolio_equipment_types')} />
               </>
             )}
             <NavItem

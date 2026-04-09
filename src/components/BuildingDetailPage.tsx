@@ -33,7 +33,6 @@ interface BuildingDetailPageProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onBackToPortfolio?: () => void;
-  onBackToCluster?: () => void;
   onBuildingChange?: (buildingName: string) => void;
   onPanelClose?: () => void;
   onPanelFullscreen?: () => void;
@@ -46,7 +45,6 @@ export default function BuildingDetailPage({
   isCollapsed = false,
   onToggleCollapse,
   onBackToPortfolio,
-  onBackToCluster,
   onBuildingChange,
   onPanelClose,
   onPanelFullscreen,
@@ -92,14 +90,6 @@ export default function BuildingDetailPage({
             onClick={onBackToPortfolio}
           >
             Portfolio
-          </Typography>
-          <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
-          <Typography
-            noWrap
-            sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}
-            onClick={onBackToCluster}
-          >
-            {building.group}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <Box
