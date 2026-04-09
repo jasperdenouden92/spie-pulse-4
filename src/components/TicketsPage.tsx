@@ -157,7 +157,7 @@ function TicketThumbnail({ ticket, size = 40 }: { ticket: Ticket; size?: number 
 
 // ── Main component ──
 
-export default function TicketsPage() {
+export default function TicketsPage({ initialStatuses }: { initialStatuses?: string[] }) {
   const { themeColors: c } = useThemeMode();
 
   // View mode, search, sort, pagination, grouping
@@ -176,7 +176,7 @@ export default function TicketsPage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [typeAnchor, setTypeAnchor] = useState<HTMLElement | null>(null);
 
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialStatuses ?? []);
   const [statusAnchor, setStatusAnchor] = useState<HTMLElement | null>(null);
 
   const [selectedClients, setSelectedClients] = useState<string[]>([]);

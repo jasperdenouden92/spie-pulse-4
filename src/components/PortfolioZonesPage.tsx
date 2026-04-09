@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -25,13 +25,13 @@ import FilterChip from '@/components/FilterChip';
 import Button from '@/components/Button';
 
 import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
+
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
-import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+
 
 // ── Types ──
 
@@ -99,63 +99,110 @@ function SectionHeader({ label, count, onClick }: { label: string; count: number
 function ZonesTable({ zones, query, hideBuilding, hideCity, hideFloor, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; hideFloor?: boolean; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
 
+  const colWidths =
+    hideBuilding && hideCity && hideFloor ? ['60%', '40%'] :
+    hideBuilding && hideCity ? ['45%', '30%', '25%'] :
+    hideBuilding && hideFloor ? ['45%', '30%', '25%'] :
+    hideCity && hideFloor ? ['45%', '30%', '25%'] :
+    hideBuilding ? ['30%', '20%', '25%', '25%'] :
+    hideCity ? ['30%', '25%', '20%', '25%'] :
+    hideFloor ? ['30%', '25%', '20%', '25%'] :
+    ['25%', '20%', '15%', '20%', '20%'];
+
+  const headers = [
+    'Zone',
+    ...(!hideBuilding ? ['Building'] : []),
+    ...(!hideFloor ? ['Floor'] : []),
+    ...(!hideCity ? ['City'] : []),
+    'Assets',
+  ];
+
+  const colgroup = (
+    <colgroup>
+      {colWidths.map((w, i) => (
+        <col key={i} style={{ width: w }} />
+      ))}
+    </colgroup>
+  );
+
   return (
-    <TableContainer
-      sx={{
-        border: `1px solid ${c.cardBorder}`,
-        borderRadius: '6px',
-        bgcolor: c.bgPrimary,
-      }}
-    >
-      <Table size="small">
+    <Box>
+      {/* Header row outside the card */}
+      <Table sx={{ tableLayout: 'fixed' }}>
+        {colgroup}
         <TableHead>
-          <TableRow sx={{ bgcolor: c.bgSecondary }}>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25, pl: 2 }}>Zone</TableCell>
-            {!hideBuilding && <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>Building</TableCell>}
-            {!hideFloor && <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>Floor</TableCell>}
-            {!hideCity && <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>City</TableCell>}
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25, pr: 2 }} align="right">Assets</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {zones.map((zone: Zone, idx: number) => {
-            return (
-              <TableRow
-                key={zone.id}
-                onClick={(e) => onZoneClick?.(zone.id, e)}
+          <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+            {headers.map((h, i) => (
+              <TableCell
+                key={h}
                 sx={{
-                  bgcolor: idx % 2 === 0 ? 'transparent' : `color-mix(in srgb, ${c.bgSecondary} 50%, transparent)`,
-                  '&:hover': { bgcolor: `color-mix(in srgb, ${c.brandSecondary} 6%, transparent)` },
-                  '&:last-child td': { borderBottom: 0 },
-                  cursor: onZoneClick ? 'pointer' : 'default',
-                  transition: 'background-color 0.1s ease',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  color: 'text.secondary',
+                  py: 1,
+                  ...(i === 0 ? { pl: 2 } : {}),
+                  ...(i === headers.length - 1 ? { textAlign: 'right', pr: 2 } : {}),
                 }}
               >
-                <TableCell sx={{ py: 1, pl: 2, borderColor: c.cardBorder }}>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, lineHeight: 1 }}>
-                    {query ? <HighlightText text={zone.name} query={query} /> : zone.name}
-                  </Typography>
-                </TableCell>
-                {!hideBuilding && <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
-                  {query ? <HighlightText text={zone.buildingName} query={query} /> : zone.buildingName}
-                </TableCell>}
-                {!hideFloor && <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
-                  {zone.floor}
-                </TableCell>}
-                {!hideCity && <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
-                  {zone.buildingCity || '—'}
-                </TableCell>}
-                <TableCell sx={{ py: 1, pr: 2, borderColor: c.cardBorder }} align="right">
-                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: c.brandSecondary }}>
-                    {zone.assetCount}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
+                {h}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
       </Table>
-    </TableContainer>
+      {/* Table body inside the card */}
+      <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+        <TableContainer>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            {colgroup}
+            <TableBody>
+              {zones.map((zone: Zone) => (
+                <TableRow
+                  key={zone.id}
+                  onClick={(e) => onZoneClick?.(zone.id, e)}
+                  sx={{
+                    '&:hover': { bgcolor: c.bgPrimaryHover },
+                    cursor: onZoneClick ? 'pointer' : 'default',
+                  }}
+                >
+                  <TableCell sx={{ py: 1, pl: 2 }}>
+                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600 }}>
+                      {query ? <HighlightText text={zone.name} query={query} /> : zone.name}
+                    </Typography>
+                  </TableCell>
+                  {!hideBuilding && (
+                    <TableCell sx={{ py: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                        {query ? <HighlightText text={zone.buildingName} query={query} /> : zone.buildingName}
+                      </Typography>
+                    </TableCell>
+                  )}
+                  {!hideFloor && (
+                    <TableCell sx={{ py: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                        {zone.floor}
+                      </Typography>
+                    </TableCell>
+                  )}
+                  {!hideCity && (
+                    <TableCell sx={{ py: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                        {zone.buildingCity || '—'}
+                      </Typography>
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ py: 1, pr: 2, textAlign: 'right' }}>
+                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: c.brandSecondary }}>
+                      {zone.assetCount}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
 
@@ -180,20 +227,9 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [cityAnchor, setCityAnchor] = useState<null | HTMLElement>(null);
 
-  // Optional filters
-  const [addFilterMenuAnchor, setAddFilterMenuAnchor] = useState<null | HTMLElement>(null);
-  const [showZoneTypeFilter, setShowZoneTypeFilter] = useState(false);
+  // Zone type filter
   const [selectedZoneTypes, setSelectedZoneTypes] = useState<string[]>([]);
   const [zoneTypeAnchor, setZoneTypeAnchor] = useState<null | HTMLElement>(null);
-  const zoneTypeChipRef = useRef<HTMLDivElement>(null);
-  const [pendingZoneTypeOpen, setPendingZoneTypeOpen] = useState(false);
-
-  useEffect(() => {
-    if (pendingZoneTypeOpen && zoneTypeChipRef.current) {
-      setZoneTypeAnchor(zoneTypeChipRef.current);
-      setPendingZoneTypeOpen(false);
-    }
-  }, [pendingZoneTypeOpen, showZoneTypeFilter]);
 
   // Derived option lists
   const buildings = useMemo(() => Array.from(new Set(tenantZones.map(z => z.buildingName))).sort(), [tenantZones]);
@@ -242,9 +278,6 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
   const cityChipValue = selectedCities.length === 0 ? null : selectedCities.length === 1 ? selectedCities[0] : `${selectedCities.length} cities`;
   const zoneTypeChipValue = selectedZoneTypes.length === 0 ? null : selectedZoneTypes.length === 1 ? selectedZoneTypes[0] : `${selectedZoneTypes.length} types`;
 
-  const availableToAdd = [
-    { key: 'zone_type', label: 'Zone type', icon: <CategoryOutlinedIcon fontSize="small" />, visible: showZoneTypeFilter },
-  ].filter(f => !f.visible);
 
   const groupByMenu = (zoneTypeOnly: boolean) => (
     <Menu
@@ -322,7 +355,6 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
       multiple
       value={selectedZoneTypes}
       onChange={setSelectedZoneTypes}
-      onRemove={() => setShowZoneTypeFilter(false)}
       placeholder="Search zone types…"
     />
   );
@@ -402,48 +434,13 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
             onChange={setSelectedCities}
             placeholder="Search cities…"
           />
-          {showZoneTypeFilter && (
-            <Box ref={zoneTypeChipRef} sx={{ display: 'inline-flex' }}>
-              <FilterChip
-                label="Zone type"
-                value={zoneTypeChipValue}
-                onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
-                onClear={() => { setSelectedZoneTypes([]); setShowZoneTypeFilter(false); }}
-              />
-            </Box>
-          )}
+          <FilterChip
+            label="Zone type"
+            value={zoneTypeChipValue}
+            onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
+            onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
+          />
           {zoneTypeFilterDropdown}
-          {availableToAdd.length > 0 && (
-            <>
-              <Button
-                variant="tertiary"
-                size="sm"
-                startIcon={<AddIcon />}
-                onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}
-              >
-                Filter
-              </Button>
-              <Menu
-                anchorEl={addFilterMenuAnchor}
-                open={Boolean(addFilterMenuAnchor)}
-                onClose={() => setAddFilterMenuAnchor(null)}
-                slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-              >
-                {availableToAdd.map(opt => (
-                  <MenuItem
-                    key={opt.key}
-                    onClick={() => {
-                      if (opt.key === 'zone_type') { setShowZoneTypeFilter(true); setPendingZoneTypeOpen(true); }
-                      setAddFilterMenuAnchor(null);
-                    }}
-                  >
-                    <ListItemIcon>{opt.icon}</ListItemIcon>
-                    <ListItemText>{opt.label}</ListItemText>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </>
-          )}
         </PageHeader>
       )}
 

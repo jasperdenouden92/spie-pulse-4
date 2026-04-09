@@ -141,7 +141,7 @@ function QuotationThumbnail({ quotation, size = 40 }: { quotation: Quotation; si
 
 // ── Main component ──
 
-export default function QuotationsPage() {
+export default function QuotationsPage({ initialStatuses }: { initialStatuses?: string[] }) {
   const { themeColors: c } = useThemeMode();
 
   // View mode, search, sort, pagination, grouping
@@ -157,7 +157,7 @@ export default function QuotationsPage() {
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<HTMLElement | null>(null);
 
   // Filters
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(initialStatuses ?? []);
   const [statusAnchor, setStatusAnchor] = useState<HTMLElement | null>(null);
 
   const [selectedBuildings, setSelectedBuildings] = useState<string[]>([]);
