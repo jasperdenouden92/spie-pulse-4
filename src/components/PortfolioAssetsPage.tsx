@@ -22,7 +22,7 @@ import { useThemeMode } from '@/theme-mode-context';
 import PageHeader from '@/components/PageHeader';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown, { type FilterOption } from '@/components/FilterDropdown';
-import FilterRangeDropdown, { type RangeValue } from '@/components/FilterRangeDropdown';
+import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import Button from '@/components/Button';
 import { assetTree, type AssetNode } from '@/data/assetTree';
 
@@ -147,7 +147,7 @@ const COLUMNS: { key: SortKey; label: string; width?: string }[] = [
   { key: 'manufacturer', label: 'Manufacturer', width: '12%' },
   { key: 'model',        label: 'Model',        width: '12%' },
   { key: 'zone',         label: 'Zone',         width: '13%' },
-  { key: 'installDate',  label: 'Installed',    width: '9%'  },
+  { key: 'installDate',  label: 'Installation date', width: '11%' },
   { key: 'status',       label: 'Status',       width: '8%'  },
 ];
 
@@ -342,9 +342,10 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [zoneAnchor, setZoneAnchor] = useState<null | HTMLElement>(null);
 
-  // Installed (date range) filter
-  const [installedRange, setInstalledRange] = useState<RangeValue>({ min: '', max: '' });
-  const [installedAnchor, setInstalledAnchor] = useState<null | HTMLElement>(null);
+  // Installation date filter
+  const DEFAULT_DATE_RANGE = `2023-01-01|${new Date().toISOString().split('T')[0]}`;
+  const [dateRange, setDateRange] = useState('');
+  const [dateDialogOpen, setDateDialogOpen] = useState(false);
 
   // Filtered data
   const filtered = useMemo(() => {
@@ -366,10 +367,14 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
     if (selectedManufacturers.length > 0) list = list.filter(a => selectedManufacturers.includes(a.metadata?.manufacturer ?? ''));
     if (selectedModels.length > 0)        list = list.filter(a => selectedModels.includes(a.metadata?.model ?? ''));
     if (selectedZones.length > 0)         list = list.filter(a => selectedZones.includes(a.metadata?.zone ?? ''));
-    if (installedRange.min) list = list.filter(a => (a.metadata?.installDate ?? '') >= installedRange.min);
-    if (installedRange.max) list = list.filter(a => (a.metadata?.installDate ?? '') <= installedRange.max);
+    if (dateRange) {
+      const { from, to } = parseDateRange(dateRange);
+      const fromStr = from.toISOString().split('T')[0];
+      const toStr = to.toISOString().split('T')[0];
+      list = list.filter(a => (a.metadata?.installDate ?? '') >= fromStr && (a.metadata?.installDate ?? '') <= toStr);
+    }
     return list;
-  }, [baseAssets, search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedZones, installedRange]);
+  }, [baseAssets, search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedZones, dateRange]);
 
   // Grouped data (for separate-table-per-group rendering)
   const grouped = useMemo(() => {
@@ -397,7 +402,6 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
   const manufacturerChipValue = chipValue(selectedManufacturers, 'manufacturers');
   const modelChipValue        = chipValue(selectedModels,        'models');
   const zoneChipValue         = chipValue(selectedZones,         'zones');
-  const installedChipValue    = !installedRange.min && !installedRange.max ? null : installedRange.min && installedRange.max ? `${installedRange.min} – ${installedRange.max}` : installedRange.min ? `From ${installedRange.min}` : `Until ${installedRange.max}`;
 
   const filterChips = (
     <>
@@ -456,11 +460,20 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
         placeholder="Search zones…"
       />
 
-      {/* Installed */}
-      <FilterChip label="Installed" value={installedChipValue} onClick={(e) => setInstalledAnchor(e.currentTarget)} onClear={installedRange.min || installedRange.max ? () => setInstalledRange({ min: '', max: '' }) : undefined} />
-      <FilterRangeDropdown
-        anchorEl={installedAnchor} onClose={() => setInstalledAnchor(null)}
-        type="date" value={installedRange} onChange={setInstalledRange}
+      {/* Installation date */}
+      <FilterChip
+        label="Installation date"
+        value={dateRange ? getDateRangeDisplayLabel(dateRange) : null}
+        onClick={() => setDateDialogOpen(true)}
+        onClear={dateRange ? () => setDateRange('') : undefined}
+      />
+      <DateRangeSelector
+        inline
+        hideSlider
+        dialogOpen={dateDialogOpen}
+        onDialogOpenChange={setDateDialogOpen}
+        value={dateRange || DEFAULT_DATE_RANGE}
+        onChange={setDateRange}
       />
     </>
   );
