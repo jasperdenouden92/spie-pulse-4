@@ -3,8 +3,21 @@
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, StatusOverviewCard, ActiveListCard } from '@/components/performance';
-import type { ActiveListItem } from '@/components/performance';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
+import LastPageIcon from '@mui/icons-material/LastPage';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import MuiButton from '@mui/material/Button';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, StatusOverviewCard } from '@/components/performance';
+import type { StatusCount } from '@/components/performance';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
@@ -208,60 +221,206 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Quotation status data ─────────────────────────────────────────────────────
 
-const STATUS_COUNTS = [
-  { status: 'In progress', count: 6, color: '#2196f3' },
-  { status: 'Open', count: 2, color: '#ff9800' },
-  { status: 'Assigned', count: 5, color: '#7c4dff' },
-  { status: 'Rejected', count: 9, color: '#ef5350' },
+const STATUS_COUNTS: StatusCount[] = [
+  { status: 'Pending', count: 8, color: '#ff9800' },
+  { status: 'Open', count: 5, color: '#2196f3' },
   { status: 'Received', count: 7, color: '#4caf50' },
+  { status: 'Assigned', count: 6, color: '#7c4dff' },
+  { status: 'Rejected', count: 3, color: '#ef5350' },
 ];
 
-interface QuotationItem extends ActiveListItem {
+const ACTIVE_STATUSES = ['Pending', 'Open', 'Received', 'Assigned'];
+const ACTION_REQUIRED_STATUSES = ['Open', 'Assigned'];
+
+interface QuotationItem {
+  id: string;
+  title: string;
   building: string;
-  validFrom: string;
+  contactPerson: string;
+  status: string;
+  createdDate: string;
   validUntil: string;
-  assignee: string;
+  amount: number;
 }
 
 const ACTIVE_QUOTATIONS: QuotationItem[] = [
-  { id: 'Q044901071', title: 'Test automation update', building: 'De Efteling', status: 'Open', amount: 11550, validFrom: '02-12-2025', validUntil: '03-12-2025', assignee: 'H.C.M. Mond' },
-  { id: 'Q045900006', title: 'Twan-Focus-Tst 07:02', building: 'De Efteling', status: 'In progress', amount: 0, validFrom: '12-06-2025', validUntil: '22-01-2026', assignee: 'M. Neuten' },
-  { id: 'Q044901072', title: 'Twan-Focus-TST 08:23', building: 'De Efteling', status: 'In progress', amount: 0, validFrom: '03-06-2024', validUntil: '04-05-2025', assignee: 'B. Sevenge' },
-  { id: 'Q044901070', title: 'HVAC system inspection', building: 'De Efteling', status: 'Open', amount: 30, validFrom: '16-07-2024', validUntil: '15-08-2024', assignee: 'R.R.H.M. Zij' },
-  { id: 'Q044901066', title: 'Electrical panel upgrade', building: 'De Efteling', status: 'In progress', amount: 0, validFrom: '09-07-2024', validUntil: '08-08-2024', assignee: 'B. Sevenge' },
-  { id: 'Q044901067', title: 'Fire safety compliance', building: 'De Efteling', status: 'Assigned', amount: 10000, validFrom: '09-07-2024', validUntil: '08-08-2024', assignee: 'B. Sevenge' },
-  { id: 'Q044901064', title: 'Plumbing maintenance', building: 'De Efteling', status: 'In progress', amount: 0, validFrom: '05-07-2024', validUntil: '04-08-2024', assignee: 'M. Neuten' },
-  { id: 'Q044901058', title: 'Security system upgrade', building: 'De Efteling', status: 'Assigned', amount: 8500, validFrom: '01-07-2024', validUntil: '30-07-2024', assignee: 'H.C.M. Mond' },
-  { id: 'Q044901052', title: 'LED lighting replacement', building: 'Rijksmuseum', status: 'Received', amount: 24000, validFrom: '25-06-2024', validUntil: '25-07-2024', assignee: 'R.R.H.M. Zij' },
-  { id: 'Q044901049', title: 'Elevator maintenance contract', building: 'Rijksmuseum', status: 'In progress', amount: 0, validFrom: '20-06-2024', validUntil: '20-07-2024', assignee: 'B. Sevenge' },
-  { id: 'Q044901045', title: 'Roof inspection & repair', building: 'Gemeentehuis Meierijstad', status: 'Assigned', amount: 15200, validFrom: '15-06-2024', validUntil: '15-07-2024', assignee: 'M. Neuten' },
-  { id: 'Q044901041', title: 'Water heater replacement', building: 'Gemeentehuis Meierijstad', status: 'Received', amount: 4800, validFrom: '10-06-2024', validUntil: '10-07-2024', assignee: 'H.C.M. Mond' },
-  { id: 'Q044901038', title: 'Air quality monitoring install', building: 'Gemeentehuis Meierijstad', status: 'In progress', amount: 0, validFrom: '05-06-2024', validUntil: '05-07-2024', assignee: 'R.R.H.M. Zij' },
-  { id: 'Q044901035', title: 'Parking garage ventilation', building: 'Jaarbeurs Utrecht', status: 'Received', amount: 32000, validFrom: '01-06-2024', validUntil: '01-07-2024', assignee: 'B. Sevenge' },
-  { id: 'Q044901031', title: 'Emergency generator service', building: 'Jaarbeurs Utrecht', status: 'Assigned', amount: 7600, validFrom: '28-05-2024', validUntil: '28-06-2024', assignee: 'M. Neuten' },
-  { id: 'Q044901028', title: 'Window sealing renovation', building: 'Jaarbeurs Utrecht', status: 'Received', amount: 19500, validFrom: '22-05-2024', validUntil: '22-06-2024', assignee: 'H.C.M. Mond' },
-  { id: 'Q044901024', title: 'Solar panel maintenance', building: 'TU Eindhoven', status: 'Received', amount: 6200, validFrom: '18-05-2024', validUntil: '18-06-2024', assignee: 'R.R.H.M. Zij' },
-  { id: 'Q044901020', title: 'Insulation upgrade floors 3-5', building: 'TU Eindhoven', status: 'Assigned', amount: 28000, validFrom: '14-05-2024', validUntil: '14-06-2024', assignee: 'B. Sevenge' },
-  { id: 'Q044901017', title: 'Sprinkler system test', building: 'TU Eindhoven', status: 'Received', amount: 3400, validFrom: '10-05-2024', validUntil: '10-06-2024', assignee: 'M. Neuten' },
-  { id: 'Q044901013', title: 'BMS controller replacement', building: 'TU Eindhoven', status: 'Received', amount: 14200, validFrom: '06-05-2024', validUntil: '06-06-2024', assignee: 'H.C.M. Mond' },
+  { id: 'Q044901071', title: 'Test automation update', building: 'De Efteling', contactPerson: 'H.C.M. Mond', status: 'Open', createdDate: '02-12-2025', validUntil: '03-01-2026', amount: 11550 },
+  { id: 'Q045900006', title: 'HVAC system overhaul', building: 'De Efteling', contactPerson: 'M. Neuten', status: 'Pending', createdDate: '12-06-2025', validUntil: '22-01-2026', amount: 45000 },
+  { id: 'Q044901072', title: 'Electrical panel upgrade', building: 'De Efteling', contactPerson: 'B. Sevenge', status: 'Pending', createdDate: '03-06-2024', validUntil: '04-08-2024', amount: 18200 },
+  { id: 'Q044901070', title: 'Fire safety compliance', building: 'De Efteling', contactPerson: 'R.R.H.M. Zij', status: 'Open', createdDate: '16-07-2024', validUntil: '15-08-2024', amount: 10000 },
+  { id: 'Q044901066', title: 'Plumbing maintenance', building: 'De Efteling', contactPerson: 'B. Sevenge', status: 'Pending', createdDate: '09-07-2024', validUntil: '08-08-2024', amount: 3200 },
+  { id: 'Q044901067', title: 'Security system upgrade', building: 'De Efteling', contactPerson: 'B. Sevenge', status: 'Assigned', createdDate: '09-07-2024', validUntil: '08-08-2024', amount: 8500 },
+  { id: 'Q044901064', title: 'LED lighting replacement', building: 'De Efteling', contactPerson: 'M. Neuten', status: 'Pending', createdDate: '05-07-2024', validUntil: '04-08-2024', amount: 24000 },
+  { id: 'Q044901058', title: 'Elevator maintenance contract', building: 'Rijksmuseum', contactPerson: 'H.C.M. Mond', status: 'Assigned', createdDate: '01-07-2024', validUntil: '30-07-2024', amount: 7600 },
+  { id: 'Q044901052', title: 'Roof inspection & repair', building: 'Rijksmuseum', contactPerson: 'R.R.H.M. Zij', status: 'Received', createdDate: '25-06-2024', validUntil: '25-07-2024', amount: 15200 },
+  { id: 'Q044901049', title: 'Water heater replacement', building: 'Rijksmuseum', contactPerson: 'B. Sevenge', status: 'Pending', createdDate: '20-06-2024', validUntil: '20-07-2024', amount: 4800 },
+  { id: 'Q044901045', title: 'Air quality monitoring install', building: 'Gemeentehuis Meierijstad', contactPerson: 'M. Neuten', status: 'Assigned', createdDate: '15-06-2024', validUntil: '15-07-2024', amount: 12800 },
+  { id: 'Q044901041', title: 'Parking garage ventilation', building: 'Gemeentehuis Meierijstad', contactPerson: 'H.C.M. Mond', status: 'Received', createdDate: '10-06-2024', validUntil: '10-07-2024', amount: 32000 },
+  { id: 'Q044901038', title: 'Emergency generator service', building: 'Gemeentehuis Meierijstad', contactPerson: 'R.R.H.M. Zij', status: 'Pending', createdDate: '05-06-2024', validUntil: '05-07-2024', amount: 9400 },
+  { id: 'Q044901035', title: 'Window sealing renovation', building: 'Jaarbeurs Utrecht', contactPerson: 'B. Sevenge', status: 'Received', createdDate: '01-06-2024', validUntil: '01-07-2024', amount: 19500 },
+  { id: 'Q044901031', title: 'Solar panel maintenance', building: 'Jaarbeurs Utrecht', contactPerson: 'M. Neuten', status: 'Assigned', createdDate: '28-05-2024', validUntil: '28-06-2024', amount: 6200 },
+  { id: 'Q044901028', title: 'Insulation upgrade floors 3-5', building: 'Jaarbeurs Utrecht', contactPerson: 'H.C.M. Mond', status: 'Received', createdDate: '22-05-2024', validUntil: '22-06-2024', amount: 28000 },
+  { id: 'Q044901024', title: 'Sprinkler system test', building: 'TU Eindhoven', contactPerson: 'R.R.H.M. Zij', status: 'Received', createdDate: '18-05-2024', validUntil: '18-06-2024', amount: 3400 },
+  { id: 'Q044901020', title: 'BMS controller replacement', building: 'TU Eindhoven', contactPerson: 'B. Sevenge', status: 'Assigned', createdDate: '14-05-2024', validUntil: '14-06-2024', amount: 14200 },
+  { id: 'Q044901017', title: 'Facade cleaning contract', building: 'TU Eindhoven', contactPerson: 'M. Neuten', status: 'Received', createdDate: '10-05-2024', validUntil: '10-06-2024', amount: 8900 },
+  { id: 'Q044901013', title: 'Access control modernization', building: 'TU Eindhoven', contactPerson: 'H.C.M. Mond', status: 'Received', createdDate: '06-05-2024', validUntil: '06-06-2024', amount: 21500 },
 ];
 
-function formatDeadline(ddmmyyyy: string): string {
-  const [d, m, y] = ddmmyyyy.split('-').map(Number);
-  const target = new Date(y, m - 1, d);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff < 0) return `${Math.abs(diff)}d overdue`;
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'In 1 day';
-  return `In ${diff} days`;
+function formatAmount(amount: number) {
+  return `€\u202f${amount.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function formatCreationDate(ddmmyyyy: string): string {
+function formatTableDate(ddmmyyyy: string): string {
   const [d, m, y] = ddmmyyyy.split('-').map(Number);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${d} ${months[m - 1]} ${y}`;
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// ── Active Quotations Table ──
+
+function ActiveQuotationsTable({ themeColors: c, items, statusCounts }: {
+  themeColors: ReturnType<typeof useThemeMode>['themeColors'];
+  items: QuotationItem[];
+  statusCounts: StatusCount[];
+}) {
+  const [actionFilter, setActionFilter] = useState(false);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 10;
+
+  function getStatusColor(status: string): string {
+    return statusCounts.find(s => s.status === status)?.color ?? '#888';
+  }
+
+  const filtered = items.filter(item =>
+    actionFilter ? ACTION_REQUIRED_STATUSES.includes(item.status) : ACTIVE_STATUSES.includes(item.status)
+  );
+
+  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+  const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
+  return (
+    <GridCard
+      size="lg"
+      title="Active Quotations"
+      headerRight={
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: !actionFilter ? c.bgPrimary : 'transparent', color: !actionFilter ? 'text.primary' : 'text.secondary', boxShadow: !actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(false); setPage(0); }}>All active</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: actionFilter ? c.bgPrimary : 'transparent', color: actionFilter ? 'text.primary' : 'text.secondary', boxShadow: actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(true); setPage(0); }}>Action required</Box>
+          </Box>
+          <MuiButton
+            size="small"
+            endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
+            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
+          >
+            View all
+          </MuiButton>
+        </Box>
+      }
+    >
+      <TableContainer>
+        <Table sx={{ tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '22%' }} />
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '10%' }} />
+          </colgroup>
+          <TableHead>
+            <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+              {['Quotation no.', 'Title', 'Building', 'Contact person', 'Status', 'Creation date', 'Expiration date'].map(h => (
+                <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
+              ))}
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>Amount</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginated.map((q) => (
+              <TableRow
+                key={q.id}
+                sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}
+              >
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>
+                    {q.id}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 280 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8125rem' }} noWrap>
+                    {q.title}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }} noWrap>
+                    {q.building}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }} noWrap>
+                    {q.contactPerson}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.375, bgcolor: c.bgPrimaryHover, borderRadius: '6px' }}>
+                    <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: getStatusColor(q.status), flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'text.primary', whiteSpace: 'nowrap' }}>
+                      {q.status}
+                    </Typography>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap', color: 'text.secondary' }}>
+                    {formatTableDate(q.createdDate)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap', color: 'text.secondary' }}>
+                    {formatTableDate(q.validUntil)}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ textAlign: 'right' }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                    {formatAmount(q.amount)}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ))}
+            {paginated.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">No active quotations</Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {/* Pagination */}
+      {filtered.length > rowsPerPage && (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', pt: 1.5, gap: 0.5 }}>
+          <IconButton size="small" disabled={page === 0} onClick={() => setPage(0)} sx={{ color: 'text.secondary' }}>
+            <FirstPageIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <IconButton size="small" disabled={page === 0} onClick={() => setPage(p => p - 1)} sx={{ color: 'text.secondary' }}>
+            <ChevronLeftIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', mx: 1 }}>
+            {page * rowsPerPage + 1} – {Math.min((page + 1) * rowsPerPage, filtered.length)} of {filtered.length}
+          </Typography>
+          <IconButton size="small" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} sx={{ color: 'text.secondary' }}>
+            <ChevronRightIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <IconButton size="small" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)} sx={{ color: 'text.secondary' }}>
+            <LastPageIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
+      )}
+    </GridCard>
+  );
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -432,26 +591,10 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
         statusCounts={STATUS_COUNTS}
         onStatusFilter={onStatusFilter}
       />
-      <ActiveListCard
-        size="lg"
-        title="Active Quotations"
+      <ActiveQuotationsTable
+        themeColors={c}
         items={ACTIVE_QUOTATIONS}
         statusCounts={STATUS_COUNTS}
-        activeStatuses={['In progress', 'Open', 'Assigned', 'Received']}
-        actionRequiredStatuses={['Open', 'Assigned']}
-        renderMeta={(item) => {
-          const q = item as QuotationItem;
-          return (
-            <>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{q.building}</Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{formatCreationDate(q.validFrom)}</Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>•</Typography>
-              <Typography variant="caption" fontWeight={500} sx={{ fontSize: '0.7rem', color: formatDeadline(q.validUntil).includes('overdue') ? '#ef5350' : 'text.secondary' }}>
-                {formatDeadline(q.validUntil)}
-              </Typography>
-            </>
-          );
-        }}
       />
     </PerformanceGrid>
   );

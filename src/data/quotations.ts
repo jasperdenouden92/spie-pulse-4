@@ -1,4 +1,6 @@
-import { randomFromArray, randomDate, randomAmount, weightedRandom, padNumber, addDays, randomInt, STAFF_POOL, BUILDING_POOL, VENDOR_POOL } from './generators';
+import { randomFromArray, randomDate, randomAmount, weightedRandom, padNumber, addDays, randomInt, STAFF_POOL, BUILDING_POOL } from './generators';
+
+export type QuotationStatus = 'Pending' | 'Open' | 'Received' | 'Assigned' | 'Rejected';
 
 export interface Quotation {
   id: string;
@@ -6,19 +8,17 @@ export interface Quotation {
   building: string;
   amount: number;
   currency: string;
-  status: 'Draft' | 'Pending' | 'Approved' | 'Rejected' | 'Expired';
-  category: string;
-  vendor: string;
-  requestedBy: string;
+  status: QuotationStatus;
+  contactPerson: string;
   createdDate: string;
   validUntil: string;
-  approvedDate?: string;
   description: string;
+  imageUrl?: string;
   items: { name: string; quantity: number; unitPrice: number }[];
 }
 
-// Categories for quotations
-const CATEGORIES = [
+// Quotation template keys (used internally for title/item generation)
+const TEMPLATE_KEYS = [
   'HVAC',
   'Electrical',
   'Plumbing',
@@ -31,6 +31,14 @@ const CATEGORIES = [
   'Cleaning Services',
   'Waste Management',
   'Fire Protection'
+];
+
+// Image pool: reuse building photos
+const QUOTATION_IMAGE_POOL = [
+  ...Array.from({ length: 16 }, (_, i) => `/images/buildings/spie-nederland/${i + 1}.jpeg`),
+  ...Array.from({ length: 33 }, (_, i) => `/images/buildings/philips-real-estate/${i + 1}.jpeg`),
+  ...Array.from({ length: 7 }, (_, i) => `/images/buildings/provincie-noord-holland/${i + 1}.jpeg`),
+  ...Array.from({ length: 3 }, (_, i) => `/images/buildings/klm/${i + 1}.jpeg`),
 ];
 
 // Quotation templates
@@ -152,14 +160,14 @@ function generateQuotations(): Quotation[] {
   const endDate = new Date('2024-01-23');
 
   for (let i = 8; i <= 150; i++) {
-    const category = randomFromArray(CATEGORIES);
-    const status = weightedRandom<Quotation['status']>(
-      ['Draft', 'Pending', 'Approved', 'Rejected', 'Expired'],
-      [15, 30, 35, 10, 10]
+    const templateKey = randomFromArray(TEMPLATE_KEYS);
+    const status = weightedRandom<QuotationStatus>(
+      ['Pending', 'Open', 'Received', 'Assigned', 'Rejected'],
+      [25, 20, 25, 20, 10]
     );
 
-    // Get templates for this category
-    const templates = QUOTATION_TEMPLATES[category];
+    // Get templates for this key
+    const templates = QUOTATION_TEMPLATES[templateKey];
     let title = randomFromArray(templates.titles);
     title = title
       .replace('{floor}', String(randomInt(1, 10)))
@@ -186,20 +194,13 @@ function generateQuotations(): Quotation[] {
       amount,
       currency: 'EUR',
       status,
-      category,
-      vendor: randomFromArray(VENDOR_POOL),
-      requestedBy: randomFromArray(STAFF_POOL),
+      contactPerson: randomFromArray(STAFF_POOL),
       createdDate,
       validUntil,
       description: `${title} - Comprehensive service quote`,
+      imageUrl: randomInt(0, 4) > 1 ? QUOTATION_IMAGE_POOL[randomInt(0, QUOTATION_IMAGE_POOL.length - 1)] : undefined,
       items
     };
-
-    // Add approval date for approved quotations
-    if (status === 'Approved') {
-      const approvedDaysOffset = randomInt(3, 20);
-      quotation.approvedDate = addDays(createdDateObj, approvedDaysOffset).toISOString().split('T')[0];
-    }
 
     quotes.push(quotation);
   }
@@ -215,14 +216,12 @@ export const quotations: Quotation[] = [
     building: 'Skyline Plaza',
     amount: 45000,
     currency: 'EUR',
-    status: 'Approved',
-    category: 'HVAC',
-    vendor: 'Climate Control Systems',
-    requestedBy: 'John Smith',
+    status: 'Received',
+    contactPerson: 'John Smith',
     createdDate: '2024-01-05',
     validUntil: '2024-02-05',
-    approvedDate: '2024-01-12',
     description: 'Comprehensive HVAC maintenance package for 2024',
+    imageUrl: '/images/buildings/spie-nederland/3.jpeg',
     items: [
       { name: 'Quarterly System Inspection', quantity: 4, unitPrice: 5000 },
       { name: 'Filter Replacement', quantity: 12, unitPrice: 800 },
@@ -236,12 +235,11 @@ export const quotations: Quotation[] = [
     amount: 32500,
     currency: 'EUR',
     status: 'Pending',
-    category: 'Electrical',
-    vendor: 'Bright Future Electrical',
-    requestedBy: 'Marie Johnson',
+    contactPerson: 'Marie Johnson',
     createdDate: '2024-01-18',
     validUntil: '2024-02-18',
     description: 'Complete LED lighting upgrade for energy efficiency',
+    imageUrl: '/images/buildings/philips-real-estate/8.jpeg',
     items: [
       { name: 'LED Fixtures', quantity: 250, unitPrice: 85 },
       { name: 'Installation Labor', quantity: 80, unitPrice: 95 },
@@ -254,13 +252,12 @@ export const quotations: Quotation[] = [
     building: 'Metro Heights',
     amount: 78000,
     currency: 'EUR',
-    status: 'Draft',
-    category: 'Plumbing',
-    vendor: 'ProFlow Plumbing Services',
-    requestedBy: 'Tom Anderson',
+    status: 'Open',
+    contactPerson: 'Tom Anderson',
     createdDate: '2024-01-22',
     validUntil: '2024-03-22',
     description: 'Major plumbing infrastructure upgrades',
+    imageUrl: '/images/buildings/provincie-noord-holland/2.jpeg',
     items: [
       { name: 'Pipe Replacement', quantity: 1, unitPrice: 45000 },
       { name: 'Fixture Upgrades', quantity: 35, unitPrice: 650 },
@@ -273,14 +270,12 @@ export const quotations: Quotation[] = [
     building: 'Innovation Hub',
     amount: 52000,
     currency: 'EUR',
-    status: 'Approved',
-    category: 'Security',
-    vendor: 'SecureTech Solutions',
-    requestedBy: 'Lisa Chen',
+    status: 'Assigned',
+    contactPerson: 'Lisa Chen',
     createdDate: '2024-01-08',
     validUntil: '2024-02-08',
-    approvedDate: '2024-01-15',
     description: 'Access control and surveillance system modernization',
+    imageUrl: '/images/buildings/spie-nederland/11.jpeg',
     items: [
       { name: 'IP Cameras', quantity: 28, unitPrice: 850 },
       { name: 'Access Control Hardware', quantity: 15, unitPrice: 1200 },
@@ -294,12 +289,11 @@ export const quotations: Quotation[] = [
     amount: 28500,
     currency: 'EUR',
     status: 'Pending',
-    category: 'Building Envelope',
-    vendor: 'RoofMaster Pro',
-    requestedBy: 'Robert Williams',
+    contactPerson: 'Robert Williams',
     createdDate: '2024-01-20',
     validUntil: '2024-02-20',
     description: 'Emergency roof repairs and waterproofing',
+    imageUrl: '/images/buildings/klm/1.jpeg',
     items: [
       { name: 'Waterproofing Membrane', quantity: 350, unitPrice: 45 },
       { name: 'Structural Repairs', quantity: 1, unitPrice: 8500 },
@@ -313,12 +307,11 @@ export const quotations: Quotation[] = [
     amount: 125000,
     currency: 'EUR',
     status: 'Rejected',
-    category: 'Vertical Transportation',
-    vendor: 'Vertical Solutions Inc',
-    requestedBy: 'Sarah Martinez',
+    contactPerson: 'Sarah Martinez',
     createdDate: '2024-01-10',
     validUntil: '2024-02-10',
     description: 'Complete elevator system modernization - rejected due to budget',
+    imageUrl: '/images/buildings/philips-real-estate/20.jpeg',
     items: [
       { name: 'Control System Upgrade', quantity: 3, unitPrice: 25000 },
       { name: 'Cab Interior Renovation', quantity: 3, unitPrice: 12000 },
@@ -331,13 +324,10 @@ export const quotations: Quotation[] = [
     building: 'Parkside Office',
     amount: 18000,
     currency: 'EUR',
-    status: 'Approved',
-    category: 'Grounds Maintenance',
-    vendor: 'Green Spaces Landscaping',
-    requestedBy: 'Michael Lee',
+    status: 'Received',
+    contactPerson: 'Michael Lee',
     createdDate: '2024-01-12',
     validUntil: '2024-02-12',
-    approvedDate: '2024-01-18',
     description: 'Year-round landscaping and grounds maintenance',
     items: [
       { name: 'Monthly Lawn Care', quantity: 12, unitPrice: 800 },

@@ -50,7 +50,7 @@ export default function Button({
     secondary: {
       backgroundColor: c.bgPrimary,
       color: c.textPrimary,
-      border: `1px solid ${c.borderPrimary}`,
+      border: `1px solid ${c.borderSecondary}`,
       '--hover-bg': c.bgPrimaryHover,
       '--active-bg': c.bgSecondaryHover,
     },

@@ -1,7 +1,7 @@
 import { randomFromArray, randomDate, randomInt, weightedRandom, padNumber, addDays, randomDecimal, STAFF_POOL, BUILDING_POOL } from './generators';
 
 export type TicketType = 'Malfunction' | 'Maintenance';
-export type TicketStatus = 'Received' | 'In progress' | 'Function restored' | 'Completed' | 'Priced out';
+export type TicketStatus = 'Received' | 'In progress' | 'Function restored' | 'Completed' | 'Priced out' | 'To approve';
 
 export interface Ticket {
   id: string;
@@ -168,8 +168,8 @@ function generateTickets(): Ticket[] {
       [30, 40, 25, 5]
     );
     const status = weightedRandom<TicketStatus>(
-      ['Received', 'In progress', 'Function restored', 'Completed', 'Priced out'],
-      [25, 25, 15, 25, 10]
+      ['Received', 'In progress', 'Function restored', 'Completed', 'Priced out', 'To approve'],
+      [20, 22, 13, 22, 10, 13]
     );
     const type = weightedRandom<TicketType>(
       ['Malfunction', 'Maintenance'],
