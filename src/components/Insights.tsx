@@ -6,6 +6,7 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
+
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -27,7 +28,11 @@ interface Insight {
   timestamp: string;
 }
 
-function Insights() {
+interface InsightsProps {
+  tab?: 'alerts' | 'analyses' | 'performance';
+}
+
+function Insights({ tab = 'alerts' }: InsightsProps) {
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
   const insights: Insight[] = [
@@ -165,6 +170,24 @@ function Insights() {
   };
 
   return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {tab === 'analyses' && (
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="body1" color="text.secondary">
+            Analyses
+          </Typography>
+        </Box>
+      )}
+
+      {tab === 'performance' && (
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="body1" color="text.secondary">
+            Performance
+          </Typography>
+        </Box>
+      )}
+
+    {tab === 'alerts' && (
     <Box sx={{ p: 3 }}>
       {/* Filter Bar */}
       <Box sx={{ mb: 3, display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -325,6 +348,8 @@ function Insights() {
             );
           })}
       </Box>
+    </Box>
+    )}
     </Box>
   );
 }

@@ -10,7 +10,6 @@ import InputAdornment from '@mui/material/InputAdornment';
 import InputBase from '@mui/material/InputBase';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
@@ -33,9 +32,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import GroupWorkOutlinedIcon from '@mui/icons-material/GroupWorkOutlined';
-import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
@@ -183,7 +179,7 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
   // Additional (opt-in) filters
   const [addFilterMenuAnchor, setAddFilterMenuAnchor] = useState<null | HTMLElement>(null);
   const [showGroupFilter, setShowGroupFilter] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [groupAnchor, setGroupAnchor] = useState<null | HTMLElement>(null);
   const groupChipRef = useRef<HTMLDivElement>(null);
   const [pendingGroupOpen, setPendingGroupOpen] = useState(false);
@@ -231,10 +227,10 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
     if (contractFilter === 'has_contract') list = list.filter(b => b.hasContract);
     if (contractFilter === 'no_contract') list = list.filter(b => !b.hasContract);
     if (selectedCities.length > 0) list = list.filter(b => selectedCities.includes(b.city));
-    if (selectedGroup) list = list.filter(b => b.group === selectedGroup);
+    if (selectedGroups.length > 0) list = list.filter(b => selectedGroups.includes(b.group));
     if (selectedEnergies.length > 0) list = list.filter(b => selectedEnergies.includes(buildingOperationalStats[b.name]?.sustainability?.weiiRating ?? ''));
     return list;
-  }, [search, contractFilter, selectedCities, selectedGroup, selectedEnergies, tenantBuildings]);
+  }, [search, contractFilter, selectedCities, selectedGroups, selectedEnergies, tenantBuildings]);
 
   // Grouped output
   const grouped = useMemo(() => {
@@ -253,10 +249,11 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
   const contractLabel = contractFilter === 'all' ? 'Contract' : contractFilter === 'has_contract' ? 'Has contract' : 'No contract';
   const cityChipValue = selectedCities.length === 0 ? null : selectedCities.length === 1 ? selectedCities[0] : `${selectedCities.length} cities`;
   const energyChipValue = selectedEnergies.length === 0 ? null : selectedEnergies.length === 1 ? selectedEnergies[0] : `${selectedEnergies.length} labels`;
+  const groupChipValue = selectedGroups.length === 0 ? null : selectedGroups.length === 1 ? selectedGroups[0] : `${selectedGroups.length} clusters`;
 
   const additionalFilterOptions = [
-    { key: 'group', label: 'Group', icon: <GroupWorkOutlinedIcon fontSize="small" />, visible: showGroupFilter },
-    { key: 'energy', label: 'Energy label', icon: <BoltOutlinedIcon fontSize="small" />, visible: showEnergyFilter },
+    { key: 'group', label: 'Cluster', visible: showGroupFilter },
+    { key: 'energy', label: 'Energy label', visible: showEnergyFilter },
   ];
 
   const availableToAdd = additionalFilterOptions.filter(f => !f.visible);
@@ -286,12 +283,10 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
               </MenuItem>
               <Divider />
               <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
-                <ListItemIcon><LocationOnOutlinedIcon fontSize="small" /></ListItemIcon>
                 <ListItemText>City</ListItemText>
               </MenuItem>
               <MenuItem selected={groupBy === 'group'} onClick={() => { setGroupBy('group'); setGroupByMenuAnchor(null); }}>
-                <ListItemIcon><GroupWorkOutlinedIcon fontSize="small" /></ListItemIcon>
-                <ListItemText>Group</ListItemText>
+                <ListItemText>Cluster</ListItemText>
               </MenuItem>
             </Menu>
             <Box
@@ -405,21 +400,22 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
         {showGroupFilter && (
           <Box ref={groupChipRef} sx={{ display: 'inline-flex' }}>
             <FilterChip
-              label="Group"
-              value={selectedGroup}
+              label="Cluster"
+              value={groupChipValue}
               onClick={(e) => setGroupAnchor(e.currentTarget)}
-              onClear={() => { setSelectedGroup(null); setShowGroupFilter(false); }}
+              onClear={() => { setSelectedGroups([]); setShowGroupFilter(false); }}
             />
           </Box>
         )}
         <FilterDropdown
           anchorEl={groupAnchor}
           onClose={() => setGroupAnchor(null)}
-          options={groups.map(g => ({ value: g, icon: <GroupWorkOutlinedIcon fontSize="small" /> }))}
-          value={selectedGroup}
-          onChange={setSelectedGroup}
+          options={groups.map(g => ({ value: g }))}
+          multiple
+          value={selectedGroups}
+          onChange={setSelectedGroups}
           onRemove={() => setShowGroupFilter(false)}
-          placeholder="Search groups…"
+          placeholder="Search clusters…"
         />
         {showEnergyFilter && (
           <Box ref={energyChipRef} sx={{ display: 'inline-flex' }}>
@@ -466,7 +462,6 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
                     setAddFilterMenuAnchor(null);
                   }}
                 >
-                  <ListItemIcon>{opt.icon}</ListItemIcon>
                   <ListItemText>{opt.label}</ListItemText>
                 </MenuItem>
               ))}
