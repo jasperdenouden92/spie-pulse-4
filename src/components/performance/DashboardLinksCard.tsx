@@ -36,7 +36,7 @@ export default function DashboardLinksCard({ icon, title, dashboards, onNavigate
           {title}
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 1.5 }}>
         {dashboards.map(dash => (
           <Paper
             key={dash.id}

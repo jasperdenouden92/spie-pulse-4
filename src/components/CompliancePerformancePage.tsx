@@ -399,6 +399,7 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
         goodAbove={activeThresholdZones.find(z => z.label === 'Good')?.min ?? 75}
         moderateAbove={activeThresholdZones.find(z => z.label === 'Moderate')?.min ?? 55}
         yRange={yRange}
+        menuVariant="dropdown"
         gradientId="threshold-gradient-comp"
         annotationId="complianceperformancepage-grafiek"
       />

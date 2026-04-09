@@ -48,7 +48,7 @@ import { locations } from '@/data/locations';
 // ── Constants ──
 
 const TYPE_OPTIONS: TicketType[] = ['Malfunction', 'Maintenance'];
-const STATUS_OPTIONS: TicketStatus[] = ['Received', 'In progress', 'Function restored', 'Completed', 'Priced out'];
+const STATUS_OPTIONS: TicketStatus[] = ['Received', 'In progress', 'Function restored', 'Completed', 'Priced out', 'To approve'];
 
 const STATUS_COLORS: Record<TicketStatus, string> = {
   'Received': '#2196f3',
@@ -56,10 +56,11 @@ const STATUS_COLORS: Record<TicketStatus, string> = {
   'Function restored': '#66bb6a',
   'Completed': '#4caf50',
   'Priced out': '#ab47bc',
+  'To approve': '#ef6c00',
 };
 
 // Statuses that don't have an amount yet
-const NO_AMOUNT_STATUSES: TicketStatus[] = ['Received', 'In progress', 'Function restored'];
+const NO_AMOUNT_STATUSES: TicketStatus[] = ['Received', 'In progress', 'Function restored', 'To approve'];
 
 // Sort options
 type SortKey = 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc' | 'building' | 'status' | 'type';
@@ -77,8 +78,9 @@ const STATUS_ORDER: Record<TicketStatus, number> = {
   'Received': 0,
   'In progress': 1,
   'Function restored': 2,
-  'Priced out': 3,
-  'Completed': 4,
+  'To approve': 3,
+  'Priced out': 4,
+  'Completed': 5,
 };
 
 function sortTickets(list: Ticket[], key: SortKey): Ticket[] {
@@ -165,7 +167,7 @@ export default function TicketsPage() {
   const [sortBy, setSortBy] = useState<SortKey>('date_desc');
   const [sortAnchor, setSortAnchor] = useState<HTMLElement | null>(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [rowsPerPageAnchor, setRowsPerPageAnchor] = useState<HTMLElement | null>(null);
   const [groupBy, setGroupBy] = useState<GroupByKey>('none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<HTMLElement | null>(null);
@@ -330,7 +332,7 @@ export default function TicketsPage() {
                   height: 30,
                   borderRadius: '6px',
                   border: '1px solid',
-                  borderColor: c.borderPrimary,
+                  borderColor: c.borderSecondary,
                   bgcolor: c.bgPrimary,
                   px: 1,
                   gap: 0.5,
@@ -365,7 +367,7 @@ export default function TicketsPage() {
                   height: 30,
                   borderRadius: '6px',
                   border: '1px solid',
-                  borderColor: c.borderPrimary,
+                  borderColor: c.borderSecondary,
                   bgcolor: c.bgPrimary,
                   px: 1,
                   gap: 0.5,
@@ -543,7 +545,33 @@ export default function TicketsPage() {
                   <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
                 </Box>
               )}
-              <TableContainer sx={{ border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: c.bgPrimary }}>
+              {/* Header row outside the card */}
+              <Table sx={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: 56 }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '14%' }} />
+                  <col style={{ width: '9%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '8%' }} />
+                  <col style={{ width: '10%' }} />
+                  <col style={{ width: '9%' }} />
+                </colgroup>
+                <TableHead>
+                  <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, px: 1.5 }}></TableCell>
+                    {['Ticket no.', 'Reference', 'Description', 'Building', 'Date', 'Discipline', 'Type', 'Status'].map(h => (
+                      <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
+                    ))}
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>Amount</TableCell>
+                  </TableRow>
+                </TableHead>
+              </Table>
+              {/* Table body inside the card */}
+              <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+              <TableContainer>
                 <Table sx={{ tableLayout: 'fixed' }}>
                   <colgroup>
                     <col style={{ width: 56 }} />
@@ -557,15 +585,6 @@ export default function TicketsPage() {
                     <col style={{ width: '10%' }} />
                     <col style={{ width: '9%' }} />
                   </colgroup>
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: c.bgSecondary }}>
-                      <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', px: 1.5 }}></TableCell>
-                      {['Ticket no.', 'Reference', 'Description', 'Building', 'Date', 'Discipline', 'Type', 'Status'].map(h => (
-                        <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>{h}</TableCell>
-                      ))}
-                      <TableCell sx={{ fontWeight: 600, fontSize: '0.8125rem', textAlign: 'right' }}>Amount</TableCell>
-                    </TableRow>
-                  </TableHead>
                   <TableBody>
                     {group.items.map((ticket) => (
                       <TableRow
@@ -646,6 +665,7 @@ export default function TicketsPage() {
                   </TableBody>
                 </Table>
               </TableContainer>
+              </Box>
             </Box>
           ))
         ) : (
@@ -820,7 +840,7 @@ export default function TicketsPage() {
                 onClick={(e) => setRowsPerPageAnchor(e.currentTarget)}
                 sx={{
                   display: 'flex', alignItems: 'center', height: 28,
-                  borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary,
+                  borderRadius: '6px', border: '1px solid', borderColor: c.borderSecondary,
                   bgcolor: c.bgPrimary, px: 1, gap: 0.5, cursor: 'pointer',
                   '&:hover': { borderColor: c.borderSecondary },
                   transition: 'border-color 0.15s ease',

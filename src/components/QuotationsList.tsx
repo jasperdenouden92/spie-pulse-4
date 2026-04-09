@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -9,7 +8,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useThemeMode } from '@/theme-mode-context';
-import { Quotation } from '@/data/quotations';
+import { Quotation, QuotationStatus } from '@/data/quotations';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import InfiniteScrollContainer from './InfiniteScrollContainer';
 
@@ -19,12 +18,12 @@ interface QuotationsListProps {
   compact?: boolean;
 }
 
-const statusColors = {
-  'Draft': '#9e9e9e',
-  'Pending': '#ff9800',
-  'Approved': '#4caf50',
-  'Rejected': '#f44336',
-  'Expired': '#757575'
+const statusColors: Record<QuotationStatus, string> = {
+  Pending: '#ff9800',
+  Open: '#2196f3',
+  Received: '#4caf50',
+  Assigned: '#7c4dff',
+  Rejected: '#f44336',
 };
 
 export default function QuotationsList({ quotations, buildingName, compact = false }: QuotationsListProps) {
@@ -76,10 +75,9 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Title</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Building</TableCell>
-                <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Vendor</TableCell>
+                <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Contact person</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Amount</TableCell>
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Status</TableCell>
-                {!compact && <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>}
                 <TableCell sx={{ fontWeight: 600, py: compact ? 1 : undefined }}>Valid Until</TableCell>
               </TableRow>
             </TableHead>
@@ -128,13 +126,8 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
                   </TableCell>
                   <TableCell sx={{ py: compact ? 1 : undefined }}>
                     <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
-                      {quotation.vendor}
+                      {quotation.contactPerson}
                     </Typography>
-                    {!compact && (
-                      <Typography variant="caption" color="text.secondary">
-                        by {quotation.requestedBy}
-                      </Typography>
-                    )}
                   </TableCell>
                   <TableCell sx={{ py: compact ? 1 : undefined }}>
                     <Typography
@@ -148,22 +141,13 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Chip
-                      label={quotation.status}
-                      size="small"
-                      sx={{
-                        bgcolor: statusColors[quotation.status],
-                        color: '#fff',
-                        fontWeight: 500,
-                        fontSize: compact ? '0.7rem' : '0.75rem'
-                      }}
-                    />
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.375, bgcolor: c.bgPrimaryHover, borderRadius: '6px' }}>
+                      <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: statusColors[quotation.status], flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: compact ? '0.7rem' : '0.75rem', fontWeight: 600, color: 'text.primary', whiteSpace: 'nowrap' }}>
+                        {quotation.status}
+                      </Typography>
+                    </Box>
                   </TableCell>
-                  {!compact && (
-                    <TableCell>
-                      <Typography variant="body2">{quotation.category}</Typography>
-                    </TableCell>
-                  )}
                   <TableCell sx={{ py: compact ? 1 : undefined }}>
                     <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
                       {quotation.validUntil}
