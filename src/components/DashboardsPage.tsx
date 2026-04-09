@@ -344,6 +344,20 @@ const DASHBOARD_THEMES: ThemeGroup[] = [
           </>
         ),
       },
+      {
+        id: 'powerbi_dashboards',
+        label: 'Power BI Dashboards',
+        renderCharts: (b) => (
+          <>
+            <ChartCard span={2}><MaintenanceOverviewTable buildingName={b} title="Power BI — Maintenance KPIs" /></ChartCard>
+            <ChartCard span={1}><AssetHealthDistributionChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><CriticalAssetsCard buildingName={b} /></ChartCard>
+            <ChartCard span={2}><AssetTrendChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><AssetPerformanceByCategoryChart buildingName={b} /></ChartCard>
+            <ChartCard span={1}><CostsCO2Chart buildingName={b} /></ChartCard>
+          </>
+        ),
+      },
     ],
   },
   {
