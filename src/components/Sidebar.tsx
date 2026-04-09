@@ -87,8 +87,8 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
+  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -348,6 +348,8 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const newButtonRef = useRef<HTMLDivElement>(null);
   const [operationsExpanded, setOperationsExpanded] = useState(() => Boolean(currentPage?.startsWith('operations')));
   const [portfolioExpanded, setPortfolioExpanded] = useState(() => Boolean(currentPage?.startsWith('portfolio_') || currentPage === 'building_detail'));
+  const [bmsExpanded, setBmsExpanded] = useState(() => Boolean(currentPage?.startsWith('bms')));
+  const [insightsExpanded, setInsightsExpanded] = useState(() => Boolean(currentPage?.startsWith('insights')));
 
   const NEW_MENU_ITEMS = [
     { label: 'Report issue', key: '1' },
@@ -666,9 +668,18 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             <NavItem
               label="Insights"
               icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'insights'}
-              onClick={() => onPageChange?.('insights')}
+              active={currentPage?.startsWith('insights')}
+              onClick={() => { onPageChange?.('insights_alerts'); setInsightsExpanded(true); }}
+              expanded={insightsExpanded}
+              onToggleExpand={() => setInsightsExpanded((v) => !v)}
             />
+            {!isCollapsed && insightsExpanded && (
+              <>
+                <NavItem label="Alerts" active={currentPage === 'insights_alerts'} onClick={() => onPageChange?.('insights_alerts')} />
+                <NavItem label="Analyses" active={currentPage === 'insights_analyses'} onClick={() => onPageChange?.('insights_analyses')} />
+                <NavItem label="Performance" active={currentPage === 'insights_performance'} onClick={() => onPageChange?.('insights_performance')} />
+              </>
+            )}
             <NavItem
               label="Portfolio"
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -711,9 +722,17 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             <NavItem
               label="BMS"
               icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'bms'}
-              onClick={() => onPageChange?.('bms')}
+              active={currentPage?.startsWith('bms')}
+              onClick={() => { onPageChange?.('bms_access'); setBmsExpanded(true); }}
+              expanded={bmsExpanded}
+              onToggleExpand={() => setBmsExpanded((v) => !v)}
             />
+            {!isCollapsed && bmsExpanded && (
+              <>
+                <NavItem label="Access" active={currentPage === 'bms_access'} onClick={() => onPageChange?.('bms_access')} />
+                <NavItem label="Logging" active={currentPage === 'bms_logging'} onClick={() => onPageChange?.('bms_logging')} />
+              </>
+            )}
           </List>
             </Box>
           </Box>

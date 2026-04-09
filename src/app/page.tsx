@@ -362,7 +362,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -773,7 +773,9 @@ export default function Home() {
   const getCurrentPageName = () => {
     if (currentPage === 'dashboards' && activeDashboardLabel) return `Dashboards - ${activeDashboardLabel}`;
     if (currentPage === 'dashboards') return 'Dashboards';
-    if (currentPage === 'insights') return 'Insights';
+    if (currentPage === 'insights' || currentPage === 'insights_alerts') return 'Insights - Alerts';
+    if (currentPage === 'insights_analyses') return 'Insights - Analyses';
+    if (currentPage === 'insights_performance') return 'Insights - Performance';
     if (currentPage === 'themes') return 'Themes';
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
@@ -783,7 +785,8 @@ export default function Home() {
     if (currentPage === 'portfolio_assets') return 'Assets';
     if (currentPage === 'portfolio_equipment_types') return 'Equipment Types';
     if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
-    if (currentPage === 'bms') return 'BMS';
+    if (currentPage === 'bms' || currentPage === 'bms_access') return 'BMS - Access';
+    if (currentPage === 'bms_logging') return 'BMS - Logging';
     if (currentPage === 'operations') return 'Operations';
     if (selectedBuilding) return selectedBuilding.name;
     return 'Control Room';
@@ -817,7 +820,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'bms' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0', building: '', view: 'dashboard' };
     setURLParams(updates);
@@ -1405,13 +1408,18 @@ export default function Home() {
         {currentPage !== 'dashboards' && (
         <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: currentPage === 'building_detail' ? 0 : '56px', pt: currentPage === 'building_detail' ? 0 : 2, px: isNarrow ? 0.5 : 3, ...(currentPage === 'portfolio_buildings' && portfolioViewMode === 'map' ? { display: 'flex', flexDirection: 'column', pb: 0, overflow: 'hidden' } : {}) }}>
           {currentPage === 'home' && <HomePage />}
-          {currentPage === 'insights' && <InsightsPage />}
+          {(currentPage === 'insights' || currentPage === 'insights_alerts') && <InsightsPage tab="alerts" />}
+          {currentPage === 'insights_analyses' && <InsightsPage tab="analyses" />}
+          {currentPage === 'insights_performance' && <InsightsPage tab="performance" />}
           {currentPage === 'themes' && <ThemesPage />}
           {currentPage === 'exports' && <ExportsPage />}
 
           {/* BMS Page */}
-          {currentPage === 'bms' && (
-            <BmsPage />
+          {(currentPage === 'bms' || currentPage === 'bms_access') && (
+            <BmsPage tab="access" />
+          )}
+          {currentPage === 'bms_logging' && (
+            <BmsPage tab="logging" />
           )}
 
           {/* Operations pages */}
@@ -1434,7 +1442,7 @@ export default function Home() {
               onViewModeChange={setPortfolioViewMode}
             />
           )}
-          {currentPage === 'portfolio_clusters' && <PortfolioClustersPage />}
+          {currentPage === 'portfolio_clusters' && <PortfolioClustersPage tenant={selectedTenant} />}
           {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} />}
           {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
           {currentPage === 'portfolio_equipment_types' && <PortfolioEquipmentTypesPage />}
