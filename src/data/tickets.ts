@@ -1,130 +1,159 @@
 import { randomFromArray, randomDate, randomInt, weightedRandom, padNumber, addDays, randomDecimal, STAFF_POOL, BUILDING_POOL } from './generators';
 
+export type TicketType = 'Malfunction' | 'Maintenance';
+export type TicketStatus = 'Received' | 'In progress' | 'Function restored' | 'Completed' | 'Priced out';
+
 export interface Ticket {
   id: string;
+  referenceNumber: string;
   title: string;
+  description: string;
   building: string;
+  client: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  status: 'Open' | 'In Progress' | 'On Hold' | 'Completed' | 'Cancelled';
-  type: 'Corrective' | 'Preventive' | 'Request' | 'Improvement';
+  status: TicketStatus;
+  type: TicketType;
   category: string;
   assignedTo: string;
   createdDate: string;
   dueDate: string;
   completedDate?: string;
-  description: string;
   estimatedHours?: number;
   actualHours?: number;
   amount?: number;
+  imageUrl?: string;
 }
 
-// Categories for tickets
+// Disciplines
 const CATEGORIES = [
   'HVAC',
   'Electrical',
   'Plumbing',
-  'Building Envelope',
+  'Structural',
   'Safety',
-  'Vertical Transportation',
-  'Building Automation',
-  'Fire Protection',
-  'Landscaping',
-  'Pest Control'
+  'Vertical transport',
+  'Building automation',
+  'Fire protection',
+  'Grounds maintenance',
+  'Pest control'
+];
+
+// Clients
+const CLIENTS = [
+  'Rijksvastgoedbedrijf',
+  'CBRE',
+  'Cushman & Wakefield',
+  'Jones Lang LaSalle',
+  'Facilicom',
+  'ISS Facility Services',
+  'Strukton Worksphere',
+  'BAM Bouw en Techniek',
+  'Heijmans',
+  'Dura Vermeer',
 ];
 
 // Task templates for variety
 const TASK_TEMPLATES: Record<string, string[]> = {
   HVAC: [
-    'HVAC System Maintenance - Floor {floor}',
-    'Air Filter Replacement - Zone {zone}',
-    'Thermostat Calibration - {area}',
-    'Cooling Tower Inspection',
-    'Ductwork Cleaning - Level {floor}',
-    'Chiller System Repair',
-    'Ventilation System Check'
+    'HVAC maintenance - Floor {floor}',
+    'Air filter replacement - Zone {zone}',
+    'Thermostat calibration - {area}',
+    'Cooling tower inspection',
+    'Duct cleaning - Floor {floor}',
+    'Chiller repair',
+    'Ventilation check'
   ],
   Electrical: [
-    'Light Fixture Replacement - {area}',
-    'Circuit Breaker Inspection',
-    'Emergency Power System Test',
-    'Electrical Panel Upgrade - Floor {floor}',
-    'Wiring Inspection - {area}',
-    'Power Outlet Repair',
-    'Lighting Control System Update'
+    'Lighting replacement - {area}',
+    'Fuse box inspection',
+    'Emergency power test',
+    'Electrical panel upgrade - Floor {floor}',
+    'Wiring inspection - {area}',
+    'Outlet repair',
+    'Lighting control update'
   ],
   Plumbing: [
-    'Pipe Leak Repair - Floor {floor}',
-    'Water Heater Maintenance',
-    'Drain Cleaning - {area}',
-    'Faucet Replacement',
-    'Water Pressure Check',
-    'Backflow Preventer Test',
-    'Sump Pump Inspection'
+    'Leak repair - Floor {floor}',
+    'Boiler maintenance',
+    'Drain cleaning - {area}',
+    'Faucet replacement',
+    'Water pressure check',
+    'Backflow valve test',
+    'Sump pit inspection'
   ],
-  'Building Envelope': [
-    'Window Seal Replacement',
-    'Roof Inspection and Repair',
-    'Exterior Wall Caulking',
-    'Weatherstripping Replacement',
-    'Facade Cleaning',
-    'Gutter Maintenance',
-    'Skylight Repair'
+  Structural: [
+    'Window sealant replacement',
+    'Roof inspection and repair',
+    'Facade repointing',
+    'Weather strip replacement',
+    'Facade cleaning',
+    'Gutter maintenance',
+    'Skylight repair'
   ],
   Safety: [
-    'Fire Alarm System Test',
-    'Emergency Exit Sign Repair',
-    'Fire Extinguisher Inspection',
-    'Smoke Detector Replacement',
-    'Safety Railing Repair',
-    'Emergency Lighting Check',
-    'Fire Door Inspection'
+    'Fire alarm test',
+    'Emergency exit sign repair',
+    'Fire extinguisher inspection',
+    'Smoke detector replacement',
+    'Safety railing repair',
+    'Emergency lighting check',
+    'Fire door inspection'
   ],
-  'Vertical Transportation': [
-    'Elevator Maintenance - Elevator {num}',
-    'Escalator Inspection',
-    'Elevator Door Adjustment',
-    'Emergency Phone Test',
-    'Cable Inspection',
-    'Motor Lubrication',
-    'Safety Sensor Calibration'
+  'Vertical transport': [
+    'Elevator maintenance - Lift {num}',
+    'Escalator inspection',
+    'Elevator door adjustment',
+    'Emergency phone test',
+    'Cable inspection',
+    'Motor lubrication',
+    'Safety sensor calibration'
   ],
-  'Building Automation': [
-    'BMS Controller Upgrade',
-    'Sensor Calibration - Zone {zone}',
-    'Access Control System Update',
-    'Automation Software Patch',
-    'Network Equipment Maintenance',
-    'Control Panel Repair',
-    'System Integration Update'
+  'Building automation': [
+    'BMS controller upgrade',
+    'Sensor calibration - Zone {zone}',
+    'Access control update',
+    'Automation software patch',
+    'Network equipment maintenance',
+    'Control panel repair',
+    'System integration update'
   ],
-  'Fire Protection': [
-    'Sprinkler System Inspection',
-    'Fire Pump Test',
-    'Fire Suppression System Maintenance',
-    'Standpipe Pressure Test',
-    'Fire Hose Cabinet Inspection',
-    'Dry Pipe System Check',
-    'Fire Panel Battery Replacement'
+  'Fire protection': [
+    'Sprinkler inspection',
+    'Fire pump test',
+    'Suppression system maintenance',
+    'Standpipe pressure test',
+    'Fire hose cabinet inspection',
+    'Dry system check',
+    'Fire panel battery replacement'
   ],
-  Landscaping: [
-    'Grounds Maintenance',
-    'Tree Trimming - Perimeter',
-    'Irrigation System Repair',
-    'Lawn Care Service',
-    'Planting Beds Maintenance',
-    'Snow Removal',
-    'Exterior Plant Care'
+  'Grounds maintenance': [
+    'Grounds maintenance',
+    'Tree care - Grounds',
+    'Irrigation repair',
+    'Lawn maintenance',
+    'Planter maintenance',
+    'Snow removal',
+    'Outdoor plant care'
   ],
-  'Pest Control': [
-    'Monthly Pest Inspection',
-    'Rodent Control Treatment',
-    'Insect Barrier Application',
-    'Termite Inspection',
-    'Pest Prevention Maintenance',
-    'Trap Monitoring and Replacement',
-    'Sanitization Service'
+  'Pest control': [
+    'Monthly pest inspection',
+    'Rodent control',
+    'Insect barrier application',
+    'Termite inspection',
+    'Preventive pest maintenance',
+    'Trap check and replacement',
+    'Sanitary treatment'
   ]
 };
+
+// Image pool: real building photos + placeholder
+const TICKET_IMAGE_POOL = [
+  ...Array.from({ length: 16 }, (_, i) => `/images/buildings/spie-nederland/${i + 1}.jpeg`),
+  ...Array.from({ length: 33 }, (_, i) => `/images/buildings/philips-real-estate/${i + 1}.jpeg`),
+  ...Array.from({ length: 7 }, (_, i) => `/images/buildings/provincie-noord-holland/${i + 1}.jpeg`),
+  ...Array.from({ length: 3 }, (_, i) => `/images/buildings/klm/${i + 1}.jpeg`),
+];
+const PLACEHOLDER_IMAGE = '/images/buildings/placeholder.png';
 
 // Generate tickets
 function generateTickets(): Ticket[] {
@@ -138,13 +167,13 @@ function generateTickets(): Ticket[] {
       ['Low', 'Medium', 'High', 'Critical'],
       [30, 40, 25, 5]
     );
-    const status = weightedRandom<Ticket['status']>(
-      ['Open', 'In Progress', 'On Hold', 'Completed', 'Cancelled'],
-      [35, 25, 5, 30, 5]
+    const status = weightedRandom<TicketStatus>(
+      ['Received', 'In progress', 'Function restored', 'Completed', 'Priced out'],
+      [25, 25, 15, 25, 10]
     );
-    const type = weightedRandom<Ticket['type']>(
-      ['Corrective', 'Preventive', 'Request', 'Improvement'],
-      [40, 30, 20, 10]
+    const type = weightedRandom<TicketType>(
+      ['Malfunction', 'Maintenance'],
+      [60, 40]
     );
 
     // Generate title from templates
@@ -153,7 +182,7 @@ function generateTickets(): Ticket[] {
     title = title
       .replace('{floor}', String(randomInt(1, 15)))
       .replace('{zone}', String.fromCharCode(65 + randomInt(0, 3))) // A-D
-      .replace('{area}', randomFromArray(['North Wing', 'South Wing', 'East Wing', 'West Wing', 'Main Lobby', 'Parking Area']))
+      .replace('{area}', randomFromArray(['North wing', 'South wing', 'East wing', 'West wing', 'Main lobby', 'Parking area']))
       .replace('{num}', String(randomInt(1, 4)));
 
     const createdDate = randomDate(startDate, endDate);
@@ -167,10 +196,16 @@ function generateTickets(): Ticket[] {
 
     const dueDate = addDays(createdDateObj, daysUntilDue).toISOString().split('T')[0];
 
+    // Amount only for Completed and Priced out statuses
+    const hasAmount = status === 'Completed' || status === 'Priced out';
+
     const order: Ticket = {
-      id: `WO-2024-${padNumber(i, 3)}`,
+      id: `WB-2024-${padNumber(i, 3)}`,
+      referenceNumber: `REF-${padNumber(randomInt(10000, 99999), 5)}`,
       title,
+      description: `${title} - Scheduled maintenance and inspection`,
       building: randomFromArray(BUILDING_POOL),
+      client: randomFromArray(CLIENTS),
       priority,
       status,
       type,
@@ -178,22 +213,20 @@ function generateTickets(): Ticket[] {
       assignedTo: randomFromArray(STAFF_POOL),
       createdDate,
       dueDate,
-      description: `${title} - Scheduled maintenance and inspection`,
       estimatedHours: randomDecimal(1, 8, 1),
-      amount: randomInt(0, 4) > 0 ? Math.round(randomDecimal(25, 4500, 2) * 100) / 100 : undefined,
+      amount: hasAmount ? Math.round(randomDecimal(25, 4500, 2) * 100) / 100 : undefined,
+      // ~60% real building photo, ~40% no image (placeholder in UI)
+      imageUrl: randomInt(0, 4) > 1 ? TICKET_IMAGE_POOL[randomInt(0, TICKET_IMAGE_POOL.length - 1)] : undefined,
     };
 
-    // Add completion details for completed/cancelled orders
+    // Add completion details for completed orders
     if (status === 'Completed') {
       const dueDateObj = new Date(dueDate);
-      const completedDaysOffset = randomInt(-2, 1); // Complete up to 2 days early or 1 day late
+      const completedDaysOffset = randomInt(-2, 1);
       order.completedDate = addDays(dueDateObj, completedDaysOffset).toISOString().split('T')[0];
       order.actualHours = randomDecimal(order.estimatedHours! * 0.8, order.estimatedHours! * 1.2, 1);
-    } else if (status === 'In Progress') {
+    } else if (status === 'In progress') {
       order.actualHours = randomDecimal(0, order.estimatedHours! * 0.6, 1);
-    } else if (status === 'Cancelled') {
-      const dueDateObj = new Date(dueDate);
-      order.completedDate = addDays(dueDateObj, randomInt(-5, 0)).toISOString().split('T')[0];
     }
 
     orders.push(order);
@@ -205,128 +238,146 @@ function generateTickets(): Ticket[] {
 // Original 8 tickets
 export const tickets: Ticket[] = [
   {
-    id: 'WO-2024-001',
-    title: 'HVAC System Maintenance - Floor 3',
+    id: 'WB-2024-001',
+    referenceNumber: 'REF-48291',
+    title: 'HVAC maintenance - Floor 3',
+    description: 'Routine maintenance and filter replacement for HVAC units on floor 3',
     building: 'Skyline Plaza',
+    client: 'Rijksvastgoedbedrijf',
     priority: 'High',
-    status: 'In Progress',
-    type: 'Preventive',
+    status: 'In progress',
+    type: 'Malfunction',
     category: 'HVAC',
     assignedTo: 'John Smith',
     createdDate: '2024-01-15',
     dueDate: '2024-01-22',
-    description: 'Routine maintenance and filter replacement for HVAC units on floor 3',
     estimatedHours: 4,
     actualHours: 2.5,
-    amount: 380.00,
+    imageUrl: '/images/buildings/spie-nederland/3.jpeg',
   },
   {
-    id: 'WO-2024-002',
-    title: 'Aanpassen verlichting',
+    id: 'WB-2024-002',
+    referenceNumber: 'REF-51034',
+    title: 'Lighting adjustment',
+    description: 'Adjust lighting in the main lobby',
     building: 'Urban Tower',
+    client: 'CBRE',
     priority: 'Medium',
-    status: 'Open',
-    type: 'Request',
+    status: 'Received',
+    type: 'Maintenance',
     category: 'Electrical',
     assignedTo: 'Marie Johnson',
     createdDate: '2024-01-18',
     dueDate: '2024-01-25',
-    description: 'Adjust lighting levels in main lobby area',
-    amount: 125.50,
   },
   {
-    id: 'WO-2024-003',
-    title: 'Reparatie toilet 1e verdieping',
+    id: 'WB-2024-003',
+    referenceNumber: 'REF-33892',
+    title: 'Toilet repair 1st floor',
+    description: 'Emergency repair of toilet facilities on the first floor',
     building: 'Metro Heights',
+    client: 'Cushman & Wakefield',
     priority: 'Critical',
-    status: 'In Progress',
-    type: 'Corrective',
+    status: 'In progress',
+    type: 'Malfunction',
     category: 'Plumbing',
     assignedTo: 'Tom Anderson',
     createdDate: '2024-01-20',
     dueDate: '2024-01-21',
-    description: 'Emergency repair of toilet facilities on first floor',
     estimatedHours: 3,
     actualHours: 1.5,
-    amount: 210.00,
+    imageUrl: '/images/buildings/philips-real-estate/8.jpeg',
   },
   {
-    id: 'WO-2024-004',
-    title: 'Window Seal Replacement',
+    id: 'WB-2024-004',
+    referenceNumber: 'REF-27561',
+    title: 'Window sealant replacement',
+    description: 'Replace worn window sealant on the north facade',
     building: 'Innovation Hub',
+    client: 'Jones Lang LaSalle',
     priority: 'Medium',
     status: 'Completed',
-    type: 'Preventive',
-    category: 'Building Envelope',
+    type: 'Maintenance',
+    category: 'Structural',
     assignedTo: 'Lisa Chen',
     createdDate: '2024-01-10',
     dueDate: '2024-01-17',
     completedDate: '2024-01-16',
-    description: 'Replace deteriorated window seals on north facade',
     estimatedHours: 8,
     actualHours: 7.5,
     amount: 740.00,
+    imageUrl: '/images/buildings/provincie-noord-holland/2.jpeg',
   },
   {
-    id: 'WO-2024-005',
-    title: 'Fire Alarm System Test',
+    id: 'WB-2024-005',
+    referenceNumber: 'REF-60128',
+    title: 'Fire alarm test',
+    description: 'Quarterly fire alarm system test and inspection',
     building: 'Riverside Complex',
+    client: 'Facilicom',
     priority: 'High',
-    status: 'Open',
-    type: 'Preventive',
+    status: 'Received',
+    type: 'Malfunction',
     category: 'Safety',
     assignedTo: 'Robert Williams',
     createdDate: '2024-01-22',
     dueDate: '2024-01-29',
-    description: 'Quarterly fire alarm system testing and inspection',
     estimatedHours: 6,
+    imageUrl: '/images/buildings/spie-nederland/11.jpeg',
   },
   {
-    id: 'WO-2024-006',
-    title: 'Elevator Maintenance - Elevator 2',
+    id: 'WB-2024-006',
+    referenceNumber: 'REF-44893',
+    title: 'Elevator maintenance - Lift 2',
+    description: 'Monthly elevator maintenance and safety inspection',
     building: 'Skyline Plaza',
+    client: 'Rijksvastgoedbedrijf',
     priority: 'High',
     status: 'Completed',
-    type: 'Preventive',
-    category: 'Vertical Transportation',
+    type: 'Maintenance',
+    category: 'Vertical transport',
     assignedTo: 'David Park',
     createdDate: '2024-01-08',
     dueDate: '2024-01-15',
     completedDate: '2024-01-14',
-    description: 'Monthly elevator maintenance and safety inspection',
     estimatedHours: 5,
     actualHours: 4.5,
     amount: 520.00,
   },
   {
-    id: 'WO-2024-007',
-    title: 'Parking Lot Lighting Repair',
+    id: 'WB-2024-007',
+    referenceNumber: 'REF-71540',
+    title: 'Parking area lighting repair',
+    description: 'Replace non-working lighting in parking area - awaiting parts',
     building: 'Gateway Center',
+    client: 'ISS Facility Services',
     priority: 'Medium',
-    status: 'On Hold',
-    type: 'Corrective',
+    status: 'Function restored',
+    type: 'Malfunction',
     category: 'Electrical',
     assignedTo: 'Sarah Martinez',
     createdDate: '2024-01-19',
     dueDate: '2024-01-26',
-    description: 'Replace non-functioning lights in parking area - awaiting parts',
     estimatedHours: 4,
-    amount: 290.00,
+    imageUrl: '/images/buildings/klm/1.jpeg',
   },
   {
-    id: 'WO-2024-008',
-    title: 'BMS Controller Upgrade',
+    id: 'WB-2024-008',
+    referenceNumber: 'REF-82367',
+    title: 'BMS controller upgrade',
+    description: 'Software update for building management system controllers',
     building: 'Parkside Office',
+    client: 'Strukton Worksphere',
     priority: 'Low',
-    status: 'Open',
-    type: 'Improvement',
-    category: 'Building Automation',
+    status: 'Priced out',
+    type: 'Maintenance',
+    category: 'Building automation',
     assignedTo: 'Michael Lee',
     createdDate: '2024-01-21',
     dueDate: '2024-02-05',
-    description: 'Software update for building management system controllers',
     estimatedHours: 3,
     amount: 1200.00,
+    imageUrl: '/images/buildings/philips-real-estate/20.jpeg',
   },
   // Generated tickets
   ...generateTickets()

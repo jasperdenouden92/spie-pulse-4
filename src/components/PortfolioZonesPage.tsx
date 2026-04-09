@@ -337,41 +337,29 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }
           >
             Group by
           </Button>
-          <Menu
-            anchorEl={groupByMenuAnchor}
-            open={Boolean(groupByMenuAnchor)}
-            onClose={() => setGroupByMenuAnchor(null)}
-            slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-          >
-            <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
-              <ListItemText>No grouping</ListItemText>
-            </MenuItem>
-            <Divider />
-            <MenuItem selected={groupBy === 'floor'} onClick={() => { setGroupBy('floor'); setGroupByMenuAnchor(null); }}>
-              <ListItemText>Floor</ListItemText>
-            </MenuItem>
-            <MenuItem selected={groupBy === 'zone_type'} onClick={() => { setGroupBy('zone_type'); setGroupByMenuAnchor(null); }}>
-              <ListItemText>Zone type</ListItemText>
-            </MenuItem>
-          </Menu>
+          {groupByMenu(true)}
           {searchBox}
         </Box>
       ) : (
         <PageHeader
-          title="Zones"
-          actions={
-            <>
-              <Button
-                variant="secondary"
-                size="sm"
-                endIcon={<ExpandMoreIcon />}
-                onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
-              >
-                Group by
-              </Button>
-              {groupByMenu(false)}
-              {searchBox}
-            </>
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+                Zones <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  endIcon={<ExpandMoreIcon />}
+                  onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
+                >
+                  Group by
+                </Button>
+                {groupByMenu(false)}
+                {searchBox}
+              </Box>
+            </Box>
           }
         >
           <FilterChip
