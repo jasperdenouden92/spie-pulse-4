@@ -377,7 +377,7 @@ export default function Home() {
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
-  const btab = (searchParams.get('btab') ?? 'performance') as 'overview' | 'performance' | 'assets' | 'tickets' | 'quotations';
+  const btab = (searchParams.get('btab') ?? 'performance') as 'overview' | 'performance' | 'zones' | 'assets' | 'tickets' | 'quotations';
 
   // URL-based asset (from asset explorer / tree)
   const urlAsset = assetId ? getAssetById(assetId) : null;
@@ -2459,6 +2459,9 @@ export default function Home() {
                 if (b) setSelectedBuilding(b);
               }}
             />
+          )}
+          {currentPage === 'building_detail' && selectedBuilding && btab === 'zones' && (
+            <PortfolioZonesPage tenant={selectedBuilding.tenant} buildingName={selectedBuilding.name} />
           )}
         </Container>
         )}
