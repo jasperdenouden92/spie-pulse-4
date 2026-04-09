@@ -204,12 +204,7 @@ export default function QuotationsPage() {
   return (
     <Box>
       <PageHeader
-        title="Quotations"
-        actions={
-          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
-            {filtered.length} quotation{filtered.length !== 1 ? 's' : ''}
-          </Typography>
-        }
+        title={<>Quotations <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography></>}
       >
         <FilterChip
           label="Status"

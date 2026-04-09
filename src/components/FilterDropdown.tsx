@@ -26,6 +26,7 @@ interface FilterDropdownSingleProps {
   onRemove?: () => void;
   placeholder?: string;
   emptyText?: string;
+  hideSearch?: boolean;
 }
 
 // Multi-select
@@ -39,6 +40,7 @@ interface FilterDropdownMultiProps {
   onRemove?: () => void;
   placeholder?: string;
   emptyText?: string;
+  hideSearch?: boolean;
 }
 
 type FilterDropdownProps = FilterDropdownSingleProps | FilterDropdownMultiProps;
@@ -94,7 +96,7 @@ function OptionRow({
 }
 
 export default function FilterDropdown(props: FilterDropdownProps) {
-  const { anchorEl, onClose, options, multiple, onRemove, placeholder = 'Search…', emptyText = 'No results' } = props;
+  const { anchorEl, onClose, options, multiple, onRemove, placeholder = 'Search…', emptyText = 'No results', hideSearch = false } = props;
   const { themeColors: c } = useThemeMode();
   const [search, setSearch] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(0);
@@ -188,27 +190,31 @@ export default function FilterDropdown(props: FilterDropdownProps) {
       }}
     >
       {/* Search */}
-      <Box sx={{ px: 2, pt: 1.5, pb: 0.5, flexShrink: 0 }}>
-        <TextField
-          inputRef={searchRef}
-          size="small"
-          placeholder={placeholder}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          onKeyDown={handleKeyDown}
-          fullWidth
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              fontSize: '0.85rem',
-              '& fieldset': { border: 'none' },
-            },
-            '& .MuiOutlinedInput-input': { py: '6px', px: 0 },
-          }}
-        />
-      </Box>
+      {!hideSearch && (
+        <>
+          <Box sx={{ px: 2, pt: 1.5, pb: 0.5, flexShrink: 0 }}>
+            <TextField
+              inputRef={searchRef}
+              size="small"
+              placeholder={placeholder}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+              fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  fontSize: '0.85rem',
+                  '& fieldset': { border: 'none' },
+                },
+                '& .MuiOutlinedInput-input': { py: '6px', px: 0 },
+              }}
+            />
+          </Box>
 
-      {/* Divider */}
-      <Box sx={{ height: '1px', bgcolor: 'divider', flexShrink: 0, mx: 0 }} />
+          {/* Divider */}
+          <Box sx={{ height: '1px', bgcolor: 'divider', flexShrink: 0, mx: 0 }} />
+        </>
+      )}
 
       {/* List */}
       <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, py: 0.75 }}>

@@ -26,12 +26,12 @@ const priorityColors = {
   Critical: '#d32f2f'
 };
 
-const statusColors = {
-  'Open': '#2196f3',
-  'In Progress': '#ff9800',
-  'On Hold': '#9e9e9e',
+const statusColors: Record<string, string> = {
+  'Received': '#2196f3',
+  'In progress': '#ff9800',
+  'Function restored': '#66bb6a',
   'Completed': '#4caf50',
-  'Cancelled': '#f44336'
+  'Priced out': '#ab47bc',
 };
 
 export default function TicketsList({ tickets, buildingName, compact = false }: TicketsListProps) {

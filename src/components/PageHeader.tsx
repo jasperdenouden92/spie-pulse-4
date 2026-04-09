@@ -26,7 +26,7 @@ interface PageHeaderProps {
   topBar?: TopBarProps;
 
   // Default variant
-  title?: string;
+  title?: React.ReactNode;
   children?: React.ReactNode;
   actions?: React.ReactNode;
 
@@ -54,7 +54,7 @@ interface PageHeaderProps {
 
 function DefaultHeader({ topBar, title, children, actions, c }: {
   topBar?: TopBarProps;
-  title?: string;
+  title?: React.ReactNode;
   children?: React.ReactNode;
   actions?: React.ReactNode;
   c: ReturnType<typeof useThemeMode>['themeColors'];
@@ -132,7 +132,7 @@ function HeroHeader({
           <Box
             component="img"
             src={image}
-            alt={title}
+            alt={typeof title === 'string' ? title : ''}
             sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'blur(4px)', transform: 'scale(1.05)' }}
           />
         ) : (
