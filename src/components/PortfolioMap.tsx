@@ -90,7 +90,7 @@ const HIDE_DELAY_MS = 200;
 
 interface PortfolioMapProps {
   buildings: Building[];
-  onBuildingClick?: (building: Building) => void;
+  onBuildingClick?: (building: Building, e?: React.MouseEvent) => void;
 }
 
 export default function PortfolioMap({ buildings, onBuildingClick }: PortfolioMapProps) {

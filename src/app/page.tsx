@@ -110,6 +110,8 @@ import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
 import ZoneDetailPage from '@/components/ZoneDetailPage';
 import type { ZoneDetailTab } from '@/components/ZoneDetailPage';
 import { zones as allZones } from '@/data/zones';
+import type { Zone } from '@/data/zones';
+import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
 import OverallPerformancePage from '@/components/OverallPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
@@ -410,6 +412,10 @@ export default function Home() {
   const [dataExplorerWidth, setDataExplorerWidth] = useState(0);
   const [exportToast, setExportToast] = useState<{ open: boolean; message: string; severity: 'info' | 'success' }>({ open: false, message: '', severity: 'info' });
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const [sidePeekBuilding, setSidePeekBuilding] = useState<Building | null>(null);
+  const [sidePeekBuildingTab, setSidePeekBuildingTab] = useState<BuildingDetailTab>('overview');
+  const [sidePeekZone, setSidePeekZone] = useState<Zone | null>(null);
+  const [sidePeekZoneTab, setSidePeekZoneTab] = useState<ZoneDetailTab>('overview');
   const [favorites, setFavorites] = useState<Favorite[]>([
     { id: '1', name: 'Skyline Plaza', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
@@ -830,6 +836,8 @@ export default function Home() {
 
   const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
+    setSidePeekBuilding(null);
+    setSidePeekZone(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0', building: '', view: 'dashboard' };
     setURLParams(updates);
   }, [setURLParams]);
@@ -1328,8 +1336,7 @@ export default function Home() {
         transition: 'margin-left 0.3s ease, border-color 0.3s ease',
         position: 'relative',
         zIndex: 1,
-        border: '3px dashed',
-        borderColor: isInspectMode ? tc.brand : 'transparent',
+        outline: isInspectMode ? `3px dashed ${tc.brand}` : 'none',
         minWidth: 0,
         overflow: 'hidden'
       }}>
@@ -1445,13 +1452,19 @@ export default function Home() {
           {currentPage === 'portfolio_buildings' && (
             <PortfolioPage
               tenant={selectedTenant}
-              onBuildingClick={(b) => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' })}
+              onBuildingClick={(b, e?) => handleSidePeekClick(e,
+                () => { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
+                () => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }),
+              )}
               viewMode={portfolioViewMode}
               onViewModeChange={setPortfolioViewMode}
             />
           )}
           {currentPage === 'portfolio_clusters' && <PortfolioClustersPage tenant={selectedTenant} />}
-          {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} onZoneClick={(id) => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' })} />}
+          {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} onZoneClick={(id, e) => handleSidePeekClick(e,
+            () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
+            () => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' }),
+          )} />}
           {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
           {currentPage === 'portfolio_equipment_types' && <PortfolioEquipmentTypesPage />}
 
@@ -2037,7 +2050,10 @@ export default function Home() {
                                   return (
                                     <Box
                                       key={name}
-                                      onClick={() => !isCluster && (isInspectMode ? undefined : navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }))}
+                                      onClick={(e) => !isCluster && !isInspectMode && handleSidePeekClick(e,
+                                        () => { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
+                                        () => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }),
+                                      )}
                                       sx={{
                                         display: 'flex',
                                         gap: 1.5,
@@ -2208,7 +2224,10 @@ export default function Home() {
                                     opacity: { duration: 0.3 },
                                     scale: { duration: 0.3 }
                                   }}
-                                  onClick={(e) => isInspectMode ? handleInspectBuilding(b, e) : navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' })}
+                                  onClick={(e) => isInspectMode ? handleInspectBuilding(b, e) : handleSidePeekClick(e,
+                                    () => { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
+                                    () => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }),
+                                  )}
                                   onMouseEnter={(e) => handleBuildingHover(b, e)}
                                   onMouseLeave={() => handleBuildingHover(null)}
                                   style={{
@@ -2256,7 +2275,7 @@ export default function Home() {
                             onMetricSelect={handleMetricSelect}
                             periodMetrics={periodMetrics}
                             themeKeys={activeThemeKeys}
-                            onBuildingSelect={(b) => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' })}
+                            onBuildingSelect={(b) => { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }}
                             onViewAllBuildings={(sort) => {
                               setBuildingsPanelTab('buildings');
                               setURLParams({ sort });
@@ -2484,7 +2503,10 @@ export default function Home() {
             <PortfolioZonesPage
               tenant={selectedBuilding.tenant}
               buildingName={selectedBuilding.name}
-              onZoneClick={(id) => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' })}
+              onZoneClick={(id, e) => handleSidePeekClick(e,
+                () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
+                () => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' }),
+              )}
             />
           )}
 
@@ -2508,6 +2530,78 @@ export default function Home() {
         </Container>
         )}
       </Box>
+
+      {/* Building SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekBuilding}
+        onClose={() => setSidePeekBuilding(null)}
+      >
+        {sidePeekBuilding && (
+          <Box sx={{ px: 3 }}>
+            <BuildingDetailPage
+              building={sidePeekBuilding}
+              tab={sidePeekBuildingTab}
+              onTabChange={setSidePeekBuildingTab}
+              onBackToPortfolio={() => setSidePeekBuilding(null)}
+              onBackToCluster={() => setSidePeekBuilding(null)}
+              onBuildingChange={(name) => {
+                const b = allBuildings.find(b => b.name === name);
+                if (b) setSidePeekBuilding(b);
+              }}
+              onPanelClose={() => setSidePeekBuilding(null)}
+              onPanelFullscreen={() => {
+                navigateTo({ page: 'building_detail', building: sidePeekBuilding.name, btab: sidePeekBuildingTab });
+                setSidePeekBuilding(null);
+              }}
+            />
+            {sidePeekBuildingTab === 'zones' && (
+              <PortfolioZonesPage
+                tenant={sidePeekBuilding.tenant}
+                buildingName={sidePeekBuilding.name}
+                onZoneClick={(id, e) => handleSidePeekClick(e,
+                  () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekZone(z); setSidePeekZoneTab('overview'); setSidePeekBuilding(null); } },
+                  () => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' }),
+                )}
+              />
+            )}
+            {sidePeekBuildingTab === 'assets' && (
+              <PortfolioAssetsPage buildingName={sidePeekBuilding.name} />
+            )}
+          </Box>
+        )}
+      </SidePeekPanel>
+
+      {/* Zone SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekZone}
+        onClose={() => setSidePeekZone(null)}
+      >
+        {sidePeekZone && (
+          <Box sx={{ px: 3 }}>
+            <ZoneDetailPage
+              zone={sidePeekZone}
+              tab={sidePeekZoneTab}
+              onTabChange={setSidePeekZoneTab}
+              onBackToPortfolio={() => setSidePeekZone(null)}
+              onBackToCluster={() => setSidePeekZone(null)}
+              onBackToBuilding={() => {
+                const building = allBuildings.find(b => b.name === sidePeekZone.buildingName);
+                if (building) { setSidePeekBuilding(building); setSidePeekBuildingTab('zones'); }
+                setSidePeekZone(null);
+              }}
+              onZoneChange={(id) => {
+                const z = allZones.find(z => z.id === id);
+                if (z) setSidePeekZone(z);
+              }}
+              onPanelClose={() => setSidePeekZone(null)}
+              onPanelFullscreen={() => {
+                navigateTo({ page: 'zone_detail', zone: sidePeekZone.id, ztab: sidePeekZoneTab });
+                setSidePeekZone(null);
+              }}
+            />
+          </Box>
+        )}
+      </SidePeekPanel>
 
       <ChangelogButton />
 
