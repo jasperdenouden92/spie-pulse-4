@@ -278,10 +278,11 @@ function formatTableDate(ddmmyyyy: string): string {
 
 // ── Active Quotations Table ──
 
-function ActiveQuotationsTable({ themeColors: c, items, statusCounts }: {
+function ActiveQuotationsTable({ themeColors: c, items, statusCounts, onViewAll }: {
   themeColors: ReturnType<typeof useThemeMode>['themeColors'];
   items: QuotationItem[];
   statusCounts: StatusCount[];
+  onViewAll?: (actionRequired: boolean) => void;
 }) {
   const [actionFilter, setActionFilter] = useState(false);
   const [page, setPage] = useState(0);
@@ -312,6 +313,7 @@ function ActiveQuotationsTable({ themeColors: c, items, statusCounts }: {
             size="small"
             endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
+            onClick={() => onViewAll?.(actionFilter)}
           >
             View all
           </MuiButton>
@@ -432,10 +434,11 @@ interface QuotationsPerformancePageProps {
   onBuildingSelect?: (building: Building) => void;
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   onStatusFilter?: (status: string) => void;
+  onViewAllQuotations?: (actionRequired: boolean) => void;
   buildingMode?: 'buildings' | 'clusters';
 }
 
-export default function QuotationsPerformancePage({ themeScore = 74, themeTrend = 2, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, onStatusFilter, buildingMode = 'buildings' }: QuotationsPerformancePageProps) {
+export default function QuotationsPerformancePage({ themeScore = 74, themeTrend = 2, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, onStatusFilter, onViewAllQuotations, buildingMode = 'buildings' }: QuotationsPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
@@ -595,6 +598,7 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
         themeColors={c}
         items={ACTIVE_QUOTATIONS}
         statusCounts={STATUS_COUNTS}
+        onViewAll={onViewAllQuotations}
       />
     </PerformanceGrid>
   );

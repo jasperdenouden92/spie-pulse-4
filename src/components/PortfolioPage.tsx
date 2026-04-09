@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -26,7 +26,7 @@ import Button from '@/components/Button';
 import PortfolioMap from '@/components/PortfolioMap';
 
 import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
+
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
@@ -176,33 +176,11 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [cityAnchor, setCityAnchor] = useState<null | HTMLElement>(null);
 
-  // Additional (opt-in) filters
-  const [addFilterMenuAnchor, setAddFilterMenuAnchor] = useState<null | HTMLElement>(null);
-  const [showGroupFilter, setShowGroupFilter] = useState(false);
+  // Additional filters
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [groupAnchor, setGroupAnchor] = useState<null | HTMLElement>(null);
-  const groupChipRef = useRef<HTMLDivElement>(null);
-  const [pendingGroupOpen, setPendingGroupOpen] = useState(false);
-
-  useEffect(() => {
-    if (pendingGroupOpen && groupChipRef.current) {
-      setGroupAnchor(groupChipRef.current);
-      setPendingGroupOpen(false);
-    }
-  }, [pendingGroupOpen, showGroupFilter]);
-
-  const [showEnergyFilter, setShowEnergyFilter] = useState(false);
   const [selectedEnergies, setSelectedEnergies] = useState<string[]>([]);
   const [energyAnchor, setEnergyAnchor] = useState<null | HTMLElement>(null);
-  const energyChipRef = useRef<HTMLDivElement>(null);
-  const [pendingEnergyOpen, setPendingEnergyOpen] = useState(false);
-
-  useEffect(() => {
-    if (pendingEnergyOpen && energyChipRef.current) {
-      setEnergyAnchor(energyChipRef.current);
-      setPendingEnergyOpen(false);
-    }
-  }, [pendingEnergyOpen, showEnergyFilter]);
 
   // Derived option lists
   const cities = useMemo(() => Array.from(new Set(tenantBuildings.map(b => b.city))).sort(), [tenantBuildings]);
@@ -251,12 +229,6 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
   const energyChipValue = selectedEnergies.length === 0 ? null : selectedEnergies.length === 1 ? selectedEnergies[0] : `${selectedEnergies.length} labels`;
   const groupChipValue = selectedGroups.length === 0 ? null : selectedGroups.length === 1 ? selectedGroups[0] : `${selectedGroups.length} clusters`;
 
-  const additionalFilterOptions = [
-    { key: 'group', label: 'Cluster', visible: showGroupFilter },
-    { key: 'energy', label: 'Energy label', visible: showEnergyFilter },
-  ];
-
-  const availableToAdd = additionalFilterOptions.filter(f => !f.visible);
 
   return (
     <Box sx={viewMode === 'map' ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' } : {}}>
@@ -401,16 +373,12 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
           onChange={setSelectedCities}
           placeholder="Search cities…"
         />
-        {showGroupFilter && (
-          <Box ref={groupChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip
-              label="Cluster"
-              value={groupChipValue}
-              onClick={(e) => setGroupAnchor(e.currentTarget)}
-              onClear={() => { setSelectedGroups([]); setShowGroupFilter(false); }}
-            />
-          </Box>
-        )}
+        <FilterChip
+          label="Cluster"
+          value={groupChipValue}
+          onClick={(e) => setGroupAnchor(e.currentTarget)}
+          onClear={selectedGroups.length > 0 ? () => setSelectedGroups([]) : undefined}
+        />
         <FilterDropdown
           anchorEl={groupAnchor}
           onClose={() => setGroupAnchor(null)}
@@ -418,19 +386,14 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
           multiple
           value={selectedGroups}
           onChange={setSelectedGroups}
-          onRemove={() => setShowGroupFilter(false)}
           placeholder="Search clusters…"
         />
-        {showEnergyFilter && (
-          <Box ref={energyChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip
-              label="Energy label"
-              value={energyChipValue}
-              onClick={(e) => setEnergyAnchor(e.currentTarget)}
-              onClear={() => { setSelectedEnergies([]); setShowEnergyFilter(false); }}
-            />
-          </Box>
-        )}
+        <FilterChip
+          label="Energy label"
+          value={energyChipValue}
+          onClick={(e) => setEnergyAnchor(e.currentTarget)}
+          onClear={selectedEnergies.length > 0 ? () => setSelectedEnergies([]) : undefined}
+        />
         <FilterDropdown
           anchorEl={energyAnchor}
           onClose={() => setEnergyAnchor(null)}
@@ -438,40 +401,8 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
           multiple
           value={selectedEnergies}
           onChange={setSelectedEnergies}
-          onRemove={() => setShowEnergyFilter(false)}
           placeholder="Search energy labels…"
         />
-        {availableToAdd.length > 0 && (
-          <>
-            <Button
-              variant="tertiary"
-              size="sm"
-              startIcon={<AddIcon />}
-              onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}
-            >
-              Filter
-            </Button>
-            <Menu
-              anchorEl={addFilterMenuAnchor}
-              open={Boolean(addFilterMenuAnchor)}
-              onClose={() => setAddFilterMenuAnchor(null)}
-              slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-            >
-              {availableToAdd.map(opt => (
-                <MenuItem
-                  key={opt.key}
-                  onClick={() => {
-                    if (opt.key === 'group') { setShowGroupFilter(true); setPendingGroupOpen(true); }
-                    if (opt.key === 'energy') { setShowEnergyFilter(true); setPendingEnergyOpen(true); }
-                    setAddFilterMenuAnchor(null);
-                  }}
-                >
-                  <ListItemText>{opt.label}</ListItemText>
-                </MenuItem>
-              ))}
-            </Menu>
-          </>
-        )}
       </PageHeader>
 
       {/* ── Content ── */}

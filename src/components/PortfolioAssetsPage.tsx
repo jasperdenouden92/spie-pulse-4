@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
@@ -8,7 +8,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
+
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import Table from '@mui/material/Table';
@@ -38,7 +38,7 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddIcon from '@mui/icons-material/Add';
+
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 
@@ -114,12 +114,13 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 // ── Status cell ──
 function StatusCell({ status }: { status?: string }) {
+  const { themeColors: c } = useThemeMode();
   const s = status ?? 'operational';
   const color = STATUS_COLOR[s] ?? STATUS_COLOR.operational;
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-      <FiberManualRecordIcon sx={{ fontSize: 9, color, flexShrink: 0 }} />
-      <Typography variant="body2" sx={{ fontSize: '0.8125rem', textTransform: 'capitalize' }}>{s}</Typography>
+    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.375, bgcolor: c.bgPrimaryHover, borderRadius: '6px' }}>
+      <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />
+      <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'text.primary', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{s}</Typography>
     </Box>
   );
 }
@@ -203,17 +204,26 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
     [assets, sortKey, sortDir]
   );
 
+  const colgroup = (
+    <colgroup>
+      {visibleColumns.map(col => (
+        <col key={col.key} style={{ width: col.width }} />
+      ))}
+    </colgroup>
+  );
+
   return (
-    <TableContainer sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '8px', bgcolor: c.bgPrimary }}>
-      <Table size="small" stickyHeader>
+    <Box>
+      {/* Header row outside the card */}
+      <Table sx={{ tableLayout: 'fixed' }}>
+        {colgroup}
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
             {visibleColumns.map(col => (
               <TableCell
                 key={col.key}
-                width={col.width}
                 sortDirection={sortKey === col.key ? sortDir : false}
-                sx={{ bgcolor: c.bgSecondary, fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, borderBottom: `1px solid ${c.cardBorder}`, whiteSpace: 'nowrap' }}
+                sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, whiteSpace: 'nowrap' }}
               >
                 <TableSortLabel
                   active={sortKey === col.key}
@@ -227,60 +237,66 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
             ))}
           </TableRow>
         </TableHead>
-        <TableBody>
-          {sorted.map(asset => {
-            return (
-              <TableRow key={asset.id} hover sx={{ cursor: 'pointer', '&:last-child td': { border: 0 }, '& td': { borderColor: c.cardBorder } }}>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <HighlightText text={asset.name} query={query} />
-                  </Typography>
-                </TableCell>
-                {!hideBuildingCol && (
+      </Table>
+      {/* Table body inside the card */}
+      <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+        <TableContainer>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            {colgroup}
+            <TableBody>
+              {sorted.map(asset => (
+                <TableRow key={asset.id} sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}>
                   <TableCell sx={{ py: 1.25 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      <HighlightText text={asset.building} query={query} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <HighlightText text={asset.name} query={query} />
                     </Typography>
                   </TableCell>
-                )}
-                <TableCell sx={{ py: 1.25 }}>
-                  <CategoryCell category={asset.metadata?.category} />
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.manufacturer
-                      ? <HighlightText text={asset.metadata.manufacturer} query={query} />
-                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.model
-                      ? <HighlightText text={asset.metadata.model} query={query} />
-                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.zone
-                      ? <HighlightText text={asset.metadata.zone} query={query} />
-                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <StatusCell status={asset.metadata?.status} />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                  {!hideBuildingCol && (
+                    <TableCell sx={{ py: 1.25 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <HighlightText text={asset.building} query={query} />
+                      </Typography>
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ py: 1.25 }}>
+                    <CategoryCell category={asset.metadata?.category} />
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.manufacturer
+                        ? <HighlightText text={asset.metadata.manufacturer} query={query} />
+                        : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.model
+                        ? <HighlightText text={asset.metadata.model} query={query} />
+                        : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.zone
+                        ? <HighlightText text={asset.metadata.zone} query={query} />
+                        : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <StatusCell status={asset.metadata?.status} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
 
@@ -310,77 +326,25 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
   const [groupBy, setGroupBy] = useState<GroupBy>('none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
 
-  // Optional filters — add filter menu
-  const [addFilterMenuAnchor, setAddFilterMenuAnchor] = useState<null | HTMLElement>(null);
-
   // Building filter
-  const [showBuilding, setShowBuilding] = useState(false);
   const [selectedBuildings, setSelectedBuildings] = useState<string[]>([]);
   const [buildingAnchor, setBuildingAnchor] = useState<null | HTMLElement>(null);
-  const buildingChipRef = useRef<HTMLDivElement>(null);
-  const [pendingBuildingOpen, setPendingBuildingOpen] = useState(false);
-  useEffect(() => {
-    if (pendingBuildingOpen && buildingChipRef.current) { setBuildingAnchor(buildingChipRef.current); setPendingBuildingOpen(false); }
-  }, [pendingBuildingOpen, showBuilding]);
 
   // Manufacturer filter
-  const [showManufacturer, setShowManufacturer] = useState(false);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
   const [manufacturerAnchor, setManufacturerAnchor] = useState<null | HTMLElement>(null);
-  const manufacturerChipRef = useRef<HTMLDivElement>(null);
-  const [pendingManufacturerOpen, setPendingManufacturerOpen] = useState(false);
-  useEffect(() => {
-    if (pendingManufacturerOpen && manufacturerChipRef.current) { setManufacturerAnchor(manufacturerChipRef.current); setPendingManufacturerOpen(false); }
-  }, [pendingManufacturerOpen, showManufacturer]);
 
   // Model filter
-  const [showModel, setShowModel] = useState(false);
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [modelAnchor, setModelAnchor] = useState<null | HTMLElement>(null);
-  const modelChipRef = useRef<HTMLDivElement>(null);
-  const [pendingModelOpen, setPendingModelOpen] = useState(false);
-  useEffect(() => {
-    if (pendingModelOpen && modelChipRef.current) { setModelAnchor(modelChipRef.current); setPendingModelOpen(false); }
-  }, [pendingModelOpen, showModel]);
 
   // Zone filter
-  const [showZone, setShowZone] = useState(false);
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [zoneAnchor, setZoneAnchor] = useState<null | HTMLElement>(null);
-  const zoneChipRef = useRef<HTMLDivElement>(null);
-  const [pendingZoneOpen, setPendingZoneOpen] = useState(false);
-  useEffect(() => {
-    if (pendingZoneOpen && zoneChipRef.current) { setZoneAnchor(zoneChipRef.current); setPendingZoneOpen(false); }
-  }, [pendingZoneOpen, showZone]);
 
   // Installed (date range) filter
-  const [showInstalled, setShowInstalled] = useState(false);
   const [installedRange, setInstalledRange] = useState<RangeValue>({ min: '', max: '' });
   const [installedAnchor, setInstalledAnchor] = useState<null | HTMLElement>(null);
-  const installedChipRef = useRef<HTMLDivElement>(null);
-  const [pendingInstalledOpen, setPendingInstalledOpen] = useState(false);
-  useEffect(() => {
-    if (pendingInstalledOpen && installedChipRef.current) { setInstalledAnchor(installedChipRef.current); setPendingInstalledOpen(false); }
-  }, [pendingInstalledOpen, showInstalled]);
-
-  // Optional filter definitions
-  const optionalFilters = [
-    ...(!buildingName ? [{ key: 'building', label: 'Building', visible: showBuilding }] : []),
-    { key: 'manufacturer', label: 'Manufacturer', visible: showManufacturer },
-    { key: 'model',        label: 'Model',        visible: showModel },
-    { key: 'zone',         label: 'Zone',         visible: showZone },
-    { key: 'installed',    label: 'Installed',    visible: showInstalled },
-  ];
-  const availableToAdd = optionalFilters.filter(f => !f.visible);
-
-  function addFilter(key: string) {
-    if (key === 'building')     { setShowBuilding(true);     setPendingBuildingOpen(true); }
-    if (key === 'manufacturer') { setShowManufacturer(true); setPendingManufacturerOpen(true); }
-    if (key === 'model')        { setShowModel(true);        setPendingModelOpen(true); }
-    if (key === 'zone')         { setShowZone(true);         setPendingZoneOpen(true); }
-    if (key === 'installed')    { setShowInstalled(true);    setPendingInstalledOpen(true); }
-    setAddFilterMenuAnchor(null);
-  }
 
   // Filtered data
   const filtered = useMemo(() => {
@@ -452,92 +416,52 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
         multiple value={selectedStatuses} onChange={setSelectedStatuses} placeholder="Search statuses…"
       />
 
-      {/* Optional: Building (only in global view) */}
-      {!buildingName && showBuilding && (
-        <Box ref={buildingChipRef} sx={{ display: 'inline-flex' }}>
-          <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={() => { setSelectedBuildings([]); setShowBuilding(false); }} />
-        </Box>
-      )}
+      {/* Building (only in global view) */}
       {!buildingName && (
-        <FilterDropdown
-          anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)}
-          options={allBuildings.map(b => ({ value: b, icon: <ApartmentOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
-          multiple value={selectedBuildings} onChange={setSelectedBuildings}
-          onRemove={() => setShowBuilding(false)} placeholder="Search buildings…"
-        />
+        <>
+          <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={selectedBuildings.length > 0 ? () => setSelectedBuildings([]) : undefined} />
+          <FilterDropdown
+            anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)}
+            options={allBuildings.map(b => ({ value: b, icon: <ApartmentOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
+            multiple value={selectedBuildings} onChange={setSelectedBuildings}
+            placeholder="Search buildings…"
+          />
+        </>
       )}
 
-      {/* Optional: Manufacturer */}
-      {showManufacturer && (
-        <Box ref={manufacturerChipRef} sx={{ display: 'inline-flex' }}>
-          <FilterChip label="Manufacturer" value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={() => { setSelectedManufacturers([]); setShowManufacturer(false); }} />
-        </Box>
-      )}
+      {/* Manufacturer */}
+      <FilterChip label="Manufacturer" value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setSelectedManufacturers([]) : undefined} />
       <FilterDropdown
         anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)}
         options={allManufacturers.map(m => ({ value: m } satisfies FilterOption))}
         multiple value={selectedManufacturers} onChange={setSelectedManufacturers}
-        onRemove={() => setShowManufacturer(false)} placeholder="Search manufacturers…"
+        placeholder="Search manufacturers…"
       />
 
-      {/* Optional: Model */}
-      {showModel && (
-        <Box ref={modelChipRef} sx={{ display: 'inline-flex' }}>
-          <FilterChip label="Model" value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={() => { setSelectedModels([]); setShowModel(false); }} />
-        </Box>
-      )}
+      {/* Model */}
+      <FilterChip label="Model" value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setSelectedModels([]) : undefined} />
       <FilterDropdown
         anchorEl={modelAnchor} onClose={() => setModelAnchor(null)}
         options={allModels.map(m => ({ value: m } satisfies FilterOption))}
         multiple value={selectedModels} onChange={setSelectedModels}
-        onRemove={() => setShowModel(false)} placeholder="Search models…"
+        placeholder="Search models…"
       />
 
-      {/* Optional: Zone */}
-      {showZone && (
-        <Box ref={zoneChipRef} sx={{ display: 'inline-flex' }}>
-          <FilterChip label="Zone" value={zoneChipValue} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={() => { setSelectedZones([]); setShowZone(false); }} />
-        </Box>
-      )}
+      {/* Zone */}
+      <FilterChip label="Zone" value={zoneChipValue} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setSelectedZones([]) : undefined} />
       <FilterDropdown
         anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)}
         options={allZones.map(l => ({ value: l, icon: <LocationOnOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
         multiple value={selectedZones} onChange={setSelectedZones}
-        onRemove={() => setShowZone(false)} placeholder="Search zones…"
+        placeholder="Search zones…"
       />
 
-      {/* Optional: Installed */}
-      {showInstalled && (
-        <Box ref={installedChipRef} sx={{ display: 'inline-flex' }}>
-          <FilterChip label="Installed" value={installedChipValue} onClick={(e) => setInstalledAnchor(e.currentTarget)} onClear={() => { setInstalledRange({ min: '', max: '' }); setShowInstalled(false); }} />
-        </Box>
-      )}
+      {/* Installed */}
+      <FilterChip label="Installed" value={installedChipValue} onClick={(e) => setInstalledAnchor(e.currentTarget)} onClear={installedRange.min || installedRange.max ? () => setInstalledRange({ min: '', max: '' }) : undefined} />
       <FilterRangeDropdown
         anchorEl={installedAnchor} onClose={() => setInstalledAnchor(null)}
         type="date" value={installedRange} onChange={setInstalledRange}
-        onRemove={() => setShowInstalled(false)}
       />
-
-      {/* Add filter button */}
-      {availableToAdd.length > 0 && (
-        <>
-          <Button variant="tertiary" size="sm" startIcon={<AddIcon />} onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}>
-            Filter
-          </Button>
-          <Menu
-            anchorEl={addFilterMenuAnchor}
-            open={Boolean(addFilterMenuAnchor)}
-            onClose={() => setAddFilterMenuAnchor(null)}
-            slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-          >
-            {availableToAdd.map(opt => (
-              <MenuItem key={opt.key} onClick={() => addFilter(opt.key)}>
-                <ListItemText>{opt.label}</ListItemText>
-              </MenuItem>
-            ))}
-          </Menu>
-        </>
-      )}
     </>
   );
 
@@ -609,15 +533,19 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
         </Box>
       ) : (
         <PageHeader
-          title="Assets"
-          actions={
-            <>
-              <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
-                Group by
-              </Button>
-              {groupByMenu}
-              {searchBox}
-            </>
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+                Assets <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
+                  Group by
+                </Button>
+                {groupByMenu}
+                {searchBox}
+              </Box>
+            </Box>
           }
         >
           {filterChips}
