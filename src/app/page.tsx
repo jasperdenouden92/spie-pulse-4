@@ -1442,7 +1442,7 @@ export default function Home() {
               onViewModeChange={setPortfolioViewMode}
             />
           )}
-          {currentPage === 'portfolio_clusters' && <PortfolioClustersPage />}
+          {currentPage === 'portfolio_clusters' && <PortfolioClustersPage tenant={selectedTenant} />}
           {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} />}
           {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
           {currentPage === 'portfolio_equipment_types' && <PortfolioEquipmentTypesPage />}
