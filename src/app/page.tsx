@@ -2550,12 +2550,13 @@ export default function Home() {
               onToggleCollapse={handleLeftSidebarToggle}
               onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
               onBackToCluster={() => handlePageChange('portfolio_buildings')}
-              onBackToBuilding={() => selectedDetailAssetBuilding
-                ? navigateTo({ page: 'building_detail', building: selectedDetailAssetBuilding.name })
-                : handlePageChange('portfolio_buildings')}
-              onBackToZone={() => selectedDetailAssetZoneRecord
-                ? navigateTo({ page: 'zone_detail', zone: selectedDetailAssetZoneRecord.id, ztab: 'overview' })
-                : handlePageChange('portfolio_zones')}
+              onBackToBuilding={() => {
+                const b = selectedDetailAssetBuilding ? allBuildings.find(b => b.name === selectedDetailAssetBuilding.name) : null;
+                if (b) { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }
+              }}
+              onBackToZone={() => {
+                if (selectedDetailAssetZoneRecord) { setSidePeekZone(selectedDetailAssetZoneRecord); setSidePeekZoneTab('overview'); }
+              }}
               onAssetChange={(id) => navigateTo({ page: 'asset_detail', assetdetail: id, atab: 'overview' })}
             />
           )}
@@ -2658,11 +2659,12 @@ export default function Home() {
                 onBackToCluster={() => setSidePeekAsset(null)}
                 onBackToBuilding={() => {
                   setSidePeekAsset(null);
-                  if (peekBuilding) navigateTo({ page: 'building_detail', building: peekBuilding.name });
+                  const b = peekBuilding ? allBuildings.find(b => b.name === peekBuilding.name) : null;
+                  if (b) { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }
                 }}
                 onBackToZone={() => {
                   setSidePeekAsset(null);
-                  if (peekZone) navigateTo({ page: 'zone_detail', zone: peekZone.id, ztab: 'overview' });
+                  if (peekZone) { setSidePeekZone(peekZone); setSidePeekZoneTab('overview'); }
                 }}
                 onAssetChange={(id) => {
                   const a = getAssetById(id);
