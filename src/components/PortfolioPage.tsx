@@ -16,6 +16,7 @@ import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import FilterDropdown from '@/components/FilterDropdown';
 import type { FilterOption } from '@/components/FilterDropdown';
+import PageHeader from '@/components/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildings } from '@/data/buildings';
 import { buildingOperationalStats } from '@/data/buildingOperationalStats';
@@ -262,256 +263,217 @@ export default function PortfolioPage({ tenant, onBuildingClick, viewMode = 'gri
 
   return (
     <Box sx={viewMode === 'map' ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' } : {}}>
-      {/* ── Title ── */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
-          Buildings
-        </Typography>
-      </Box>
-
-      {/* ── Toolbar ── */}
-      <Box
-        sx={{
-          position: 'sticky',
-          top: 56,
-          zIndex: 100,
-          bgcolor: c.bgSecondary,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          py: 1.25,
-          mx: -3,
-          px: 3,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 2,
-        }}
+      <PageHeader
+        title="Buildings"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              endIcon={<ExpandMoreIcon />}
+              onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
+            >
+              Group by
+            </Button>
+            <Menu
+              anchorEl={groupByMenuAnchor}
+              open={Boolean(groupByMenuAnchor)}
+              onClose={() => setGroupByMenuAnchor(null)}
+              slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+            >
+              <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
+                <ListItemText>No grouping</ListItemText>
+              </MenuItem>
+              <Divider />
+              <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
+                <ListItemIcon><LocationOnOutlinedIcon fontSize="small" /></ListItemIcon>
+                <ListItemText>City</ListItemText>
+              </MenuItem>
+              <MenuItem selected={groupBy === 'group'} onClick={() => { setGroupBy('group'); setGroupByMenuAnchor(null); }}>
+                <ListItemIcon><GroupWorkOutlinedIcon fontSize="small" /></ListItemIcon>
+                <ListItemText>Group</ListItemText>
+              </MenuItem>
+            </Menu>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                height: 30,
+                borderRadius: '6px',
+                border: '1px solid',
+                borderColor: c.borderPrimary,
+                bgcolor: c.bgPrimary,
+                px: 1,
+                gap: 0.5,
+                '&:focus-within': { borderColor: c.brandSecondary },
+                transition: 'border-color 0.15s ease',
+              }}
+            >
+              <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+              <InputBase
+                inputRef={searchRef}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search buildings…"
+                sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
+                endAdornment={
+                  search ? (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null
+                }
+              />
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                border: '1px solid',
+                borderColor: c.borderPrimary,
+                borderRadius: '6px',
+                overflow: 'hidden',
+                height: 30,
+              }}
+            >
+              <Tooltip title="Grid view">
+                <IconButton
+                  size="small"
+                  onClick={() => setViewMode('grid')}
+                  sx={{
+                    borderRadius: 0,
+                    width: 30, height: 30,
+                    bgcolor: viewMode === 'grid' ? c.bgActive : 'transparent',
+                    color: viewMode === 'grid' ? c.brandSecondary : 'text.secondary',
+                    '&:hover': { bgcolor: viewMode === 'grid' ? c.bgActive : c.bgPrimaryHover },
+                  }}
+                >
+                  <GridViewOutlinedIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+              <Box sx={{ width: '1px', bgcolor: 'divider' }} />
+              <Tooltip title="Map view">
+                <IconButton
+                  size="small"
+                  onClick={() => setViewMode('map')}
+                  sx={{
+                    borderRadius: 0,
+                    width: 30, height: 30,
+                    bgcolor: viewMode === 'map' ? c.bgActive : 'transparent',
+                    color: viewMode === 'map' ? c.brandSecondary : 'text.secondary',
+                    '&:hover': { bgcolor: viewMode === 'map' ? c.bgActive : c.bgPrimaryHover },
+                  }}
+                >
+                  <MapOutlinedIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </>
+        }
       >
-        {/* Left: filter strip */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
-          {/* Contract filter — default, not clearable */}
-          <FilterChip
-            label="Contract"
-            value={contractFilter !== 'all' ? contractLabel : null}
-            onClick={(e) => setContractAnchor(e.currentTarget)}
-          />
-          <FilterDropdown
-            anchorEl={contractAnchor}
-            onClose={() => setContractAnchor(null)}
-            options={[
-              { value: 'has_contract', label: 'Has contract', icon: <VerifiedOutlinedIcon fontSize="small" sx={{ color: c.statusGood }} /> },
-              { value: 'no_contract', label: 'No contract', icon: <CancelOutlinedIcon fontSize="small" sx={{ color: 'text.disabled' }} /> },
-            ] as FilterOption[]}
-            value={contractFilter === 'all' ? null : contractFilter}
-            onChange={(val) => setContractFilter((val ?? 'all') as ContractFilter)}
-            placeholder="Search…"
-          />
-
-          {/* City filter — default, not clearable */}
-          <FilterChip
-            label="City"
-            value={cityChipValue}
-            onClick={(e) => setCityAnchor(e.currentTarget)}
-          />
-          <FilterDropdown
-            anchorEl={cityAnchor}
-            onClose={() => setCityAnchor(null)}
-            options={cities.map(city => ({ value: city }))}
-            multiple
-            value={selectedCities}
-            onChange={setSelectedCities}
-            placeholder="Search cities…"
-          />
-
-          {/* Group filter (optional) */}
-          {showGroupFilter && (
-            <Box ref={groupChipRef} sx={{ display: 'inline-flex' }}>
-              <FilterChip
-                label="Group"
-                value={selectedGroup}
-                onClick={(e) => setGroupAnchor(e.currentTarget)}
-                onClear={() => { setSelectedGroup(null); setShowGroupFilter(false); }}
-              />
-            </Box>
-          )}
-          <FilterDropdown
-            anchorEl={groupAnchor}
-            onClose={() => setGroupAnchor(null)}
-            options={groups.map(g => ({ value: g, icon: <GroupWorkOutlinedIcon fontSize="small" /> }))}
-            value={selectedGroup}
-            onChange={setSelectedGroup}
-            onRemove={() => setShowGroupFilter(false)}
-            placeholder="Search groups…"
-          />
-
-          {/* Energy label filter (optional) */}
-          {showEnergyFilter && (
-            <Box ref={energyChipRef} sx={{ display: 'inline-flex' }}>
-              <FilterChip
-                label="Energy label"
-                value={energyChipValue}
-                onClick={(e) => setEnergyAnchor(e.currentTarget)}
-                onClear={() => { setSelectedEnergies([]); setShowEnergyFilter(false); }}
-              />
-            </Box>
-          )}
-          <FilterDropdown
-            anchorEl={energyAnchor}
-            onClose={() => setEnergyAnchor(null)}
-            options={energyLabels.map(label => ({ value: label, icon: <EnergyLabel rating={label} /> }))}
-            multiple
-            value={selectedEnergies}
-            onChange={setSelectedEnergies}
-            onRemove={() => setShowEnergyFilter(false)}
-            placeholder="Search energy labels…"
-          />
-
-          {/* Add filter button */}
-          {availableToAdd.length > 0 && (
-            <>
-              <Button
-                variant="tertiary"
-                size="sm"
-                startIcon={<AddIcon />}
-                onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}
-              >
-                Filter
-              </Button>
-              <Menu
-                anchorEl={addFilterMenuAnchor}
-                open={Boolean(addFilterMenuAnchor)}
-                onClose={() => setAddFilterMenuAnchor(null)}
-                slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-              >
-                {availableToAdd.map(opt => (
-                  <MenuItem
-                    key={opt.key}
-                    onClick={() => {
-                      if (opt.key === 'group') { setShowGroupFilter(true); setPendingGroupOpen(true); }
-                      if (opt.key === 'energy') { setShowEnergyFilter(true); setPendingEnergyOpen(true); }
-                      setAddFilterMenuAnchor(null);
-                    }}
-                  >
-                    <ListItemIcon>{opt.icon}</ListItemIcon>
-                    <ListItemText>{opt.label}</ListItemText>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </>
-          )}
-        </Box>
-
-        {/* Right: Group by + Search + View toggle */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-          {/* Group by */}
-          <Button
-            variant="secondary"
-            size="sm"
-            endIcon={<ExpandMoreIcon />}
-            onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
-          >
-            Group by
-          </Button>
-          <Menu
-            anchorEl={groupByMenuAnchor}
-            open={Boolean(groupByMenuAnchor)}
-            onClose={() => setGroupByMenuAnchor(null)}
-            slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-          >
-            <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
-              <ListItemText>No grouping</ListItemText>
-            </MenuItem>
-            <Divider />
-            <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
-              <ListItemIcon><LocationOnOutlinedIcon fontSize="small" /></ListItemIcon>
-              <ListItemText>City</ListItemText>
-            </MenuItem>
-            <MenuItem selected={groupBy === 'group'} onClick={() => { setGroupBy('group'); setGroupByMenuAnchor(null); }}>
-              <ListItemIcon><GroupWorkOutlinedIcon fontSize="small" /></ListItemIcon>
-              <ListItemText>Group</ListItemText>
-            </MenuItem>
-          </Menu>
-
-          {/* Search */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              height: 30,
-              borderRadius: '6px',
-              border: '1px solid',
-              borderColor: c.borderPrimary,
-              bgcolor: c.bgPrimary,
-              px: 1,
-              gap: 0.5,
-              '&:focus-within': { borderColor: c.brandSecondary },
-              transition: 'border-color 0.15s ease',
-            }}
-          >
-            <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-            <InputBase
-              inputRef={searchRef}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search buildings…"
-              sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
-              endAdornment={
-                search ? (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
-                      <CloseIcon sx={{ fontSize: 14 }} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null
-              }
+        <FilterChip
+          label="Contract"
+          value={contractFilter !== 'all' ? contractLabel : null}
+          onClick={(e) => setContractAnchor(e.currentTarget)}
+        />
+        <FilterDropdown
+          anchorEl={contractAnchor}
+          onClose={() => setContractAnchor(null)}
+          options={[
+            { value: 'has_contract', label: 'Has contract', icon: <VerifiedOutlinedIcon fontSize="small" sx={{ color: c.statusGood }} /> },
+            { value: 'no_contract', label: 'No contract', icon: <CancelOutlinedIcon fontSize="small" sx={{ color: 'text.disabled' }} /> },
+          ] as FilterOption[]}
+          value={contractFilter === 'all' ? null : contractFilter}
+          onChange={(val) => setContractFilter((val ?? 'all') as ContractFilter)}
+          placeholder="Search…"
+        />
+        <FilterChip
+          label="City"
+          value={cityChipValue}
+          onClick={(e) => setCityAnchor(e.currentTarget)}
+        />
+        <FilterDropdown
+          anchorEl={cityAnchor}
+          onClose={() => setCityAnchor(null)}
+          options={cities.map(city => ({ value: city }))}
+          multiple
+          value={selectedCities}
+          onChange={setSelectedCities}
+          placeholder="Search cities…"
+        />
+        {showGroupFilter && (
+          <Box ref={groupChipRef} sx={{ display: 'inline-flex' }}>
+            <FilterChip
+              label="Group"
+              value={selectedGroup}
+              onClick={(e) => setGroupAnchor(e.currentTarget)}
+              onClear={() => { setSelectedGroup(null); setShowGroupFilter(false); }}
             />
           </Box>
-
-          {/* View mode segmented control */}
-          <Box
-            sx={{
-              display: 'flex',
-              border: '1px solid',
-              borderColor: c.borderPrimary,
-              borderRadius: '6px',
-              overflow: 'hidden',
-              height: 30,
-            }}
-          >
-            <Tooltip title="Grid view">
-              <IconButton
-                size="small"
-                onClick={() => setViewMode('grid')}
-                sx={{
-                  borderRadius: 0,
-                  width: 30, height: 30,
-                  bgcolor: viewMode === 'grid' ? c.bgActive : 'transparent',
-                  color: viewMode === 'grid' ? c.brandSecondary : 'text.secondary',
-                  '&:hover': { bgcolor: viewMode === 'grid' ? c.bgActive : c.bgPrimaryHover },
-                }}
-              >
-                <GridViewOutlinedIcon sx={{ fontSize: 16 }} />
-              </IconButton>
-            </Tooltip>
-            <Box sx={{ width: '1px', bgcolor: 'divider' }} />
-            <Tooltip title="Map view">
-              <IconButton
-                size="small"
-                onClick={() => setViewMode('map')}
-                sx={{
-                  borderRadius: 0,
-                  width: 30, height: 30,
-                  bgcolor: viewMode === 'map' ? c.bgActive : 'transparent',
-                  color: viewMode === 'map' ? c.brandSecondary : 'text.secondary',
-                  '&:hover': { bgcolor: viewMode === 'map' ? c.bgActive : c.bgPrimaryHover },
-                }}
-              >
-                <MapOutlinedIcon sx={{ fontSize: 16 }} />
-              </IconButton>
-            </Tooltip>
+        )}
+        <FilterDropdown
+          anchorEl={groupAnchor}
+          onClose={() => setGroupAnchor(null)}
+          options={groups.map(g => ({ value: g, icon: <GroupWorkOutlinedIcon fontSize="small" /> }))}
+          value={selectedGroup}
+          onChange={setSelectedGroup}
+          onRemove={() => setShowGroupFilter(false)}
+          placeholder="Search groups…"
+        />
+        {showEnergyFilter && (
+          <Box ref={energyChipRef} sx={{ display: 'inline-flex' }}>
+            <FilterChip
+              label="Energy label"
+              value={energyChipValue}
+              onClick={(e) => setEnergyAnchor(e.currentTarget)}
+              onClear={() => { setSelectedEnergies([]); setShowEnergyFilter(false); }}
+            />
           </Box>
-        </Box>
-      </Box>
+        )}
+        <FilterDropdown
+          anchorEl={energyAnchor}
+          onClose={() => setEnergyAnchor(null)}
+          options={energyLabels.map(label => ({ value: label, icon: <EnergyLabel rating={label} /> }))}
+          multiple
+          value={selectedEnergies}
+          onChange={setSelectedEnergies}
+          onRemove={() => setShowEnergyFilter(false)}
+          placeholder="Search energy labels…"
+        />
+        {availableToAdd.length > 0 && (
+          <>
+            <Button
+              variant="tertiary"
+              size="sm"
+              startIcon={<AddIcon />}
+              onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}
+            >
+              Filter
+            </Button>
+            <Menu
+              anchorEl={addFilterMenuAnchor}
+              open={Boolean(addFilterMenuAnchor)}
+              onClose={() => setAddFilterMenuAnchor(null)}
+              slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+            >
+              {availableToAdd.map(opt => (
+                <MenuItem
+                  key={opt.key}
+                  onClick={() => {
+                    if (opt.key === 'group') { setShowGroupFilter(true); setPendingGroupOpen(true); }
+                    if (opt.key === 'energy') { setShowEnergyFilter(true); setPendingEnergyOpen(true); }
+                    setAddFilterMenuAnchor(null);
+                  }}
+                >
+                  <ListItemIcon>{opt.icon}</ListItemIcon>
+                  <ListItemText>{opt.label}</ListItemText>
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        )}
+      </PageHeader>
 
       {/* ── Content ── */}
       {viewMode === 'map' ? (

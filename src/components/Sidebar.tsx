@@ -595,8 +595,6 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
       flexDirection: 'column',
       overflow: 'hidden',
       bgcolor: c.bgPrimary,
-      borderRight: 1,
-      borderColor: 'divider',
       transition: 'width 0.3s ease',
       // Collapsed state — hide labels, favorites, shortcuts; center icons
       ...(isCollapsed && {
