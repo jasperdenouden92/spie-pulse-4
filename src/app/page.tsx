@@ -2471,6 +2471,9 @@ export default function Home() {
           {currentPage === 'building_detail' && selectedBuilding && btab === 'zones' && (
             <PortfolioZonesPage tenant={selectedBuilding.tenant} buildingName={selectedBuilding.name} />
           )}
+          {currentPage === 'building_detail' && selectedBuilding && btab === 'assets' && (
+            <PortfolioAssetsPage buildingName={selectedBuilding.name} />
+          )}
         </Container>
         )}
       </Box>
