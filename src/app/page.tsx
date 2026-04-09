@@ -101,10 +101,8 @@ import OperationsPage from '@/components/OperationsPage';
 import TicketsPage from '@/components/TicketsPage';
 import QuotationsPage from '@/components/QuotationsPage';
 import PortfolioPage from '@/components/PortfolioPage';
-import PortfolioClustersPage from '@/components/PortfolioClustersPage';
 import PortfolioZonesPage from '@/components/PortfolioZonesPage';
 import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
-import PortfolioEquipmentTypesPage from '@/components/PortfolioEquipmentTypesPage';
 import BuildingDetailPage from '@/components/BuildingDetailPage';
 import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
 import ZoneDetailPage from '@/components/ZoneDetailPage';
@@ -369,7 +367,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -807,10 +805,8 @@ export default function Home() {
     if (currentPage === 'workspaces') return 'Workspaces';
     if (currentPage === 'exports') return 'Exports';
     if (currentPage === 'portfolio_buildings') return 'Portfolio';
-    if (currentPage === 'portfolio_clusters') return 'Clusters';
     if (currentPage === 'portfolio_zones') return 'Zones';
     if (currentPage === 'portfolio_assets') return 'Assets';
-    if (currentPage === 'portfolio_equipment_types') return 'Equipment Types';
     if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
     if (currentPage === 'zone_detail') return selectedZone?.name ?? 'Zone';
     if (currentPage === 'asset_detail') return selectedDetailAsset?.name ?? 'Asset';
@@ -849,7 +845,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     setSidePeekBuilding(null);
     setSidePeekZone(null);
@@ -1475,7 +1471,6 @@ export default function Home() {
               onViewModeChange={setPortfolioViewMode}
             />
           )}
-          {currentPage === 'portfolio_clusters' && <PortfolioClustersPage tenant={selectedTenant} />}
           {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} onZoneClick={(id, e) => handleSidePeekClick(e,
             () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
             () => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' }),
@@ -1484,7 +1479,6 @@ export default function Home() {
               () => { const a = getAssetById(id); if (a) { setSidePeekAsset(a); setSidePeekAssetTab('overview'); } },
               () => navigateTo({ page: 'asset_detail', assetdetail: id, atab: 'overview' }),
             )} />}
-          {currentPage === 'portfolio_equipment_types' && <PortfolioEquipmentTypesPage />}
 
           {/* Portfolio Page + Building Detail Performance Tab */}
           {(currentPage === 'portfolio' || (currentPage === 'building_detail' && btab === 'performance')) && (
@@ -1502,7 +1496,6 @@ export default function Home() {
                       isCollapsed={leftSidebarCollapsed}
                       onToggleCollapse={handleLeftSidebarToggle}
                       onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
-                      onBackToCluster={() => handlePageChange('portfolio_clusters')}
                       onBuildingChange={(name) => {
                         const b = allBuildings.find(b => b.name === name);
                         if (b) setSelectedBuilding(b);
@@ -2510,7 +2503,6 @@ export default function Home() {
               isCollapsed={leftSidebarCollapsed}
               onToggleCollapse={handleLeftSidebarToggle}
               onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
-              onBackToCluster={() => handlePageChange('portfolio_clusters')}
               onBuildingChange={(name) => {
                 const b = allBuildings.find(b => b.name === name);
                 if (b) setSelectedBuilding(b);
@@ -2537,7 +2529,6 @@ export default function Home() {
               isCollapsed={leftSidebarCollapsed}
               onToggleCollapse={handleLeftSidebarToggle}
               onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
-              onBackToCluster={() => handlePageChange('portfolio_clusters')}
               onBackToBuilding={() => navigateTo({ page: 'building_detail', building: selectedZone.buildingName })}
               onZoneChange={(id) => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' })}
             />
@@ -2558,7 +2549,7 @@ export default function Home() {
               isCollapsed={leftSidebarCollapsed}
               onToggleCollapse={handleLeftSidebarToggle}
               onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
-              onBackToCluster={() => handlePageChange('portfolio_clusters')}
+              onBackToCluster={() => handlePageChange('portfolio_buildings')}
               onBackToBuilding={() => selectedDetailAssetBuilding
                 ? navigateTo({ page: 'building_detail', building: selectedDetailAssetBuilding.name })
                 : handlePageChange('portfolio_buildings')}
@@ -2584,7 +2575,6 @@ export default function Home() {
               tab={sidePeekBuildingTab}
               onTabChange={setSidePeekBuildingTab}
               onBackToPortfolio={() => setSidePeekBuilding(null)}
-              onBackToCluster={() => setSidePeekBuilding(null)}
               onBuildingChange={(name) => {
                 const b = allBuildings.find(b => b.name === name);
                 if (b) setSidePeekBuilding(b);
@@ -2627,7 +2617,6 @@ export default function Home() {
               tab={sidePeekZoneTab}
               onTabChange={setSidePeekZoneTab}
               onBackToPortfolio={() => setSidePeekZone(null)}
-              onBackToCluster={() => setSidePeekZone(null)}
               onBackToBuilding={() => {
                 const building = allBuildings.find(b => b.name === sidePeekZone.buildingName);
                 if (building) { setSidePeekBuilding(building); setSidePeekBuildingTab('zones'); }
