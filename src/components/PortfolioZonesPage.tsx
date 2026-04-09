@@ -3,8 +3,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputBase from '@mui/material/InputBase';
@@ -19,10 +17,8 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Tooltip from '@mui/material/Tooltip';
 import FilterDropdown from '@/components/FilterDropdown';
 import PageHeader from '@/components/PageHeader';
-import { motion, AnimatePresence } from 'framer-motion';
 import { zones as allZones, getZoneColor, type Zone } from '@/data/zones';
 import { useThemeMode } from '@/theme-mode-context';
 import FilterChip from '@/components/FilterChip';
@@ -32,8 +28,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
@@ -41,8 +35,7 @@ import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 
 // ── Types ──
 
-type ViewMode = 'grid' | 'list';
-type GroupBy = 'none' | 'building' | 'city' | 'zone_type';
+type GroupBy = 'none' | 'building' | 'city' | 'zone_type' | 'floor';
 
 // ── Highlight matching text ──
 
@@ -75,52 +68,6 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   );
 }
 
-// ── Zone tile (grid view) ──
-
-function ZoneTile({ zone, query = '', onClick }: { zone: Zone; query?: string; onClick?: () => void }) {
-  const { themeColors: c } = useThemeMode();
-
-  return (
-    <Card
-      onClick={onClick}
-      sx={{
-        borderRadius: '6px',
-        border: `1px solid ${c.cardBorder}`,
-        boxShadow: `0 2px 12px 0 ${c.shadow}`,
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        '&:hover': onClick ? {
-          transform: 'translateY(-2px)',
-          boxShadow: `0 4px 20px 0 ${c.shadowMedium}`,
-        } : {},
-      }}
-    >
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        {/* Content */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 0.5 }}>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: 600, fontSize: '0.9rem', lineHeight: 1.3, mb: 0.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-            >
-              <HighlightText text={zone.name} query={query} />
-            </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled', whiteSpace: 'nowrap', flexShrink: 0 }}>
-              {zone.assetCount} assets
-            </Typography>
-          </Box>
-          <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            <HighlightText text={zone.buildingName} query={query} />
-          </Typography>
-          <Typography variant="body2" sx={{ fontSize: '0.72rem', color: 'text.disabled', lineHeight: 1.4 }}>
-            {zone.floor}
-          </Typography>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
-
 // ── Section header for grouped view ──
 
 function SectionHeader({ label, count }: { label: string; count: number }) {
@@ -139,7 +86,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ── List view ──
 
-function ZonesTable({ zones, query }: { zones: Zone[]; query: string }) {
+function ZonesTable({ zones, query, hideBuilding, hideCity, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; onZoneClick?: (zoneId: string) => void }) {
   const { themeColors: c } = useThemeMode();
 
   return (
@@ -154,57 +101,40 @@ function ZonesTable({ zones, query }: { zones: Zone[]; query: string }) {
         <TableHead>
           <TableRow sx={{ bgcolor: c.bgSecondary }}>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25, pl: 2 }}>Zone</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>Building</TableCell>
+            {!hideBuilding && <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>Building</TableCell>}
             <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>Floor</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>City</TableCell>
+            {!hideCity && <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25 }}>City</TableCell>}
             <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem', py: 1.25, pr: 2 }} align="right">Assets</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {zones.map((zone: Zone, idx: number) => {
-            const color = getZoneColor(zone.name);
             return (
               <TableRow
                 key={zone.id}
+                onClick={() => onZoneClick?.(zone.id)}
                 sx={{
                   bgcolor: idx % 2 === 0 ? 'transparent' : `color-mix(in srgb, ${c.bgSecondary} 50%, transparent)`,
                   '&:hover': { bgcolor: `color-mix(in srgb, ${c.brandSecondary} 6%, transparent)` },
                   '&:last-child td': { borderBottom: 0 },
-                  cursor: 'pointer',
+                  cursor: onZoneClick ? 'pointer' : 'default',
                   transition: 'background-color 0.1s ease',
                 }}
               >
                 <TableCell sx={{ py: 1, pl: 2, borderColor: c.cardBorder }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                      sx={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: '4px',
-                        bgcolor: `color-mix(in srgb, ${color} 12%, transparent)`,
-                        border: `1px solid color-mix(in srgb, ${color} 20%, transparent)`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <LayersOutlinedIcon sx={{ fontSize: 13, color }} />
-                    </Box>
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, lineHeight: 1 }}>
-                      {query ? <HighlightText text={zone.name} query={query} /> : zone.name}
-                    </Typography>
-                  </Box>
+                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, lineHeight: 1 }}>
+                    {query ? <HighlightText text={zone.name} query={query} /> : zone.name}
+                  </Typography>
                 </TableCell>
-                <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
+                {!hideBuilding && <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
                   {query ? <HighlightText text={zone.buildingName} query={query} /> : zone.buildingName}
-                </TableCell>
+                </TableCell>}
                 <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
                   {zone.floor}
                 </TableCell>
-                <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
+                {!hideCity && <TableCell sx={{ py: 1, fontSize: '0.82rem', color: 'text.secondary', borderColor: c.cardBorder }}>
                   {zone.buildingCity || '—'}
-                </TableCell>
+                </TableCell>}
                 <TableCell sx={{ py: 1, pr: 2, borderColor: c.cardBorder }} align="right">
                   <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: c.brandSecondary }}>
                     {zone.assetCount}
@@ -221,11 +151,13 @@ function ZonesTable({ zones, query }: { zones: Zone[]; query: string }) {
 
 // ── Main component ──
 
-export default function PortfolioZonesPage({ tenant }: { tenant: string }) {
+export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }: { tenant: string; buildingName?: string; onZoneClick?: (zoneId: string) => void }) {
   const { themeColors: c } = useThemeMode();
-  const tenantZones = useMemo(() => allZones.filter(z => z.buildingTenant === tenant), [tenant]);
+  const tenantZones = useMemo(
+    () => allZones.filter(z => z.buildingTenant === tenant && (!buildingName || z.buildingName === buildingName)),
+    [tenant, buildingName]
+  );
 
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [groupBy, setGroupBy] = useState<GroupBy>('none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -284,13 +216,16 @@ export default function PortfolioZonesPage({ tenant }: { tenant: string }) {
       const key =
         groupBy === 'building' ? z.buildingName :
         groupBy === 'city' ? (z.buildingCity || 'Unknown') :
+        groupBy === 'floor' ? z.floor :
         z.name;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(z);
     }
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([key, items]) => ({ key, label: key, items }));
+    const entries = Array.from(map.entries()).map(([key, items]) => ({ key, label: key, items }));
+    if (groupBy === 'floor') {
+      return entries.sort((a, b) => a.items[0].floorNumber - b.items[0].floorNumber);
+    }
+    return entries.sort((a, b) => a.key.localeCompare(b.key));
   }, [filtered, groupBy]);
 
   const buildingChipValue = selectedBuildings.length === 0 ? null : selectedBuildings.length === 1 ? selectedBuildings[0] : `${selectedBuildings.length} buildings`;
@@ -301,209 +236,206 @@ export default function PortfolioZonesPage({ tenant }: { tenant: string }) {
     { key: 'zone_type', label: 'Zone type', icon: <CategoryOutlinedIcon fontSize="small" />, visible: showZoneTypeFilter },
   ].filter(f => !f.visible);
 
+  const groupByMenu = (zoneTypeOnly: boolean) => (
+    <Menu
+      anchorEl={groupByMenuAnchor}
+      open={Boolean(groupByMenuAnchor)}
+      onClose={() => setGroupByMenuAnchor(null)}
+      slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+    >
+      <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
+        <ListItemText>No grouping</ListItemText>
+      </MenuItem>
+      <Divider />
+      {!zoneTypeOnly && (
+        <MenuItem selected={groupBy === 'building'} onClick={() => { setGroupBy('building'); setGroupByMenuAnchor(null); }}>
+          <ListItemIcon><ApartmentOutlinedIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>Building</ListItemText>
+        </MenuItem>
+      )}
+      {!zoneTypeOnly && (
+        <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
+          <ListItemIcon><LocationOnOutlinedIcon fontSize="small" /></ListItemIcon>
+          <ListItemText>City</ListItemText>
+        </MenuItem>
+      )}
+      <MenuItem selected={groupBy === 'zone_type'} onClick={() => { setGroupBy('zone_type'); setGroupByMenuAnchor(null); }}>
+        <ListItemIcon><LayersOutlinedIcon fontSize="small" /></ListItemIcon>
+        <ListItemText>Zone type</ListItemText>
+      </MenuItem>
+    </Menu>
+  );
+
+  const searchBox = (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        height: 30,
+        borderRadius: '6px',
+        border: '1px solid',
+        borderColor: c.borderPrimary,
+        bgcolor: c.bgPrimary,
+        px: 1,
+        gap: 0.5,
+        '&:focus-within': { borderColor: c.brandSecondary },
+        transition: 'border-color 0.15s ease',
+      }}
+    >
+      <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+      <InputBase
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search zones…"
+        sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
+        endAdornment={
+          search ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+                <CloseIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </InputAdornment>
+          ) : null
+        }
+      />
+    </Box>
+  );
+
+  const zoneTypeFilterDropdown = (
+    <FilterDropdown
+      anchorEl={zoneTypeAnchor}
+      onClose={() => setZoneTypeAnchor(null)}
+      options={zoneTypes.map(t => ({
+        value: t,
+        icon: <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: getZoneColor(t), flexShrink: 0 }} />,
+      }))}
+      multiple
+      value={selectedZoneTypes}
+      onChange={setSelectedZoneTypes}
+      onRemove={() => setShowZoneTypeFilter(false)}
+      placeholder="Search zone types…"
+    />
+  );
+
   return (
     <Box>
-      <PageHeader
-        title={
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
-              Zones <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Button
-                variant="secondary"
-                size="sm"
-                endIcon={<ExpandMoreIcon />}
-                onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
-              >
-                Group by
-              </Button>
-              <Menu
-                anchorEl={groupByMenuAnchor}
-                open={Boolean(groupByMenuAnchor)}
-                onClose={() => setGroupByMenuAnchor(null)}
-                slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-              >
-                <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
-                  <ListItemText>No grouping</ListItemText>
-                </MenuItem>
-                <Divider />
-                <MenuItem selected={groupBy === 'building'} onClick={() => { setGroupBy('building'); setGroupByMenuAnchor(null); }}>
-                  <ListItemIcon><ApartmentOutlinedIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Building</ListItemText>
-                </MenuItem>
-                <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
-                  <ListItemIcon><LocationOnOutlinedIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>City</ListItemText>
-                </MenuItem>
-                <MenuItem selected={groupBy === 'zone_type'} onClick={() => { setGroupBy('zone_type'); setGroupByMenuAnchor(null); }}>
-                  <ListItemIcon><LayersOutlinedIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Zone type</ListItemText>
-                </MenuItem>
-              </Menu>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: 30,
-                  borderRadius: '6px',
-                  border: '1px solid',
-                  borderColor: c.borderPrimary,
-                  bgcolor: c.bgPrimary,
-                  px: 1,
-                  gap: 0.5,
-                  '&:focus-within': { borderColor: c.brandSecondary },
-                  transition: 'border-color 0.15s ease',
-                }}
-              >
-                <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-                <InputBase
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search zones…"
-                  sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
-                  endAdornment={
-                    search ? (
-                      <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
-                          <CloseIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null
-                  }
-                />
-              </Box>
-              <Box
-                sx={{
-                  display: 'flex',
-                  border: '1px solid',
-                  borderColor: c.borderPrimary,
-                  borderRadius: '6px',
-                  overflow: 'hidden',
-                  height: 30,
-                }}
-              >
-                <Tooltip title="Grid view">
-                  <IconButton
-                    size="small"
-                    onClick={() => setViewMode('grid')}
-                    sx={{
-                      borderRadius: 0,
-                      width: 30, height: 30,
-                      bgcolor: viewMode === 'grid' ? c.bgActive : 'transparent',
-                      color: viewMode === 'grid' ? c.brandSecondary : 'text.secondary',
-                      '&:hover': { bgcolor: viewMode === 'grid' ? c.bgActive : c.bgPrimaryHover },
-                    }}
-                  >
-                    <GridViewOutlinedIcon sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </Tooltip>
-                <Box sx={{ width: '1px', bgcolor: 'divider' }} />
-                <Tooltip title="List view">
-                  <IconButton
-                    size="small"
-                    onClick={() => setViewMode('list')}
-                    sx={{
-                      borderRadius: 0,
-                      width: 30, height: 30,
-                      bgcolor: viewMode === 'list' ? c.bgActive : 'transparent',
-                      color: viewMode === 'list' ? c.brandSecondary : 'text.secondary',
-                      '&:hover': { bgcolor: viewMode === 'list' ? c.bgActive : c.bgPrimaryHover },
-                    }}
-                  >
-                    <FormatListBulletedIcon sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </Tooltip>
+      {buildingName ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+          <FilterChip
+            label="Zone type"
+            value={zoneTypeChipValue}
+            onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
+            onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
+          />
+          {zoneTypeFilterDropdown}
+          <Box sx={{ flex: 1 }} />
+          <Button
+            variant="secondary"
+            size="sm"
+            endIcon={<ExpandMoreIcon />}
+            onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
+          >
+            Group by
+          </Button>
+          {groupByMenu(true)}
+          {searchBox}
+        </Box>
+      ) : (
+        <PageHeader
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
+                Zones <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  endIcon={<ExpandMoreIcon />}
+                  onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
+                >
+                  Group by
+                </Button>
+                {groupByMenu(false)}
+                {searchBox}
               </Box>
             </Box>
-          </Box>
-        }
-      >
-        <FilterChip
-          label="Building"
-          value={buildingChipValue}
-          onClick={(e) => setBuildingAnchor(e.currentTarget)}
-          onClear={selectedBuildings.length > 0 ? () => setSelectedBuildings([]) : undefined}
-        />
-        <FilterDropdown
-          anchorEl={buildingAnchor}
-          onClose={() => setBuildingAnchor(null)}
-          options={buildings.map(b => ({ value: b }))}
-          multiple
-          value={selectedBuildings}
-          onChange={setSelectedBuildings}
-          placeholder="Search buildings…"
-        />
-        <FilterChip
-          label="City"
-          value={cityChipValue}
-          onClick={(e) => setCityAnchor(e.currentTarget)}
-          onClear={selectedCities.length > 0 ? () => setSelectedCities([]) : undefined}
-        />
-        <FilterDropdown
-          anchorEl={cityAnchor}
-          onClose={() => setCityAnchor(null)}
-          options={cities.map(city => ({ value: city }))}
-          multiple
-          value={selectedCities}
-          onChange={setSelectedCities}
-          placeholder="Search cities…"
-        />
-        {showZoneTypeFilter && (
-          <Box ref={zoneTypeChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip
-              label="Zone type"
-              value={zoneTypeChipValue}
-              onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
-              onClear={() => { setSelectedZoneTypes([]); setShowZoneTypeFilter(false); }}
-            />
-          </Box>
-        )}
-        <FilterDropdown
-          anchorEl={zoneTypeAnchor}
-          onClose={() => setZoneTypeAnchor(null)}
-          options={zoneTypes.map(t => ({
-            value: t,
-            icon: <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: getZoneColor(t), flexShrink: 0 }} />,
-          }))}
-          multiple
-          value={selectedZoneTypes}
-          onChange={setSelectedZoneTypes}
-          onRemove={() => setShowZoneTypeFilter(false)}
-          placeholder="Search zone types…"
-        />
-        {availableToAdd.length > 0 && (
-          <>
-            <Button
-              variant="tertiary"
-              size="sm"
-              startIcon={<AddIcon />}
-              onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}
-            >
-              Filter
-            </Button>
-            <Menu
-              anchorEl={addFilterMenuAnchor}
-              open={Boolean(addFilterMenuAnchor)}
-              onClose={() => setAddFilterMenuAnchor(null)}
-              slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-            >
-              {availableToAdd.map(opt => (
-                <MenuItem
-                  key={opt.key}
-                  onClick={() => {
-                    if (opt.key === 'zone_type') { setShowZoneTypeFilter(true); setPendingZoneTypeOpen(true); }
-                    setAddFilterMenuAnchor(null);
-                  }}
-                >
-                  <ListItemIcon>{opt.icon}</ListItemIcon>
-                  <ListItemText>{opt.label}</ListItemText>
-                </MenuItem>
-              ))}
-            </Menu>
-          </>
-        )}
-      </PageHeader>
+          }
+        >
+          <FilterChip
+            label="Building"
+            value={buildingChipValue}
+            onClick={(e) => setBuildingAnchor(e.currentTarget)}
+            onClear={selectedBuildings.length > 0 ? () => setSelectedBuildings([]) : undefined}
+          />
+          <FilterDropdown
+            anchorEl={buildingAnchor}
+            onClose={() => setBuildingAnchor(null)}
+            options={buildings.map(b => ({ value: b }))}
+            multiple
+            value={selectedBuildings}
+            onChange={setSelectedBuildings}
+            placeholder="Search buildings…"
+          />
+          <FilterChip
+            label="City"
+            value={cityChipValue}
+            onClick={(e) => setCityAnchor(e.currentTarget)}
+            onClear={selectedCities.length > 0 ? () => setSelectedCities([]) : undefined}
+          />
+          <FilterDropdown
+            anchorEl={cityAnchor}
+            onClose={() => setCityAnchor(null)}
+            options={cities.map(city => ({ value: city }))}
+            multiple
+            value={selectedCities}
+            onChange={setSelectedCities}
+            placeholder="Search cities…"
+          />
+          {showZoneTypeFilter && (
+            <Box ref={zoneTypeChipRef} sx={{ display: 'inline-flex' }}>
+              <FilterChip
+                label="Zone type"
+                value={zoneTypeChipValue}
+                onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
+                onClear={() => { setSelectedZoneTypes([]); setShowZoneTypeFilter(false); }}
+              />
+            </Box>
+          )}
+          {zoneTypeFilterDropdown}
+          {availableToAdd.length > 0 && (
+            <>
+              <Button
+                variant="tertiary"
+                size="sm"
+                startIcon={<AddIcon />}
+                onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}
+              >
+                Filter
+              </Button>
+              <Menu
+                anchorEl={addFilterMenuAnchor}
+                open={Boolean(addFilterMenuAnchor)}
+                onClose={() => setAddFilterMenuAnchor(null)}
+                slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+              >
+                {availableToAdd.map(opt => (
+                  <MenuItem
+                    key={opt.key}
+                    onClick={() => {
+                      if (opt.key === 'zone_type') { setShowZoneTypeFilter(true); setPendingZoneTypeOpen(true); }
+                      setAddFilterMenuAnchor(null);
+                    }}
+                  >
+                    <ListItemIcon>{opt.icon}</ListItemIcon>
+                    <ListItemText>{opt.label}</ListItemText>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </>
+          )}
+        </PageHeader>
+      )}
 
       {/* ── Content ── */}
       <Box sx={{ pt: 3 }}>
@@ -511,63 +443,15 @@ export default function PortfolioZonesPage({ tenant }: { tenant: string }) {
           <Box sx={{ py: 8, textAlign: 'center' }}>
             <Typography variant="body1" color="text.secondary">No zones match your filters.</Typography>
           </Box>
-        ) : viewMode === 'list' ? (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key="list"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              {groupBy !== 'none' ? (
-                grouped.map(({ key, label, items }) => (
-                  <Box key={key} sx={{ mb: 4 }}>
-                    <SectionHeader label={label} count={items.length} />
-                    <ZonesTable zones={items} query={search} />
-                  </Box>
-                ))
-              ) : (
-                <ZonesTable zones={filtered} query={search} />
-              )}
-            </motion.div>
-          </AnimatePresence>
+        ) : groupBy !== 'none' ? (
+          grouped.map(({ key, label, items }) => (
+            <Box key={key} sx={{ mb: 4 }}>
+              <SectionHeader label={label} count={items.length} />
+              <ZonesTable zones={items} query={search} hideBuilding={!!buildingName} hideCity={!!buildingName} onZoneClick={onZoneClick} />
+            </Box>
+          ))
         ) : (
-          <AnimatePresence mode="wait">
-            {grouped.map(({ key, label, items }) => (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {groupBy !== 'none' && (
-                  <SectionHeader label={label} count={items.length} />
-                )}
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: 1.5,
-                    mb: groupBy !== 'none' ? 4 : 0,
-                  }}
-                >
-                  {items.map((zone) => (
-                    <motion.div
-                      key={zone.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      <ZoneTile zone={zone} query={search} />
-                    </motion.div>
-                  ))}
-                </Box>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          <ZonesTable zones={filtered} query={search} hideBuilding={!!buildingName} hideCity={!!buildingName} onZoneClick={onZoneClick} />
         )}
       </Box>
     </Box>

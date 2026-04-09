@@ -107,6 +107,9 @@ import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
 import PortfolioEquipmentTypesPage from '@/components/PortfolioEquipmentTypesPage';
 import BuildingDetailPage from '@/components/BuildingDetailPage';
 import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
+import ZoneDetailPage from '@/components/ZoneDetailPage';
+import type { ZoneDetailTab } from '@/components/ZoneDetailPage';
+import { zones as allZones } from '@/data/zones';
 import OverallPerformancePage from '@/components/OverallPerformancePage';
 import SolarPowerOutlinedIcon from '@mui/icons-material/SolarPowerOutlined';
 import FilterDramaOutlinedIcon from '@mui/icons-material/FilterDramaOutlined';
@@ -362,7 +365,7 @@ export default function Home() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derived state — read directly from URL params
-  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+  const currentPage = (searchParams.get('page') ?? 'portfolio') as 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   const buildingName = searchParams.get('building') ?? '';
   const selectedBuilding = buildingName ? (allBuildings.find(b => b.name === buildingName) ?? null) : null;
   const selection = (searchParams.get('metric') ?? 'overall') as Selection;
@@ -377,7 +380,10 @@ export default function Home() {
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
-  const btab = (searchParams.get('btab') ?? 'performance') as 'overview' | 'performance' | 'assets' | 'tickets' | 'quotations';
+  const btab = (searchParams.get('btab') ?? 'performance') as 'overview' | 'performance' | 'zones' | 'assets' | 'tickets' | 'quotations';
+  const zoneId = searchParams.get('zone') ?? '';
+  const ztab = (searchParams.get('ztab') ?? 'overview') as 'overview' | 'assets' | 'tickets' | 'quotations';
+  const selectedZone = zoneId ? (allZones.find(z => z.id === zoneId) ?? null) : null;
 
   // URL-based asset (from asset explorer / tree)
   const urlAsset = assetId ? getAssetById(assetId) : null;
@@ -458,6 +464,7 @@ export default function Home() {
   const setIsAssetExplorerOpen = useCallback((v: boolean) => setURLParams({ explorer: v ? '1' : '0' }), [setURLParams]);
   const setAssetTab = useCallback((n: number) => setURLParams({ assetTab: String(n) }), [setURLParams]);
   const setBtab = useCallback((t: string) => setURLParams({ btab: t }), [setURLParams]);
+  const setZtab = useCallback((t: string) => setURLParams({ ztab: t }), [setURLParams]);
   // Open a URL-serialisable asset (from the tree)
   const setQuickviewAsset = (a: AssetNode | null) => {
     setLocalQuickviewAsset(null);
@@ -785,6 +792,7 @@ export default function Home() {
     if (currentPage === 'portfolio_assets') return 'Assets';
     if (currentPage === 'portfolio_equipment_types') return 'Equipment Types';
     if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
+    if (currentPage === 'zone_detail') return selectedZone?.name ?? 'Zone';
     if (currentPage === 'bms' || currentPage === 'bms_access') return 'BMS - Access';
     if (currentPage === 'bms_logging') return 'BMS - Logging';
     if (currentPage === 'operations') return 'Operations';
@@ -820,7 +828,7 @@ export default function Home() {
     }
   };
 
-  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
+  const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0', building: '', view: 'dashboard' };
     setURLParams(updates);
@@ -979,8 +987,8 @@ export default function Home() {
         left: 0,
         height: '100vh',
         width: leftSidebarWidth,
-        borderRight: 1,
-        borderColor: 'divider',
+        borderRight: '1px solid',
+        borderColor: tc.borderSecondary,
         zIndex: 1500,
         transition: 'width 0.3s ease, transform 0.3s ease',
         bgcolor: 'background.paper',
@@ -1325,7 +1333,7 @@ export default function Home() {
         minWidth: 0,
         overflow: 'hidden'
       }}>
-        {currentPage !== 'building_detail' && <TopBar
+        {currentPage !== 'building_detail' && currentPage !== 'zone_detail' && <TopBar
             currentPage={currentPage}
             selectedBuilding={selectedBuilding}
             selectedAsset={selectedAsset}
@@ -1406,7 +1414,7 @@ export default function Home() {
 
         {/* Page Content */}
         {currentPage !== 'dashboards' && (
-        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: currentPage === 'building_detail' ? 0 : '56px', pt: currentPage === 'building_detail' ? 0 : 2, px: isNarrow ? 0.5 : 3, ...(currentPage === 'portfolio_buildings' && portfolioViewMode === 'map' ? { display: 'flex', flexDirection: 'column', pb: 0, overflow: 'hidden' } : {}) }}>
+        <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: (currentPage === 'building_detail' || currentPage === 'zone_detail') ? 0 : '56px', pt: (currentPage === 'building_detail' || currentPage === 'zone_detail') ? 0 : 2, px: isNarrow ? 0.5 : 3, ...(currentPage === 'portfolio_buildings' && portfolioViewMode === 'map' ? { display: 'flex', flexDirection: 'column', pb: 0, overflow: 'hidden' } : {}) }}>
           {currentPage === 'home' && <HomePage />}
           {(currentPage === 'insights' || currentPage === 'insights_alerts') && <InsightsPage tab="alerts" />}
           {currentPage === 'insights_analyses' && <InsightsPage tab="analyses" />}
@@ -1443,7 +1451,7 @@ export default function Home() {
             />
           )}
           {currentPage === 'portfolio_clusters' && <PortfolioClustersPage tenant={selectedTenant} />}
-          {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} />}
+          {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} onZoneClick={(id) => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' })} />}
           {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
           {currentPage === 'portfolio_equipment_types' && <PortfolioEquipmentTypesPage />}
 
@@ -1462,7 +1470,8 @@ export default function Home() {
                       onTabChange={(t) => setBtab(t)}
                       isCollapsed={leftSidebarCollapsed}
                       onToggleCollapse={handleLeftSidebarToggle}
-                      onBreadcrumbBack={() => handlePageChange('portfolio_buildings')}
+                      onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
+                      onBackToCluster={() => handlePageChange('portfolio_clusters')}
                       onBuildingChange={(name) => {
                         const b = allBuildings.find(b => b.name === name);
                         if (b) setSelectedBuilding(b);
@@ -1616,20 +1625,10 @@ export default function Home() {
                             <svg width={sparkW} height={sparkH} style={{ overflow: 'visible' }}>
                               <path d={sparkPath} fill="none" stroke={overallRating.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
-                            <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
-                              <AnimatedNumber value={overallScore} />%
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                              {periodMetrics.periodLabel !== null && (
-                                <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main' }}>
-                                    {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18 }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18 }} />}
-                                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
-                                      {Math.abs(periodMetrics.overall.trend)}%
-                                    </Typography>
-                                  </Box>
-                                </Tooltip>
-                              )}
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+                              <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
+                                <AnimatedNumber value={overallScore} />%
+                              </Typography>
                               <Chip
                                 label={overallRating.label}
                                 size="small"
@@ -1642,6 +1641,18 @@ export default function Home() {
                                   '& .MuiChip-label': { px: 1 },
                                 }}
                               />
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                              {periodMetrics.periodLabel !== null && (
+                                <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main' }}>
+                                    {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18 }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18 }} />}
+                                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                      {Math.abs(periodMetrics.overall.trend)}%
+                                    </Typography>
+                                  </Box>
+                                </Tooltip>
+                              )}
                             </Box>
                           </Box>
                         );
@@ -2461,12 +2472,38 @@ export default function Home() {
               onTabChange={(t) => setBtab(t)}
               isCollapsed={leftSidebarCollapsed}
               onToggleCollapse={handleLeftSidebarToggle}
-              onBreadcrumbBack={() => handlePageChange('portfolio_buildings')}
+              onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
+              onBackToCluster={() => handlePageChange('portfolio_clusters')}
               onBuildingChange={(name) => {
                 const b = allBuildings.find(b => b.name === name);
                 if (b) setSelectedBuilding(b);
               }}
             />
+          )}
+          {currentPage === 'building_detail' && selectedBuilding && btab === 'zones' && (
+            <PortfolioZonesPage
+              tenant={selectedBuilding.tenant}
+              buildingName={selectedBuilding.name}
+              onZoneClick={(id) => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' })}
+            />
+          )}
+
+          {/* Zone Detail Page */}
+          {currentPage === 'zone_detail' && selectedZone && (
+            <ZoneDetailPage
+              zone={selectedZone}
+              tab={ztab as ZoneDetailTab}
+              onTabChange={(t) => setZtab(t)}
+              isCollapsed={leftSidebarCollapsed}
+              onToggleCollapse={handleLeftSidebarToggle}
+              onBackToPortfolio={() => handlePageChange('portfolio_buildings')}
+              onBackToCluster={() => handlePageChange('portfolio_clusters')}
+              onBackToBuilding={() => navigateTo({ page: 'building_detail', building: selectedZone.buildingName })}
+              onZoneChange={(id) => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' })}
+            />
+          )}
+          {currentPage === 'building_detail' && selectedBuilding && btab === 'assets' && (
+            <PortfolioAssetsPage buildingName={selectedBuilding.name} />
           )}
         </Container>
         )}

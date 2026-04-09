@@ -20,7 +20,7 @@ interface TabItem {
 }
 
 interface PageHeaderProps {
-  variant?: 'default' | 'hero';
+  variant?: 'default' | 'hero' | 'entity';
 
   /** When provided, renders the TopBar with these props (default variant only). */
   topBar?: TopBarProps;
@@ -42,6 +42,14 @@ interface PageHeaderProps {
   breadcrumb?: React.ReactNode;
   /** Actions rendered on the right of the hero top bar overlay (e.g. star icon). */
   heroActions?: React.ReactNode;
+
+  // Entity variant
+  /** Icon element rendered inside the entity icon container. */
+  entityIcon?: React.ReactNode;
+  /** Background color of the entity icon container. */
+  entityIconBgColor?: string;
+  /** Short type label shown in the subtitle row (e.g. "Zone", "Asset"). */
+  entityType?: string;
 }
 
 function DefaultHeader({ topBar, title, children, actions, c }: {
@@ -299,12 +307,192 @@ function HeroHeader({
   );
 }
 
+function EntityHeader({
+  title,
+  subtitle,
+  tabs,
+  activeTab,
+  onTabChange,
+  isCollapsed = false,
+  onToggleCollapse,
+  breadcrumb,
+  heroActions,
+  entityIcon,
+  entityIconBgColor,
+  entityType,
+}: PageHeaderProps) {
+  const isNarrow = useMediaQuery('(max-width:960px)');
+  const { themeColors: c } = useThemeMode();
+
+  return (
+    <Box
+      sx={{
+        mx: isNarrow ? -0.5 : -3,
+        width: isNarrow ? 'calc(100% + 8px)' : 'calc(100% + 48px)',
+        mb: 3,
+        bgcolor: '#fff',
+        borderBottomLeftRadius: '48px',
+        borderBottom: '1px solid',
+        borderLeft: '1px solid',
+        borderColor: 'divider',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Top bar: collapse toggle + breadcrumb + actions */}
+      <Box
+        sx={{
+          height: 56,
+          display: 'flex',
+          alignItems: 'center',
+          px: isNarrow ? 1 : 1.5,
+          gap: 0.5,
+        }}
+      >
+        <IconButton
+          size="small"
+          onClick={onToggleCollapse}
+          sx={{
+            color: 'text.secondary',
+            flexShrink: 0,
+            '&:hover': { bgcolor: 'action.hover' },
+          }}
+        >
+          <MenuIcon sx={{ display: 'none', fontSize: 20, '@media (max-width: 926px)': { display: 'block' } }} />
+          <MenuOpenIcon
+            sx={{
+              display: 'block',
+              fontSize: 20,
+              '@media (max-width: 926px)': { display: 'none' },
+              transform: isCollapsed ? 'rotate(180deg)' : 'none',
+              transition: 'transform 0.3s ease',
+            }}
+          />
+        </IconButton>
+
+        {!isNarrow && breadcrumb && (
+          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+            {breadcrumb}
+          </Box>
+        )}
+        {isNarrow && <Box sx={{ flex: 1 }} />}
+
+        {heroActions && (
+          <Box sx={{ flexShrink: 0 }}>
+            {heroActions}
+          </Box>
+        )}
+      </Box>
+
+      {/* Entity info: icon + title + subtitle */}
+      <Box
+        sx={{
+          px: isNarrow ? 2 : 4,
+          pb: tabs && tabs.length > 0 ? 2 : 3,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+        }}
+      >
+        {entityIcon && (
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: '12px',
+              bgcolor: entityIconBgColor ?? c.bgSecondary,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            {entityIcon}
+          </Box>
+        )}
+        <Box sx={{ minWidth: 0 }}>
+          {title && (
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: isNarrow ? '1.1rem' : '1.375rem',
+                fontFamily: '"Inter", sans-serif',
+                lineHeight: 1.2,
+                color: 'text.primary',
+              }}
+            >
+              {title}
+            </Typography>
+          )}
+          {subtitle && (
+            <Typography
+              noWrap
+              sx={{
+                fontSize: '0.8125rem',
+                color: 'text.secondary',
+                lineHeight: 1.4,
+                fontFamily: '"Inter", sans-serif',
+                mt: 0.5,
+              }}
+            >
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+
+      {/* Tabs */}
+      {tabs && tabs.length > 0 && (
+        <Box sx={{ px: isNarrow ? 1 : 3, pb: 2 }}>
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => onTabChange?.(v)}
+            variant={isNarrow ? 'scrollable' : 'standard'}
+            scrollButtons={false}
+            TabIndicatorProps={{ style: { display: 'none' } }}
+            sx={{
+              minHeight: 36,
+              '& .MuiTabs-flexContainer': { gap: 0.5 },
+              '& .MuiTab-root': {
+                minHeight: 36,
+                minWidth: 'unset',
+                py: 0,
+                px: 2,
+                borderRadius: '999px',
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                color: 'text.secondary',
+                letterSpacing: 0,
+                transition: 'background-color 0.15s, color 0.15s',
+                '&:hover': { bgcolor: 'action.hover', color: 'text.primary' },
+                '&.Mui-selected': {
+                  bgcolor: `color-mix(in srgb, ${c.brandSecondary} 12%, transparent)`,
+                  color: c.brandSecondary,
+                  fontWeight: 600,
+                },
+              },
+            }}
+          >
+            {tabs.map(t => (
+              <Tab key={t.value} value={t.value} label={t.label} />
+            ))}
+          </Tabs>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
 function PageHeader(props: PageHeaderProps) {
   const { themeColors: c } = useThemeMode();
   const { variant = 'default' } = props;
 
   if (variant === 'hero') {
     return <HeroHeader {...props} />;
+  }
+
+  if (variant === 'entity') {
+    return <EntityHeader {...props} />;
   }
 
   return <DefaultHeader {...props} c={c} />;
