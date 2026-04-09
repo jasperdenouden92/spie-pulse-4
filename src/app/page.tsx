@@ -1616,20 +1616,10 @@ export default function Home() {
                             <svg width={sparkW} height={sparkH} style={{ overflow: 'visible' }}>
                               <path d={sparkPath} fill="none" stroke={overallRating.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
-                            <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
-                              <AnimatedNumber value={overallScore} />%
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                              {periodMetrics.periodLabel !== null && (
-                                <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main' }}>
-                                    {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18 }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18 }} />}
-                                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
-                                      {Math.abs(periodMetrics.overall.trend)}%
-                                    </Typography>
-                                  </Box>
-                                </Tooltip>
-                              )}
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+                              <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
+                                <AnimatedNumber value={overallScore} />%
+                              </Typography>
                               <Chip
                                 label={overallRating.label}
                                 size="small"
@@ -1642,6 +1632,18 @@ export default function Home() {
                                   '& .MuiChip-label': { px: 1 },
                                 }}
                               />
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                              {periodMetrics.periodLabel !== null && (
+                                <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main' }}>
+                                    {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18 }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18 }} />}
+                                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
+                                      {Math.abs(periodMetrics.overall.trend)}%
+                                    </Typography>
+                                  </Box>
+                                </Tooltip>
+                              )}
                             </Box>
                           </Box>
                         );
