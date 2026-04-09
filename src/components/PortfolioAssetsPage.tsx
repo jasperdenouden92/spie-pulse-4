@@ -137,15 +137,15 @@ function CategoryCell({ category }: { category?: string }) {
 }
 
 // ── Sortable columns ──
-type SortKey = 'name' | 'building' | 'category' | 'manufacturer' | 'model' | 'location' | 'installDate' | 'status';
+type SortKey = 'name' | 'building' | 'category' | 'manufacturer' | 'model' | 'zone' | 'installDate' | 'status';
 
 const COLUMNS: { key: SortKey; label: string; width?: string }[] = [
   { key: 'name',         label: 'Asset',        width: '18%' },
   { key: 'building',     label: 'Building',     width: '16%' },
-  { key: 'category',     label: 'Category',     width: '15%' },
+  { key: 'category',     label: 'Category',     width: '13%' },
   { key: 'manufacturer', label: 'Manufacturer', width: '12%' },
   { key: 'model',        label: 'Model',        width: '12%' },
-  { key: 'location',     label: 'Location',     width: '13%' },
+  { key: 'zone',         label: 'Zone',         width: '13%' },
   { key: 'installDate',  label: 'Installed',    width: '9%'  },
   { key: 'status',       label: 'Status',       width: '8%'  },
 ];
@@ -157,7 +157,7 @@ function getSortValue(asset: EnrichedAsset, key: SortKey): string {
     case 'category':     return asset.metadata?.category ?? '';
     case 'manufacturer': return asset.metadata?.manufacturer ?? '';
     case 'model':        return asset.metadata?.model ?? '';
-    case 'location':     return [asset.metadata?.floor, asset.metadata?.zone].filter(Boolean).join(' ');
+    case 'zone':         return asset.metadata?.zone ?? '';
     case 'installDate':  return asset.metadata?.installDate ?? '';
     case 'status':       return asset.metadata?.status ?? '';
   }
@@ -166,58 +166,49 @@ function getSortValue(asset: EnrichedAsset, key: SortKey): string {
 // ── Types ──
 type GroupBy = 'none' | 'building' | 'category' | 'status';
 
-// ── Asset table ──
-function AssetTable({ assets, query = '', groupBy }: { assets: EnrichedAsset[]; query?: string; groupBy: GroupBy }) {
+// ── Section header (matches Zones pattern) ──
+function SectionHeader({ label, count }: { label: string; count: number }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, mt: 1 }}>
+      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary', textTransform: 'capitalize' }}>
+        {label}
+      </Typography>
+      <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
+        {count}
+      </Typography>
+      <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+    </Box>
+  );
+}
+
+// ── Asset table (flat — grouping handled by parent) ──
+function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: EnrichedAsset[]; query?: string; hideBuildingCol?: boolean }) {
   const { themeColors: c } = useThemeMode();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const visibleColumns = useMemo(() => hideBuildingCol ? COLUMNS.filter(col => col.key !== 'building') : COLUMNS, [hideBuildingCol]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSortKey(key); setSortDir('asc'); }
   }
 
-  const grouped = useMemo(() => {
-    if (groupBy === 'none') return [{ key: '__all__', label: '', items: assets }];
-    const map = new Map<string, EnrichedAsset[]>();
-    for (const a of assets) {
-      const key = groupBy === 'building' ? a.building :
-                  groupBy === 'category' ? (a.metadata?.category ?? 'Other') :
-                  (a.metadata?.status ?? 'unknown');
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(a);
-    }
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([key, items]) => ({ key, label: key, items }));
-  }, [assets, groupBy]);
-
-  const sortedGroups = useMemo(() =>
-    grouped.map(g => ({
-      ...g,
-      items: [...g.items].sort((a, b) => {
-        const av = getSortValue(a, sortKey);
-        const bv = getSortValue(b, sortKey);
-        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-      }),
-    })),
-    [grouped, sortKey, sortDir]
+  const sorted = useMemo(() =>
+    [...assets].sort((a, b) => {
+      const av = getSortValue(a, sortKey);
+      const bv = getSortValue(b, sortKey);
+      return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    }),
+    [assets, sortKey, sortDir]
   );
-
-  if (assets.length === 0) {
-    return (
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="body1" color="text.secondary">No assets match your filters.</Typography>
-      </Box>
-    );
-  }
 
   return (
     <TableContainer sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '8px', bgcolor: c.bgPrimary }}>
       <Table size="small" stickyHeader>
         <TableHead>
           <TableRow>
-            {COLUMNS.map(col => (
+            {visibleColumns.map(col => (
               <TableCell
                 key={col.key}
                 width={col.width}
@@ -237,78 +228,56 @@ function AssetTable({ assets, query = '', groupBy }: { assets: EnrichedAsset[]; 
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortedGroups.map(({ key, label, items }) => (
-            <React.Fragment key={key}>
-              {groupBy !== 'none' && (
-                <TableRow>
-                  <TableCell
-                    colSpan={COLUMNS.length}
-                    sx={{ py: 1, px: 2, bgcolor: c.bgSecondary, borderTop: key !== sortedGroups[0].key ? `1px solid ${c.cardBorder}` : undefined }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {Boolean(CATEGORY_CONFIG[label]) && (() => {
-                        const { Icon, color } = getCatConfig(label);
-                        return (
-                          <Box sx={{ width: 18, height: 18, borderRadius: '3px', bgcolor: `${color}1A`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Icon sx={{ fontSize: 11, color }} />
-                          </Box>
-                        );
-                      })()}
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', textTransform: 'capitalize' }}>{label}</Typography>
-                      <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.75rem' }}>{items.length}</Typography>
-                    </Box>
+          {sorted.map(asset => {
+            return (
+              <TableRow key={asset.id} hover sx={{ cursor: 'pointer', '&:last-child td': { border: 0 }, '& td': { borderColor: c.cardBorder } }}>
+                <TableCell sx={{ py: 1.25 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <HighlightText text={asset.name} query={query} />
+                  </Typography>
+                </TableCell>
+                {!hideBuildingCol && (
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <HighlightText text={asset.building} query={query} />
+                    </Typography>
                   </TableCell>
-                </TableRow>
-              )}
-              {items.map(asset => {
-                const location = [asset.metadata?.floor, asset.metadata?.zone].filter(Boolean).join(' · ');
-                return (
-                  <TableRow key={asset.id} hover sx={{ cursor: 'pointer', '&:last-child td': { border: 0 }, '& td': { borderColor: c.cardBorder } }}>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        <HighlightText text={asset.name} query={query} />
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        <HighlightText text={asset.building} query={query} />
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <CategoryCell category={asset.metadata?.category} />
-                    </TableCell>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {asset.metadata?.manufacturer
-                          ? <HighlightText text={asset.metadata.manufacturer} query={query} />
-                          : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {asset.metadata?.model
-                          ? <HighlightText text={asset.metadata.model} query={query} />
-                          : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {location || <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
-                        {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ py: 1.25 }}>
-                      <StatusCell status={asset.metadata?.status} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </React.Fragment>
-          ))}
+                )}
+                <TableCell sx={{ py: 1.25 }}>
+                  <CategoryCell category={asset.metadata?.category} />
+                </TableCell>
+                <TableCell sx={{ py: 1.25 }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {asset.metadata?.manufacturer
+                      ? <HighlightText text={asset.metadata.manufacturer} query={query} />
+                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ py: 1.25 }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {asset.metadata?.model
+                      ? <HighlightText text={asset.metadata.model} query={query} />
+                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ py: 1.25 }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {asset.metadata?.zone
+                      ? <HighlightText text={asset.metadata.zone} query={query} />
+                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ py: 1.25 }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                    {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ py: 1.25 }}>
+                  <StatusCell status={asset.metadata?.status} />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
@@ -316,16 +285,21 @@ function AssetTable({ assets, query = '', groupBy }: { assets: EnrichedAsset[]; 
 }
 
 // ── Main component ──
-export default function PortfolioAssetsPage() {
+export default function PortfolioAssetsPage({ buildingName }: { buildingName?: string } = {}) {
   const { themeColors: c } = useThemeMode();
 
+  const baseAssets = useMemo(
+    () => buildingName ? ALL_ASSETS.filter(a => a.building === buildingName) : ALL_ASSETS,
+    [buildingName]
+  );
+
   // Derived option lists (computed once from static data)
-  const allCategories = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.category).filter(Boolean) as string[])).sort(), []);
-  const allStatuses   = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.status).filter(Boolean) as string[])).sort(), []);
-  const allBuildings  = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.building).filter(Boolean))).sort(), []);
-  const allManufacturers = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.manufacturer).filter(Boolean) as string[])).sort(), []);
-  const allModels     = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.model).filter(Boolean) as string[])).sort(), []);
-  const allLocations  = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.zone).filter(Boolean) as string[])).sort(), []);
+  const allCategories = useMemo(() => Array.from(new Set(baseAssets.map(a => a.metadata?.category).filter(Boolean) as string[])).sort(), [baseAssets]);
+  const allStatuses   = useMemo(() => Array.from(new Set(baseAssets.map(a => a.metadata?.status).filter(Boolean) as string[])).sort(), [baseAssets]);
+  const allBuildings  = useMemo(() => Array.from(new Set(baseAssets.map(a => a.building).filter(Boolean))).sort(), [baseAssets]);
+  const allManufacturers = useMemo(() => Array.from(new Set(baseAssets.map(a => a.metadata?.manufacturer).filter(Boolean) as string[])).sort(), [baseAssets]);
+  const allModels     = useMemo(() => Array.from(new Set(baseAssets.map(a => a.metadata?.model).filter(Boolean) as string[])).sort(), [baseAssets]);
+  const allZones      = useMemo(() => Array.from(new Set(baseAssets.map(a => a.metadata?.zone).filter(Boolean) as string[])).sort(), [baseAssets]);
 
   // Always-visible filters
   const [search, setSearch] = useState('');
@@ -369,15 +343,15 @@ export default function PortfolioAssetsPage() {
     if (pendingModelOpen && modelChipRef.current) { setModelAnchor(modelChipRef.current); setPendingModelOpen(false); }
   }, [pendingModelOpen, showModel]);
 
-  // Location filter
-  const [showLocation, setShowLocation] = useState(false);
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [locationAnchor, setLocationAnchor] = useState<null | HTMLElement>(null);
-  const locationChipRef = useRef<HTMLDivElement>(null);
-  const [pendingLocationOpen, setPendingLocationOpen] = useState(false);
+  // Zone filter
+  const [showZone, setShowZone] = useState(false);
+  const [selectedZones, setSelectedZones] = useState<string[]>([]);
+  const [zoneAnchor, setZoneAnchor] = useState<null | HTMLElement>(null);
+  const zoneChipRef = useRef<HTMLDivElement>(null);
+  const [pendingZoneOpen, setPendingZoneOpen] = useState(false);
   useEffect(() => {
-    if (pendingLocationOpen && locationChipRef.current) { setLocationAnchor(locationChipRef.current); setPendingLocationOpen(false); }
-  }, [pendingLocationOpen, showLocation]);
+    if (pendingZoneOpen && zoneChipRef.current) { setZoneAnchor(zoneChipRef.current); setPendingZoneOpen(false); }
+  }, [pendingZoneOpen, showZone]);
 
   // Installed (date range) filter
   const [showInstalled, setShowInstalled] = useState(false);
@@ -391,10 +365,10 @@ export default function PortfolioAssetsPage() {
 
   // Optional filter definitions
   const optionalFilters = [
-    { key: 'building',     label: 'Building',     visible: showBuilding },
+    ...(!buildingName ? [{ key: 'building', label: 'Building', visible: showBuilding }] : []),
     { key: 'manufacturer', label: 'Manufacturer', visible: showManufacturer },
     { key: 'model',        label: 'Model',        visible: showModel },
-    { key: 'location',     label: 'Location',     visible: showLocation },
+    { key: 'zone',         label: 'Zone',         visible: showZone },
     { key: 'installed',    label: 'Installed',    visible: showInstalled },
   ];
   const availableToAdd = optionalFilters.filter(f => !f.visible);
@@ -403,14 +377,14 @@ export default function PortfolioAssetsPage() {
     if (key === 'building')     { setShowBuilding(true);     setPendingBuildingOpen(true); }
     if (key === 'manufacturer') { setShowManufacturer(true); setPendingManufacturerOpen(true); }
     if (key === 'model')        { setShowModel(true);        setPendingModelOpen(true); }
-    if (key === 'location')     { setShowLocation(true);     setPendingLocationOpen(true); }
+    if (key === 'zone')         { setShowZone(true);         setPendingZoneOpen(true); }
     if (key === 'installed')    { setShowInstalled(true);    setPendingInstalledOpen(true); }
     setAddFilterMenuAnchor(null);
   }
 
   // Filtered data
   const filtered = useMemo(() => {
-    let list = ALL_ASSETS;
+    let list = baseAssets;
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(a =>
@@ -427,187 +401,244 @@ export default function PortfolioAssetsPage() {
     if (selectedBuildings.length > 0)     list = list.filter(a => selectedBuildings.includes(a.building));
     if (selectedManufacturers.length > 0) list = list.filter(a => selectedManufacturers.includes(a.metadata?.manufacturer ?? ''));
     if (selectedModels.length > 0)        list = list.filter(a => selectedModels.includes(a.metadata?.model ?? ''));
-    if (selectedLocations.length > 0)     list = list.filter(a => selectedLocations.includes(a.metadata?.zone ?? ''));
+    if (selectedZones.length > 0)         list = list.filter(a => selectedZones.includes(a.metadata?.zone ?? ''));
     if (installedRange.min) list = list.filter(a => (a.metadata?.installDate ?? '') >= installedRange.min);
     if (installedRange.max) list = list.filter(a => (a.metadata?.installDate ?? '') <= installedRange.max);
     return list;
-  }, [search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedLocations, installedRange]);
+  }, [baseAssets, search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedZones, installedRange]);
+
+  // Grouped data (for separate-table-per-group rendering)
+  const grouped = useMemo(() => {
+    if (groupBy === 'none') return null;
+    const map = new Map<string, EnrichedAsset[]>();
+    for (const a of filtered) {
+      const key = groupBy === 'building' ? a.building :
+                  groupBy === 'category' ? (a.metadata?.category ?? 'Other') :
+                  (a.metadata?.status ?? 'unknown');
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(a);
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, items]) => ({ key, label: key, items }));
+  }, [filtered, groupBy]);
 
   // Chip display values
-  const chipValue = (vals: string[], singular: string, plural: string) =>
+  const chipValue = (vals: string[], plural: string) =>
     vals.length === 0 ? null : vals.length === 1 ? vals[0] : `${vals.length} ${plural}`;
 
-  const categoryChipValue     = chipValue(selectedCategories,    '', 'categories');
+  const categoryChipValue     = chipValue(selectedCategories,    'categories');
   const statusChipValue       = selectedStatuses.length === 0 ? null : selectedStatuses.length === 1 ? (selectedStatuses[0].charAt(0).toUpperCase() + selectedStatuses[0].slice(1)) : `${selectedStatuses.length} statuses`;
-  const buildingChipValue     = chipValue(selectedBuildings,     '', 'buildings');
-  const manufacturerChipValue = chipValue(selectedManufacturers, '', 'manufacturers');
-  const modelChipValue        = chipValue(selectedModels,        '', 'models');
-  const locationChipValue     = chipValue(selectedLocations,     '', 'zones');
+  const buildingChipValue     = chipValue(selectedBuildings,     'buildings');
+  const manufacturerChipValue = chipValue(selectedManufacturers, 'manufacturers');
+  const modelChipValue        = chipValue(selectedModels,        'models');
+  const zoneChipValue         = chipValue(selectedZones,         'zones');
   const installedChipValue    = !installedRange.min && !installedRange.max ? null : installedRange.min && installedRange.max ? `${installedRange.min} – ${installedRange.max}` : installedRange.min ? `From ${installedRange.min}` : `Until ${installedRange.max}`;
 
-  return (
-    <Box>
-      <PageHeader
-        title="Assets"
-        actions={
-          <>
-            <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
-              Group by
-            </Button>
-            <Menu
-              anchorEl={groupByMenuAnchor}
-              open={Boolean(groupByMenuAnchor)}
-              onClose={() => setGroupByMenuAnchor(null)}
-              slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-            >
-              <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
-                <ListItemText>No grouping</ListItemText>
-              </MenuItem>
-              <Divider />
-              <MenuItem selected={groupBy === 'building'} onClick={() => { setGroupBy('building'); setGroupByMenuAnchor(null); }}>
-                <ListItemText>Building</ListItemText>
-              </MenuItem>
-              <MenuItem selected={groupBy === 'category'} onClick={() => { setGroupBy('category'); setGroupByMenuAnchor(null); }}>
-                <ListItemText>Category</ListItemText>
-              </MenuItem>
-              <MenuItem selected={groupBy === 'status'} onClick={() => { setGroupBy('status'); setGroupByMenuAnchor(null); }}>
-                <ListItemText>Status</ListItemText>
-              </MenuItem>
-            </Menu>
+  const filterChips = (
+    <>
+      {/* Always-visible filter chips */}
+      <FilterChip label="Category" value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setSelectedCategories([]) : undefined} />
+      <FilterDropdown
+        anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)}
+        options={allCategories.map(cat => { const { Icon, color } = getCatConfig(cat); return { value: cat, icon: <Icon sx={{ fontSize: 16, color }} /> } satisfies FilterOption; })}
+        multiple value={selectedCategories} onChange={setSelectedCategories} placeholder="Search categories…"
+      />
 
-            {/* Search */}
-            <Box
-              sx={{
-                display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px',
-                border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary,
-                px: 1, gap: 0.5,
-                '&:focus-within': { borderColor: c.brandSecondary },
-                transition: 'border-color 0.15s ease',
-              }}
-            >
-              <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-              <InputBase
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search assets…"
-                sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
-                endAdornment={
-                  search ? (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
-                        <CloseIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null
-                }
-              />
-            </Box>
-          </>
-        }
-      >
-        {/* Always-visible filter chips */}
-        <FilterChip label="Category" value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setSelectedCategories([]) : undefined} />
-        <FilterDropdown
-          anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)}
-          options={allCategories.map(cat => { const { Icon, color } = getCatConfig(cat); return { value: cat, icon: <Icon sx={{ fontSize: 16, color }} /> } satisfies FilterOption; })}
-          multiple value={selectedCategories} onChange={setSelectedCategories} placeholder="Search categories…"
-        />
+      <FilterChip label="Status" value={statusChipValue} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setSelectedStatuses([]) : undefined} />
+      <FilterDropdown
+        anchorEl={statusAnchor} onClose={() => setStatusAnchor(null)}
+        options={allStatuses.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1), icon: <FiberManualRecordIcon sx={{ fontSize: 12, color: STATUS_COLOR[s] ?? '#9E9E9E' }} /> } satisfies FilterOption))}
+        multiple value={selectedStatuses} onChange={setSelectedStatuses} placeholder="Search statuses…"
+      />
 
-        <FilterChip label="Status" value={statusChipValue} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setSelectedStatuses([]) : undefined} />
-        <FilterDropdown
-          anchorEl={statusAnchor} onClose={() => setStatusAnchor(null)}
-          options={allStatuses.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1), icon: <FiberManualRecordIcon sx={{ fontSize: 12, color: STATUS_COLOR[s] ?? '#9E9E9E' }} /> } satisfies FilterOption))}
-          multiple value={selectedStatuses} onChange={setSelectedStatuses} placeholder="Search statuses…"
-        />
-
-        {/* Optional: Building */}
-        {showBuilding && (
-          <Box ref={buildingChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={() => { setSelectedBuildings([]); setShowBuilding(false); }} />
-          </Box>
-        )}
+      {/* Optional: Building (only in global view) */}
+      {!buildingName && showBuilding && (
+        <Box ref={buildingChipRef} sx={{ display: 'inline-flex' }}>
+          <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={() => { setSelectedBuildings([]); setShowBuilding(false); }} />
+        </Box>
+      )}
+      {!buildingName && (
         <FilterDropdown
           anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)}
           options={allBuildings.map(b => ({ value: b, icon: <ApartmentOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
           multiple value={selectedBuildings} onChange={setSelectedBuildings}
           onRemove={() => setShowBuilding(false)} placeholder="Search buildings…"
         />
+      )}
 
-        {/* Optional: Manufacturer */}
-        {showManufacturer && (
-          <Box ref={manufacturerChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip label="Manufacturer" value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={() => { setSelectedManufacturers([]); setShowManufacturer(false); }} />
-          </Box>
-        )}
-        <FilterDropdown
-          anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)}
-          options={allManufacturers.map(m => ({ value: m } satisfies FilterOption))}
-          multiple value={selectedManufacturers} onChange={setSelectedManufacturers}
-          onRemove={() => setShowManufacturer(false)} placeholder="Search manufacturers…"
-        />
+      {/* Optional: Manufacturer */}
+      {showManufacturer && (
+        <Box ref={manufacturerChipRef} sx={{ display: 'inline-flex' }}>
+          <FilterChip label="Manufacturer" value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={() => { setSelectedManufacturers([]); setShowManufacturer(false); }} />
+        </Box>
+      )}
+      <FilterDropdown
+        anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)}
+        options={allManufacturers.map(m => ({ value: m } satisfies FilterOption))}
+        multiple value={selectedManufacturers} onChange={setSelectedManufacturers}
+        onRemove={() => setShowManufacturer(false)} placeholder="Search manufacturers…"
+      />
 
-        {/* Optional: Model */}
-        {showModel && (
-          <Box ref={modelChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip label="Model" value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={() => { setSelectedModels([]); setShowModel(false); }} />
-          </Box>
-        )}
-        <FilterDropdown
-          anchorEl={modelAnchor} onClose={() => setModelAnchor(null)}
-          options={allModels.map(m => ({ value: m } satisfies FilterOption))}
-          multiple value={selectedModels} onChange={setSelectedModels}
-          onRemove={() => setShowModel(false)} placeholder="Search models…"
-        />
+      {/* Optional: Model */}
+      {showModel && (
+        <Box ref={modelChipRef} sx={{ display: 'inline-flex' }}>
+          <FilterChip label="Model" value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={() => { setSelectedModels([]); setShowModel(false); }} />
+        </Box>
+      )}
+      <FilterDropdown
+        anchorEl={modelAnchor} onClose={() => setModelAnchor(null)}
+        options={allModels.map(m => ({ value: m } satisfies FilterOption))}
+        multiple value={selectedModels} onChange={setSelectedModels}
+        onRemove={() => setShowModel(false)} placeholder="Search models…"
+      />
 
-        {/* Optional: Location */}
-        {showLocation && (
-          <Box ref={locationChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip label="Location" value={locationChipValue} onClick={(e) => setLocationAnchor(e.currentTarget)} onClear={() => { setSelectedLocations([]); setShowLocation(false); }} />
-          </Box>
-        )}
-        <FilterDropdown
-          anchorEl={locationAnchor} onClose={() => setLocationAnchor(null)}
-          options={allLocations.map(l => ({ value: l, icon: <LocationOnOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
-          multiple value={selectedLocations} onChange={setSelectedLocations}
-          onRemove={() => setShowLocation(false)} placeholder="Search locations…"
-        />
+      {/* Optional: Zone */}
+      {showZone && (
+        <Box ref={zoneChipRef} sx={{ display: 'inline-flex' }}>
+          <FilterChip label="Zone" value={zoneChipValue} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={() => { setSelectedZones([]); setShowZone(false); }} />
+        </Box>
+      )}
+      <FilterDropdown
+        anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)}
+        options={allZones.map(l => ({ value: l, icon: <LocationOnOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
+        multiple value={selectedZones} onChange={setSelectedZones}
+        onRemove={() => setShowZone(false)} placeholder="Search zones…"
+      />
 
-        {/* Optional: Installed */}
-        {showInstalled && (
-          <Box ref={installedChipRef} sx={{ display: 'inline-flex' }}>
-            <FilterChip label="Installed" value={installedChipValue} onClick={(e) => setInstalledAnchor(e.currentTarget)} onClear={() => { setInstalledRange({ min: '', max: '' }); setShowInstalled(false); }} />
-          </Box>
-        )}
-        <FilterRangeDropdown
-          anchorEl={installedAnchor} onClose={() => setInstalledAnchor(null)}
-          type="date" value={installedRange} onChange={setInstalledRange}
-          onRemove={() => setShowInstalled(false)}
-        />
+      {/* Optional: Installed */}
+      {showInstalled && (
+        <Box ref={installedChipRef} sx={{ display: 'inline-flex' }}>
+          <FilterChip label="Installed" value={installedChipValue} onClick={(e) => setInstalledAnchor(e.currentTarget)} onClear={() => { setInstalledRange({ min: '', max: '' }); setShowInstalled(false); }} />
+        </Box>
+      )}
+      <FilterRangeDropdown
+        anchorEl={installedAnchor} onClose={() => setInstalledAnchor(null)}
+        type="date" value={installedRange} onChange={setInstalledRange}
+        onRemove={() => setShowInstalled(false)}
+      />
 
-        {/* Add filter button */}
-        {availableToAdd.length > 0 && (
-          <>
-            <Button variant="tertiary" size="sm" startIcon={<AddIcon />} onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}>
-              Filter
-            </Button>
-            <Menu
-              anchorEl={addFilterMenuAnchor}
-              open={Boolean(addFilterMenuAnchor)}
-              onClose={() => setAddFilterMenuAnchor(null)}
-              slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-            >
-              {availableToAdd.map(opt => (
-                <MenuItem key={opt.key} onClick={() => addFilter(opt.key)}>
-                  <ListItemText>{opt.label}</ListItemText>
-                </MenuItem>
-              ))}
-            </Menu>
-          </>
-        )}
-      </PageHeader>
+      {/* Add filter button */}
+      {availableToAdd.length > 0 && (
+        <>
+          <Button variant="tertiary" size="sm" startIcon={<AddIcon />} onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}>
+            Filter
+          </Button>
+          <Menu
+            anchorEl={addFilterMenuAnchor}
+            open={Boolean(addFilterMenuAnchor)}
+            onClose={() => setAddFilterMenuAnchor(null)}
+            slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+          >
+            {availableToAdd.map(opt => (
+              <MenuItem key={opt.key} onClick={() => addFilter(opt.key)}>
+                <ListItemText>{opt.label}</ListItemText>
+              </MenuItem>
+            ))}
+          </Menu>
+        </>
+      )}
+    </>
+  );
+
+  const groupByMenu = (
+    <Menu
+      anchorEl={groupByMenuAnchor}
+      open={Boolean(groupByMenuAnchor)}
+      onClose={() => setGroupByMenuAnchor(null)}
+      slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
+    >
+      <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
+        <ListItemText>No grouping</ListItemText>
+      </MenuItem>
+      <Divider />
+      {!buildingName && (
+        <MenuItem selected={groupBy === 'building'} onClick={() => { setGroupBy('building'); setGroupByMenuAnchor(null); }}>
+          <ListItemText>Building</ListItemText>
+        </MenuItem>
+      )}
+      <MenuItem selected={groupBy === 'category'} onClick={() => { setGroupBy('category'); setGroupByMenuAnchor(null); }}>
+        <ListItemText>Category</ListItemText>
+      </MenuItem>
+      <MenuItem selected={groupBy === 'status'} onClick={() => { setGroupBy('status'); setGroupByMenuAnchor(null); }}>
+        <ListItemText>Status</ListItemText>
+      </MenuItem>
+    </Menu>
+  );
+
+  const searchBox = (
+    <Box
+      sx={{
+        display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px',
+        border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary,
+        px: 1, gap: 0.5,
+        '&:focus-within': { borderColor: c.brandSecondary },
+        transition: 'border-color 0.15s ease',
+      }}
+    >
+      <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+      <InputBase
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search assets…"
+        sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
+        endAdornment={
+          search ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+                <CloseIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </InputAdornment>
+          ) : null
+        }
+      />
+    </Box>
+  );
+
+  return (
+    <Box>
+      {buildingName ? (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+          {filterChips}
+          <Box sx={{ flex: 1 }} />
+          <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
+            Group by
+          </Button>
+          {groupByMenu}
+          {searchBox}
+        </Box>
+      ) : (
+        <PageHeader
+          title="Assets"
+          actions={
+            <>
+              <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
+                Group by
+              </Button>
+              {groupByMenu}
+              {searchBox}
+            </>
+          }
+        >
+          {filterChips}
+        </PageHeader>
+      )}
 
       <Box sx={{ pt: 3 }}>
-        <AssetTable assets={filtered} query={search} groupBy={groupBy} />
+        {filtered.length === 0 ? (
+          <Box sx={{ py: 8, textAlign: 'center' }}>
+            <Typography variant="body1" color="text.secondary">No assets match your filters.</Typography>
+          </Box>
+        ) : grouped ? (
+          grouped.map(({ key, label, items }) => (
+            <Box key={key} sx={{ mb: 4 }}>
+              <SectionHeader label={label} count={items.length} />
+              <AssetTable assets={items} query={search} hideBuildingCol={!!buildingName} />
+            </Box>
+          ))
+        ) : (
+          <AssetTable assets={filtered} query={search} hideBuildingCol={!!buildingName} />
+        )}
       </Box>
     </Box>
   );
