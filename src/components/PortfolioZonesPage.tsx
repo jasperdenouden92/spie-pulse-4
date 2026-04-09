@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -25,13 +25,13 @@ import FilterChip from '@/components/FilterChip';
 import Button from '@/components/Button';
 
 import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
+
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
-import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+
 
 // ── Types ──
 
@@ -213,20 +213,9 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [cityAnchor, setCityAnchor] = useState<null | HTMLElement>(null);
 
-  // Optional filters
-  const [addFilterMenuAnchor, setAddFilterMenuAnchor] = useState<null | HTMLElement>(null);
-  const [showZoneTypeFilter, setShowZoneTypeFilter] = useState(false);
+  // Zone type filter
   const [selectedZoneTypes, setSelectedZoneTypes] = useState<string[]>([]);
   const [zoneTypeAnchor, setZoneTypeAnchor] = useState<null | HTMLElement>(null);
-  const zoneTypeChipRef = useRef<HTMLDivElement>(null);
-  const [pendingZoneTypeOpen, setPendingZoneTypeOpen] = useState(false);
-
-  useEffect(() => {
-    if (pendingZoneTypeOpen && zoneTypeChipRef.current) {
-      setZoneTypeAnchor(zoneTypeChipRef.current);
-      setPendingZoneTypeOpen(false);
-    }
-  }, [pendingZoneTypeOpen, showZoneTypeFilter]);
 
   // Derived option lists
   const buildings = useMemo(() => Array.from(new Set(tenantZones.map(z => z.buildingName))).sort(), [tenantZones]);
@@ -275,9 +264,6 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }
   const cityChipValue = selectedCities.length === 0 ? null : selectedCities.length === 1 ? selectedCities[0] : `${selectedCities.length} cities`;
   const zoneTypeChipValue = selectedZoneTypes.length === 0 ? null : selectedZoneTypes.length === 1 ? selectedZoneTypes[0] : `${selectedZoneTypes.length} types`;
 
-  const availableToAdd = [
-    { key: 'zone_type', label: 'Zone type', icon: <CategoryOutlinedIcon fontSize="small" />, visible: showZoneTypeFilter },
-  ].filter(f => !f.visible);
 
   const groupByMenu = (zoneTypeOnly: boolean) => (
     <Menu
@@ -355,7 +341,6 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }
       multiple
       value={selectedZoneTypes}
       onChange={setSelectedZoneTypes}
-      onRemove={() => setShowZoneTypeFilter(false)}
       placeholder="Search zone types…"
     />
   );
@@ -435,48 +420,13 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick }
             onChange={setSelectedCities}
             placeholder="Search cities…"
           />
-          {showZoneTypeFilter && (
-            <Box ref={zoneTypeChipRef} sx={{ display: 'inline-flex' }}>
-              <FilterChip
-                label="Zone type"
-                value={zoneTypeChipValue}
-                onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
-                onClear={() => { setSelectedZoneTypes([]); setShowZoneTypeFilter(false); }}
-              />
-            </Box>
-          )}
+          <FilterChip
+            label="Zone type"
+            value={zoneTypeChipValue}
+            onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
+            onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
+          />
           {zoneTypeFilterDropdown}
-          {availableToAdd.length > 0 && (
-            <>
-              <Button
-                variant="tertiary"
-                size="sm"
-                startIcon={<AddIcon />}
-                onClick={(e) => setAddFilterMenuAnchor(e.currentTarget)}
-              >
-                Filter
-              </Button>
-              <Menu
-                anchorEl={addFilterMenuAnchor}
-                open={Boolean(addFilterMenuAnchor)}
-                onClose={() => setAddFilterMenuAnchor(null)}
-                slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-              >
-                {availableToAdd.map(opt => (
-                  <MenuItem
-                    key={opt.key}
-                    onClick={() => {
-                      if (opt.key === 'zone_type') { setShowZoneTypeFilter(true); setPendingZoneTypeOpen(true); }
-                      setAddFilterMenuAnchor(null);
-                    }}
-                  >
-                    <ListItemIcon>{opt.icon}</ListItemIcon>
-                    <ListItemText>{opt.label}</ListItemText>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </>
-          )}
         </PageHeader>
       )}
 
