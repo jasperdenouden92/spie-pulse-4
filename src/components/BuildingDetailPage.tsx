@@ -12,11 +12,12 @@ import type { Building } from '@/data/buildings';
 import { BuildingSelectorPopover } from './BuildingSelector';
 import PageHeader from '@/components/PageHeader';
 
-export type BuildingDetailTab = 'overview' | 'performance' | 'assets' | 'tickets' | 'quotations';
+export type BuildingDetailTab = 'overview' | 'performance' | 'zones' | 'assets' | 'tickets' | 'quotations';
 
 const TABS: { value: BuildingDetailTab; label: string }[] = [
   { value: 'overview', label: 'Overview' },
   { value: 'performance', label: 'Performance' },
+  { value: 'zones', label: 'Zones' },
   { value: 'assets', label: 'Assets' },
   { value: 'tickets', label: 'Tickets' },
   { value: 'quotations', label: 'Quotations' },
