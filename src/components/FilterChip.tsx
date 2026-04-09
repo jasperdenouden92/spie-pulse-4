@@ -42,7 +42,7 @@ export default function FilterChip({
         height: 30,
         borderRadius: '7px',
         border: '1px solid',
-        borderColor: isFilled ? c.brandSecondary : c.borderPrimary,
+        borderColor: isFilled ? c.brandSecondary : c.borderSecondary,
         bgcolor: isFilled ? c.bgActive : c.bgPrimary,
         cursor: 'pointer',
         outline: 'none',

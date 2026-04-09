@@ -51,6 +51,20 @@ export function createAppTheme(mode: 'light' | 'dark') {
           root: { backgroundImage: 'none' },
         },
       },
+      MuiMenu: {
+        styleOverrides: {
+          paper: {
+            border: `1px solid ${c.borderSecondary}`,
+          },
+        },
+      },
+      MuiPopover: {
+        styleOverrides: {
+          paper: {
+            border: `1px solid ${c.borderSecondary}`,
+          },
+        },
+      },
     },
   });
 }

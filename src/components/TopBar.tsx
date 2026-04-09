@@ -269,7 +269,6 @@ function TopBar({
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Buildings</Typography>
               </>
             )}
-
             {currentPage === 'portfolio_zones' && (
               <>
                 <Typography
@@ -296,7 +295,6 @@ function TopBar({
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Assets</Typography>
               </>
             )}
-
             {currentPage === 'building_detail' && (
               <>
                 <Typography
@@ -616,8 +614,7 @@ function TopBar({
               borderRadius: '6px',
               backgroundColor: c.bgPrimary,
               border: '1px solid',
-              borderColor: c.borderPrimary,
-              boxShadow: `0 1px 3px ${c.shadow}`,
+              borderColor: c.borderSecondary,
               '&:hover': { backgroundColor: c.bgPrimaryHover },
               '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
               '& .MuiChip-deleteIcon': { color: 'text.primary' },
@@ -635,8 +632,7 @@ function TopBar({
               borderRadius: '6px',
               backgroundColor: c.bgPrimary,
               border: '1px solid',
-              borderColor: c.borderPrimary,
-              boxShadow: `0 1px 3px ${c.shadow}`,
+              borderColor: c.borderSecondary,
               '&:hover': { backgroundColor: c.bgPrimaryHover },
               '& .MuiChip-label': { px: 1.5, fontSize: '0.8125rem', fontWeight: 600 },
               '& .MuiChip-deleteIcon': { color: 'text.primary' },

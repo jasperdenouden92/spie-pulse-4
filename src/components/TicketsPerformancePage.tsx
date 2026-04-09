@@ -3,8 +3,14 @@
 import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, StatusOverviewCard, ActiveListCard } from '@/components/performance';
-import type { StatusCount, ActiveListItem } from '@/components/performance';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import { PerformanceGrid, GridCard, PerformanceIndicatorsCard, BuildingRankingCard, KpiScoreOverTimeCard, toRanked, StatusOverviewCard, DashboardLinksCard } from '@/components/performance';
+import type { StatusCount, DashboardLink } from '@/components/performance';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -30,6 +36,12 @@ import IconButton from '@mui/material/IconButton';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
+import LastPageIcon from '@mui/icons-material/LastPage';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
@@ -222,7 +234,11 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Ticket status data ─────────────────────────────────────────────────────
 
-interface TicketItem extends ActiveListItem {
+interface TicketItem {
+  id: string;
+  title: string;
+  status: string;
+  amount?: number;
   building: string;
   category: string;
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
@@ -242,29 +258,201 @@ const STATUS_COUNTS: StatusCount[] = [
 ];
 
 const ACTIVE_TICKETS: TicketItem[] = [
-  { id: 'T-2026-0041', title: 'Test', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026 10:45', assignee: 'M. Neuten', werkbon: '-/-', referentie: '-' },
-  { id: 'T-2026-0040', title: 'Kapotte band', building: 'Efteling/Carnaval Festival', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '24-03-2026 15:30', assignee: 'B. Sevenge', werkbon: '-/-', referentie: '-' },
-  { id: 'T-2026-0039', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026 14:32', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
-  { id: 'T-2026-0038', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Storing', priority: 'High', createdDate: '24-03-2026 14:50', assignee: 'R.R.H.M. Zij', werkbon: '-/-', referentie: '-' },
-  { id: 'T-2026-0037', title: '.', building: '0413 Z - B&O Son', status: 'In operation', category: 'Storing', priority: 'Medium', createdDate: '11-03-2026 11:52', assignee: 'M. Neuten', werkbon: '440291', referentie: 'REF-2026-112' },
-  { id: 'T-2026-0036', title: 'HVAC system failure', building: 'Rijksmuseum', status: 'In operation', category: 'Storing', priority: 'Critical', createdDate: '09-03-2026 08:15', assignee: 'B. Sevenge', werkbon: '440287', referentie: 'REF-2026-098' },
-  { id: 'T-2026-0035', title: 'Emergency lighting fault', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Storing', priority: 'High', createdDate: '07-03-2026 16:20', assignee: 'H.C.M. Mond', werkbon: '440283', referentie: 'REF-2026-091' },
-  { id: 'T-2026-0034', title: 'Elevator maintenance', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Medium', createdDate: '05-03-2026 09:45', assignee: 'R.R.H.M. Zij', werkbon: '440279', referentie: 'REF-2026-085' },
-  { id: 'T-2026-0033', title: 'Fire alarm inspection', building: 'TU Eindhoven', status: 'In operation', category: 'Regie', priority: 'High', createdDate: '03-03-2026 11:00', assignee: 'M. Neuten', werkbon: '440275', referentie: 'REF-2026-079' },
-  { id: 'T-2026-0032', title: 'Cooling tower service', building: 'De Efteling', status: 'Function restored', category: 'Storing', priority: 'Medium', createdDate: '28-02-2026 14:30', assignee: 'B. Sevenge', werkbon: '440271', referentie: 'REF-2026-074' },
-  { id: 'T-2026-0031', title: 'BMS controller reset', building: 'Rijksmuseum', status: 'Received', category: 'Storing', priority: 'High', createdDate: '25-02-2026 10:10', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
-  { id: 'T-2026-0030', title: 'Water leak in basement', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Storing', priority: 'Critical', createdDate: '22-02-2026 07:30', assignee: 'R.R.H.M. Zij', werkbon: '440263', referentie: 'REF-2026-061' },
-  { id: 'T-2026-0029', title: 'Access card system', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '20-02-2026 13:45', assignee: 'M. Neuten', werkbon: '440259', referentie: 'REF-2026-054' },
-  { id: 'T-2026-0028', title: 'Solar panel cleaning', building: 'TU Eindhoven', status: 'Function restored', category: 'Regie', priority: 'Low', createdDate: '18-02-2026 09:00', assignee: 'B. Sevenge', werkbon: '440255', referentie: 'REF-2026-048' },
-  { id: 'T-2026-0027', title: 'Sprinkler test report', building: 'De Efteling', status: 'Received', category: 'Regie', priority: 'Medium', createdDate: '15-02-2026 11:20', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
-  { id: 'T-2026-0026', title: 'Generator load test', building: 'Rijksmuseum', status: 'To approve', category: 'Regie', priority: 'Medium', createdDate: '12-02-2026 10:00', assignee: 'B. Sevenge', werkbon: '440251', referentie: 'REF-2026-042', amount: 3250 },
-  { id: 'T-2026-0025', title: 'UPS battery replacement', building: 'Jaarbeurs Utrecht', status: 'To approve', category: 'Storing', priority: 'High', createdDate: '10-02-2026 14:30', assignee: 'M. Neuten', werkbon: '440247', referentie: 'REF-2026-038', amount: 8750 },
-  { id: 'T-2026-0024', title: 'Climate control calibration', building: 'TU Eindhoven', status: 'To approve', category: 'Regie', priority: 'Low', createdDate: '08-02-2026 09:15', assignee: 'R.R.H.M. Zij', werkbon: '440243', referentie: 'REF-2026-033', amount: 1480 },
-  { id: 'T-2026-0023', title: 'Ventilation overhaul', building: 'De Efteling', status: 'Completed', category: 'Regie', priority: 'Medium', createdDate: '05-02-2026 08:30', assignee: 'M. Neuten', werkbon: '440239', referentie: 'REF-2026-028', amount: 4200 },
-  { id: 'T-2026-0022', title: 'Electrical panel upgrade', building: 'Rijksmuseum', status: 'Completed', category: 'Storing', priority: 'High', createdDate: '01-02-2026 11:00', assignee: 'B. Sevenge', werkbon: '440235', referentie: 'REF-2026-022', amount: 12500 },
-  { id: 'T-2026-0021', title: 'Boiler replacement', building: 'Gemeentehuis Meierijstad', status: 'Invoiced', category: 'Storing', priority: 'High', createdDate: '28-01-2026 09:45', assignee: 'H.C.M. Mond', werkbon: '440231', referentie: 'REF-2026-018', amount: 18900 },
-  { id: 'T-2026-0020', title: 'Air handling unit service', building: 'TU Eindhoven', status: 'Invoiced', category: 'Regie', priority: 'Medium', createdDate: '25-01-2026 14:15', assignee: 'R.R.H.M. Zij', werkbon: '440227', referentie: 'REF-2026-014', amount: 6350 },
+  { id: 'T-2026-0041', title: 'Test', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Malfunction', priority: 'High', createdDate: '24-03-2026 10:45', assignee: 'M. Neuten', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0040', title: 'Kapotte band', building: 'Efteling/Carnaval Festival', status: 'Received', category: 'Managed', priority: 'Medium', createdDate: '24-03-2026 15:30', assignee: 'B. Sevenge', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0039', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Malfunction', priority: 'High', createdDate: '24-03-2026 14:32', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0038', title: 'Testticket', building: 'Efteling/Hoofdkantoor', status: 'Received', category: 'Malfunction', priority: 'High', createdDate: '24-03-2026 14:50', assignee: 'R.R.H.M. Zij', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0037', title: '.', building: '0413 Z - B&O Son', status: 'In operation', category: 'Malfunction', priority: 'Medium', createdDate: '11-03-2026 11:52', assignee: 'M. Neuten', werkbon: '440291', referentie: 'REF-2026-112' },
+  { id: 'T-2026-0036', title: 'HVAC system failure', building: 'Rijksmuseum', status: 'In operation', category: 'Malfunction', priority: 'Critical', createdDate: '09-03-2026 08:15', assignee: 'B. Sevenge', werkbon: '440287', referentie: 'REF-2026-098' },
+  { id: 'T-2026-0035', title: 'Emergency lighting fault', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Malfunction', priority: 'High', createdDate: '07-03-2026 16:20', assignee: 'H.C.M. Mond', werkbon: '440283', referentie: 'REF-2026-091' },
+  { id: 'T-2026-0034', title: 'Elevator maintenance', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Managed', priority: 'Medium', createdDate: '05-03-2026 09:45', assignee: 'R.R.H.M. Zij', werkbon: '440279', referentie: 'REF-2026-085' },
+  { id: 'T-2026-0033', title: 'Fire alarm inspection', building: 'TU Eindhoven', status: 'In operation', category: 'Managed', priority: 'High', createdDate: '03-03-2026 11:00', assignee: 'M. Neuten', werkbon: '440275', referentie: 'REF-2026-079' },
+  { id: 'T-2026-0032', title: 'Cooling tower service', building: 'De Efteling', status: 'Function restored', category: 'Malfunction', priority: 'Medium', createdDate: '28-02-2026 14:30', assignee: 'B. Sevenge', werkbon: '440271', referentie: 'REF-2026-074' },
+  { id: 'T-2026-0031', title: 'BMS controller reset', building: 'Rijksmuseum', status: 'Received', category: 'Malfunction', priority: 'High', createdDate: '25-02-2026 10:10', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0030', title: 'Water leak in basement', building: 'Gemeentehuis Meierijstad', status: 'In operation', category: 'Malfunction', priority: 'Critical', createdDate: '22-02-2026 07:30', assignee: 'R.R.H.M. Zij', werkbon: '440263', referentie: 'REF-2026-061' },
+  { id: 'T-2026-0029', title: 'Access card system', building: 'Jaarbeurs Utrecht', status: 'Function restored', category: 'Managed', priority: 'Low', createdDate: '20-02-2026 13:45', assignee: 'M. Neuten', werkbon: '440259', referentie: 'REF-2026-054' },
+  { id: 'T-2026-0028', title: 'Solar panel cleaning', building: 'TU Eindhoven', status: 'Function restored', category: 'Managed', priority: 'Low', createdDate: '18-02-2026 09:00', assignee: 'B. Sevenge', werkbon: '440255', referentie: 'REF-2026-048' },
+  { id: 'T-2026-0027', title: 'Sprinkler test report', building: 'De Efteling', status: 'Received', category: 'Managed', priority: 'Medium', createdDate: '15-02-2026 11:20', assignee: 'H.C.M. Mond', werkbon: '-/-', referentie: '-' },
+  { id: 'T-2026-0026', title: 'Generator load test', building: 'Rijksmuseum', status: 'To approve', category: 'Managed', priority: 'Medium', createdDate: '12-02-2026 10:00', assignee: 'B. Sevenge', werkbon: '440251', referentie: 'REF-2026-042', amount: 3250 },
+  { id: 'T-2026-0025', title: 'UPS battery replacement', building: 'Jaarbeurs Utrecht', status: 'To approve', category: 'Malfunction', priority: 'High', createdDate: '10-02-2026 14:30', assignee: 'M. Neuten', werkbon: '440247', referentie: 'REF-2026-038', amount: 8750 },
+  { id: 'T-2026-0024', title: 'Climate control calibration', building: 'TU Eindhoven', status: 'To approve', category: 'Managed', priority: 'Low', createdDate: '08-02-2026 09:15', assignee: 'R.R.H.M. Zij', werkbon: '440243', referentie: 'REF-2026-033', amount: 1480 },
+  { id: 'T-2026-0023', title: 'Ventilation overhaul', building: 'De Efteling', status: 'Completed', category: 'Managed', priority: 'Medium', createdDate: '05-02-2026 08:30', assignee: 'M. Neuten', werkbon: '440239', referentie: 'REF-2026-028', amount: 4200 },
+  { id: 'T-2026-0022', title: 'Electrical panel upgrade', building: 'Rijksmuseum', status: 'Completed', category: 'Malfunction', priority: 'High', createdDate: '01-02-2026 11:00', assignee: 'B. Sevenge', werkbon: '440235', referentie: 'REF-2026-022', amount: 12500 },
+  { id: 'T-2026-0021', title: 'Boiler replacement', building: 'Gemeentehuis Meierijstad', status: 'Invoiced', category: 'Malfunction', priority: 'High', createdDate: '28-01-2026 09:45', assignee: 'H.C.M. Mond', werkbon: '440231', referentie: 'REF-2026-018', amount: 18900 },
+  { id: 'T-2026-0020', title: 'Air handling unit service', building: 'TU Eindhoven', status: 'Invoiced', category: 'Managed', priority: 'Medium', createdDate: '25-01-2026 14:15', assignee: 'R.R.H.M. Zij', werkbon: '440227', referentie: 'REF-2026-014', amount: 6350 },
 ];
+
+const ACTIVE_STATUSES = ['Received', 'In operation', 'To approve', 'Function restored'];
+const ACTION_REQUIRED_STATUSES = ['To approve'];
+
+// Statuses that don't have an amount yet
+const NO_AMOUNT_STATUSES = ['Received', 'In operation', 'Function restored'];
+
+function formatAmount(amt: number) {
+  return `€\u202f${amt.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+// ── Related Tickets Pages links ─────────────────────────────────────────────────
+
+const TICKETS_PAGES: DashboardLink[] = [
+  { id: 'operations_tickets', label: 'Ticket overview', subtitle: 'Overview of all tickets', icon: <FormatListBulletedIcon /> },
+  { id: 'operations_insights', label: 'Operations Insights', subtitle: 'This dashboard provides insight into tickets per location and NL/SfB coding.', icon: <InsightsOutlinedIcon /> },
+];
+
+// ── Active Tickets Table (matches tickets overview columns) ───────────────────
+
+function ActiveTicketsTable({ themeColors: c, items, statusCounts, onViewAll }: {
+  themeColors: ReturnType<typeof useThemeMode>['themeColors'];
+  items: TicketItem[];
+  statusCounts: StatusCount[];
+  onViewAll?: (actionRequired: boolean) => void;
+}) {
+  const [actionFilter, setActionFilter] = useState(false);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 10;
+
+  function getStatusColor(status: string): string {
+    return statusCounts.find(s => s.status === status)?.color ?? '#888';
+  }
+
+  const filtered = items.filter(item =>
+    actionFilter ? ACTION_REQUIRED_STATUSES.includes(item.status) : ACTIVE_STATUSES.includes(item.status)
+  );
+
+  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+  const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
+  return (
+    <GridCard
+      size="lg"
+      title="Active Tickets"
+      headerRight={
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: !actionFilter ? c.bgPrimary : 'transparent', color: !actionFilter ? 'text.primary' : 'text.secondary', boxShadow: !actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(false); setPage(0); }}>All active</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: actionFilter ? c.bgPrimary : 'transparent', color: actionFilter ? 'text.primary' : 'text.secondary', boxShadow: actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(true); setPage(0); }}>Action required</Box>
+          </Box>
+          <Button
+            size="small"
+            endIcon={<OpenInNewIcon sx={{ fontSize: 13 }} />}
+            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
+            onClick={() => onViewAll?.(actionFilter)}
+          >
+            View all
+          </Button>
+        </Box>
+      }
+    >
+      <TableContainer>
+        <Table sx={{ tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '22%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '9%' }} />
+          </colgroup>
+          <TableHead>
+            <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+              {['Ticket no.', 'Reference', 'Description', 'Building', 'Date', 'Discipline', 'Status'].map(h => (
+                <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
+              ))}
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>Amount</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginated.map((ticket) => (
+              <TableRow
+                key={ticket.id}
+                sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}
+              >
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>
+                    {ticket.id}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8125rem', whiteSpace: 'nowrap', color: 'text.secondary' }}>
+                    {ticket.referentie}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ maxWidth: 280 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8125rem' }} noWrap>
+                    {ticket.title}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }} noWrap>
+                    {ticket.building}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap', color: 'text.secondary' }}>
+                    {ticket.createdDate.split(' ')[0]}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                    {ticket.category}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.375, bgcolor: c.bgPrimaryHover, borderRadius: '6px' }}>
+                    <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: getStatusColor(ticket.status), flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'text.primary', whiteSpace: 'nowrap' }}>
+                      {ticket.status}
+                    </Typography>
+                  </Box>
+                </TableCell>
+                <TableCell sx={{ textAlign: 'right' }}>
+                  {NO_AMOUNT_STATUSES.includes(ticket.status) ? (
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>—</Typography>
+                  ) : ticket.amount != null ? (
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                      {formatAmount(ticket.amount)}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>—</Typography>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+            {paginated.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">No active tickets</Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {/* Pagination */}
+      {filtered.length > rowsPerPage && (
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', pt: 1.5, gap: 0.5 }}>
+          <IconButton size="small" disabled={page === 0} onClick={() => setPage(0)} sx={{ color: 'text.secondary' }}>
+            <FirstPageIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <IconButton size="small" disabled={page === 0} onClick={() => setPage(p => p - 1)} sx={{ color: 'text.secondary' }}>
+            <ChevronLeftIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', mx: 1 }}>
+            {page * rowsPerPage + 1} – {Math.min((page + 1) * rowsPerPage, filtered.length)} of {filtered.length}
+          </Typography>
+          <IconButton size="small" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} sx={{ color: 'text.secondary' }}>
+            <ChevronRightIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <IconButton size="small" disabled={page >= totalPages - 1} onClick={() => setPage(totalPages - 1)} sx={{ color: 'text.secondary' }}>
+            <LastPageIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
+      )}
+    </GridCard>
+  );
+}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -275,10 +463,11 @@ interface TicketsPerformancePageProps {
   onBuildingSelect?: (building: Building) => void;
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   onStatusFilter?: (status: string) => void;
+  onViewAllTickets?: (actionRequired: boolean) => void;
   buildingMode?: 'buildings' | 'clusters';
 }
 
-export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, onStatusFilter, buildingMode = 'buildings' }: TicketsPerformancePageProps) {
+export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, onStatusFilter, onViewAllTickets, buildingMode = 'buildings' }: TicketsPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
@@ -430,69 +619,15 @@ export default function TicketsPerformancePage({ themeScore = 71, themeTrend = 1
         statusCounts={STATUS_COUNTS}
         onStatusFilter={onStatusFilter}
       />
-      <ActiveListCard
-        size="lg"
-        title="Active Tickets"
+      <ActiveTicketsTable
+        themeColors={c}
         items={ACTIVE_TICKETS}
         statusCounts={STATUS_COUNTS}
-        activeStatuses={['Received', 'In operation', 'To approve', 'Function restored']}
-        actionRequiredStatuses={['To approve']}
-        renderMeta={(item) => {
-          const t = item as TicketItem;
-          return (
-            <>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <LocationOnOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.building}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <CalendarTodayOutlinedIcon sx={{ fontSize: 11, color: 'text.secondary' }} />
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.createdDate}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <ReceiptLongOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.werkbon}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <TagOutlinedIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{t.referentie}</Typography>
-              </Box>
-            </>
-          );
-        }}
-        renderChip={(item) => {
-          const t = item as TicketItem;
-          return (
-            <Chip
-              icon={t.category === 'Storing'
-                ? <ErrorOutlineIcon sx={{ fontSize: 13, color: 'text.secondary' }} />
-                : <SupportAgentOutlinedIcon sx={{ fontSize: 13, color: 'text.secondary' }} />}
-              label={t.category}
-              size="small"
-              sx={{
-                height: 20, fontSize: '0.65rem', fontWeight: 500,
-                bgcolor: 'action.hover', color: 'text.secondary',
-                '& .MuiChip-label': { px: 0.5 },
-                '& .MuiChip-icon': { ml: 0.5, mr: 0 },
-                flexShrink: 0,
-              }}
-            />
-          );
-        }}
-        renderRowActions={(item) => {
-          if (item.status !== 'To approve') return null;
-          return (
-            <>
-              <IconButton size="small" onClick={(e) => e.stopPropagation()} sx={{ width: 24, height: 24, bgcolor: '#4caf5014', color: '#4caf50', '&:hover': { bgcolor: '#4caf5028' } }}>
-                <CheckIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-              <IconButton size="small" onClick={(e) => e.stopPropagation()} sx={{ width: 24, height: 24, bgcolor: '#ef535014', color: '#ef5350', '&:hover': { bgcolor: '#ef535028' } }}>
-                <CloseIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </>
-          );
-        }}
+        onViewAll={onViewAllTickets}
       />
+
+      {/* ═══ SECTION 4: Related Tickets Pages ═══ */}
+      <DashboardLinksCard title="Related Tickets Pages" dashboards={TICKETS_PAGES} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

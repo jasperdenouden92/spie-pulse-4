@@ -1453,10 +1453,10 @@ export default function Home() {
             <OperationsPage onNavigate={handlePageChange} />
           )}
           {currentPage === 'operations_tickets' && (
-            <TicketsPage />
+            <TicketsPage initialStatuses={searchParams.get('statusFilter') ? searchParams.get('statusFilter')!.split(',') : undefined} />
           )}
           {currentPage === 'operations_quotations' && (
-            <QuotationsPage />
+            <QuotationsPage initialStatuses={searchParams.get('statusFilter') ? searchParams.get('statusFilter')!.split(',') : undefined} />
           )}
 
           {/* Portfolio sub-pages */}
@@ -2296,6 +2296,18 @@ export default function Home() {
                               setPendingDashboardId(id);
                               handlePageChange('dashboards');
                             }}
+                            onViewAllTickets={(actionRequired) => {
+                              setLocalQuickviewAsset(null);
+                              setSidePeekBuilding(null);
+                              setSidePeekZone(null);
+                              navigateTo({ page: 'operations_tickets', explorer: '0', asset: '', assetTab: '0', building: '', view: 'dashboard', statusFilter: actionRequired ? 'To approve' : '' });
+                            }}
+                            onViewAllQuotations={(actionRequired) => {
+                              setLocalQuickviewAsset(null);
+                              setSidePeekBuilding(null);
+                              setSidePeekZone(null);
+                              navigateTo({ page: 'operations_quotations', explorer: '0', asset: '', assetTab: '0', building: '', view: 'dashboard', statusFilter: actionRequired ? 'Open,Assigned' : '' });
+                            }}
                           />
                         ) : (
                           /* ===== RECOMMENDATIONS VIEW ===== */
@@ -2720,6 +2732,8 @@ function KPIAnalysisView({
   onViewAllBuildings,
   buildingMode = 'buildings',
   onNavigateToDashboard,
+  onViewAllTickets,
+  onViewAllQuotations,
   themeKeys = PRIMARY_THEME_KEYS,
 }: {
   selection: string;
@@ -2733,6 +2747,8 @@ function KPIAnalysisView({
   onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void;
   buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode;
   onNavigateToDashboard?: (dashboardId: string) => void;
+  onViewAllTickets?: (actionRequired: boolean) => void;
+  onViewAllQuotations?: (actionRequired: boolean) => void;
   themeKeys?: MetricType[];
 }) {
   // Determine which KPIs to show based on toggle state and selection
@@ -2746,7 +2762,7 @@ function KPIAnalysisView({
     : null;
 
   if (focusedMetric) {
-    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} periodMetrics={periodMetrics} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
+    return <ThemeSpecificDashboard metricKey={focusedMetric} metricInfo={metricInfo} periodMetrics={periodMetrics} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} onViewAllTickets={onViewAllTickets} onViewAllQuotations={onViewAllQuotations} />;
   }
 
   // Themes group: show combined themes performance page
@@ -2945,7 +2961,7 @@ function IndicatorChart({ title, type, color }: { title: string; type: string; c
 }
 
 /* Theme-specific dashboards */
-function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings', onNavigateToDashboard }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void; buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode; onNavigateToDashboard?: (dashboardId: string) => void }) {
+function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings', onNavigateToDashboard, onViewAllTickets, onViewAllQuotations }: { metricKey: MetricType; metricInfo: Record<MetricType, { title: string; icon: React.ReactNode }>; periodMetrics: import('@/data/metrics').PeriodMetrics; onBuildingSelect?: (building: import('@/data/buildings').Building) => void; onViewAllBuildings?: (sort: 'Best to Worst' | 'Worst to Best') => void; buildingMode?: import('@/components/BuildingSelector').BuildingFilterMode; onNavigateToDashboard?: (dashboardId: string) => void; onViewAllTickets?: (actionRequired: boolean) => void; onViewAllQuotations?: (actionRequired: boolean) => void }) {
   const { themeColors: c } = useThemeMode();
   const info = metricInfo[metricKey];
   const cardData = themeCardData[metricKey];
@@ -3109,13 +3125,13 @@ function ThemeSpecificDashboard({ metricKey, metricInfo, periodMetrics, onBuildi
   // Tickets Dashboard — uses dedicated component
   if (metricKey === 'tickets') {
     const ticketsMetric = periodMetrics.operations.find(t => t.title === 'Tickets');
-    return <TicketsPerformancePage themeScore={ticketsMetric?.score ?? 71} themeTrend={ticketsMetric?.trend ?? 1} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
+    return <TicketsPerformancePage themeScore={ticketsMetric?.score ?? 71} themeTrend={ticketsMetric?.trend ?? 1} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} onViewAllTickets={onViewAllTickets} />;
   }
 
   // Quotations Dashboard — uses dedicated component
   if (metricKey === 'quotations') {
     const quotationsMetric = periodMetrics.operations.find(t => t.title === 'Quotations');
-    return <QuotationsPerformancePage themeScore={quotationsMetric?.score ?? 74} themeTrend={quotationsMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} />;
+    return <QuotationsPerformancePage themeScore={quotationsMetric?.score ?? 74} themeTrend={quotationsMetric?.trend ?? 2} onBuildingSelect={onBuildingSelect} onViewAllBuildings={onViewAllBuildings} buildingMode={buildingMode} onNavigateToDashboard={onNavigateToDashboard} onViewAllQuotations={onViewAllQuotations} />;
   }
 
   // Maintenance Dashboard — uses dedicated component
