@@ -182,7 +182,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 }
 
 // ── Asset table (flat — grouping handled by parent) ──
-function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: EnrichedAsset[]; query?: string; hideBuildingCol?: boolean }) {
+function AssetTable({ assets, query = '', hideBuildingCol = false, onAssetClick }: { assets: EnrichedAsset[]; query?: string; hideBuildingCol?: boolean; onAssetClick?: (assetId: string, e: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -230,7 +230,7 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
         <TableBody>
           {sorted.map(asset => {
             return (
-              <TableRow key={asset.id} hover sx={{ cursor: 'pointer', '&:last-child td': { border: 0 }, '& td': { borderColor: c.cardBorder } }}>
+              <TableRow key={asset.id} hover onClick={(e) => onAssetClick?.(asset.id, e)} sx={{ cursor: 'pointer', '&:last-child td': { border: 0 }, '& td': { borderColor: c.cardBorder } }}>
                 <TableCell sx={{ py: 1.25 }}>
                   <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <HighlightText text={asset.name} query={query} />
@@ -285,7 +285,7 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
 }
 
 // ── Main component ──
-export default function PortfolioAssetsPage({ buildingName }: { buildingName?: string } = {}) {
+export default function PortfolioAssetsPage({ buildingName, onAssetClick }: { buildingName?: string; onAssetClick?: (assetId: string, e: React.MouseEvent) => void } = {}) {
   const { themeColors: c } = useThemeMode();
 
   const baseAssets = useMemo(
@@ -633,11 +633,11 @@ export default function PortfolioAssetsPage({ buildingName }: { buildingName?: s
           grouped.map(({ key, label, items }) => (
             <Box key={key} sx={{ mb: 4 }}>
               <SectionHeader label={label} count={items.length} />
-              <AssetTable assets={items} query={search} hideBuildingCol={!!buildingName} />
+              <AssetTable assets={items} query={search} hideBuildingCol={!!buildingName} onAssetClick={onAssetClick} />
             </Box>
           ))
         ) : (
-          <AssetTable assets={filtered} query={search} hideBuildingCol={!!buildingName} />
+          <AssetTable assets={filtered} query={search} hideBuildingCol={!!buildingName} onAssetClick={onAssetClick} />
         )}
       </Box>
     </Box>
