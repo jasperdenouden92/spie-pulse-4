@@ -115,6 +115,7 @@ function HeroHeader({
         mb: 3,
         position: 'relative',
         overflow: 'hidden',
+        borderBottomLeftRadius: '48px',
       }}
     >
       <Box sx={{ position: 'relative', height: 240 }}>
@@ -124,7 +125,7 @@ function HeroHeader({
             component="img"
             src={image}
             alt={title}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'blur(4px)', transform: 'scale(1.05)' }}
           />
         ) : (
           <Box
@@ -146,7 +147,7 @@ function HeroHeader({
           sx={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.65) 100%)',
+            background: 'rgba(0,0,0,0.45)',
             pointerEvents: 'none',
           }}
         />
@@ -206,9 +207,9 @@ function HeroHeader({
           <Box
             sx={{
               position: 'absolute',
-              bottom: tabs && tabs.length > 0 ? 52 : 16,
-              left: isNarrow ? 16 : 20,
-              right: isNarrow ? 16 : 20,
+              bottom: tabs && tabs.length > 0 ? 96 : 16,
+              left: tabs && tabs.length > 0 ? 32 : (isNarrow ? 16 : 20),
+              right: tabs && tabs.length > 0 ? 32 : (isNarrow ? 16 : 20),
               zIndex: 2,
             }}
           >
@@ -219,7 +220,6 @@ function HeroHeader({
                   fontWeight: 700,
                   fontSize: isNarrow ? '1.1rem' : '1.375rem',
                   fontFamily: '"Inter", sans-serif',
-                  textShadow: '0 2px 10px rgba(0,0,0,0.5)',
                   mb: subtitle ? 0.5 : 0,
                   lineHeight: 1.2,
                 }}
@@ -235,7 +235,6 @@ function HeroHeader({
                   sx={{
                     color: 'rgba(255,255,255,0.85)',
                     fontSize: '0.8125rem',
-                    textShadow: '0 1px 4px rgba(0,0,0,0.4)',
                     lineHeight: 1.4,
                   }}
                 >
@@ -255,7 +254,8 @@ function HeroHeader({
               left: 0,
               right: 0,
               zIndex: 2,
-              px: isNarrow ? 0.5 : 1,
+              px: '32px',
+              pb: '32px',
             }}
           >
             <Tabs
@@ -263,23 +263,28 @@ function HeroHeader({
               onChange={(_, v) => onTabChange?.(v)}
               variant={isNarrow ? 'scrollable' : 'standard'}
               scrollButtons={false}
-              TabIndicatorProps={{ style: { backgroundColor: '#fff', height: 2 } }}
+              TabIndicatorProps={{ style: { display: 'none' } }}
               sx={{
-                minHeight: 44,
-                '& .MuiTabs-flexContainer': { gap: 0 },
+                minHeight: 36,
+                '& .MuiTabs-flexContainer': { gap: 0.5 },
                 '& .MuiTab-root': {
-                  minHeight: 44,
+                  minHeight: 36,
                   minWidth: 'unset',
                   py: 0,
-                  px: isNarrow ? 1.5 : 2,
+                  px: 2,
+                  borderRadius: '999px',
                   textTransform: 'none',
                   fontWeight: 500,
                   fontSize: '0.875rem',
-                  color: 'rgba(255,255,255,0.65)',
+                  color: 'rgba(255,255,255,0.7)',
                   letterSpacing: 0,
-                  transition: 'color 0.15s',
-                  '&:hover': { color: 'rgba(255,255,255,0.9)' },
-                  '&.Mui-selected': { color: '#fff', fontWeight: 600 },
+                  transition: 'background-color 0.15s, color 0.15s',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.1)', color: '#fff' },
+                  '&.Mui-selected': {
+                    bgcolor: 'rgba(255,255,255,0.18)',
+                    color: '#fff',
+                    fontWeight: 600,
+                  },
                 },
               }}
             >
