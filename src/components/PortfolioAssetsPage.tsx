@@ -114,12 +114,13 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 // ── Status cell ──
 function StatusCell({ status }: { status?: string }) {
+  const { themeColors: c } = useThemeMode();
   const s = status ?? 'operational';
   const color = STATUS_COLOR[s] ?? STATUS_COLOR.operational;
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-      <FiberManualRecordIcon sx={{ fontSize: 9, color, flexShrink: 0 }} />
-      <Typography variant="body2" sx={{ fontSize: '0.8125rem', textTransform: 'capitalize' }}>{s}</Typography>
+    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.375, bgcolor: c.bgPrimaryHover, borderRadius: '6px' }}>
+      <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />
+      <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'text.primary', whiteSpace: 'nowrap', textTransform: 'capitalize' }}>{s}</Typography>
     </Box>
   );
 }
@@ -203,17 +204,26 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
     [assets, sortKey, sortDir]
   );
 
+  const colgroup = (
+    <colgroup>
+      {visibleColumns.map(col => (
+        <col key={col.key} style={{ width: col.width }} />
+      ))}
+    </colgroup>
+  );
+
   return (
-    <TableContainer sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '8px', bgcolor: c.bgPrimary }}>
-      <Table size="small" stickyHeader>
+    <Box>
+      {/* Header row outside the card */}
+      <Table sx={{ tableLayout: 'fixed' }}>
+        {colgroup}
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
             {visibleColumns.map(col => (
               <TableCell
                 key={col.key}
-                width={col.width}
                 sortDirection={sortKey === col.key ? sortDir : false}
-                sx={{ bgcolor: c.bgSecondary, fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, borderBottom: `1px solid ${c.cardBorder}`, whiteSpace: 'nowrap' }}
+                sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, whiteSpace: 'nowrap' }}
               >
                 <TableSortLabel
                   active={sortKey === col.key}
@@ -227,60 +237,66 @@ function AssetTable({ assets, query = '', hideBuildingCol = false }: { assets: E
             ))}
           </TableRow>
         </TableHead>
-        <TableBody>
-          {sorted.map(asset => {
-            return (
-              <TableRow key={asset.id} hover sx={{ cursor: 'pointer', '&:last-child td': { border: 0 }, '& td': { borderColor: c.cardBorder } }}>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <HighlightText text={asset.name} query={query} />
-                  </Typography>
-                </TableCell>
-                {!hideBuildingCol && (
+      </Table>
+      {/* Table body inside the card */}
+      <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+        <TableContainer>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            {colgroup}
+            <TableBody>
+              {sorted.map(asset => (
+                <TableRow key={asset.id} sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}>
                   <TableCell sx={{ py: 1.25 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      <HighlightText text={asset.building} query={query} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <HighlightText text={asset.name} query={query} />
                     </Typography>
                   </TableCell>
-                )}
-                <TableCell sx={{ py: 1.25 }}>
-                  <CategoryCell category={asset.metadata?.category} />
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.manufacturer
-                      ? <HighlightText text={asset.metadata.manufacturer} query={query} />
-                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.model
-                      ? <HighlightText text={asset.metadata.model} query={query} />
-                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.zone
-                      ? <HighlightText text={asset.metadata.zone} query={query} />
-                      : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
-                    {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ py: 1.25 }}>
-                  <StatusCell status={asset.metadata?.status} />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                  {!hideBuildingCol && (
+                    <TableCell sx={{ py: 1.25 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <HighlightText text={asset.building} query={query} />
+                      </Typography>
+                    </TableCell>
+                  )}
+                  <TableCell sx={{ py: 1.25 }}>
+                    <CategoryCell category={asset.metadata?.category} />
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.manufacturer
+                        ? <HighlightText text={asset.metadata.manufacturer} query={query} />
+                        : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.model
+                        ? <HighlightText text={asset.metadata.model} query={query} />
+                        : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.zone
+                        ? <HighlightText text={asset.metadata.zone} query={query} />
+                        : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                      {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ py: 1.25 }}>
+                    <StatusCell status={asset.metadata?.status} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
   );
 }
 
