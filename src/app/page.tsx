@@ -836,6 +836,8 @@ export default function Home() {
 
   const handlePageChange = useCallback((page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_clusters' | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types' | 'building_detail' | 'zone_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => {
     setLocalQuickviewAsset(null);
+    setSidePeekBuilding(null);
+    setSidePeekZone(null);
     const updates: Record<string, string> = { page, explorer: '0', asset: '', assetTab: '0', building: '', view: 'dashboard' };
     setURLParams(updates);
   }, [setURLParams]);
@@ -1451,7 +1453,7 @@ export default function Home() {
             <PortfolioPage
               tenant={selectedTenant}
               onBuildingClick={(b, e?) => handleSidePeekClick(e,
-                () => { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
+                () => { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
                 () => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }),
               )}
               viewMode={portfolioViewMode}
@@ -1460,7 +1462,7 @@ export default function Home() {
           )}
           {currentPage === 'portfolio_clusters' && <PortfolioClustersPage tenant={selectedTenant} />}
           {currentPage === 'portfolio_zones' && <PortfolioZonesPage tenant={selectedTenant} onZoneClick={(id, e) => handleSidePeekClick(e,
-            () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
+            () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
             () => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' }),
           )} />}
           {currentPage === 'portfolio_assets' && <PortfolioAssetsPage />}
@@ -2049,7 +2051,7 @@ export default function Home() {
                                     <Box
                                       key={name}
                                       onClick={(e) => !isCluster && !isInspectMode && handleSidePeekClick(e,
-                                        () => { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
+                                        () => { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
                                         () => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }),
                                       )}
                                       sx={{
@@ -2223,7 +2225,7 @@ export default function Home() {
                                     scale: { duration: 0.3 }
                                   }}
                                   onClick={(e) => isInspectMode ? handleInspectBuilding(b, e) : handleSidePeekClick(e,
-                                    () => { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
+                                    () => { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
                                     () => navigateTo({ page: 'building_detail', building: b.name, btab: 'performance' }),
                                   )}
                                   onMouseEnter={(e) => handleBuildingHover(b, e)}
@@ -2502,7 +2504,7 @@ export default function Home() {
               tenant={selectedBuilding.tenant}
               buildingName={selectedBuilding.name}
               onZoneClick={(id, e) => handleSidePeekClick(e,
-                () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
+                () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
                 () => navigateTo({ page: 'zone_detail', zone: id, ztab: 'overview' }),
               )}
             />
