@@ -19,6 +19,7 @@ export const URL_DEFAULTS: Record<string, string> = {
   explorer: '0',
   assetTab: '0',
   tab: '',
+  peek: '',
   contract: '',
   themes: '0',
 };

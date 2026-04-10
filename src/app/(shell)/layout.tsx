@@ -58,7 +58,7 @@ import { buildings as allBuildings, tenants, type Building, type MetricKeys } fr
 import { zones as allZones } from '@/data/zones';
 import { getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
-import { buildingToSlug } from '@/utils/slugs';
+import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -137,6 +137,43 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     setSidePeekAsset(null);
     setLocalQuickviewAsset(null);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Sync side peek ↔ URL ?peek= param ─────────────────────────────────
+  // Write: side peek state → URL
+  const peekSyncRef = useRef(false); // guard against sync loops
+  useEffect(() => {
+    if (peekSyncRef.current) { peekSyncRef.current = false; return; }
+    if (sidePeekBuilding) {
+      setURLParams({ peek: `building:${buildingToSlug(sidePeekBuilding.name)}` });
+    } else if (sidePeekZone) {
+      setURLParams({ peek: `zone:${sidePeekZone.id}` });
+    } else if (sidePeekAsset) {
+      setURLParams({ peek: `asset:${sidePeekAsset.id}` });
+    } else {
+      setURLParams({ peek: '' });
+    }
+  }, [sidePeekBuilding, sidePeekZone, sidePeekAsset]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Read: URL ?peek= param → side peek state (on mount only)
+  useEffect(() => {
+    const peekParam = new URLSearchParams(window.location.search).get('peek');
+    if (!peekParam) return;
+    const colonIdx = peekParam.indexOf(':');
+    if (colonIdx === -1) return;
+    const type = peekParam.slice(0, colonIdx);
+    const id = peekParam.slice(colonIdx + 1);
+    peekSyncRef.current = true; // prevent the write effect from firing
+    if (type === 'building') {
+      const b = slugToBuilding(id);
+      if (b) { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }
+    } else if (type === 'zone') {
+      const z = allZones.find(z => z.id === id);
+      if (z) { setSidePeekZone(z); setSidePeekZoneTab('overview'); }
+    } else if (type === 'asset') {
+      const a = getAssetById(id);
+      if (a) { setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Close mobile nav on navigation ─────────────────────────────────────
   const closeMobileNav = useCallback(() => {
