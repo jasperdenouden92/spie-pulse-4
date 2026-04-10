@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useFilterParams } from '@/hooks/useFilterParams';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -215,20 +216,22 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
     [tenant, buildingName]
   );
 
-  const [groupBy, setGroupBy] = useState<GroupBy>('none');
+  const { get, set, getList, setList } = useFilterParams();
+
+  const groupBy = get('groupBy', 'none') as GroupBy;
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Search
-  const [search, setSearch] = useState('');
+  const search = get('search', '');
 
   // Filters
-  const [selectedBuildings, setSelectedBuildings] = useState<string[]>([]);
+  const selectedBuildings = getList('buildings');
   const [buildingAnchor, setBuildingAnchor] = useState<null | HTMLElement>(null);
-  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const selectedCities = getList('cities');
   const [cityAnchor, setCityAnchor] = useState<null | HTMLElement>(null);
 
   // Zone type filter
-  const [selectedZoneTypes, setSelectedZoneTypes] = useState<string[]>([]);
+  const selectedZoneTypes = getList('zoneTypes');
   const [zoneTypeAnchor, setZoneTypeAnchor] = useState<null | HTMLElement>(null);
 
   // Derived option lists
@@ -286,23 +289,23 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
       onClose={() => setGroupByMenuAnchor(null)}
       slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
     >
-      <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
+      <MenuItem selected={groupBy === 'none'} onClick={() => { set('groupBy', 'none'); setGroupByMenuAnchor(null); }}>
         <ListItemText>No grouping</ListItemText>
       </MenuItem>
       <Divider />
       {!zoneTypeOnly && (
-        <MenuItem selected={groupBy === 'building'} onClick={() => { setGroupBy('building'); setGroupByMenuAnchor(null); }}>
+        <MenuItem selected={groupBy === 'building'} onClick={() => { set('groupBy', 'building'); setGroupByMenuAnchor(null); }}>
           <ListItemIcon><ApartmentOutlinedIcon fontSize="small" /></ListItemIcon>
           <ListItemText>Building</ListItemText>
         </MenuItem>
       )}
       {!zoneTypeOnly && (
-        <MenuItem selected={groupBy === 'city'} onClick={() => { setGroupBy('city'); setGroupByMenuAnchor(null); }}>
+        <MenuItem selected={groupBy === 'city'} onClick={() => { set('groupBy', 'city'); setGroupByMenuAnchor(null); }}>
           <ListItemIcon><LocationOnOutlinedIcon fontSize="small" /></ListItemIcon>
           <ListItemText>City</ListItemText>
         </MenuItem>
       )}
-      <MenuItem selected={groupBy === 'zone_type'} onClick={() => { setGroupBy('zone_type'); setGroupByMenuAnchor(null); }}>
+      <MenuItem selected={groupBy === 'zone_type'} onClick={() => { set('groupBy', 'zone_type'); setGroupByMenuAnchor(null); }}>
         <ListItemIcon><LayersOutlinedIcon fontSize="small" /></ListItemIcon>
         <ListItemText>Zone type</ListItemText>
       </MenuItem>
@@ -328,13 +331,13 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
       <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
       <InputBase
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => set('search', e.target.value)}
         placeholder="Search zones…"
         sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
         endAdornment={
           search ? (
             <InputAdornment position="end">
-              <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+              <IconButton size="small" onClick={() => set('search', '')} sx={{ p: 0.25 }}>
                 <CloseIcon sx={{ fontSize: 14 }} />
               </IconButton>
             </InputAdornment>
@@ -354,7 +357,7 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
       }))}
       multiple
       value={selectedZoneTypes}
-      onChange={setSelectedZoneTypes}
+      onChange={(v) => setList('zoneTypes', v as string[])}
       placeholder="Search zone types…"
     />
   );
@@ -367,7 +370,7 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
             label="Zone type"
             value={zoneTypeChipValue}
             onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
-            onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
+            onClear={selectedZoneTypes.length > 0 ? () => setList('zoneTypes', []) : undefined}
           />
           {zoneTypeFilterDropdown}
           <Box sx={{ flex: 1 }} />
@@ -408,7 +411,7 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
             label="Building"
             value={buildingChipValue}
             onClick={(e) => setBuildingAnchor(e.currentTarget)}
-            onClear={selectedBuildings.length > 0 ? () => setSelectedBuildings([]) : undefined}
+            onClear={selectedBuildings.length > 0 ? () => setList('buildings', []) : undefined}
           />
           <FilterDropdown
             anchorEl={buildingAnchor}
@@ -416,14 +419,14 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
             options={buildings.map(b => ({ value: b }))}
             multiple
             value={selectedBuildings}
-            onChange={setSelectedBuildings}
+            onChange={(v) => setList('buildings', v as string[])}
             placeholder="Search buildings…"
           />
           <FilterChip
             label="City"
             value={cityChipValue}
             onClick={(e) => setCityAnchor(e.currentTarget)}
-            onClear={selectedCities.length > 0 ? () => setSelectedCities([]) : undefined}
+            onClear={selectedCities.length > 0 ? () => setList('cities', []) : undefined}
           />
           <FilterDropdown
             anchorEl={cityAnchor}
@@ -431,14 +434,14 @@ export default function PortfolioZonesPage({ tenant, buildingName, onZoneClick, 
             options={cities.map(city => ({ value: city }))}
             multiple
             value={selectedCities}
-            onChange={setSelectedCities}
+            onChange={(v) => setList('cities', v as string[])}
             placeholder="Search cities…"
           />
           <FilterChip
             label="Zone type"
             value={zoneTypeChipValue}
             onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
-            onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
+            onClear={selectedZoneTypes.length > 0 ? () => setList('zoneTypes', []) : undefined}
           />
           {zoneTypeFilterDropdown}
         </PageHeader>

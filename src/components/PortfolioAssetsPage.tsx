@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useFilterParams } from '@/hooks/useFilterParams';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
@@ -196,14 +197,15 @@ function SectionHeader({ label, count, onClick }: { label: string; count: number
 // ── Asset table (flat — grouping handled by parent) ──
 function AssetTable({ assets, query = '', hiddenCols = [], onAssetClick }: { assets: EnrichedAsset[]; query?: string; hiddenCols?: SortKey[]; onAssetClick?: (assetId: string, e: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
-  const [sortKey, setSortKey] = useState<SortKey>('name');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const { get, set } = useFilterParams();
+  const sortKey = get('sortKey', 'name') as SortKey;
+  const sortDir = get('sortDir', 'asc') as 'asc' | 'desc';
 
   const visibleColumns = useMemo(() => hiddenCols.length ? COLUMNS.filter(col => !hiddenCols.includes(col.key)) : COLUMNS, [hiddenCols]);
 
   function handleSort(key: SortKey) {
-    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setSortKey(key); setSortDir('asc'); }
+    if (sortKey === key) set('sortDir', sortDir === 'asc' ? 'desc' : 'asc');
+    else { set('sortKey', key); set('sortDir', 'asc'); }
   }
 
   const sorted = useMemo(() =>
@@ -332,34 +334,36 @@ export default function PortfolioAssetsPage({ buildingName, onAssetClick, onBuil
   const allModels     = useMemo(() => Array.from(new Set(baseAssets.map(a => a.metadata?.model).filter(Boolean) as string[])).sort(), [baseAssets]);
   const allZones      = useMemo(() => Array.from(new Set(baseAssets.map(a => a.metadata?.zone).filter(Boolean) as string[])).sort(), [baseAssets]);
 
+  const { get, set, getList, setList } = useFilterParams();
+
   // Always-visible filters
-  const [search, setSearch] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const search = get('search', '');
+  const selectedCategories = getList('categories');
   const [categoryAnchor, setCategoryAnchor] = useState<null | HTMLElement>(null);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const selectedStatuses = getList('statuses');
   const [statusAnchor, setStatusAnchor] = useState<null | HTMLElement>(null);
-  const [groupBy, setGroupBy] = useState<GroupBy>('none');
+  const groupBy = get('groupBy', 'none') as GroupBy;
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Building filter
-  const [selectedBuildings, setSelectedBuildings] = useState<string[]>([]);
+  const selectedBuildings = getList('buildings');
   const [buildingAnchor, setBuildingAnchor] = useState<null | HTMLElement>(null);
 
   // Manufacturer filter
-  const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
+  const selectedManufacturers = getList('manufacturers');
   const [manufacturerAnchor, setManufacturerAnchor] = useState<null | HTMLElement>(null);
 
   // Model filter
-  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const selectedModels = getList('models');
   const [modelAnchor, setModelAnchor] = useState<null | HTMLElement>(null);
 
   // Zone filter
-  const [selectedZones, setSelectedZones] = useState<string[]>([]);
+  const selectedZones = getList('zones');
   const [zoneAnchor, setZoneAnchor] = useState<null | HTMLElement>(null);
 
   // Installation date filter
   const DEFAULT_DATE_RANGE = `2023-01-01|${new Date().toISOString().split('T')[0]}`;
-  const [dateRange, setDateRange] = useState('');
+  const dateRange = get('dateRange', '');
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
 
   // Filtered data
@@ -421,57 +425,57 @@ export default function PortfolioAssetsPage({ buildingName, onAssetClick, onBuil
   const filterChips = (
     <>
       {/* Always-visible filter chips */}
-      <FilterChip label="Category" value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setSelectedCategories([]) : undefined} />
+      <FilterChip label="Category" value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setList('categories', []) : undefined} />
       <FilterDropdown
         anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)}
         options={allCategories.map(cat => { const { Icon, color } = getCatConfig(cat); return { value: cat, icon: <Icon sx={{ fontSize: 16, color }} /> } satisfies FilterOption; })}
-        multiple value={selectedCategories} onChange={setSelectedCategories} placeholder="Search categories…"
+        multiple value={selectedCategories} onChange={(v) => setList('categories', v as string[])} placeholder="Search categories…"
       />
 
-      <FilterChip label="Status" value={statusChipValue} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setSelectedStatuses([]) : undefined} />
+      <FilterChip label="Status" value={statusChipValue} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setList('statuses', []) : undefined} />
       <FilterDropdown
         anchorEl={statusAnchor} onClose={() => setStatusAnchor(null)}
         options={allStatuses.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1), icon: <FiberManualRecordIcon sx={{ fontSize: 12, color: STATUS_COLOR[s] ?? '#9E9E9E' }} /> } satisfies FilterOption))}
-        multiple value={selectedStatuses} onChange={setSelectedStatuses} placeholder="Search statuses…"
+        multiple value={selectedStatuses} onChange={(v) => setList('statuses', v as string[])} placeholder="Search statuses…"
       />
 
       {/* Building (only in global view) */}
       {!buildingName && (
         <>
-          <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={selectedBuildings.length > 0 ? () => setSelectedBuildings([]) : undefined} />
+          <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={selectedBuildings.length > 0 ? () => setList('buildings', []) : undefined} />
           <FilterDropdown
             anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)}
             options={allBuildings.map(b => ({ value: b, icon: <ApartmentOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
-            multiple value={selectedBuildings} onChange={setSelectedBuildings}
+            multiple value={selectedBuildings} onChange={(v) => setList('buildings', v as string[])}
             placeholder="Search buildings…"
           />
         </>
       )}
 
       {/* Manufacturer */}
-      <FilterChip label="Manufacturer" value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setSelectedManufacturers([]) : undefined} />
+      <FilterChip label="Manufacturer" value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setList('manufacturers', []) : undefined} />
       <FilterDropdown
         anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)}
         options={allManufacturers.map(m => ({ value: m } satisfies FilterOption))}
-        multiple value={selectedManufacturers} onChange={setSelectedManufacturers}
+        multiple value={selectedManufacturers} onChange={(v) => setList('manufacturers', v as string[])}
         placeholder="Search manufacturers…"
       />
 
       {/* Model */}
-      <FilterChip label="Model" value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setSelectedModels([]) : undefined} />
+      <FilterChip label="Model" value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setList('models', []) : undefined} />
       <FilterDropdown
         anchorEl={modelAnchor} onClose={() => setModelAnchor(null)}
         options={allModels.map(m => ({ value: m } satisfies FilterOption))}
-        multiple value={selectedModels} onChange={setSelectedModels}
+        multiple value={selectedModels} onChange={(v) => setList('models', v as string[])}
         placeholder="Search models…"
       />
 
       {/* Zone */}
-      <FilterChip label="Zone" value={zoneChipValue} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setSelectedZones([]) : undefined} />
+      <FilterChip label="Zone" value={zoneChipValue} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setList('zones', []) : undefined} />
       <FilterDropdown
         anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)}
         options={allZones.map(l => ({ value: l, icon: <LocationOnOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
-        multiple value={selectedZones} onChange={setSelectedZones}
+        multiple value={selectedZones} onChange={(v) => setList('zones', v as string[])}
         placeholder="Search zones…"
       />
 
@@ -480,7 +484,7 @@ export default function PortfolioAssetsPage({ buildingName, onAssetClick, onBuil
         label="Installation date"
         value={dateRange ? getDateRangeDisplayLabel(dateRange) : null}
         onClick={() => setDateDialogOpen(true)}
-        onClear={dateRange ? () => setDateRange('') : undefined}
+        onClear={dateRange ? () => set('dateRange', '') : undefined}
       />
       <DateRangeSelector
         inline
@@ -488,7 +492,7 @@ export default function PortfolioAssetsPage({ buildingName, onAssetClick, onBuil
         dialogOpen={dateDialogOpen}
         onDialogOpenChange={setDateDialogOpen}
         value={dateRange || DEFAULT_DATE_RANGE}
-        onChange={setDateRange}
+        onChange={(v) => set('dateRange', v)}
       />
     </>
   );
@@ -500,19 +504,19 @@ export default function PortfolioAssetsPage({ buildingName, onAssetClick, onBuil
       onClose={() => setGroupByMenuAnchor(null)}
       slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
     >
-      <MenuItem selected={groupBy === 'none'} onClick={() => { setGroupBy('none'); setGroupByMenuAnchor(null); }}>
+      <MenuItem selected={groupBy === 'none'} onClick={() => { set('groupBy', 'none'); setGroupByMenuAnchor(null); }}>
         <ListItemText>No grouping</ListItemText>
       </MenuItem>
       <Divider />
       {!buildingName && (
-        <MenuItem selected={groupBy === 'building'} onClick={() => { setGroupBy('building'); setGroupByMenuAnchor(null); }}>
+        <MenuItem selected={groupBy === 'building'} onClick={() => { set('groupBy', 'building'); setGroupByMenuAnchor(null); }}>
           <ListItemText>Building</ListItemText>
         </MenuItem>
       )}
-      <MenuItem selected={groupBy === 'category'} onClick={() => { setGroupBy('category'); setGroupByMenuAnchor(null); }}>
+      <MenuItem selected={groupBy === 'category'} onClick={() => { set('groupBy', 'category'); setGroupByMenuAnchor(null); }}>
         <ListItemText>Category</ListItemText>
       </MenuItem>
-      <MenuItem selected={groupBy === 'status'} onClick={() => { setGroupBy('status'); setGroupByMenuAnchor(null); }}>
+      <MenuItem selected={groupBy === 'status'} onClick={() => { set('groupBy', 'status'); setGroupByMenuAnchor(null); }}>
         <ListItemText>Status</ListItemText>
       </MenuItem>
     </Menu>
@@ -531,13 +535,13 @@ export default function PortfolioAssetsPage({ buildingName, onAssetClick, onBuil
       <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
       <InputBase
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => set('search', e.target.value)}
         placeholder="Search assets…"
         sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
         endAdornment={
           search ? (
             <InputAdornment position="end">
-              <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+              <IconButton size="small" onClick={() => set('search', '')} sx={{ p: 0.25 }}>
                 <CloseIcon sx={{ fontSize: 14 }} />
               </IconButton>
             </InputAdornment>
