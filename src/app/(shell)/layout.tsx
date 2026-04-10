@@ -874,6 +874,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               <ZonesList
                 zones={allZones.filter(z => z.buildingName === sidePeekBuilding.name)}
                 hideBuildingColumn
+                showFilters
                 onZoneClick={(id, e) => handleSidePeekClick(e,
                   () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekZone(z); setSidePeekZoneTab('overview'); setSidePeekBuilding(null); } },
                   () => { router.push('/zones/' + id, { scroll: false }); },
@@ -881,7 +882,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               />
             )}
             {sidePeekBuildingTab === 'assets' && (
-              <AssetsList assets={ALL_ASSETS.filter(a => a.building === sidePeekBuilding.name)} hideBuildingColumn onAssetClick={(id) => {
+              <AssetsList assets={ALL_ASSETS.filter(a => a.building === sidePeekBuilding.name)} hideBuildingColumn showFilters onAssetClick={(id) => {
                 const a = getAssetById(id);
                 if (a) { setSidePeekBuilding(null); setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
               }} />

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
@@ -9,6 +9,17 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import InputBase from '@mui/material/InputBase';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Button from '@/components/Button';
 import { type Zone } from '@/data/zones';
 import { useThemeMode } from '@/theme-mode-context';
 
@@ -187,21 +198,42 @@ function ZonesTable({ zones, query, hideBuilding, hideCity, hideFloor, onZoneCli
 
 // ── Main exported component ──
 
-export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, groupBy = 'none', search = '', hideBuildingColumn }: {
+export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, groupBy: groupByProp = 'none', search: searchProp = '', hideBuildingColumn, showFilters }: {
   zones: Zone[];
   onZoneClick?: (id: string, e?: React.MouseEvent) => void;
   onBuildingLabelClick?: (name: string, e?: React.MouseEvent) => void;
   groupBy?: string;
   search?: string;
   hideBuildingColumn?: boolean;
+  showFilters?: boolean;
 }) {
+  const { themeColors: c } = useThemeMode();
+
+  // Internal filter state (used when showFilters is true)
+  const [internalSearch, setInternalSearch] = useState('');
+  const [internalGroupBy, setInternalGroupBy] = useState<GroupBy>('none');
+  const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
+
+  const search = showFilters ? internalSearch : searchProp;
+  const groupBy = showFilters ? internalGroupBy : groupByProp;
   const castGroupBy = groupBy as GroupBy;
+
+  // Filter zones by internal search when showFilters is enabled
+  const filteredZones = useMemo(() => {
+    if (!showFilters || !internalSearch.trim()) return zones;
+    const q = internalSearch.trim().toLowerCase();
+    return zones.filter(z =>
+      z.name.toLowerCase().includes(q) ||
+      z.buildingName.toLowerCase().includes(q) ||
+      z.floor.toLowerCase().includes(q)
+    );
+  }, [zones, showFilters, internalSearch]);
 
   // Grouped output
   const grouped = useMemo(() => {
-    if (castGroupBy === 'none') return [{ key: '__all__', label: '', items: zones }];
+    if (castGroupBy === 'none') return [{ key: '__all__', label: '', items: filteredZones }];
     const map = new Map<string, Zone[]>();
-    for (const z of zones) {
+    for (const z of filteredZones) {
       const key =
         castGroupBy === 'building' ? z.buildingName :
         castGroupBy === 'city' ? (z.buildingCity || 'Unknown') :
@@ -215,19 +247,54 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
       return entries.sort((a, b) => a.items[0].floorNumber - b.items[0].floorNumber);
     }
     return entries.sort((a, b) => a.key.localeCompare(b.key));
-  }, [zones, castGroupBy]);
+  }, [filteredZones, castGroupBy]);
 
-  if (zones.length === 0) {
-    return (
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="body1" color="text.secondary">No zones match your filters.</Typography>
+  const filterBar = showFilters ? (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, mt: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
+        <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+        <InputBase
+          value={internalSearch}
+          onChange={(e) => setInternalSearch(e.target.value)}
+          placeholder="Search zones…"
+          sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
+          endAdornment={internalSearch ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => setInternalSearch('')} sx={{ p: 0.25 }}>
+                <CloseIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </InputAdornment>
+          ) : null}
+        />
       </Box>
+      <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
+        Group by
+      </Button>
+      <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
+        <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
+        <Divider />
+        <MenuItem selected={internalGroupBy === 'floor'} onClick={() => { setInternalGroupBy('floor'); setGroupByMenuAnchor(null); }}><ListItemText>Floor</ListItemText></MenuItem>
+        <MenuItem selected={internalGroupBy === 'zone_type'} onClick={() => { setInternalGroupBy('zone_type'); setGroupByMenuAnchor(null); }}><ListItemText>Zone type</ListItemText></MenuItem>
+      </Menu>
+      <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>{filteredZones.length} zone{filteredZones.length !== 1 ? 's' : ''}</Typography>
+    </Box>
+  ) : null;
+
+  if (filteredZones.length === 0) {
+    return (
+      <>
+        {filterBar}
+        <Box sx={{ py: 8, textAlign: 'center' }}>
+          <Typography variant="body1" color="text.secondary">No zones match your filters.</Typography>
+        </Box>
+      </>
     );
   }
 
   if (castGroupBy !== 'none') {
     return (
       <>
+        {filterBar}
         {grouped.map(({ key, label, items }) => (
           <Box key={key} sx={{ mb: 4 }}>
             <SectionHeader
@@ -243,6 +310,9 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
   }
 
   return (
-    <ZonesTable zones={zones} query={search} hideBuilding={!!hideBuildingColumn} hideCity={!!hideBuildingColumn} onZoneClick={onZoneClick} />
+    <>
+      {filterBar}
+      <ZonesTable zones={filteredZones} query={search} hideBuilding={!!hideBuildingColumn} hideCity={!!hideBuildingColumn} onZoneClick={onZoneClick} />
+    </>
   );
 }

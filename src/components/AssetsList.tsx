@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -11,6 +11,17 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
+import InputBase from '@mui/material/InputBase';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Button from '@/components/Button';
 import { useThemeMode } from '@/theme-mode-context';
 import { type AssetNode } from '@/data/assetTree';
 
@@ -278,21 +289,74 @@ function AssetTable({ assets, query = '', hiddenCols = [], onAssetClick }: { ass
 }
 
 // ── Main exported component ──
-export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick, groupBy = 'none', search = '', hideBuildingColumn }: {
+export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick, groupBy: groupByProp = 'none', search: searchProp = '', hideBuildingColumn, showFilters }: {
   assets: EnrichedAsset[];
   onAssetClick?: (assetId: string, e: React.MouseEvent) => void;
   onBuildingLabelClick?: (buildingName: string, e?: React.MouseEvent) => void;
   groupBy?: string;
   search?: string;
   hideBuildingColumn?: boolean;
+  showFilters?: boolean;
 }) {
+  const { themeColors: c } = useThemeMode();
+
+  // Internal filter state (used when showFilters is true)
+  const [internalSearch, setInternalSearch] = useState('');
+  const [internalGroupBy, setInternalGroupBy] = useState<GroupBy>('none');
+  const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
+
+  const search = showFilters ? internalSearch : searchProp;
+  const groupBy = showFilters ? internalGroupBy : groupByProp;
   const castGroupBy = groupBy as GroupBy;
+
+  // Filter assets by internal search when showFilters is enabled
+  const filteredAssets = useMemo(() => {
+    if (!showFilters || !internalSearch.trim()) return assets;
+    const q = internalSearch.trim().toLowerCase();
+    return assets.filter(a =>
+      a.name.toLowerCase().includes(q) ||
+      a.building.toLowerCase().includes(q) ||
+      a.metadata?.category?.toLowerCase().includes(q) ||
+      a.metadata?.manufacturer?.toLowerCase().includes(q)
+    );
+  }, [assets, showFilters, internalSearch]);
+
+  const filterBar = showFilters ? (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, mt: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
+        <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+        <InputBase
+          value={internalSearch}
+          onChange={(e) => setInternalSearch(e.target.value)}
+          placeholder="Search assets…"
+          sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
+          endAdornment={internalSearch ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => setInternalSearch('')} sx={{ p: 0.25 }}>
+                <CloseIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </InputAdornment>
+          ) : null}
+        />
+      </Box>
+      <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
+        Group by
+      </Button>
+      <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
+        <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
+        <Divider />
+        <MenuItem selected={internalGroupBy === 'category'} onClick={() => { setInternalGroupBy('category'); setGroupByMenuAnchor(null); }}><ListItemText>Category</ListItemText></MenuItem>
+        <MenuItem selected={internalGroupBy === 'status'} onClick={() => { setInternalGroupBy('status'); setGroupByMenuAnchor(null); }}><ListItemText>Status</ListItemText></MenuItem>
+      </Menu>
+      <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>{filteredAssets.length} asset{filteredAssets.length !== 1 ? 's' : ''}</Typography>
+    </Box>
+  ) : null;
 
   // Grouped output
   const grouped = useMemo(() => {
     if (castGroupBy === 'none') return null;
     const map = new Map<string, EnrichedAsset[]>();
-    for (const a of assets) {
+    for (const a of filteredAssets) {
       const key = castGroupBy === 'building' ? a.building :
                   castGroupBy === 'category' ? (a.metadata?.category ?? 'Other') :
                   (a.metadata?.status ?? 'unknown');
@@ -302,11 +366,12 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
     return Array.from(map.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([key, items]) => ({ key, label: key, items }));
-  }, [assets, castGroupBy]);
+  }, [filteredAssets, castGroupBy]);
 
   return (
     <Box sx={{ pt: 3 }}>
-      {assets.length === 0 ? (
+      {filterBar}
+      {filteredAssets.length === 0 ? (
         <Box sx={{ py: 8, textAlign: 'center' }}>
           <Typography variant="body1" color="text.secondary">No assets match your filters.</Typography>
         </Box>
@@ -326,7 +391,7 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
           </Box>
         ))
       ) : (
-        <AssetTable assets={assets} query={search} hiddenCols={hideBuildingColumn ? ['building'] : []} onAssetClick={onAssetClick} />
+        <AssetTable assets={filteredAssets} query={search} hiddenCols={hideBuildingColumn ? ['building'] : []} onAssetClick={onAssetClick} />
       )}
     </Box>
   );

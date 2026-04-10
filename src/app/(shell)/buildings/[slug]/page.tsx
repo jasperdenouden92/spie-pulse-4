@@ -81,6 +81,7 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
         <ZonesList
           zones={allZones.filter(z => z.buildingName === building.name)}
           hideBuildingColumn
+          showFilters
           onZoneClick={(id, e) => handleSidePeekClick(e,
             () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
             () => router.push(`/zones/${id}`),
@@ -91,6 +92,7 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
         <AssetsList
           assets={buildingAssets}
           hideBuildingColumn
+          showFilters
           onAssetClick={(id, e) => handleSidePeekClick(e,
             () => { const a = getAssetById(id); if (a) { setSidePeekAsset(a); setSidePeekAssetTab('overview'); } },
             () => router.push(`/assets/${id}`),
