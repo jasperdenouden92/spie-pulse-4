@@ -4,9 +4,9 @@ import React, { createContext, useContext, useState, useRef } from 'react';
 import type { Building } from '@/data/buildings';
 import type { Zone } from '@/data/zones';
 import type { AssetNode } from '@/data/assetTree';
-import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
-import type { ZoneDetailTab } from '@/components/ZoneDetailPage';
-import type { AssetDetailTab } from '@/components/AssetDetailPage';
+import type { BuildingDetailTab } from '@/templates/building';
+import type { ZoneDetailTab } from '@/templates/zone';
+import type { AssetDetailTab } from '@/templates/asset';
 import type { NotificationsPanelHandle } from '@/components/NotificationsPanel';
 
 export interface Favorite {

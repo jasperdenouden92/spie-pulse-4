@@ -4,7 +4,8 @@ import { use } from 'react';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
-import BuildingDetailPage from '@/components/BuildingDetailPage';
+import BuildingTemplate from '@/templates/building';
+import type { BuildingDetailTab } from '@/templates/building';
 import PortfolioZonesPage from '@/components/PortfolioZonesPage';
 import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
 import { useURLState } from '@/hooks/useURLState';
@@ -14,7 +15,6 @@ import { buildings as allBuildings } from '@/data/buildings';
 import { zones as allZones } from '@/data/zones';
 import { getAssetById } from '@/data/assetTree';
 import { handleSidePeekClick } from '@/components/SidePeekPanel';
-import type { BuildingDetailTab } from '@/components/BuildingDetailPage';
 
 export default function BuildingDetailRoute({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -34,7 +34,7 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
 
   return (
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
-      <BuildingDetailPage
+      <BuildingTemplate
         building={building}
         tab={btab as BuildingDetailTab}
         onTabChange={(t) => setBtab(t)}

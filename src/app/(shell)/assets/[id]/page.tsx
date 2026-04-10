@@ -4,14 +4,14 @@ import { use } from 'react';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
-import AssetDetailPage from '@/components/AssetDetailPage';
+import AssetTemplate from '@/templates/asset';
+import type { AssetDetailTab } from '@/templates/asset';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { buildingToSlug } from '@/utils/slugs';
 import { buildings as allBuildings } from '@/data/buildings';
 import { zones as allZones } from '@/data/zones';
 import { getAssetById, getPathToAsset } from '@/data/assetTree';
-import type { AssetDetailTab } from '@/components/AssetDetailPage';
 
 export default function AssetDetailRoute({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -39,7 +39,7 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
 
   return (
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
-      <AssetDetailPage
+      <AssetTemplate
         asset={asset}
         tab={atab as AssetDetailTab}
         onTabChange={(t) => setAtab(t)}

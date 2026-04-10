@@ -42,9 +42,9 @@ import AssetBreadcrumb from '@/components/AssetBreadcrumb';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import DataExplorerPanel from '@/components/DataExplorerPanel';
 import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
-import BuildingDetailPage from '@/components/BuildingDetailPage';
-import ZoneDetailPage from '@/components/ZoneDetailPage';
-import AssetDetailPage from '@/components/AssetDetailPage';
+import BuildingTemplate from '@/templates/building';
+import ZoneTemplate from '@/templates/zone';
+import AssetTemplate from '@/templates/asset';
 import PortfolioZonesPage from '@/components/PortfolioZonesPage';
 import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
 import ChangelogButton from '@/components/ChangelogButton';
@@ -795,7 +795,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       >
         {sidePeekBuilding && (
           <Box sx={{ px: 3 }}>
-            <BuildingDetailPage
+            <BuildingTemplate
               building={sidePeekBuilding}
               tab={sidePeekBuildingTab}
               onTabChange={setSidePeekBuildingTab}
@@ -837,7 +837,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       >
         {sidePeekZone && (
           <Box sx={{ px: 3 }}>
-            <ZoneDetailPage
+            <ZoneTemplate
               zone={sidePeekZone}
               tab={sidePeekZoneTab}
               onTabChange={setSidePeekZoneTab}
@@ -875,7 +875,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
             : null;
           return (
             <Box sx={{ px: 3 }}>
-              <AssetDetailPage
+              <AssetTemplate
                 asset={sidePeekAsset}
                 tab={sidePeekAssetTab}
                 onTabChange={setSidePeekAssetTab}
