@@ -847,8 +847,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
               onPanelClose={() => setSidePeekBuilding(null)}
               onPanelFullscreen={() => {
-                router.push(`/buildings/${sidePeekBuilding.id}`, { scroll: false });
-                setSidePeekBuilding(null);
+                router.push(`/buildings/${sidePeekBuilding.id}`);
               }}
             />
             {sidePeekBuildingTab === 'zones' && (
@@ -894,8 +893,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
               onPanelClose={() => setSidePeekZone(null)}
               onPanelFullscreen={() => {
-                router.push('/zones/' + sidePeekZone.id, { scroll: false });
-                setSidePeekZone(null);
+                router.push('/zones/' + sidePeekZone.id);
               }}
             />
           </Box>
@@ -937,8 +935,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
                 }}
                 onPanelClose={() => setSidePeekAsset(null)}
                 onPanelFullscreen={() => {
-                  router.push('/assets/' + sidePeekAsset.id, { scroll: false });
-                  setSidePeekAsset(null);
+                  router.push('/assets/' + sidePeekAsset.id);
                 }}
               />
             </Box>
