@@ -22,6 +22,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Button from '@/components/Button';
+import FilterChip from '@/components/FilterChip';
+import FilterDropdown from '@/components/FilterDropdown';
 import { useThemeMode } from '@/theme-mode-context';
 import { type AssetNode } from '@/data/assetTree';
 
@@ -304,51 +306,101 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
   const [internalSearch, setInternalSearch] = useState('');
   const [internalGroupBy, setInternalGroupBy] = useState<GroupBy>('none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoryAnchor, setCategoryAnchor] = useState<null | HTMLElement>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [statusAnchor, setStatusAnchor] = useState<null | HTMLElement>(null);
+  const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
+  const [manufacturerAnchor, setManufacturerAnchor] = useState<null | HTMLElement>(null);
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [modelAnchor, setModelAnchor] = useState<null | HTMLElement>(null);
+  const [selectedZones, setSelectedZones] = useState<string[]>([]);
+  const [zoneAnchor, setZoneAnchor] = useState<null | HTMLElement>(null);
 
   const search = showFilters ? internalSearch : searchProp;
   const groupBy = showFilters ? internalGroupBy : groupByProp;
   const castGroupBy = groupBy as GroupBy;
 
-  // Filter assets by internal search when showFilters is enabled
+  // Derived option lists
+  const allCategories = useMemo(() => showFilters ? Array.from(new Set(assets.map(a => a.metadata?.category).filter(Boolean) as string[])).sort() : [], [assets, showFilters]);
+  const allStatuses = useMemo(() => showFilters ? Array.from(new Set(assets.map(a => a.metadata?.status).filter(Boolean) as string[])).sort() : [], [assets, showFilters]);
+  const allManufacturers = useMemo(() => showFilters ? Array.from(new Set(assets.map(a => a.metadata?.manufacturer).filter(Boolean) as string[])).sort() : [], [assets, showFilters]);
+  const allModels = useMemo(() => showFilters ? Array.from(new Set(assets.map(a => a.metadata?.model).filter(Boolean) as string[])).sort() : [], [assets, showFilters]);
+  const allZoneNames = useMemo(() => showFilters ? Array.from(new Set(assets.map(a => a.metadata?.zone).filter(Boolean) as string[])).sort() : [], [assets, showFilters]);
+
+  // Filter assets when showFilters is enabled
   const filteredAssets = useMemo(() => {
-    if (!showFilters || !internalSearch.trim()) return assets;
-    const q = internalSearch.trim().toLowerCase();
-    return assets.filter(a =>
-      a.name.toLowerCase().includes(q) ||
-      a.building.toLowerCase().includes(q) ||
-      a.metadata?.category?.toLowerCase().includes(q) ||
-      a.metadata?.manufacturer?.toLowerCase().includes(q)
-    );
-  }, [assets, showFilters, internalSearch]);
+    if (!showFilters) return assets;
+    let list = assets;
+    if (internalSearch.trim()) {
+      const q = internalSearch.trim().toLowerCase();
+      list = list.filter(a =>
+        a.name.toLowerCase().includes(q) ||
+        a.building.toLowerCase().includes(q) ||
+        a.metadata?.category?.toLowerCase().includes(q) ||
+        a.metadata?.manufacturer?.toLowerCase().includes(q)
+      );
+    }
+    if (selectedCategories.length > 0) list = list.filter(a => selectedCategories.includes(a.metadata?.category ?? ''));
+    if (selectedStatuses.length > 0) list = list.filter(a => selectedStatuses.includes(a.metadata?.status ?? ''));
+    if (selectedManufacturers.length > 0) list = list.filter(a => selectedManufacturers.includes(a.metadata?.manufacturer ?? ''));
+    if (selectedModels.length > 0) list = list.filter(a => selectedModels.includes(a.metadata?.model ?? ''));
+    if (selectedZones.length > 0) list = list.filter(a => selectedZones.includes(a.metadata?.zone ?? ''));
+    return list;
+  }, [assets, showFilters, internalSearch, selectedCategories, selectedStatuses, selectedManufacturers, selectedModels, selectedZones]);
+
+  const catChip = selectedCategories.length === 0 ? null : selectedCategories.length === 1 ? selectedCategories[0] : `${selectedCategories.length} categories`;
+  const statusChip = selectedStatuses.length === 0 ? null : selectedStatuses.length === 1 ? selectedStatuses[0] : `${selectedStatuses.length} statuses`;
+  const mfgChip = selectedManufacturers.length === 0 ? null : selectedManufacturers.length === 1 ? selectedManufacturers[0] : `${selectedManufacturers.length} manufacturers`;
+  const modelChip = selectedModels.length === 0 ? null : selectedModels.length === 1 ? selectedModels[0] : `${selectedModels.length} models`;
+  const zoneChip = selectedZones.length === 0 ? null : selectedZones.length === 1 ? selectedZones[0] : `${selectedZones.length} zones`;
 
   const filterBar = showFilters ? (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, mt: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
-        <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-        <InputBase
-          value={internalSearch}
-          onChange={(e) => setInternalSearch(e.target.value)}
-          placeholder="Search assets…"
-          sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
-          endAdornment={internalSearch ? (
-            <InputAdornment position="end">
-              <IconButton size="small" onClick={() => setInternalSearch('')} sx={{ p: 0.25 }}>
-                <CloseIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </InputAdornment>
-          ) : null}
-        />
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, mt: 1, flexWrap: 'wrap' }}>
+      {/* Left: Category + optional filters */}
+      <FilterChip label="Category" value={catChip} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setSelectedCategories([]) : undefined} />
+      <FilterDropdown anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)} options={allCategories.map(c => ({ value: c }))} multiple value={selectedCategories} onChange={(v) => setSelectedCategories(v as string[])} placeholder="Search categories…" />
+
+      <FilterChip label="Status" value={statusChip} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setSelectedStatuses([]) : undefined} />
+      <FilterDropdown anchorEl={statusAnchor} onClose={() => setStatusAnchor(null)} options={allStatuses.map(s => ({ value: s }))} multiple value={selectedStatuses} onChange={(v) => setSelectedStatuses(v as string[])} placeholder="Search statuses…" />
+
+      <FilterChip label="Manufacturer" value={mfgChip} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setSelectedManufacturers([]) : undefined} />
+      <FilterDropdown anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)} options={allManufacturers.map(m => ({ value: m }))} multiple value={selectedManufacturers} onChange={(v) => setSelectedManufacturers(v as string[])} placeholder="Search manufacturers…" />
+
+      <FilterChip label="Model" value={modelChip} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setSelectedModels([]) : undefined} />
+      <FilterDropdown anchorEl={modelAnchor} onClose={() => setModelAnchor(null)} options={allModels.map(m => ({ value: m }))} multiple value={selectedModels} onChange={(v) => setSelectedModels(v as string[])} placeholder="Search models…" />
+
+      <FilterChip label="Zone" value={zoneChip} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setSelectedZones([]) : undefined} />
+      <FilterDropdown anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)} options={allZoneNames.map(z => ({ value: z }))} multiple value={selectedZones} onChange={(v) => setSelectedZones(v as string[])} placeholder="Search zones…" />
+
+      {/* Right: Group by + Search */}
+      <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
+          Group by
+        </Button>
+        <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
+          <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
+          <Divider />
+          <MenuItem selected={internalGroupBy === 'category'} onClick={() => { setInternalGroupBy('category'); setGroupByMenuAnchor(null); }}><ListItemText>Category</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'status'} onClick={() => { setInternalGroupBy('status'); setGroupByMenuAnchor(null); }}><ListItemText>Status</ListItemText></MenuItem>
+        </Menu>
+        <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
+          <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+          <InputBase
+            value={internalSearch}
+            onChange={(e) => setInternalSearch(e.target.value)}
+            placeholder="Search assets…"
+            sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
+            endAdornment={internalSearch ? (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={() => setInternalSearch('')} sx={{ p: 0.25 }}>
+                  <CloseIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              </InputAdornment>
+            ) : null}
+          />
+        </Box>
       </Box>
-      <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
-        Group by
-      </Button>
-      <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
-        <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
-        <Divider />
-        <MenuItem selected={internalGroupBy === 'category'} onClick={() => { setInternalGroupBy('category'); setGroupByMenuAnchor(null); }}><ListItemText>Category</ListItemText></MenuItem>
-        <MenuItem selected={internalGroupBy === 'status'} onClick={() => { setInternalGroupBy('status'); setGroupByMenuAnchor(null); }}><ListItemText>Status</ListItemText></MenuItem>
-      </Menu>
-      <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>{filteredAssets.length} asset{filteredAssets.length !== 1 ? 's' : ''}</Typography>
     </Box>
   ) : null;
 

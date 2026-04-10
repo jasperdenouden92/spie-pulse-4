@@ -20,6 +20,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Button from '@/components/Button';
+import FilterChip from '@/components/FilterChip';
+import FilterDropdown from '@/components/FilterDropdown';
 import { type Zone } from '@/data/zones';
 import { useThemeMode } from '@/theme-mode-context';
 
@@ -213,21 +215,31 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
   const [internalSearch, setInternalSearch] = useState('');
   const [internalGroupBy, setInternalGroupBy] = useState<GroupBy>('none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
+  const [selectedZoneTypes, setSelectedZoneTypes] = useState<string[]>([]);
+  const [zoneTypeAnchor, setZoneTypeAnchor] = useState<null | HTMLElement>(null);
 
   const search = showFilters ? internalSearch : searchProp;
   const groupBy = showFilters ? internalGroupBy : groupByProp;
   const castGroupBy = groupBy as GroupBy;
 
-  // Filter zones by internal search when showFilters is enabled
+  // Derived option lists
+  const zoneTypes = useMemo(() => showFilters ? Array.from(new Set(zones.map(z => z.name))).sort() : [], [zones, showFilters]);
+
+  // Filter zones when showFilters is enabled
   const filteredZones = useMemo(() => {
-    if (!showFilters || !internalSearch.trim()) return zones;
-    const q = internalSearch.trim().toLowerCase();
-    return zones.filter(z =>
-      z.name.toLowerCase().includes(q) ||
-      z.buildingName.toLowerCase().includes(q) ||
-      z.floor.toLowerCase().includes(q)
-    );
-  }, [zones, showFilters, internalSearch]);
+    if (!showFilters) return zones;
+    let list = zones;
+    if (internalSearch.trim()) {
+      const q = internalSearch.trim().toLowerCase();
+      list = list.filter(z =>
+        z.name.toLowerCase().includes(q) ||
+        z.buildingName.toLowerCase().includes(q) ||
+        z.floor.toLowerCase().includes(q)
+      );
+    }
+    if (selectedZoneTypes.length > 0) list = list.filter(z => selectedZoneTypes.includes(z.name));
+    return list;
+  }, [zones, showFilters, internalSearch, selectedZoneTypes]);
 
   // Grouped output
   const grouped = useMemo(() => {
@@ -249,34 +261,55 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
     return entries.sort((a, b) => a.key.localeCompare(b.key));
   }, [filteredZones, castGroupBy]);
 
+  const zoneTypeChipValue = selectedZoneTypes.length === 0 ? null : selectedZoneTypes.length === 1 ? selectedZoneTypes[0] : `${selectedZoneTypes.length} types`;
+
   const filterBar = showFilters ? (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, mt: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
-        <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-        <InputBase
-          value={internalSearch}
-          onChange={(e) => setInternalSearch(e.target.value)}
-          placeholder="Search zones…"
-          sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
-          endAdornment={internalSearch ? (
-            <InputAdornment position="end">
-              <IconButton size="small" onClick={() => setInternalSearch('')} sx={{ p: 0.25 }}>
-                <CloseIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </InputAdornment>
-          ) : null}
-        />
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, mt: 1 }}>
+      {/* Left: Zone type filter */}
+      <FilterChip
+        label="Zone type"
+        value={zoneTypeChipValue}
+        onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
+        onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
+      />
+      <FilterDropdown
+        anchorEl={zoneTypeAnchor}
+        onClose={() => setZoneTypeAnchor(null)}
+        options={zoneTypes.map(t => ({ value: t }))}
+        multiple
+        value={selectedZoneTypes}
+        onChange={(v) => setSelectedZoneTypes(v as string[])}
+        placeholder="Search zone types…"
+      />
+
+      {/* Right: Group by + Search */}
+      <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
+          Group by
+        </Button>
+        <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
+          <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
+          <Divider />
+          <MenuItem selected={internalGroupBy === 'floor'} onClick={() => { setInternalGroupBy('floor'); setGroupByMenuAnchor(null); }}><ListItemText>Floor</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'zone_type'} onClick={() => { setInternalGroupBy('zone_type'); setGroupByMenuAnchor(null); }}><ListItemText>Zone type</ListItemText></MenuItem>
+        </Menu>
+        <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
+          <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+          <InputBase
+            value={internalSearch}
+            onChange={(e) => setInternalSearch(e.target.value)}
+            placeholder="Search zones…"
+            sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
+            endAdornment={internalSearch ? (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={() => setInternalSearch('')} sx={{ p: 0.25 }}>
+                  <CloseIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              </InputAdornment>
+            ) : null}
+          />
+        </Box>
       </Box>
-      <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
-        Group by
-      </Button>
-      <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
-        <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
-        <Divider />
-        <MenuItem selected={internalGroupBy === 'floor'} onClick={() => { setInternalGroupBy('floor'); setGroupByMenuAnchor(null); }}><ListItemText>Floor</ListItemText></MenuItem>
-        <MenuItem selected={internalGroupBy === 'zone_type'} onClick={() => { setInternalGroupBy('zone_type'); setGroupByMenuAnchor(null); }}><ListItemText>Zone type</ListItemText></MenuItem>
-      </Menu>
-      <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>{filteredZones.length} zone{filteredZones.length !== 1 ? 's' : ''}</Typography>
     </Box>
   ) : null;
 
