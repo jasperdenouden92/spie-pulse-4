@@ -1,0 +1,995 @@
+'use client';
+
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import CloseIcon from '@mui/icons-material/Close';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
+import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
+import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
+import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
+import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
+import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
+import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
+
+import Sidebar from '@/components/Sidebar';
+import TopBar from '@/components/TopBar';
+import FloatingToolbar from '@/components/FloatingToolbar';
+import AssetDetail from '@/components/AssetDetail';
+import AssetBreadcrumb from '@/components/AssetBreadcrumb';
+import NotificationsPanel from '@/components/NotificationsPanel';
+import DataExplorerPanel from '@/components/DataExplorerPanel';
+import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
+import BuildingDetailPage from '@/components/BuildingDetailPage';
+import ZoneDetailPage from '@/components/ZoneDetailPage';
+import AssetDetailPage from '@/components/AssetDetailPage';
+import PortfolioZonesPage from '@/components/PortfolioZonesPage';
+import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
+import ChangelogButton from '@/components/ChangelogButton';
+import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
+import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
+
+import { useAppState } from '@/context/AppStateContext';
+import { useURLState } from '@/hooks/useURLState';
+import { useThemeMode } from '@/theme-mode-context';
+import { buildings as allBuildings, tenants, type Building, type MetricKeys } from '@/data/buildings';
+import { zones as allZones } from '@/data/zones';
+import { getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
+import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
+import { buildingToSlug } from '@/utils/slugs';
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+type MetricType = MetricKeys;
+
+const PRIMARY_THEME_KEYS: MetricType[] = ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
+const OPERATIONS_KEYS: MetricType[] = ['tickets', 'quotations', 'maintenance'];
+
+const TENANT_THEME_KEYS: Record<string, MetricType[]> = {
+  'de Bijenkorf': ['sustainability'],
+  'Stichting Carmelcollege': ['comfort'],
+};
+
+// ── Pathname to legacy currentPage mapping ──────────────────────────────
+
+type CurrentPageType = 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
+
+function pathToCurrentPage(pathname: string): CurrentPageType {
+  if (pathname === '/home') return 'home';
+  if (pathname === '/control-room') return 'portfolio';
+  if (pathname.startsWith('/insights/alerts')) return 'insights_alerts';
+  if (pathname.startsWith('/insights/analyses')) return 'insights_analyses';
+  if (pathname.startsWith('/insights/performance')) return 'insights_performance';
+  if (pathname.startsWith('/insights')) return 'insights';
+  if (pathname.startsWith('/portfolio/buildings')) return 'portfolio_buildings';
+  if (pathname.startsWith('/portfolio/clusters')) return 'portfolio_buildings';
+  if (pathname.startsWith('/portfolio/zones')) return 'portfolio_zones';
+  if (pathname.startsWith('/portfolio/assets')) return 'portfolio_assets';
+  if (pathname.startsWith('/portfolio/equipment-types')) return 'portfolio_assets';
+  if (pathname.startsWith('/buildings/')) return 'building_detail';
+  if (pathname.startsWith('/zones/')) return 'zone_detail';
+  if (pathname.startsWith('/assets/')) return 'asset_detail';
+  if (pathname.startsWith('/operations/tickets')) return 'operations_tickets';
+  if (pathname.startsWith('/operations/quotations')) return 'operations_quotations';
+  if (pathname.startsWith('/operations/documents') || pathname.startsWith('/operations/docs')) return 'operations_docs';
+  if (pathname.startsWith('/operations/maintenance')) return 'operations_maintenance';
+  if (pathname.startsWith('/operations')) return 'operations';
+  if (pathname.startsWith('/bms/access')) return 'bms_access';
+  if (pathname.startsWith('/bms/logging')) return 'bms_logging';
+  if (pathname.startsWith('/bms')) return 'bms';
+  if (pathname === '/dashboards') return 'dashboards';
+  if (pathname === '/themes') return 'themes';
+  if (pathname === '/exports') return 'exports';
+  return 'portfolio';
+}
+
+// ── Shell Layout ────────────────────────────────────────────────────────
+
+export default function ShellLayout({ children }: { children: React.ReactNode }) {
+  const { themeColors: tc } = useThemeMode();
+  const router = useRouter();
+  const pathname = usePathname();
+  const isNarrow = useMediaQuery('(max-width:960px)');
+
+  // ── Context state ──────────────────────────────────────────────────────
+  const {
+    leftSidebarCollapsed, setLeftSidebarCollapsed,
+    notificationsPanelOpen, setNotificationsPanelOpen,
+    notificationsRef,
+    hasUnreadNotifications, setHasUnreadNotifications,
+    dataExplorerOpen, setDataExplorerOpen,
+    dataExplorerWidth, setDataExplorerWidth,
+    exportToast, setExportToast,
+    sidePeekBuilding, setSidePeekBuilding,
+    sidePeekBuildingTab, setSidePeekBuildingTab,
+    sidePeekZone, setSidePeekZone,
+    sidePeekZoneTab, setSidePeekZoneTab,
+    sidePeekAsset, setSidePeekAsset,
+    sidePeekAssetTab, setSidePeekAssetTab,
+    favorites, setFavorites,
+    localQuickviewAsset, setLocalQuickviewAsset,
+    openedViaInspect, setOpenedViaInspect,
+    mobileNavRef, mobileBackdropRef,
+    activeDashboardId, activeDashboardLabel,
+    pendingDashboardId, setPendingDashboardId,
+  } = useAppState();
+
+  // ── URL state ──────────────────────────────────────────────────────────
+  const {
+    selectedBuilding, selection, dateRange,
+    selectedGroup, selectedCity, selectedTenant,
+    isInspectMode, isAssetExplorerOpen, assetTab, urlAsset,
+    setURLParams, setDateRange, setSelectedGroup, setSelectedCity,
+    setSelectedTenant, setIsInspectMode, setIsAssetExplorerOpen,
+    setAssetTab, setViewMode, setSelection,
+  } = useURLState();
+
+  // ── Derived from pathname ──────────────────────────────────────────────
+  const currentPage = pathToCurrentPage(pathname);
+
+  // ── Local shell state ──────────────────────────────────────────────────
+  const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
+  const [titleDatePickerOpen, setTitleDatePickerOpen] = useState(false);
+  const [titleBuildingAnchor, setTitleBuildingAnchor] = useState<null | HTMLElement>(null);
+  const [contractMenuAnchor, setContractMenuAnchor] = useState<null | HTMLElement>(null);
+  const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
+  const [titleBuildingMode, setTitleBuildingMode] = useState<BuildingFilterMode>('buildings');
+  const [contractFilter, setContractFilter] = useState<ContractFilter>(false);
+  const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
+  const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // ── Clear side peek state on navigation ────────────────────────────────
+  useEffect(() => {
+    setSidePeekBuilding(null);
+    setSidePeekZone(null);
+    setSidePeekAsset(null);
+    setLocalQuickviewAsset(null);
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Close mobile nav on navigation ─────────────────────────────────────
+  const closeMobileNav = useCallback(() => {
+    mobileNavRef.current?.removeAttribute('data-open');
+    mobileBackdropRef.current?.removeAttribute('data-open');
+  }, [mobileNavRef, mobileBackdropRef]);
+
+  const openMobileNav = useCallback(() => {
+    mobileNavRef.current?.setAttribute('data-open', 'true');
+    mobileBackdropRef.current?.setAttribute('data-open', 'true');
+  }, [mobileNavRef, mobileBackdropRef]);
+
+  useEffect(() => {
+    closeMobileNav();
+  }, [pathname, closeMobileNav]);
+
+  // ── Layout calculations ────────────────────────────────────────────────
+  const leftSidebarWidth = leftSidebarCollapsed ? 64 : 280;
+  const quickviewAsset = localQuickviewAsset ?? urlAsset;
+  const isAssetQuickviewOpen = !!quickviewAsset;
+  const viewingAssetDetail = isAssetQuickviewOpen;
+  const selectedAsset = quickviewAsset;
+  const hideTopBar = pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/');
+
+  // ── Active theme keys for tenant ───────────────────────────────────────
+  const activeThemeKeys = TENANT_THEME_KEYS[selectedTenant] ?? PRIMARY_THEME_KEYS;
+
+  // ── Data computations for TopBar ───────────────────────────────────────
+
+  // Filter buildings by selected tenant
+  const tenantBuildings = useMemo(() => {
+    return allBuildings.filter(b => b.tenant === selectedTenant);
+  }, [selectedTenant]);
+
+  // Filtered buildings (with contract filter)
+  const filteredBuildings = useMemo(() => {
+    if (!contractFilter) return tenantBuildings;
+    return tenantBuildings.filter(b => b.hasContract);
+  }, [tenantBuildings, contractFilter]);
+
+  // Period-aware metrics
+  const periodMetrics = useMemo(() => {
+    const base = getMetricsForPeriod(dateRange, titleBuildingNames);
+    return contractFilter ? applyContractVariation(base) : base;
+  }, [dateRange, contractFilter, titleBuildingNames]);
+
+  // Score for the currently selected KPI (shown in breadcrumb)
+  const selectionScore = (() => {
+    const themeIdx = activeThemeKeys.indexOf(selection as MetricType);
+    if (themeIdx !== -1) {
+      const fullIdx = PRIMARY_THEME_KEYS.indexOf(selection as MetricType);
+      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.themes[fullIdx]?.score ?? null;
+    }
+    const opsIdx = OPERATIONS_KEYS.indexOf(selection as MetricType);
+    if (opsIdx !== -1) {
+      return selectedBuilding ? selectedBuilding.metrics[selection as MetricType].green : periodMetrics.operations[opsIdx]?.score ?? null;
+    }
+    return null;
+  })();
+
+  // Icons for theme metrics
+  const themeIcons: Record<string, React.ReactNode> = {
+    'Sustainability': <NatureOutlinedIcon />,
+    'Comfort': <SpaOutlinedIcon />,
+    'Asset Monitoring': <SecurityOutlinedIcon />,
+    'Energy': <BoltOutlinedIcon />,
+    'Workspace': <WorkspacesOutlinedIcon />,
+    'Compliance': <GavelOutlinedIcon />,
+    'Water Management': <WaterDropOutlinedIcon />,
+    'Security Systems': <ShieldOutlinedIcon />,
+    'Access Control': <BadgeOutlinedIcon />,
+  };
+
+  const operationsIcons: Record<string, React.ReactNode> = {
+    'Tickets': <AssignmentOutlinedIcon />,
+    'Quotations': <RequestQuoteOutlinedIcon />,
+    'Maintenance': <BuildOutlinedIcon />,
+  };
+
+  // Metric items for breadcrumb dropdown
+  const metricItems = useMemo(() => [
+    ...activeThemeKeys.map((key) => {
+      const i = PRIMARY_THEME_KEYS.indexOf(key);
+      return {
+        key,
+        label: periodMetrics.themes[i]?.title ?? key,
+        icon: themeIcons[periodMetrics.themes[i]?.title ?? ''],
+        score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.themes[i]?.score ?? 0,
+        group: 'themes' as const,
+      };
+    }),
+    ...OPERATIONS_KEYS.map((key, i) => ({
+      key,
+      label: periodMetrics.operations[i]?.title ?? key,
+      icon: operationsIcons[periodMetrics.operations[i]?.title ?? ''],
+      score: selectedBuilding ? selectedBuilding.metrics[key].green : periodMetrics.operations[i]?.score ?? 0,
+      group: 'operations' as const,
+    })),
+  ], [periodMetrics, selectedBuilding, activeThemeKeys]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Handlers ───────────────────────────────────────────────────────────
+
+  const handleBuildingFilterModeChange = (mode: BuildingFilterMode) => {
+    setTitleBuildingMode(mode);
+    setTitleBuildingNames([]);
+  };
+
+  const getTitleBuildingLabel = () => getBuildingSelectorLabel(titleBuildingNames, titleBuildingMode);
+  const getPeriodDisplayLabel = (range: string): string => getDateRangeDisplayLabel(range);
+
+  // Sequential closing of both drawers (concertina effect)
+  const handleCloseBothDrawers = () => {
+    setLocalQuickviewAsset(null);
+    setURLParams({ asset: '', assetTab: '0' });
+    setTimeout(() => {
+      setURLParams({ explorer: '0' });
+      setOpenedViaInspect(false);
+    }, 300);
+  };
+
+  // Handle asset selection from tree
+  const handleAssetSelect = (asset: AssetNode | null) => {
+    if (asset && asset.type === 'asset') {
+      setLocalQuickviewAsset(null);
+      setURLParams({ asset: asset.id, assetTab: '0' });
+      setOpenedViaInspect(false);
+    } else {
+      setLocalQuickviewAsset(null);
+      setURLParams({ asset: '' });
+    }
+  };
+
+  // Open asset in inspector (concertina)
+  const handleOpenInMainApp = (asset: AssetNode) => {
+    setLocalQuickviewAsset(null);
+    setURLParams({ asset: asset.id, explorer: '1', assetTab: '0' });
+  };
+
+  // Handle left sidebar toggle
+  const handleLeftSidebarToggle = useCallback(() => {
+    if (window.matchMedia('(max-width: 926px)').matches) {
+      const isOpen = mobileNavRef.current?.hasAttribute('data-open');
+      if (isOpen) closeMobileNav(); else openMobileNav();
+      return;
+    }
+    if (leftSidebarCollapsed) {
+      setURLParams({ view: 'dashboard' });
+    }
+    setLeftSidebarCollapsed(c => !c);
+  }, [leftSidebarCollapsed, setURLParams, openMobileNav, closeMobileNav, mobileNavRef, setLeftSidebarCollapsed]);
+
+  // Navigate helper for sidebar
+  const handleNavigate = useCallback((path: string) => {
+    router.push(path, { scroll: false });
+  }, [router]);
+
+  // Sidebar page change — maps old page names to new paths
+  const handlePageChange = useCallback((page: string) => {
+    const pageToPath: Record<string, string> = {
+      home: '/home',
+      portfolio: '/control-room',
+      portfolio_buildings: '/portfolio/buildings',
+      portfolio_clusters: '/portfolio/clusters',
+      portfolio_zones: '/portfolio/zones',
+      portfolio_assets: '/portfolio/assets',
+      portfolio_equipment_types: '/portfolio/equipment-types',
+      insights: '/insights/alerts',
+      insights_alerts: '/insights/alerts',
+      insights_analyses: '/insights/analyses',
+      insights_performance: '/insights/performance',
+      bms: '/bms/access',
+      bms_access: '/bms/access',
+      bms_logging: '/bms/logging',
+      operations: '/operations',
+      operations_tickets: '/operations/tickets',
+      operations_quotations: '/operations/quotations',
+      operations_docs: '/operations/documents',
+      operations_maintenance: '/operations/maintenance',
+      dashboards: '/dashboards',
+      themes: '/themes',
+      exports: '/exports',
+    };
+    const path = pageToPath[page] ?? '/control-room';
+    setLocalQuickviewAsset(null);
+    setSidePeekBuilding(null);
+    setSidePeekZone(null);
+    setSidePeekAsset(null);
+    router.push(path, { scroll: false });
+  }, [router, setLocalQuickviewAsset, setSidePeekBuilding, setSidePeekZone, setSidePeekAsset]);
+
+  // Sidebar metric/selection callbacks
+  const handleSidebarMetricSelect = useCallback((metric: string) => setSelection(metric), [setSelection]);
+  const handleSidebarSelectionChange = useCallback((s: string) => setSelection(s), [setSelection]);
+  const handleDashboardNavigate = useCallback((id: string) => setPendingDashboardId(id), [setPendingDashboardId]);
+
+  const handleAssetExplorerToggle = useCallback(() => {
+    setIsAssetExplorerOpen(!isAssetExplorerOpen);
+    if (!isAssetExplorerOpen && isInspectMode) {
+      setIsInspectMode(false);
+    }
+  }, [isAssetExplorerOpen, isInspectMode, setIsAssetExplorerOpen, setIsInspectMode]);
+
+  const handleNotificationsPanelToggle = useCallback(() => {
+    const opening = !notificationsPanelOpen;
+    setNotificationsPanelOpen(opening);
+    if (opening) {
+      setHasUnreadNotifications(false);
+      setDataExplorerOpen(false);
+    }
+  }, [notificationsPanelOpen, setNotificationsPanelOpen, setHasUnreadNotifications, setDataExplorerOpen]);
+
+  const handleDataExplorerToggle = useCallback(() => {
+    const opening = !dataExplorerOpen;
+    setDataExplorerOpen(opening);
+    if (opening) setNotificationsPanelOpen(false);
+  }, [dataExplorerOpen, setDataExplorerOpen, setNotificationsPanelOpen]);
+
+  // Page name + favorites
+  const getCurrentPageName = () => {
+    if (currentPage === 'dashboards' && activeDashboardLabel) return `Dashboards - ${activeDashboardLabel}`;
+    if (currentPage === 'dashboards') return 'Dashboards';
+    if (currentPage === 'insights' || currentPage === 'insights_alerts') return 'Insights - Alerts';
+    if (currentPage === 'insights_analyses') return 'Insights - Analyses';
+    if (currentPage === 'insights_performance') return 'Insights - Performance';
+    if (currentPage === 'themes') return 'Themes';
+    if (currentPage === 'workspaces') return 'Workspaces';
+    if (currentPage === 'exports') return 'Exports';
+    if (currentPage === 'portfolio_buildings') return 'Portfolio';
+    if (currentPage === 'portfolio_zones') return 'Zones';
+    if (currentPage === 'portfolio_assets') return 'Assets';
+    if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
+    if (currentPage === 'zone_detail') return 'Zone';
+    if (currentPage === 'asset_detail') return 'Asset';
+    if (currentPage === 'bms' || currentPage === 'bms_access') return 'BMS - Access';
+    if (currentPage === 'bms_logging') return 'BMS - Logging';
+    if (currentPage === 'operations') return 'Operations';
+    if (selectedBuilding) return selectedBuilding.name;
+    return 'Control Room';
+  };
+  const currentPageName = getCurrentPageName();
+
+  useEffect(() => {
+    document.title = currentPageName === 'Control Room'
+      ? 'Pulse Core 4.0'
+      : `Pulse Core 4.0 - ${currentPageName}`;
+  }, [currentPageName]);
+
+  const isCurrentPageFavorited = favorites.some(fav => fav.name === currentPageName);
+
+  const getFavoriteType = () => {
+    if (currentPage === 'dashboards') return 'dashboard';
+    if (selectedBuilding) return 'building';
+    return 'page';
+  };
+
+  const handleFavoriteToggle = (pageName: string, isFavorited: boolean) => {
+    if (isFavorited) {
+      const newFavorite = {
+        id: Date.now().toString(),
+        name: pageName,
+        type: getFavoriteType(),
+      };
+      setFavorites([...favorites, newFavorite]);
+    } else {
+      setFavorites(favorites.filter(fav => fav.name !== pageName));
+    }
+  };
+
+  const handleExport = () => {
+    const exportName = selectedBuilding
+      ? `${selectedBuilding.name} — ${selection === 'overall' ? 'Overview' : String(selection).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`
+      : 'Control Room Overview';
+    setExportToast({ open: true, message: `Exporting "${exportName}"...`, severity: 'info' });
+    setTimeout(() => {
+      setExportToast({ open: true, message: `Export "${exportName}" is ready!`, severity: 'success' });
+      notificationsRef.current?.addNotification({
+        id: `export-${Date.now()}`,
+        actor: 'System',
+        actorInitials: 'S',
+        actorColor: '#059669',
+        action: 'export ready:',
+        target: `${exportName} (PDF, ${(Math.random() * 3 + 0.5).toFixed(1)} MB)`,
+        date: new Date().toISOString(),
+        read: false,
+      });
+      setHasUnreadNotifications(true);
+    }, 3000);
+  };
+
+  const setSelectedBuilding = useCallback((b: Building | null) => {
+    if (b) {
+      router.push(`/buildings/${buildingToSlug(b.name)}`, { scroll: false });
+    }
+  }, [router]);
+
+  // ── Render ─────────────────────────────────────────────────────────────
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: tc.bgSecondary, overflow: 'hidden', width: '100%', maxWidth: '100vw' }}>
+      {/* Mobile backdrop -- always rendered, hidden on desktop via CSS */}
+      <Box
+        ref={mobileBackdropRef}
+        onClick={closeMobileNav}
+        sx={{
+          display: 'none',
+          '@media (max-width: 926px)': {
+            display: 'block',
+          },
+          position: 'fixed',
+          inset: 0,
+          bgcolor: 'rgba(0,0,0,0.5)',
+          zIndex: 1499,
+          opacity: 0,
+          pointerEvents: 'none',
+          transition: 'opacity 0.3s ease',
+          '&[data-open]': {
+            opacity: 1,
+            pointerEvents: 'auto',
+          },
+        }}
+      />
+
+      {/* Left Sidebar */}
+      <Box ref={mobileNavRef} component="aside" sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        width: leftSidebarWidth,
+        borderRight: '1px solid',
+        borderColor: tc.borderSecondary,
+        zIndex: 1500,
+        transition: 'width 0.3s ease, transform 0.3s ease',
+        bgcolor: 'background.paper',
+        '@media (max-width: 926px)': {
+          width: 280,
+          transform: 'translateX(-100%)',
+          '&[data-open]': {
+            transform: 'translateX(0)',
+          },
+        },
+      }}>
+        <Sidebar
+          data-annotation-id="app-navigatie"
+          selectedBuilding={selectedBuilding}
+          selectedMetric={'overall'}
+          onBuildingSelect={setSelectedBuilding}
+          onMetricSelect={handleSidebarMetricSelect}
+          selectedTenant={selectedTenant}
+          onTenantChange={setSelectedTenant}
+          favorites={favorites}
+          onFavoritesChange={setFavorites}
+          selection={selection}
+          onSelectionChange={handleSidebarSelectionChange}
+          isCollapsed={leftSidebarCollapsed}
+          onToggleCollapse={handleLeftSidebarToggle}
+          onDashboardNavigate={handleDashboardNavigate}
+          onAssetExplorerToggle={handleAssetExplorerToggle}
+          isAssetExplorerOpen={isAssetExplorerOpen}
+          notificationsPanelOpen={notificationsPanelOpen}
+          onNotificationsPanelToggle={handleNotificationsPanelToggle}
+          hasUnreadNotifications={hasUnreadNotifications}
+          dataExplorerOpen={dataExplorerOpen}
+          onDataExplorerToggle={handleDataExplorerToggle}
+        />
+      </Box>
+
+      {/* Notifications Panel -- outside sidebar stacking context */}
+      <NotificationsPanel
+        ref={notificationsRef}
+        open={notificationsPanelOpen}
+        onClose={() => setNotificationsPanelOpen(false)}
+        sidebarWidth={leftSidebarWidth}
+      />
+
+      {/* Data Explorer Panel */}
+      <DataExplorerPanel
+        open={dataExplorerOpen}
+        onClose={() => { setDataExplorerOpen(false); setLocalQuickviewAsset(null); setURLParams({ asset: '', assetTab: '0' }); }}
+        sidebarWidth={leftSidebarWidth}
+        onAssetSelect={(node) => {
+          if (node) {
+            setLocalQuickviewAsset(null);
+            setURLParams({ asset: node.id, assetTab: '0' });
+          } else {
+            setURLParams({ asset: '' });
+          }
+        }}
+        onOpenInMainApp={(asset) => {
+          if (asset) {
+            setLocalQuickviewAsset(null);
+            setURLParams({ asset: asset.id, assetTab: '0' });
+          }
+        }}
+        onWidthChange={setDataExplorerWidth}
+      />
+
+      {/* Scrim/Backdrop when Asset Explorer is open */}
+      {isAssetExplorerOpen && (
+        <Box
+          onClick={() => {
+            if (isAssetQuickviewOpen) {
+              handleCloseBothDrawers();
+            } else {
+              setIsAssetExplorerOpen(false);
+            }
+          }}
+          sx={{
+            position: 'fixed',
+            top: 56,
+            left: leftSidebarWidth,
+            right: 0,
+            bottom: 0,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 1401,
+            cursor: 'pointer',
+          }}
+        />
+      )}
+
+      {/* Asset Explorer - Slides from left sidebar */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: '56px',
+          left: isAssetExplorerOpen ? `${leftSidebarWidth}px` : `-280px`,
+          height: 'calc(100vh - 56px)',
+          width: 280,
+          zIndex: 1450,
+          transition: 'left 0.3s ease',
+        }}
+      >
+        <FloatingToolbar
+          selectedView="tree"
+          onViewChange={setViewMode}
+          visible={isAssetExplorerOpen}
+          buildingName={selectedBuilding?.name}
+          onAssetSelect={handleAssetSelect}
+          onOpenInMainApp={handleOpenInMainApp}
+          inLeftPanel={true}
+          onClose={() => {
+            if (isAssetQuickviewOpen) {
+              handleCloseBothDrawers();
+            } else {
+              setIsAssetExplorerOpen(false);
+            }
+          }}
+        />
+      </Box>
+
+      {/* Asset Detail Inspector - Full-width concertina drawer */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: `${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px`,
+          width: `calc(100% - ${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px)`,
+          height: '100vh',
+          zIndex: 1425,
+          clipPath: isAssetQuickviewOpen && quickviewAsset ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
+          transition: 'clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          bgcolor: tc.bgPrimary,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          pointerEvents: isAssetQuickviewOpen && quickviewAsset ? 'auto' : 'none',
+        }}
+      >
+        {/* Header with breadcrumb, actions, and close button */}
+        <Box sx={{
+          px: 3,
+          pt: 2,
+          pb: 1.5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: 1,
+          borderColor: 'divider',
+          flexShrink: 0
+        }}>
+          {/* Breadcrumb */}
+          {quickviewAsset && (
+            <AssetBreadcrumb
+              asset={quickviewAsset}
+              onAssetSelect={handleAssetSelect}
+            />
+          )}
+
+          {/* Action buttons and close */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Tooltip title="Edit">
+              <IconButton size="small">
+                <EditOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Share">
+              <IconButton size="small">
+                <ShareOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="More actions">
+              <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
+                <MoreHorizIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Box sx={{ width: 1, height: 20, bgcolor: 'divider', mx: 0.5 }} />
+            <IconButton
+              size="small"
+              onClick={() => {
+                if (openedViaInspect || isAssetExplorerOpen) {
+                  handleCloseBothDrawers();
+                } else {
+                  setLocalQuickviewAsset(null);
+                  setURLParams({ asset: '', assetTab: '0' });
+                }
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </Box>
+
+        {/* Asset Detail Content */}
+        <Container maxWidth={false} sx={{ py: 3, overflowY: 'auto', flex: 1, px: 3 }}>
+          {quickviewAsset && <AssetDetail asset={quickviewAsset} tab={assetTab} onTabChange={setAssetTab} />}
+        </Container>
+      </Box>
+
+      {/* Inspect Mode Overlay - Dims the page with blue tinge */}
+      {isInspectMode && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 56,
+            left: leftSidebarWidth,
+            right: 0,
+            bottom: 0,
+            zIndex: 1050,
+            pointerEvents: 'none',
+            bgcolor: 'rgba(227, 242, 253, 0.3)',
+            backdropFilter: 'brightness(0.95) saturate(1.1)',
+          }}
+        />
+      )}
+
+      {/* Hover Preview Popover */}
+      {isInspectMode && (hoveredBuilding || hoveredAsset) && hoverPosition && (
+        <Paper
+          elevation={8}
+          sx={{
+            position: 'fixed',
+            left: hoverPosition.x,
+            top: hoverPosition.y - 10,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 1450,
+            p: 2,
+            minWidth: 280,
+            maxWidth: 320,
+            pointerEvents: 'none',
+            bgcolor: tc.bgPrimary,
+            border: `2px dashed ${tc.brand}`,
+          }}
+        >
+          {hoveredBuilding ? (
+            <>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                {hoveredBuilding.name}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                {hoveredBuilding.address}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <SpeedOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  Overall: {hoveredBuilding.metrics.overall.green}%
+                </Typography>
+              </Box>
+            </>
+          ) : hoveredAsset && (
+            <>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                {hoveredAsset.name}
+              </Typography>
+              {hoveredAsset.id && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  ID: {hoveredAsset.id}
+                </Typography>
+              )}
+              {hoveredAsset.category && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  Category: {hoveredAsset.category}
+                </Typography>
+              )}
+              {hoveredAsset.type && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  Type: {hoveredAsset.type}
+                </Typography>
+              )}
+            </>
+          )}
+          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: tc.brand, fontWeight: 500 }}>
+            Click to inspect &rarr;
+          </Typography>
+        </Paper>
+      )}
+
+      {/* Main Content Area */}
+      <Box component="main" sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        ml: viewingAssetDetail ? `${leftSidebarWidth + Math.max(dataExplorerOpen ? dataExplorerWidth : 0, isAssetExplorerOpen ? 280 : 0)}px` : `${leftSidebarWidth}px`,
+        '@media (max-width: 926px)': { ml: 0 },
+        transition: 'margin-left 0.3s ease, border-color 0.3s ease',
+        position: 'relative',
+        zIndex: 1,
+        outline: isInspectMode ? `3px dashed ${tc.brand}` : 'none',
+        minWidth: 0,
+        overflow: 'hidden'
+      }}>
+        {!hideTopBar && <TopBar
+          currentPage={currentPage as any}
+          selectedBuilding={selectedBuilding}
+          selectedAsset={selectedAsset}
+          onBack={() => setURLParams({ building: '', asset: '', assetTab: '0' })}
+          onAssetBack={() => setURLParams({ asset: '', assetTab: '0' })}
+          onDateRangeChange={setDateRange}
+          onFavoriteToggle={handleFavoriteToggle}
+          isFavorited={isCurrentPageFavorited}
+          hasRightSidebar={false}
+          leftSidebarWidth={leftSidebarWidth}
+          rightSidebarWidth={0}
+          selection={selection}
+          buildings={filteredBuildings}
+          onBuildingSelect={(b) => setSelectedBuilding(b)}
+          onSelectionChange={(s) => setSelection(s)}
+          isAssetExplorerOpen={isAssetExplorerOpen}
+          viewingAssetDetail={viewingAssetDetail}
+          selectedGroup={selectedGroup}
+          onGroupChange={setSelectedGroup}
+          selectedCity={selectedCity}
+          onCityChange={setSelectedCity}
+          selectedDateRange={dateRange}
+          onPageChange={handlePageChange as any}
+          isCollapsed={leftSidebarCollapsed}
+          onToggleCollapse={handleLeftSidebarToggle}
+          onExport={handleExport}
+          activeDashboardId={activeDashboardId}
+          activeDashboardLabel={activeDashboardLabel}
+          filterPeriodLabel={currentPage === 'portfolio' ? getPeriodDisplayLabel(dateRange) : undefined}
+          filterBuildingLabel={
+            (currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards'
+              ? getTitleBuildingLabel() : undefined
+          }
+          onFilterDateClick={currentPage === 'portfolio' ? () => setTitleDatePickerOpen(true) : undefined}
+          onFilterBuildingClick={
+            ((currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards')
+              ? (e) => setTitleBuildingAnchor(e.currentTarget) : undefined
+          }
+          contractFilter={contractFilter}
+          onContractFilterChange={setContractFilter}
+          selectionScore={selectionScore}
+          metricItems={metricItems}
+        />}
+
+        {/* Shared filter menus (used by inline title & header compact filter) */}
+        <DateRangeSelector
+          inline
+          hideSlider
+          value={dateRange}
+          onChange={(v) => { setDateRange(v); }}
+          dialogOpen={titleDatePickerOpen}
+          onDialogOpenChange={setTitleDatePickerOpen}
+        />
+
+        <BuildingSelectorPopover
+          anchorEl={titleBuildingAnchor}
+          onClose={() => setTitleBuildingAnchor(null)}
+          selectedNames={titleBuildingNames}
+          onSelectionChange={setTitleBuildingNames}
+          mode={titleBuildingMode}
+          onModeChange={handleBuildingFilterModeChange}
+        />
+
+        {children}
+      </Box>
+
+      {/* Building SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekBuilding}
+        onClose={() => setSidePeekBuilding(null)}
+      >
+        {sidePeekBuilding && (
+          <Box sx={{ px: 3 }}>
+            <BuildingDetailPage
+              building={sidePeekBuilding}
+              tab={sidePeekBuildingTab}
+              onTabChange={setSidePeekBuildingTab}
+              onBackToPortfolio={() => setSidePeekBuilding(null)}
+              onBuildingChange={(name) => {
+                const b = allBuildings.find(b => b.name === name);
+                if (b) setSidePeekBuilding(b);
+              }}
+              onPanelClose={() => setSidePeekBuilding(null)}
+              onPanelFullscreen={() => {
+                router.push('/buildings/' + buildingToSlug(sidePeekBuilding.name), { scroll: false });
+                setSidePeekBuilding(null);
+              }}
+            />
+            {sidePeekBuildingTab === 'zones' && (
+              <PortfolioZonesPage
+                tenant={sidePeekBuilding.tenant}
+                buildingName={sidePeekBuilding.name}
+                onZoneClick={(id, e) => handleSidePeekClick(e,
+                  () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekZone(z); setSidePeekZoneTab('overview'); setSidePeekBuilding(null); } },
+                  () => { router.push('/zones/' + id, { scroll: false }); },
+                )}
+              />
+            )}
+            {sidePeekBuildingTab === 'assets' && (
+              <PortfolioAssetsPage buildingName={sidePeekBuilding.name} onAssetClick={(id) => {
+                const a = getAssetById(id);
+                if (a) { setSidePeekBuilding(null); setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
+              }} />
+            )}
+          </Box>
+        )}
+      </SidePeekPanel>
+
+      {/* Zone SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekZone}
+        onClose={() => setSidePeekZone(null)}
+      >
+        {sidePeekZone && (
+          <Box sx={{ px: 3 }}>
+            <ZoneDetailPage
+              zone={sidePeekZone}
+              tab={sidePeekZoneTab}
+              onTabChange={setSidePeekZoneTab}
+              onBackToPortfolio={() => setSidePeekZone(null)}
+              onBackToBuilding={() => {
+                const building = allBuildings.find(b => b.name === sidePeekZone.buildingName);
+                if (building) { setSidePeekBuilding(building); setSidePeekBuildingTab('zones'); }
+                setSidePeekZone(null);
+              }}
+              onZoneChange={(id) => {
+                const z = allZones.find(z => z.id === id);
+                if (z) setSidePeekZone(z);
+              }}
+              onPanelClose={() => setSidePeekZone(null)}
+              onPanelFullscreen={() => {
+                router.push('/zones/' + sidePeekZone.id, { scroll: false });
+                setSidePeekZone(null);
+              }}
+            />
+          </Box>
+        )}
+      </SidePeekPanel>
+
+      {/* Asset SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekAsset}
+        onClose={() => setSidePeekAsset(null)}
+      >
+        {sidePeekAsset && (() => {
+          const peekPath = getPathToAsset(sidePeekAsset.id) ?? [];
+          const peekBuilding = peekPath.find(s => s.node.type === 'building')?.node ?? null;
+          const peekZoneNode = peekPath.find(s => s.node.type === 'zone')?.node ?? null;
+          const peekZone = peekBuilding && peekZoneNode
+            ? (allZones.find(z => z.buildingName === peekBuilding.name && z.name === peekZoneNode.name) ?? null)
+            : null;
+          return (
+            <Box sx={{ px: 3 }}>
+              <AssetDetailPage
+                asset={sidePeekAsset}
+                tab={sidePeekAssetTab}
+                onTabChange={setSidePeekAssetTab}
+                onBackToPortfolio={() => setSidePeekAsset(null)}
+                onBackToCluster={() => setSidePeekAsset(null)}
+                onBackToBuilding={() => {
+                  setSidePeekAsset(null);
+                  const b = peekBuilding ? allBuildings.find(b => b.name === peekBuilding.name) : null;
+                  if (b) { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }
+                }}
+                onBackToZone={() => {
+                  setSidePeekAsset(null);
+                  if (peekZone) { setSidePeekZone(peekZone); setSidePeekZoneTab('overview'); }
+                }}
+                onAssetChange={(id) => {
+                  const a = getAssetById(id);
+                  if (a) setSidePeekAsset(a);
+                }}
+                onPanelClose={() => setSidePeekAsset(null)}
+                onPanelFullscreen={() => {
+                  router.push('/assets/' + sidePeekAsset.id, { scroll: false });
+                  setSidePeekAsset(null);
+                }}
+              />
+            </Box>
+          );
+        })()}
+      </SidePeekPanel>
+
+      <ChangelogButton />
+
+      {/* Export toast */}
+      <Snackbar
+        open={exportToast.open}
+        autoHideDuration={4000}
+        onClose={() => setExportToast(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setExportToast(prev => ({ ...prev, open: false }))}
+          severity={exportToast.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {exportToast.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+}

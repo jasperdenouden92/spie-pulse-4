@@ -26,19 +26,53 @@ Facility management dashboard for SPIE. Built with Next.js 15, React 19, TypeScr
 
 ## Routing & Navigation
 
-**All pages live in a single file: `src/app/page.tsx`.**
+**File-based routing** using Next.js App Router. All pages live under `src/app/(shell)/` which shares a common shell layout (sidebar, header, overlays).
 
-Navigation is URL query-param based — no file-based Next.js routes. State is derived from `useSearchParams()` and mutations go through two helpers:
+Navigation uses actual URL paths (e.g., `/portfolio/buildings`, `/buildings/skyline-plaza`). Filter/preference state uses query params (e.g., `?btab=performance&metric=comfort`).
 
-- `updateParams(updates)` — `router.replace`, for filter/UI changes (no back-stack entry)
-- `navigateTo(updates)` — `router.push`, for real page transitions
+Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 
-### URL Parameters
+- `setURLParams(updates)` — `router.replace`, for filter/UI changes (no back-stack entry)
+- `navigateTo(path, params?)` — `router.push`, for real page transitions
+
+### Route Structure
+
+| Path | Purpose |
+|---|---|
+| `/` | Redirects to `/control-room` |
+| `/home` | Home page |
+| `/control-room` | Main dashboard with KPI metrics |
+| `/portfolio/buildings` | Buildings list |
+| `/portfolio/clusters` | Clusters view |
+| `/portfolio/zones` | Zones list |
+| `/portfolio/assets` | Assets list |
+| `/portfolio/equipment-types` | Equipment types |
+| `/buildings/[slug]` | Building detail (dynamic, slugified name) |
+| `/zones/[id]` | Zone detail (dynamic) |
+| `/assets/[id]` | Asset detail (dynamic) |
+| `/insights/alerts` | Insights — Alerts |
+| `/insights/analyses` | Insights — Analyses |
+| `/insights/performance` | Insights — Performance |
+| `/operations` | Operations overview |
+| `/operations/tickets` | Tickets list |
+| `/operations/tickets/[id]` | Ticket detail |
+| `/operations/quotations` | Quotations list |
+| `/operations/quotations/[id]` | Quotation detail |
+| `/operations/documents` | Documents list |
+| `/operations/documents/[id]` | Document detail |
+| `/operations/maintenance` | Maintenance list |
+| `/operations/maintenance/[id]` | Maintenance detail |
+| `/bms/access` | BMS — Access |
+| `/bms/logging` | BMS — Logging |
+| `/dashboards` | Dashboard builder |
+| `/exports` | Exports |
+| `/settings` | Settings |
+
+### URL Query Parameters (still used for filters/state)
 
 | Param | Values | Purpose |
 |---|---|---|
-| `page` | see type below | Current section |
-| `building` | building name | Selected building |
+| `building` | building name | Selected building (control room) |
 | `metric` | `overall` \| metric key | Selected KPI |
 | `view` | `dashboard` \| `map` \| `list` | View mode |
 | `sort` | sort label | Sort order |
@@ -46,38 +80,17 @@ Navigation is URL query-param based — no file-based Next.js routes. State is d
 | `group` | group name | Building group filter |
 | `city` | city name | City filter |
 | `tenant` | tenant name | Tenant filter |
-| `inspect` | `1` | Inspect mode |
-| `explorer` | `1` | Asset explorer panel |
 | `btab` | `overview` \| `performance` \| `zones` \| `assets` \| `tickets` \| `quotations` | Building detail tab |
 | `ztab` | `overview` \| `assets` \| `tickets` \| `quotations` | Zone detail tab |
-| `zone` | zone ID | Selected zone |
-| `asset` | asset ID | Selected asset |
-| `assetTab` | number | Asset panel tab |
-| `statusFilter` | comma-separated status values | Pre-filter tickets/quotations by status (e.g. `To approve` or `Open,Assigned`) |
-
-### `currentPage` Type
-
-```ts
-type CurrentPage =
-  | 'home'
-  | 'portfolio' | 'portfolio_buildings'
-  | 'portfolio_zones' | 'portfolio_assets' | 'portfolio_equipment_types'
-  | 'building_detail' | 'zone_detail'
-  | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance'
-  | 'bms' | 'bms_access' | 'bms_logging'
-  | 'operations' | 'operations_docs' | 'operations_tickets'
-  | 'operations_quotations' | 'operations_maintenance'
-  | 'themes' | 'workspaces' | 'exports' | 'dashboards'
-```
-
-Default page (when `?page=` is absent): `'portfolio'`
+| `atab` | `overview` \| `tickets` \| `quotations` | Asset detail tab |
+| `statusFilter` | comma-separated status values | Pre-filter tickets/quotations by status |
 
 ### Adding a New Page
 
-1. Add the new value to the `currentPage` type union in `page.tsx`
-2. Add a label mapping in `getCurrentPageName()` (the `if (currentPage === ...)` block)
-3. Add `{currentPage === 'my_page' && <MyPage />}` in the render section
-4. Add navigation entry to `Sidebar.tsx`
+1. Create `src/app/(shell)/my-page/page.tsx` with page content
+2. Add a `pathToCurrentPage` mapping in `src/app/(shell)/layout.tsx`
+3. Add navigation entry to `Sidebar.tsx`
+4. For detail pages: create a template in `src/templates/` and a dynamic route `[id]/page.tsx`
 
 ---
 
@@ -86,40 +99,55 @@ Default page (when `?page=` is absent): `'portfolio'`
 ```
 src/
 ├── app/
-│   ├── page.tsx          # Main entry — all routing, layout, page rendering (~1600+ lines)
-│   ├── layout.tsx        # Root layout: ThemeRegistry, ThemeModeProvider, AnnotationProvider
-│   ├── globals.css       # Tailwind v4 import + CSS vars (--font-jost, --background)
+│   ├── layout.tsx        # Root layout: ThemeRegistry, Annotations, AppStateProvider
+│   ├── globals.css       # Tailwind v4 import + CSS vars
+│   ├── (shell)/          # Route group — all pages share the shell layout
+│   │   ├── layout.tsx    # Shell: sidebar, TopBar, overlays, side peek panels
+│   │   ├── page.tsx      # / → redirects to /control-room
+│   │   ├── control-room/ # Main KPI dashboard
+│   │   ├── home/         # Home page
+│   │   ├── portfolio/    # buildings/, clusters/, zones/, assets/, equipment-types/
+│   │   ├── buildings/[slug]/  # Building detail (dynamic route)
+│   │   ├── zones/[id]/        # Zone detail (dynamic route)
+│   │   ├── assets/[id]/       # Asset detail (dynamic route)
+│   │   ├── insights/    # alerts/, analyses/, performance/
+│   │   ├── operations/  # tickets/, quotations/, documents/, maintenance/ + [id] detail routes
+│   │   ├── bms/         # access/, logging/
+│   │   ├── dashboards/  # Dashboard builder
+│   │   ├── exports/     # Exports
+│   │   └── settings/    # Settings
 │   └── api/
-│       ├── comments/route.ts             # Notion comment CRUD
-│       ├── changelog/route.ts            # GitHub commits → changelog
-│       └── changelog/highlights/route.ts # Curated highlights
-├── components/
-│   ├── charts/           # Nivo chart wrappers (15 files)
+│       ├── comments/route.ts
+│       ├── changelog/route.ts
+│       └── changelog/highlights/route.ts
+├── templates/            # Reusable detail page templates (used by routes AND side peek)
+│   ├── building.tsx      # Building detail UI
+│   ├── zone.tsx          # Zone detail UI
+│   ├── asset.tsx         # Asset detail UI
+│   ├── ticket.tsx        # Ticket detail (stub)
+│   ├── quotation.tsx     # Quotation detail (stub)
+│   ├── document.tsx      # Document detail (stub)
+│   └── maintenance.tsx   # Maintenance detail (stub)
+├── components/           # Reusable UI components (atoms/molecules/organisms)
+│   ├── charts/           # Nivo chart wrappers
 │   ├── performance/      # Performance-topic card components
-│   ├── Sidebar.tsx       # Navigation: drag-drop favorites, building list, search
-│   ├── Header.tsx        # Top bar (logo, search, notifications, user menu)
-│   ├── TopBar.tsx        # Secondary toolbar (date range, filters, view toggle)
-│   ├── AppTabs.tsx       # Reusable tabs (pill or underline variant)
-│   ├── KPICard.tsx       # Metric card with custom SVG sparkline (Catmull-Rom)
-│   ├── PropertyCard.tsx  # Building card with scores, energy label
-│   └── [Feature]Page.tsx # Page-level components (PortfolioPage, BmsPage, etc.)
-├── data/                 # All mock data
-│   ├── buildings.ts      # 50 buildings, seeded deterministic RNG (xorshift32)
-│   ├── metrics.ts        # KPI definitions, theme/operations metrics, period filtering
-│   ├── tickets.ts        # Support tickets
-│   ├── quotations.ts     # Maintenance quotations
-│   ├── maintenance.ts    # Maintenance schedule
-│   ├── locations.ts      # City lat/lng coordinates
-│   └── generators.ts     # Shared data generation utilities
+│   ├── Sidebar.tsx       # Navigation sidebar
+│   ├── TopBar.tsx        # Secondary toolbar (breadcrumbs, filters)
+│   ├── SidePeekPanel.tsx # Slide-in detail preview panel
+│   └── ...               # Cards, lists, modals, etc.
+├── context/
+│   └── AppStateContext.tsx  # Shared ephemeral UI state (side peek, favorites, sidebar, etc.)
 ├── hooks/
-│   └── useInfiniteScroll.ts  # Client-side pagination, 300ms artificial delay
-├── annotations/
-│   ├── config.ts         # Annotation library config + Notion endpoint
-│   └── provider.tsx      # AnnotationProvider wrapper
-├── colors.ts             # Color token system for light/dark modes
-├── theme.ts              # MUI createTheme() factory
-├── theme-mode-context.tsx # ThemeModeContext: preference, colorMode, themeColors
-└── theme-registry.tsx    # Emotion cache setup for MUI SSR compatibility
+│   ├── useURLState.ts    # URL query-param helpers (setURLParams, navigateTo, derived state)
+│   └── useInfiniteScroll.ts
+├── utils/
+│   └── slugs.ts          # Building name ↔ URL slug conversion
+├── data/                 # All mock data (deterministic, seeded RNG)
+├── annotations/          # Notion-backed annotation system
+├── colors.ts             # Color token system
+├── theme.ts              # MUI theme factory
+├── theme-mode-context.tsx
+└── theme-registry.tsx
 ```
 
 ---
@@ -128,9 +156,11 @@ src/
 
 No Redux/Zustand. State lives in:
 
-1. **URL params** (primary navigation state) — all routing, selected building, metric, filters
-2. **`page.tsx` local state** — UI toggles (panel open/closed, notifications, mobile nav)
-3. **`ThemeModeContext`** — theme preference (`system`/`light`/`dark`), resolved `colorMode`, `themeColors`; persisted to `localStorage` as `'theme-mode'`
+1. **URL paths** (primary navigation) — file-based routes determine the current page
+2. **URL query params** (filters/preferences) — managed via `useURLState()` hook
+3. **`AppStateContext`** (`src/context/AppStateContext.tsx`) — cross-route ephemeral UI state: side peek panels, favorites, sidebar collapsed, notifications, asset quickview
+4. **Shell layout local state** — filter anchors, hover state, contract filter
+5. **`ThemeModeContext`** — theme preference (`system`/`light`/`dark`), resolved `colorMode`, `themeColors`
 
 ---
 
@@ -206,12 +236,13 @@ const { colorMode, themeColors } = useThemeMode();
 ## Component Patterns
 
 - All components are **`"use client"`** functional components
-- **Composition** over inheritance — layouts use MUI `Box`/`Paper`/`Container`
+- **Atomic design**: `components/` = atoms/molecules/organisms, `templates/` = detail page templates, `app/(shell)/*/page.tsx` = pages
+- **Templates** (`src/templates/`) are used by both full-page routes AND side peek panels (e.g., `building.tsx` renders in `/buildings/[slug]` and in the `SidePeekPanel`)
 - **`AppTabs`** — reusable tab bar, `variant="pill"` or `variant="underline"`
 - **`KPICard`** — metric display with custom SVG sparkline (Catmull-Rom interpolation, no external library)
 - **`PropertyCard`** — building card with `TopicScore` and `EnergyLabel` sub-components
-- Page-level components receive props from `page.tsx` and do not manage routing themselves
-- Navigation callbacks (`onViewAllTickets`, `onViewAllQuotations`) flow down from `page.tsx` through dashboard components to performance sub-pages, allowing deep-nested components to trigger top-level navigation with pre-applied `statusFilter`
+- Navigation uses `router.push('/path')` from `useRouter()` or `navigateTo('/path', params)` from `useURLState()`
+- Navigation callbacks (`onViewAllTickets`, etc.) use `router.push('/operations/tickets?statusFilter=...')`
 
 ---
 
