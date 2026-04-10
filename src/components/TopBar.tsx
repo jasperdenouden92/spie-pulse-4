@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -32,7 +33,6 @@ import { ContractFilterToggle, type ContractFilter } from '@/components/Building
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
 interface TopBarProps {
-  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
   selectedBuilding?: { name: string } | null;
   selectedAsset?: AssetNode | null;
   onBack?: () => void;
@@ -55,7 +55,6 @@ interface TopBarProps {
   selectedCity?: string;
   onCityChange?: (city: string) => void;
   selectedDateRange?: string;
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onExport?: () => void;
@@ -95,7 +94,6 @@ const ALL_THEME_KEYS = Object.keys(THEME_CHILDREN);
 const ALL_OPERATIONS_KEYS = Object.keys(OPERATIONS_CHILDREN);
 
 function TopBar({
-  currentPage = 'portfolio',
   selectedBuilding,
   selectedAsset,
   onBack,
@@ -117,7 +115,6 @@ function TopBar({
   selectedCity: selectedCityProp,
   onCityChange,
   selectedDateRange: selectedDateRangeProp,
-  onPageChange,
   isCollapsed = false,
   onToggleCollapse,
   onExport,
@@ -132,6 +129,8 @@ function TopBar({
   selectionScore,
   metricItems = [],
 }: TopBarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
   const { themeColors: c } = useThemeMode();
   const isNarrow = useMediaQuery('(max-width:960px)');
   // Breadcrumb popover anchors
@@ -142,11 +141,10 @@ function TopBar({
 
   // Determine page name based on current page and selections
   const getPageName = () => {
-    if (currentPage === 'insights') return 'Insights';
-    if (currentPage === 'themes') return 'Themes';
-    if (currentPage === 'workspaces') return 'Workspaces';
-    if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'dashboards') return activeDashboardLabel ? `Dashboards - ${activeDashboardLabel}` : 'Dashboards';
+    if (pathname.startsWith('/insights')) return 'Insights';
+    if (pathname === '/themes') return 'Themes';
+    if (pathname === '/exports') return 'Exports';
+    if (pathname === '/dashboards') return activeDashboardLabel ? `Dashboards - ${activeDashboardLabel}` : 'Dashboards';
     return selectedAsset?.type === 'asset' ? selectedAsset.name : selectedBuilding ? selectedBuilding.name : 'Control Room';
   };
 
@@ -210,7 +208,7 @@ function TopBar({
           <MenuOpenIcon sx={{ display: 'block', '@media (max-width: 926px)': { display: 'none' }, transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease' }} />
         </IconButton>
         <AnimatePresence>
-          {(selectedBuilding || selectedAsset) && currentPage !== 'building_detail' && (
+          {(selectedBuilding || selectedAsset) && !pathname.startsWith('/buildings/') && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -225,7 +223,7 @@ function TopBar({
         </AnimatePresence>
 
         {/* Root breadcrumb segment — hidden on narrow screens */}
-        {isNarrow ? null : currentPage === 'portfolio' ? (
+        {isNarrow ? null : pathname === '/control-room' ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Typography
               variant="h6"
@@ -250,18 +248,18 @@ function TopBar({
           </Box>
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            {currentPage === 'home' && (
+            {pathname === '/home' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Home</Typography>
             )}
-            {currentPage === 'insights' && (
+            {pathname.startsWith('/insights') && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Insights</Typography>
             )}
-            {currentPage === 'portfolio_buildings' && (
+            {pathname === '/portfolio/buildings' && (
               <>
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('portfolio_buildings')}
+                  onClick={() => router.push('/portfolio/buildings')}
                 >
                   Portfolio
                 </Typography>
@@ -269,12 +267,12 @@ function TopBar({
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Buildings</Typography>
               </>
             )}
-            {currentPage === 'portfolio_zones' && (
+            {pathname === '/portfolio/zones' && (
               <>
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('portfolio_buildings')}
+                  onClick={() => router.push('/portfolio/buildings')}
                 >
                   Portfolio
                 </Typography>
@@ -282,12 +280,12 @@ function TopBar({
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Zones</Typography>
               </>
             )}
-            {currentPage === 'portfolio_assets' && (
+            {pathname === '/portfolio/assets' && (
               <>
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('portfolio_buildings')}
+                  onClick={() => router.push('/portfolio/buildings')}
                 >
                   Portfolio
                 </Typography>
@@ -295,12 +293,12 @@ function TopBar({
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Assets</Typography>
               </>
             )}
-            {currentPage === 'building_detail' && (
+            {pathname.startsWith('/buildings/') && (
               <>
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('portfolio_buildings')}
+                  onClick={() => router.push('/portfolio/buildings')}
                 >
                   Portfolio
                 </Typography>
@@ -308,7 +306,7 @@ function TopBar({
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('portfolio_buildings')}
+                  onClick={() => router.push('/portfolio/buildings')}
                 >
                   Buildings
                 </Typography>
@@ -318,19 +316,19 @@ function TopBar({
                 </Typography>
               </>
             )}
-            {currentPage === 'bms' && (
+            {pathname.startsWith('/bms') && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>BMS</Typography>
             )}
-            {currentPage === 'themes' && (
+            {pathname === '/themes' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Themes</Typography>
             )}
-            {currentPage === 'workspaces' && (
+            {pathname === '/workspaces' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Workspaces</Typography>
             )}
-            {currentPage === 'exports' && (
+            {pathname === '/exports' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Exports</Typography>
             )}
-            {currentPage === 'dashboards' && (
+            {pathname === '/dashboards' && (
               <>
                 <Typography
                   variant="h6"
@@ -353,21 +351,21 @@ function TopBar({
                 )}
               </>
             )}
-            {currentPage === 'operations' && (
+            {pathname === '/operations' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Operations</Typography>
             )}
-            {currentPage?.startsWith('operations_') && (
+            {pathname.startsWith('/operations/') && pathname !== '/operations' && (
               <>
                 <Typography
                   variant="h6"
                   sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => onPageChange?.('operations')}
+                  onClick={() => router.push('/operations')}
                 >
                   Operations
                 </Typography>
                 <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
-                  {currentPage === 'operations_docs' ? 'Docs' : currentPage === 'operations_tickets' ? 'Tickets' : 'Quotations'}
+                  {pathname.startsWith('/operations/documents') ? 'Documents' : pathname.startsWith('/operations/tickets') ? 'Tickets' : pathname.startsWith('/operations/quotations') ? 'Quotations' : 'Maintenance'}
                 </Typography>
               </>
             )}
@@ -375,7 +373,7 @@ function TopBar({
         )}
 
         {/* Smart contextual breadcrumbs for Portfolio page */}
-        {!isNarrow && currentPage === 'portfolio' && (
+        {!isNarrow && pathname === '/control-room' && (
           <>
             {/* Asset breadcrumb */}
             <AnimatePresence>
@@ -640,7 +638,7 @@ function TopBar({
           />
         )}
         {/* Export Button — on Control Room and Dashboards */}
-        {(currentPage === 'portfolio' || currentPage === 'dashboards') && (
+        {(pathname === '/control-room' || pathname === '/dashboards') && (
           isNarrow ? (
             <Tooltip title="Export">
               <IconButton

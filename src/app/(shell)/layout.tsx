@@ -72,38 +72,7 @@ const TENANT_THEME_KEYS: Record<string, MetricType[]> = {
   'Stichting Carmelcollege': ['comfort'],
 };
 
-// ── Pathname to legacy currentPage mapping ──────────────────────────────
-
-type CurrentPageType = 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
-
-function pathToCurrentPage(pathname: string): CurrentPageType {
-  if (pathname === '/home') return 'home';
-  if (pathname === '/control-room') return 'portfolio';
-  if (pathname.startsWith('/insights/alerts')) return 'insights_alerts';
-  if (pathname.startsWith('/insights/analyses')) return 'insights_analyses';
-  if (pathname.startsWith('/insights/performance')) return 'insights_performance';
-  if (pathname.startsWith('/insights')) return 'insights';
-  if (pathname.startsWith('/portfolio/buildings')) return 'portfolio_buildings';
-  if (pathname.startsWith('/portfolio/clusters')) return 'portfolio_buildings';
-  if (pathname.startsWith('/portfolio/zones')) return 'portfolio_zones';
-  if (pathname.startsWith('/portfolio/assets')) return 'portfolio_assets';
-  if (pathname.startsWith('/portfolio/equipment-types')) return 'portfolio_assets';
-  if (pathname.startsWith('/buildings/')) return 'building_detail';
-  if (pathname.startsWith('/zones/')) return 'zone_detail';
-  if (pathname.startsWith('/assets/')) return 'asset_detail';
-  if (pathname.startsWith('/operations/tickets')) return 'operations_tickets';
-  if (pathname.startsWith('/operations/quotations')) return 'operations_quotations';
-  if (pathname.startsWith('/operations/documents') || pathname.startsWith('/operations/docs')) return 'operations_docs';
-  if (pathname.startsWith('/operations/maintenance')) return 'operations_maintenance';
-  if (pathname.startsWith('/operations')) return 'operations';
-  if (pathname.startsWith('/bms/access')) return 'bms_access';
-  if (pathname.startsWith('/bms/logging')) return 'bms_logging';
-  if (pathname.startsWith('/bms')) return 'bms';
-  if (pathname === '/dashboards') return 'dashboards';
-  if (pathname === '/themes') return 'themes';
-  if (pathname === '/exports') return 'exports';
-  return 'portfolio';
-}
+// ── Helpers ──────────────────────────────────────────────────────────────
 
 // ── Shell Layout ────────────────────────────────────────────────────────
 
@@ -147,7 +116,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   } = useURLState();
 
   // ── Derived from pathname ──────────────────────────────────────────────
-  const currentPage = pathToCurrentPage(pathname);
+  // Detail pages hide the TopBar
 
   // ── Local shell state ──────────────────────────────────────────────────
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
@@ -324,40 +293,6 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     router.push(path, { scroll: false });
   }, [router]);
 
-  // Sidebar page change — maps old page names to new paths
-  const handlePageChange = useCallback((page: string) => {
-    const pageToPath: Record<string, string> = {
-      home: '/home',
-      portfolio: '/control-room',
-      portfolio_buildings: '/portfolio/buildings',
-      portfolio_clusters: '/portfolio/clusters',
-      portfolio_zones: '/portfolio/zones',
-      portfolio_assets: '/portfolio/assets',
-      portfolio_equipment_types: '/portfolio/equipment-types',
-      insights: '/insights/alerts',
-      insights_alerts: '/insights/alerts',
-      insights_analyses: '/insights/analyses',
-      insights_performance: '/insights/performance',
-      bms: '/bms/access',
-      bms_access: '/bms/access',
-      bms_logging: '/bms/logging',
-      operations: '/operations',
-      operations_tickets: '/operations/tickets',
-      operations_quotations: '/operations/quotations',
-      operations_docs: '/operations/documents',
-      operations_maintenance: '/operations/maintenance',
-      dashboards: '/dashboards',
-      themes: '/themes',
-      exports: '/exports',
-    };
-    const path = pageToPath[page] ?? '/control-room';
-    setLocalQuickviewAsset(null);
-    setSidePeekBuilding(null);
-    setSidePeekZone(null);
-    setSidePeekAsset(null);
-    router.push(path, { scroll: false });
-  }, [router, setLocalQuickviewAsset, setSidePeekBuilding, setSidePeekZone, setSidePeekAsset]);
-
   // Sidebar metric/selection callbacks
   const handleSidebarMetricSelect = useCallback((metric: string) => setSelection(metric), [setSelection]);
   const handleSidebarSelectionChange = useCallback((s: string) => setSelection(s), [setSelection]);
@@ -387,23 +322,23 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
 
   // Page name + favorites
   const getCurrentPageName = () => {
-    if (currentPage === 'dashboards' && activeDashboardLabel) return `Dashboards - ${activeDashboardLabel}`;
-    if (currentPage === 'dashboards') return 'Dashboards';
-    if (currentPage === 'insights' || currentPage === 'insights_alerts') return 'Insights - Alerts';
-    if (currentPage === 'insights_analyses') return 'Insights - Analyses';
-    if (currentPage === 'insights_performance') return 'Insights - Performance';
-    if (currentPage === 'themes') return 'Themes';
-    if (currentPage === 'workspaces') return 'Workspaces';
-    if (currentPage === 'exports') return 'Exports';
-    if (currentPage === 'portfolio_buildings') return 'Portfolio';
-    if (currentPage === 'portfolio_zones') return 'Zones';
-    if (currentPage === 'portfolio_assets') return 'Assets';
-    if (currentPage === 'building_detail') return selectedBuilding?.name ?? 'Building';
-    if (currentPage === 'zone_detail') return 'Zone';
-    if (currentPage === 'asset_detail') return 'Asset';
-    if (currentPage === 'bms' || currentPage === 'bms_access') return 'BMS - Access';
-    if (currentPage === 'bms_logging') return 'BMS - Logging';
-    if (currentPage === 'operations') return 'Operations';
+    if (pathname === '/dashboards' && activeDashboardLabel) return `Dashboards - ${activeDashboardLabel}`;
+    if (pathname === '/dashboards') return 'Dashboards';
+    if (pathname === '/insights/alerts' || pathname === '/insights') return 'Insights - Alerts';
+    if (pathname === '/insights/analyses') return 'Insights - Analyses';
+    if (pathname === '/insights/performance') return 'Insights - Performance';
+    if (pathname === '/themes') return 'Themes';
+    if (pathname === '/exports') return 'Exports';
+    if (pathname === '/portfolio/buildings') return 'Portfolio';
+    if (pathname === '/portfolio/zones') return 'Zones';
+    if (pathname === '/portfolio/assets') return 'Assets';
+    if (pathname.startsWith('/buildings/')) return selectedBuilding?.name ?? 'Building';
+    if (pathname.startsWith('/zones/')) return 'Zone';
+    if (pathname.startsWith('/assets/')) return 'Asset';
+    if (pathname === '/bms/access' || pathname === '/bms') return 'BMS - Access';
+    if (pathname === '/bms/logging') return 'BMS - Logging';
+    if (pathname.startsWith('/operations')) return 'Operations';
+    if (pathname === '/settings') return 'Settings';
     if (selectedBuilding) return selectedBuilding.name;
     return 'Control Room';
   };
@@ -418,7 +353,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   const isCurrentPageFavorited = favorites.some(fav => fav.name === currentPageName);
 
   const getFavoriteType = () => {
-    if (currentPage === 'dashboards') return 'dashboard';
+    if (pathname === '/dashboards') return 'dashboard';
     if (selectedBuilding) return 'building';
     return 'page';
   };
@@ -789,7 +724,6 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
         overflow: 'hidden'
       }}>
         {!hideTopBar && <TopBar
-          currentPage={currentPage as any}
           selectedBuilding={selectedBuilding}
           selectedAsset={selectedAsset}
           onBack={() => setURLParams({ building: '', asset: '', assetTab: '0' })}
@@ -811,20 +745,19 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
           selectedCity={selectedCity}
           onCityChange={setSelectedCity}
           selectedDateRange={dateRange}
-          onPageChange={handlePageChange as any}
           isCollapsed={leftSidebarCollapsed}
           onToggleCollapse={handleLeftSidebarToggle}
           onExport={handleExport}
           activeDashboardId={activeDashboardId}
           activeDashboardLabel={activeDashboardLabel}
-          filterPeriodLabel={currentPage === 'portfolio' ? getPeriodDisplayLabel(dateRange) : undefined}
+          filterPeriodLabel={pathname === '/control-room' ? getPeriodDisplayLabel(dateRange) : undefined}
           filterBuildingLabel={
-            (currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards'
+            (pathname === '/control-room' && !selectedBuilding) || pathname === '/dashboards'
               ? getTitleBuildingLabel() : undefined
           }
-          onFilterDateClick={currentPage === 'portfolio' ? () => setTitleDatePickerOpen(true) : undefined}
+          onFilterDateClick={pathname === '/control-room' ? () => setTitleDatePickerOpen(true) : undefined}
           onFilterBuildingClick={
-            ((currentPage === 'portfolio' && !selectedBuilding) || currentPage === 'dashboards')
+            ((pathname === '/control-room' && !selectedBuilding) || pathname === '/dashboards')
               ? (e) => setTitleBuildingAnchor(e.currentTarget) : undefined
           }
           contractFilter={contractFilter}
