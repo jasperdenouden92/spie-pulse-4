@@ -279,6 +279,7 @@ export default function ControlRoomPage() {
     setURLParams, setSelection, setDateRange, setSelectedGroup,
     setSelectedCity, setSelectedTenant, setSortOrder, setViewMode,
     setIsInspectMode, setIsAssetExplorerOpen, setAssetTab,
+    tab, setTab, contract, setContract,
   } = useURLState();
 
   // ── App state ──────────────────────────────────────────────────────────
@@ -299,14 +300,13 @@ export default function ControlRoomPage() {
   const [sortAnchorEl, setSortAnchorEl] = useState<null | HTMLElement>(null);
   const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
   const [titleBuildingMode, setTitleBuildingMode] = useState<BuildingFilterMode>('buildings');
-  const [contractFilter, setContractFilter] = useState<ContractFilter>(false);
+  const contractFilter = contract as ContractFilter;
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const rawPanelTab = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('panel') ?? 'buildings';
-  const buildingsPanelTab: BuildingsPanelTab = (rawPanelTab === 'buildings' || rawPanelTab === 'kpi_analysis' || rawPanelTab === 'recommendations') ? rawPanelTab : 'buildings';
-  const setBuildingsPanelTab = (v: BuildingsPanelTab) => setURLParams({ panel: v });
+  const buildingsPanelTab: BuildingsPanelTab = (tab === 'kpi_analysis' || tab === 'recommendations') ? tab : 'buildings';
+  const setBuildingsPanelTab = (v: BuildingsPanelTab) => setTab(v === 'buildings' ? '' : v);
   const buildingsViewMode = (new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('bview') ?? 'cards') as 'cards' | 'list';
   const setBuildingsViewMode = (v: 'cards' | 'list') => setURLParams({ bview: v });
 
@@ -753,7 +753,7 @@ export default function ControlRoomPage() {
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 sx={{ mt: 'auto', pt: isCompact ? 1 : 2, display: 'flex', justifyContent: 'center' }}
               >
-                <ContractFilterToggle value={contractFilter} onChange={setContractFilter} />
+                <ContractFilterToggle value={contractFilter} onChange={(v) => setContract(!!v)} />
               </Box>
             </Box>
 

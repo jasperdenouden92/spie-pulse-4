@@ -80,9 +80,8 @@ Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 | `group` | group name | Building group filter |
 | `city` | city name | City filter |
 | `tenant` | tenant name | Tenant filter |
-| `btab` | `overview` \| `performance` \| `zones` \| `assets` \| `tickets` \| `quotations` | Building detail tab |
-| `ztab` | `overview` \| `assets` \| `tickets` \| `quotations` | Zone detail tab |
-| `atab` | `overview` \| `tickets` \| `quotations` | Asset detail tab |
+| `tab` | varies by page | Active tab (building: `performance`/`zones`/etc., control room: `kpi_analysis`/`recommendations`) |
+| `contract` | `yes` | Contract filter active (omitted = overall/all buildings) |
 | `statusFilter` | comma-separated status values | Pre-filter tickets/quotations by status |
 
 ### Adding a New Page

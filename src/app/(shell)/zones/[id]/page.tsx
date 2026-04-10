@@ -17,7 +17,8 @@ export default function ZoneDetailRoute({ params }: { params: Promise<{ id: stri
   const zone = allZones.find(z => z.id === id) ?? null;
   const isNarrow = useMediaQuery('(max-width:960px)');
   const router = useRouter();
-  const { ztab, setZtab } = useURLState();
+  const { tab, setTab } = useURLState();
+  const ztab = (tab || 'overview') as ZoneDetailTab;
   const { leftSidebarCollapsed, setLeftSidebarCollapsed } = useAppState();
 
   if (!zone) {
@@ -32,8 +33,8 @@ export default function ZoneDetailRoute({ params }: { params: Promise<{ id: stri
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
       <ZoneTemplate
         zone={zone}
-        tab={ztab as ZoneDetailTab}
-        onTabChange={(t) => setZtab(t)}
+        tab={ztab}
+        onTabChange={(t) => setTab(t)}
         isCollapsed={leftSidebarCollapsed}
         onToggleCollapse={() => setLeftSidebarCollapsed(c => !c)}
         onBackToPortfolio={() => router.push('/portfolio/zones')}

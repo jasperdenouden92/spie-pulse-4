@@ -21,7 +21,8 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
   const building = slugToBuilding(slug);
   const isNarrow = useMediaQuery('(max-width:960px)');
   const router = useRouter();
-  const { btab, setBtab } = useURLState();
+  const { tab, setTab } = useURLState();
+  const btab = (tab || 'performance') as BuildingDetailTab;
   const { leftSidebarCollapsed, setLeftSidebarCollapsed, setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone, setSidePeekZoneTab, setSidePeekAsset, setSidePeekAssetTab } = useAppState();
 
   if (!building) {
@@ -36,8 +37,8 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
       <BuildingTemplate
         building={building}
-        tab={btab as BuildingDetailTab}
-        onTabChange={(t) => setBtab(t)}
+        tab={btab}
+        onTabChange={(t) => setTab(t)}
         isCollapsed={leftSidebarCollapsed}
         onToggleCollapse={() => setLeftSidebarCollapsed(c => !c)}
         onBackToPortfolio={() => router.push('/portfolio/buildings')}

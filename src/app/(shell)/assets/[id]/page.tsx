@@ -18,7 +18,8 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
   const asset = getAssetById(id) ?? null;
   const isNarrow = useMediaQuery('(max-width:960px)');
   const router = useRouter();
-  const { atab, setAtab } = useURLState();
+  const { tab, setTab } = useURLState();
+  const atab = (tab || 'overview') as AssetDetailTab;
   const { leftSidebarCollapsed, setLeftSidebarCollapsed } = useAppState();
 
   if (!asset) {
@@ -41,8 +42,8 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
       <AssetTemplate
         asset={asset}
-        tab={atab as AssetDetailTab}
-        onTabChange={(t) => setAtab(t)}
+        tab={atab}
+        onTabChange={(t) => setTab(t)}
         isCollapsed={leftSidebarCollapsed}
         onToggleCollapse={() => setLeftSidebarCollapsed(c => !c)}
         onBackToPortfolio={() => router.push('/portfolio/assets')}

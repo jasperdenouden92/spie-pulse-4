@@ -107,12 +107,12 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
 
   // ── URL state ──────────────────────────────────────────────────────────
   const {
-    selectedBuilding, selection, dateRange,
+    selectedBuilding, selection, dateRange, contract,
     selectedGroup, selectedCity, selectedTenant,
     isInspectMode, isAssetExplorerOpen, assetTab, urlAsset,
     setURLParams, setDateRange, setSelectedGroup, setSelectedCity,
     setSelectedTenant, setIsInspectMode, setIsAssetExplorerOpen,
-    setAssetTab, setViewMode, setSelection,
+    setAssetTab, setViewMode, setSelection, setContract,
   } = useURLState();
 
   // ── Derived from pathname ──────────────────────────────────────────────
@@ -125,7 +125,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   const [contractMenuAnchor, setContractMenuAnchor] = useState<null | HTMLElement>(null);
   const [titleBuildingNames, setTitleBuildingNames] = useState<string[]>([]);
   const [titleBuildingMode, setTitleBuildingMode] = useState<BuildingFilterMode>('buildings');
-  const [contractFilter, setContractFilter] = useState<ContractFilter>(false);
+  const contractFilter = contract as ContractFilter;
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
@@ -761,7 +761,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               ? (e) => setTitleBuildingAnchor(e.currentTarget) : undefined
           }
           contractFilter={contractFilter}
-          onContractFilterChange={setContractFilter}
+          onContractFilterChange={(v) => setContract(!!v)}
           selectionScore={selectionScore}
           metricItems={metricItems}
         />}

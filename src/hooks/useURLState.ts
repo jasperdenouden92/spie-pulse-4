@@ -18,10 +18,8 @@ export const URL_DEFAULTS: Record<string, string> = {
   inspect: '0',
   explorer: '0',
   assetTab: '0',
-  panel: 'buildings',
-  btab: 'performance',
-  ztab: 'overview',
-  atab: 'overview',
+  tab: '',
+  contract: '',
   themes: '0',
 };
 
@@ -49,8 +47,12 @@ export function useURLState() {
         params.set(key, value);
       }
     }
-    // Remove the legacy `page` param if still lingering
+    // Remove legacy params
     params.delete('page');
+    params.delete('btab');
+    params.delete('ztab');
+    params.delete('atab');
+    params.delete('panel');
     latestParamsRef.current = params as unknown as typeof searchParams;
     return params.toString();
   }, []);
@@ -99,13 +101,9 @@ export function useURLState() {
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
-  const btab = (searchParams.get('btab') ?? 'performance') as
-    | 'overview' | 'performance' | 'zones' | 'assets' | 'tickets' | 'quotations';
+  const tab = searchParams.get('tab') ?? '';
+  const contract = searchParams.get('contract') === 'yes';
   const zoneId = searchParams.get('zone') ?? '';
-  const ztab = (searchParams.get('ztab') ?? 'overview') as
-    | 'overview' | 'assets' | 'tickets' | 'quotations';
-  const atab = (searchParams.get('atab') ?? 'overview') as
-    | 'overview' | 'tickets' | 'quotations';
   const selectedZone: Zone | null = zoneId
     ? (allZones.find(z => z.id === zoneId) ?? null)
     : null;
@@ -121,9 +119,8 @@ export function useURLState() {
   const setIsInspectMode = useCallback((v: boolean) => setURLParams({ inspect: v ? '1' : '0' }), [setURLParams]);
   const setIsAssetExplorerOpen = useCallback((v: boolean) => setURLParams({ explorer: v ? '1' : '0' }), [setURLParams]);
   const setAssetTab = useCallback((n: number) => setURLParams({ assetTab: String(n) }), [setURLParams]);
-  const setBtab = useCallback((t: string) => setURLParams({ btab: t }), [setURLParams]);
-  const setZtab = useCallback((t: string) => setURLParams({ ztab: t }), [setURLParams]);
-  const setAtab = useCallback((t: string) => setURLParams({ atab: t }), [setURLParams]);
+  const setTab = useCallback((t: string) => setURLParams({ tab: t }), [setURLParams]);
+  const setContract = useCallback((v: boolean) => setURLParams({ contract: v ? 'yes' : '' }), [setURLParams]);
   const setSortOrder = useCallback((s: string) => setURLParams({ sort: s }), [setURLParams]);
   const setViewMode = useCallback((v: string) => setURLParams({ view: v }), [setURLParams]);
 
@@ -146,10 +143,9 @@ export function useURLState() {
     isInspectMode,
     isAssetExplorerOpen,
     assetTab,
-    btab,
+    tab,
+    contract,
     zoneId,
-    ztab,
-    atab,
     selectedZone,
     urlAsset,
     statusFilter,
@@ -162,9 +158,8 @@ export function useURLState() {
     setIsInspectMode,
     setIsAssetExplorerOpen,
     setAssetTab,
-    setBtab,
-    setZtab,
-    setAtab,
+    setTab,
+    setContract,
     setSortOrder,
     setViewMode,
   };
