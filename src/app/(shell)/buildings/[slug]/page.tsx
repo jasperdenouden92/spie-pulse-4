@@ -1,19 +1,39 @@
 'use client';
 
-import { use, useEffect } from 'react';
+import { use, useEffect, useMemo } from 'react';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
 import BuildingTemplate from '@/templates/building';
 import type { BuildingDetailTab } from '@/templates/building';
-import PortfolioZonesPage from '@/components/PortfolioZonesPage';
-import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
+import ZonesList from '@/components/ZonesList';
+import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { slugToBuilding, buildingToSlug } from '@/utils/slugs';
 import { zones as allZones } from '@/data/zones';
-import { getAssetById } from '@/data/assetTree';
+import { assetTree, type AssetNode, getAssetById } from '@/data/assetTree';
 import { handleSidePeekClick } from '@/components/SidePeekPanel';
+
+// ── Flatten Buildings tree with building context ──
+function collectFromBuildings(nodes: AssetNode[], seen = new Set<string>(), building = ''): EnrichedAsset[] {
+  const result: EnrichedAsset[] = [];
+  for (const node of nodes) {
+    const ctx = node.type === 'building' ? node.name : building;
+    if (node.type === 'asset' && !seen.has(node.id)) {
+      result.push({ ...node, building: ctx });
+      seen.add(node.id);
+    } else if (node.children) {
+      result.push(...collectFromBuildings(node.children, seen, ctx));
+    }
+  }
+  return result;
+}
+
+const buildingsTreeNode = assetTree.find(n => n.id === 'dt-buildings');
+const ALL_ASSETS: EnrichedAsset[] = buildingsTreeNode
+  ? collectFromBuildings(buildingsTreeNode.children?.slice(0, 15) ?? [])
+  : [];
 
 const DEFAULT_TAB: BuildingDetailTab = 'overview';
 
@@ -30,6 +50,11 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
   useEffect(() => {
     if (!tab) setTab(DEFAULT_TAB);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const buildingAssets = useMemo(
+    () => ALL_ASSETS.filter(a => a.building === (building?.name ?? '')),
+    [building]
+  );
 
   if (!building) {
     return (
@@ -53,9 +78,9 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
         }}
       />
       {currentTab === 'zones' && (
-        <PortfolioZonesPage
-          tenant={building.tenant}
-          buildingName={building.name}
+        <ZonesList
+          zones={allZones.filter(z => z.buildingName === building.name)}
+          hideBuildingColumn
           onZoneClick={(id, e) => handleSidePeekClick(e,
             () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekBuilding(null); setSidePeekZone(z); setSidePeekZoneTab('overview'); } },
             () => router.push(`/zones/${id}`),
@@ -63,8 +88,9 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
         />
       )}
       {currentTab === 'assets' && (
-        <PortfolioAssetsPage
-          buildingName={building.name}
+        <AssetsList
+          assets={buildingAssets}
+          hideBuildingColumn
           onAssetClick={(id, e) => handleSidePeekClick(e,
             () => { const a = getAssetById(id); if (a) { setSidePeekAsset(a); setSidePeekAssetTab('overview'); } },
             () => router.push(`/assets/${id}`),

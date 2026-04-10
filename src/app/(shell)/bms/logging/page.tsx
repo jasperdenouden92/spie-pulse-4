@@ -2,13 +2,17 @@
 
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import BmsPage from '@/components/BmsPage';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function BmsLoggingRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   return (
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
-      <BmsPage tab="logging" />
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ fontWeight: 600, mb: 2 }}>BMS — Logging</Typography>
+        <Typography variant="body1" color="text.secondary">Logging page — coming soon</Typography>
+      </Box>
     </Container>
   );
 }

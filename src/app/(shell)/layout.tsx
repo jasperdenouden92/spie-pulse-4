@@ -45,8 +45,8 @@ import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
 import BuildingTemplate from '@/templates/building';
 import ZoneTemplate from '@/templates/zone';
 import AssetTemplate from '@/templates/asset';
-import PortfolioZonesPage from '@/components/PortfolioZonesPage';
-import PortfolioAssetsPage from '@/components/PortfolioAssetsPage';
+import ZonesList from '@/components/ZonesList';
+import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import ChangelogButton from '@/components/ChangelogButton';
 import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
@@ -56,7 +56,7 @@ import { useURLState } from '@/hooks/useURLState';
 import { useThemeMode } from '@/theme-mode-context';
 import { buildings as allBuildings, tenants, type Building, type MetricKeys } from '@/data/buildings';
 import { zones as allZones } from '@/data/zones';
-import { getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
+import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
 
@@ -71,6 +71,26 @@ const TENANT_THEME_KEYS: Record<string, MetricType[]> = {
   'de Bijenkorf': ['sustainability'],
   'Stichting Carmelcollege': ['comfort'],
 };
+
+// ── Flatten Buildings tree with building context (for side peek assets) ──
+function collectFromBuildings(nodes: AssetNode[], seen = new Set<string>(), building = ''): EnrichedAsset[] {
+  const result: EnrichedAsset[] = [];
+  for (const node of nodes) {
+    const ctx = node.type === 'building' ? node.name : building;
+    if (node.type === 'asset' && !seen.has(node.id)) {
+      result.push({ ...node, building: ctx });
+      seen.add(node.id);
+    } else if (node.children) {
+      result.push(...collectFromBuildings(node.children, seen, ctx));
+    }
+  }
+  return result;
+}
+
+const buildingsTreeNode = assetTree.find(n => n.id === 'dt-buildings');
+const ALL_ASSETS: EnrichedAsset[] = buildingsTreeNode
+  ? collectFromBuildings(buildingsTreeNode.children?.slice(0, 15) ?? [])
+  : [];
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -851,9 +871,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
             />
             {sidePeekBuildingTab === 'zones' && (
-              <PortfolioZonesPage
-                tenant={sidePeekBuilding.tenant}
-                buildingName={sidePeekBuilding.name}
+              <ZonesList
+                zones={allZones.filter(z => z.buildingName === sidePeekBuilding.name)}
+                hideBuildingColumn
                 onZoneClick={(id, e) => handleSidePeekClick(e,
                   () => { const z = allZones.find(z => z.id === id); if (z) { setSidePeekZone(z); setSidePeekZoneTab('overview'); setSidePeekBuilding(null); } },
                   () => { router.push('/zones/' + id, { scroll: false }); },
@@ -861,7 +881,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               />
             )}
             {sidePeekBuildingTab === 'assets' && (
-              <PortfolioAssetsPage buildingName={sidePeekBuilding.name} onAssetClick={(id) => {
+              <AssetsList assets={ALL_ASSETS.filter(a => a.building === sidePeekBuilding.name)} hideBuildingColumn onAssetClick={(id) => {
                 const a = getAssetById(id);
                 if (a) { setSidePeekBuilding(null); setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
               }} />
