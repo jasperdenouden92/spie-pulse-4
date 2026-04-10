@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
@@ -9,9 +9,10 @@ import type { AssetDetailTab } from '@/templates/asset';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { buildingToSlug } from '@/utils/slugs';
-import { buildings as allBuildings } from '@/data/buildings';
 import { zones as allZones } from '@/data/zones';
 import { getAssetById, getPathToAsset } from '@/data/assetTree';
+
+const DEFAULT_TAB: AssetDetailTab = 'overview';
 
 export default function AssetDetailRoute({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -19,8 +20,13 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
   const isNarrow = useMediaQuery('(max-width:960px)');
   const router = useRouter();
   const { tab, setTab } = useURLState();
-  const atab = (tab || 'overview') as AssetDetailTab;
+  const currentTab = (tab || DEFAULT_TAB) as AssetDetailTab;
   const { leftSidebarCollapsed, setLeftSidebarCollapsed } = useAppState();
+
+  // Ensure default tab is always visible in the URL
+  useEffect(() => {
+    if (!tab) setTab(DEFAULT_TAB);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!asset) {
     return (
@@ -42,7 +48,7 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
       <AssetTemplate
         asset={asset}
-        tab={atab}
+        tab={currentTab}
         onTabChange={(t) => setTab(t)}
         isCollapsed={leftSidebarCollapsed}
         onToggleCollapse={() => setLeftSidebarCollapsed(c => !c)}

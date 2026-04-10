@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
@@ -9,8 +9,9 @@ import type { ZoneDetailTab } from '@/templates/zone';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { buildingToSlug } from '@/utils/slugs';
-import { buildings as allBuildings } from '@/data/buildings';
 import { zones as allZones } from '@/data/zones';
+
+const DEFAULT_TAB: ZoneDetailTab = 'overview';
 
 export default function ZoneDetailRoute({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -18,8 +19,13 @@ export default function ZoneDetailRoute({ params }: { params: Promise<{ id: stri
   const isNarrow = useMediaQuery('(max-width:960px)');
   const router = useRouter();
   const { tab, setTab } = useURLState();
-  const ztab = (tab || 'overview') as ZoneDetailTab;
+  const currentTab = (tab || DEFAULT_TAB) as ZoneDetailTab;
   const { leftSidebarCollapsed, setLeftSidebarCollapsed } = useAppState();
+
+  // Ensure default tab is always visible in the URL
+  useEffect(() => {
+    if (!tab) setTab(DEFAULT_TAB);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!zone) {
     return (
@@ -33,7 +39,7 @@ export default function ZoneDetailRoute({ params }: { params: Promise<{ id: stri
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
       <ZoneTemplate
         zone={zone}
-        tab={ztab}
+        tab={currentTab}
         onTabChange={(t) => setTab(t)}
         isCollapsed={leftSidebarCollapsed}
         onToggleCollapse={() => setLeftSidebarCollapsed(c => !c)}
