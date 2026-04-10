@@ -27,7 +27,7 @@ export default function PortfolioBuildingsRoute() {
         tenant={selectedTenant}
         onBuildingClick={(b, e?) => handleSidePeekClick(e,
           () => { setSidePeekZone(null); setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); },
-          () => router.push(`/buildings/${buildingToSlug(b.name)}`),
+          () => router.push(`/buildings/${b.id}`),
         )}
         viewMode={portfolioViewMode}
         onViewModeChange={setPortfolioViewMode}

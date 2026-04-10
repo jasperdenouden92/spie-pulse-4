@@ -10,6 +10,7 @@ export interface PerformanceMetric {
 export type MetricKeys = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
 export interface Building {
+  id: string;
   name: string;
   address: string;
   city: string;
@@ -168,6 +169,7 @@ const buildings: Building[] = locations.map((loc, i) => {
   const lng = jitterCoord(baseLng, i * 311 + 13, spread);
 
   return {
+    id: `b-${String(i + 1).padStart(3, '0')}`,
     name: loc.name,
     address: loc.address,
     city: loc.city,

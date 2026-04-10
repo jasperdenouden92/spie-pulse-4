@@ -102,13 +102,27 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   // Export toast
   const [exportToast, setExportToast] = useState<ExportToast>({ open: false, message: '', severity: 'info' });
 
-  // Side peek
-  const [sidePeekBuilding, setSidePeekBuilding] = useState<Building | null>(null);
+  // Side peek — only one can be open at a time
+  const [sidePeekBuilding, _setSidePeekBuilding] = useState<Building | null>(null);
   const [sidePeekBuildingTab, setSidePeekBuildingTab] = useState<BuildingDetailTab>('overview');
-  const [sidePeekZone, setSidePeekZone] = useState<Zone | null>(null);
+  const [sidePeekZone, _setSidePeekZone] = useState<Zone | null>(null);
   const [sidePeekZoneTab, setSidePeekZoneTab] = useState<ZoneDetailTab>('overview');
-  const [sidePeekAsset, setSidePeekAsset] = useState<AssetNode | null>(null);
+  const [sidePeekAsset, _setSidePeekAsset] = useState<AssetNode | null>(null);
   const [sidePeekAssetTab, setSidePeekAssetTab] = useState<AssetDetailTab>('overview');
+
+  // Wrappers that enforce single-peek: opening one closes the others
+  const setSidePeekBuilding: typeof _setSidePeekBuilding = (v) => {
+    _setSidePeekBuilding(v);
+    if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); }
+  };
+  const setSidePeekZone: typeof _setSidePeekZone = (v) => {
+    _setSidePeekZone(v);
+    if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); }
+  };
+  const setSidePeekAsset: typeof _setSidePeekAsset = (v) => {
+    _setSidePeekAsset(v);
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); }
+  };
 
   // Favorites
   const [favorites, setFavorites] = useState<Favorite[]>([

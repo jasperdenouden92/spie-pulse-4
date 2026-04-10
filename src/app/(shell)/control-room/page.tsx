@@ -553,7 +553,7 @@ export default function ControlRoomPage() {
 
   // Navigation helper for building clicks
   const navigateToBuildingDetail = useCallback((building: Building) => {
-    router.push('/buildings/' + buildingToSlug(building.name), { scroll: false });
+    router.push(`/buildings/${building.id}`, { scroll: false });
   }, [router]);
 
   const handlePageChange = useCallback((page: string) => {

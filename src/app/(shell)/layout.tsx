@@ -144,7 +144,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (peekSyncRef.current) { peekSyncRef.current = false; return; }
     if (sidePeekBuilding) {
-      setURLParams({ peek: `building:${buildingToSlug(sidePeekBuilding.name)}` });
+      setURLParams({ peek: `building:${sidePeekBuilding.id}` });
     } else if (sidePeekZone) {
       setURLParams({ peek: `zone:${sidePeekZone.id}` });
     } else if (sidePeekAsset) {
@@ -431,7 +431,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
 
   const setSelectedBuilding = useCallback((b: Building | null) => {
     if (b) {
-      router.push(`/buildings/${buildingToSlug(b.name)}`, { scroll: false });
+      router.push(`/buildings/${b.id}`, { scroll: false });
     }
   }, [router]);
 
@@ -843,7 +843,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
               onPanelClose={() => setSidePeekBuilding(null)}
               onPanelFullscreen={() => {
-                router.push('/buildings/' + buildingToSlug(sidePeekBuilding.name), { scroll: false });
+                router.push(`/buildings/${sidePeekBuilding.id}`, { scroll: false });
                 setSidePeekBuilding(null);
               }}
             />
