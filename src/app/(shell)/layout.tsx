@@ -131,7 +131,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
 
   // ── Clear side peek state on navigation ────────────────────────────────
+  const navigatingRef = useRef(false);
   useEffect(() => {
+    navigatingRef.current = true;
     setSidePeekBuilding(null);
     setSidePeekZone(null);
     setSidePeekAsset(null);
@@ -142,6 +144,8 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   // Write: side peek state → URL
   const peekSyncRef = useRef(false); // guard against sync loops
   useEffect(() => {
+    // Skip sync when peeks were cleared due to pathname change
+    if (navigatingRef.current) { navigatingRef.current = false; return; }
     if (peekSyncRef.current) { peekSyncRef.current = false; return; }
     if (sidePeekBuilding) {
       setURLParams({ peek: `building:${sidePeekBuilding.id}` });
