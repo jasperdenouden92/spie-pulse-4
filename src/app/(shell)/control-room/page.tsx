@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -129,7 +129,7 @@ import { buildingOperationalStats, formatCurrency } from '@/data/buildingOperati
 
 type MetricType = keyof Building['metrics'];
 type ViewMode = 'dashboard' | 'list' | 'tree';
-type BuildingsPanelTab = 'buildings' | 'kpi_analysis' | 'recommendations';
+type BuildingsPanelTab = 'portfolio' | 'performance' | 'insights';
 type Selection = MetricType | 'themes_group' | 'operations_group';
 
 // ── Constants ─────────────────────────────────────────────────────────────
@@ -305,8 +305,13 @@ export default function ControlRoomPage() {
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const buildingsPanelTab: BuildingsPanelTab = (tab === 'kpi_analysis' || tab === 'recommendations') ? tab : 'buildings';
-  const setBuildingsPanelTab = (v: BuildingsPanelTab) => setTab(v === 'buildings' ? '' : v);
+  const buildingsPanelTab: BuildingsPanelTab = (tab === 'performance' || tab === 'insights') ? tab : 'portfolio';
+  const setBuildingsPanelTab = (v: BuildingsPanelTab) => setTab(v);
+
+  // Ensure default tab is always visible in the URL
+  useEffect(() => {
+    if (!tab) setTab('portfolio');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const buildingsViewMode = (new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('bview') ?? 'cards') as 'cards' | 'list';
   const setBuildingsViewMode = (v: 'cards' | 'list') => setURLParams({ bview: v });
 
@@ -986,14 +991,14 @@ export default function ControlRoomPage() {
                   value={buildingsPanelTab}
                   onChange={setBuildingsPanelTab}
                   tabs={[
-                    { value: 'buildings', label: 'Portfolio' },
-                    { value: 'kpi_analysis', label: 'Performance' },
-                    { value: 'recommendations', label: 'Insights' },
+                    { value: 'portfolio', label: 'Portfolio' },
+                    { value: 'performance', label: 'Performance' },
+                    { value: 'insights', label: 'Insights' },
                   ]}
                 />
 
                 {/* Sort Dropdown + View Toggle -- only on Buildings tab */}
-                {buildingsPanelTab === 'buildings' && (
+                {buildingsPanelTab === 'portfolio' && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Chip
                       icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -1042,7 +1047,7 @@ export default function ControlRoomPage() {
 
               {/* Panel Content */}
               <Box sx={{ pt: 2 }}>
-                {buildingsPanelTab === 'buildings' ? (
+                {buildingsPanelTab === 'portfolio' ? (
                   <>
                     {buildingsViewMode === 'list' ? (
                       /* ===== LIST VIEW ===== */
@@ -1342,7 +1347,7 @@ export default function ControlRoomPage() {
                     </Box>
                     )}
                   </>
-                ) : buildingsPanelTab === 'kpi_analysis' ? (
+                ) : buildingsPanelTab === 'performance' ? (
                   /* ===== KPI ANALYSIS VIEW ===== */
                   <KPIAnalysisView
                     selection={selection}
@@ -1355,7 +1360,7 @@ export default function ControlRoomPage() {
                     themeKeys={activeThemeKeys}
                     onBuildingSelect={(b) => { setSidePeekBuilding(b); setSidePeekBuildingTab('overview'); }}
                     onViewAllBuildings={(sort) => {
-                      setBuildingsPanelTab('buildings');
+                      setBuildingsPanelTab('portfolio');
                       setURLParams({ sort });
                     }}
                     buildingMode={titleBuildingMode}
