@@ -28,7 +28,7 @@ Facility management dashboard for SPIE. Built with Next.js 15, React 19, TypeScr
 
 **File-based routing** using Next.js App Router. All pages live under `src/app/(shell)/` which shares a common shell layout (sidebar, header, overlays).
 
-Navigation uses actual URL paths (e.g., `/portfolio/buildings`, `/buildings/skyline-plaza`). Filter/preference state uses query params (e.g., `?btab=performance&metric=comfort`).
+Navigation uses actual URL paths (e.g., `/portfolio/buildings`, `/buildings/b-001`). Filter/preference state uses query params (e.g., `?tab=performance&metric=comfort`).
 
 Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 
@@ -47,9 +47,9 @@ Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 | `/portfolio/zones` | Zones list |
 | `/portfolio/assets` | Assets list |
 | `/portfolio/equipment-types` | Equipment types |
-| `/buildings/[slug]` | Building detail (dynamic, slugified name) |
-| `/zones/[id]` | Zone detail (dynamic) |
-| `/assets/[id]` | Asset detail (dynamic) |
+| `/buildings/[slug]` | Building detail (dynamic, numeric ID e.g. `b-001`) |
+| `/zones/[id]` | Zone detail (dynamic, e.g. `z-0001`) |
+| `/assets/[id]` | Asset detail (dynamic, e.g. `a-0001`) |
 | `/insights/alerts` | Insights — Alerts |
 | `/insights/analyses` | Insights — Analyses |
 | `/insights/performance` | Insights — Performance |
@@ -80,16 +80,18 @@ Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 | `group` | group name | Building group filter |
 | `city` | city name | City filter |
 | `tenant` | tenant name | Tenant filter |
-| `tab` | varies by page | Active tab (building: `performance`/`zones`/etc., control room: `kpi_analysis`/`recommendations`) |
+| `tab` | varies by page | Active tab (building: `overview`/`zones`/etc., control room: `portfolio`/`performance`/`insights`) |
 | `contract` | `yes` | Contract filter active (omitted = overall/all buildings) |
+| `peek` | `building:b-001` \| `zone:z-0001` \| `asset:a-0001` | Side peek entity (shareable) |
 | `statusFilter` | comma-separated status values | Pre-filter tickets/quotations by status |
+| `search` | text | Search filter (portfolio pages, tickets, quotations) |
+| `groupBy` | `none` \| `city` \| `group` \| etc. | Group by filter |
 
 ### Adding a New Page
 
 1. Create `src/app/(shell)/my-page/page.tsx` with page content
-2. Add a `pathToCurrentPage` mapping in `src/app/(shell)/layout.tsx`
-3. Add navigation entry to `Sidebar.tsx`
-4. For detail pages: create a template in `src/templates/` and a dynamic route `[id]/page.tsx`
+2. Add navigation entry to `Sidebar.tsx` (uses `usePathname()` + `useRouter()` internally)
+3. For detail pages: create a template in `src/templates/` and a dynamic route `[id]/page.tsx`
 
 ---
 
@@ -130,17 +132,22 @@ src/
 ├── components/           # Reusable UI components (atoms/molecules/organisms)
 │   ├── charts/           # Nivo chart wrappers
 │   ├── performance/      # Performance-topic card components
-│   ├── Sidebar.tsx       # Navigation sidebar
-│   ├── TopBar.tsx        # Secondary toolbar (breadcrumbs, filters)
+│   ├── Sidebar.tsx       # Navigation sidebar (uses usePathname + useRouter)
+│   ├── TopBar.tsx        # Secondary toolbar (breadcrumbs, filters, uses usePathname)
 │   ├── SidePeekPanel.tsx # Slide-in detail preview panel
+│   ├── ZonesList.tsx     # Reusable zones table (used by portfolio, building detail, side peek)
+│   ├── AssetsList.tsx    # Reusable assets table (used by portfolio, building detail, side peek)
+│   ├── FilterChip.tsx    # Filter chip UI component
+│   ├── FilterDropdown.tsx # Filter dropdown popover
 │   └── ...               # Cards, lists, modals, etc.
 ├── context/
 │   └── AppStateContext.tsx  # Shared ephemeral UI state (side peek, favorites, sidebar, etc.)
 ├── hooks/
 │   ├── useURLState.ts    # URL query-param helpers (setURLParams, navigateTo, derived state)
+│   ├── useFilterParams.ts # Bind filter/sort/search state to URL query params
 │   └── useInfiniteScroll.ts
 ├── utils/
-│   └── slugs.ts          # Building name ↔ URL slug conversion
+│   └── slugs.ts          # Building ID ↔ URL slug conversion
 ├── data/                 # All mock data (deterministic, seeded RNG)
 ├── annotations/          # Notion-backed annotation system
 ├── colors.ts             # Color token system
@@ -156,9 +163,9 @@ src/
 No Redux/Zustand. State lives in:
 
 1. **URL paths** (primary navigation) — file-based routes determine the current page
-2. **URL query params** (filters/preferences) — managed via `useURLState()` hook
-3. **`AppStateContext`** (`src/context/AppStateContext.tsx`) — cross-route ephemeral UI state: side peek panels, favorites, sidebar collapsed, notifications, asset quickview
-4. **Shell layout local state** — filter anchors, hover state, contract filter
+2. **URL query params** (filters/preferences) — managed via `useURLState()` hook and `useFilterParams()` hook
+3. **`AppStateContext`** (`src/context/AppStateContext.tsx`) — cross-route ephemeral UI state: side peek panels (single-peek enforced), favorites, sidebar collapsed, notifications, asset quickview
+4. **Shell layout local state** — filter anchors, hover state
 5. **`ThemeModeContext`** — theme preference (`system`/`light`/`dark`), resolved `colorMode`, `themeColors`
 
 ---
@@ -240,6 +247,8 @@ const { colorMode, themeColors } = useThemeMode();
 - **`AppTabs`** — reusable tab bar, `variant="pill"` or `variant="underline"`
 - **`KPICard`** — metric display with custom SVG sparkline (Catmull-Rom interpolation, no external library)
 - **`PropertyCard`** — building card with `TopicScore` and `EnergyLabel` sub-components
+- **`ZonesList`** / **`AssetsList`** — reusable list components with optional `showFilters` prop for inline search, group by, and filter chips
+- **Side peek** — single-peek enforced via `AppStateContext` wrappers; state synced to `?peek=` URL param for shareable links
 - Navigation uses `router.push('/path')` from `useRouter()` or `navigateTo('/path', params)` from `useURLState()`
 - Navigation callbacks (`onViewAllTickets`, etc.) use `router.push('/operations/tickets?statusFilter=...')`
 
