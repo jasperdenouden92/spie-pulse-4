@@ -8,11 +8,6 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputBase from '@mui/material/InputBase';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
 import { useRouter } from 'next/navigation';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import { useURLState } from '@/hooks/useURLState';
@@ -22,7 +17,6 @@ import { handleSidePeekClick } from '@/components/SidePeekPanel';
 import FilterDropdown from '@/components/FilterDropdown';
 import PageHeader from '@/components/PageHeader';
 import FilterChip from '@/components/FilterChip';
-import Button from '@/components/Button';
 import ZonesList from '@/components/ZonesList';
 import { zones as allZones, getZoneColor } from '@/data/zones';
 import { buildings as allBuildings } from '@/data/buildings';
@@ -30,10 +24,6 @@ import { buildingToSlug } from '@/utils/slugs';
 
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 
 export default function PortfolioZonesRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
@@ -51,6 +41,22 @@ export default function PortfolioZonesRoute() {
 
   const groupBy = get('groupBy', 'none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
+  const GROUP_BY_OPTIONS = [
+    { value: 'none', label: 'No grouping' },
+    { value: 'building', label: 'Building' },
+    { value: 'city', label: 'City' },
+    { value: 'zone_type', label: 'Zone type' },
+  ];
+
+  const SORT_OPTIONS = [
+    { value: 'name', label: 'Name (A → Z)' },
+    { value: 'building', label: 'Building (A → Z)' },
+    { value: 'city', label: 'City (A → Z)' },
+    { value: 'floor', label: 'Floor' },
+    { value: 'assets_desc', label: 'Assets (high → low)' },
+  ];
+  const sortBy = get('sortBy', 'name');
+  const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
 
   // Search
   const search = get('search', '');
@@ -85,37 +91,33 @@ export default function PortfolioZonesRoute() {
     if (selectedBuildings.length > 0) list = list.filter(z => selectedBuildings.includes(z.buildingName));
     if (selectedCities.length > 0) list = list.filter(z => selectedCities.includes(z.buildingCity));
     if (selectedZoneTypes.length > 0) list = list.filter(z => selectedZoneTypes.includes(z.name));
-    return list;
-  }, [search, selectedBuildings, selectedCities, selectedZoneTypes, tenantZones]);
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case 'name': return a.name.localeCompare(b.name);
+        case 'building': return a.buildingName.localeCompare(b.buildingName);
+        case 'city': return a.buildingCity.localeCompare(b.buildingCity);
+        case 'floor': return a.floorNumber - b.floorNumber;
+        case 'assets_desc': return b.assetCount - a.assetCount;
+      }
+      return 0;
+    });
+    return sorted;
+  }, [search, selectedBuildings, selectedCities, selectedZoneTypes, tenantZones, sortBy]);
 
   const buildingChipValue = selectedBuildings.length === 0 ? null : selectedBuildings.length === 1 ? selectedBuildings[0] : `${selectedBuildings.length} buildings`;
   const cityChipValue = selectedCities.length === 0 ? null : selectedCities.length === 1 ? selectedCities[0] : `${selectedCities.length} cities`;
   const zoneTypeChipValue = selectedZoneTypes.length === 0 ? null : selectedZoneTypes.length === 1 ? selectedZoneTypes[0] : `${selectedZoneTypes.length} types`;
 
   const groupByMenu = (
-    <Menu
+    <FilterDropdown
       anchorEl={groupByMenuAnchor}
-      open={Boolean(groupByMenuAnchor)}
       onClose={() => setGroupByMenuAnchor(null)}
-      slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-    >
-      <MenuItem selected={groupBy === 'none'} onClick={() => { set('groupBy', 'none'); setGroupByMenuAnchor(null); }}>
-        <ListItemText>No grouping</ListItemText>
-      </MenuItem>
-      <Divider />
-      <MenuItem selected={groupBy === 'building'} onClick={() => { set('groupBy', 'building'); setGroupByMenuAnchor(null); }}>
-        <ListItemIcon><ApartmentOutlinedIcon fontSize="small" /></ListItemIcon>
-        <ListItemText>Building</ListItemText>
-      </MenuItem>
-      <MenuItem selected={groupBy === 'city'} onClick={() => { set('groupBy', 'city'); setGroupByMenuAnchor(null); }}>
-        <ListItemIcon><LocationOnOutlinedIcon fontSize="small" /></ListItemIcon>
-        <ListItemText>City</ListItemText>
-      </MenuItem>
-      <MenuItem selected={groupBy === 'zone_type'} onClick={() => { set('groupBy', 'zone_type'); setGroupByMenuAnchor(null); }}>
-        <ListItemIcon><LayersOutlinedIcon fontSize="small" /></ListItemIcon>
-        <ListItemText>Zone type</ListItemText>
-      </MenuItem>
-    </Menu>
+      options={GROUP_BY_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+      value={groupBy}
+      onChange={(val) => { if (val) set('groupBy', val); }}
+      hideSearch
+    />
   );
 
   const searchBox = (
@@ -177,15 +179,27 @@ export default function PortfolioZonesRoute() {
               Zones <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Button
-                variant="secondary"
-                size="sm"
-                endIcon={<ExpandMoreIcon />}
+              <FilterChip
+                label="Group by"
+                value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                 onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
-              >
-                Group by
-              </Button>
+                neutral
+              />
               {groupByMenu}
+              <FilterChip
+                label="Sort"
+                value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+                onClick={(e) => setSortAnchor(e.currentTarget)}
+                neutral
+              />
+              <FilterDropdown
+                anchorEl={sortAnchor}
+                onClose={() => setSortAnchor(null)}
+                options={SORT_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+                value={sortBy}
+                onChange={(val) => { if (val) set('sortBy', val); }}
+                hideSearch
+              />
               {searchBox}
             </Box>
           </Box>

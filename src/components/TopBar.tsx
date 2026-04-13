@@ -29,6 +29,7 @@ import { AssetNode } from '@/data/assetTree';
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
 import { ContractFilterToggle, type ContractFilter } from '@/components/BuildingSelector';
+import { documentFolders } from '@/data/documents';
 
 type MetricType = 'overall' | 'sustainability' | 'comfort' | 'asset_monitoring' | 'tickets' | 'quotations' | 'maintenance' | 'energy' | 'workspace' | 'compliance' | 'water_management' | 'security_systems' | 'access_control';
 
@@ -354,21 +355,69 @@ function TopBar({
             {pathname === '/operations' && (
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Operations</Typography>
             )}
-            {pathname.startsWith('/operations/') && pathname !== '/operations' && (
-              <>
-                <Typography
-                  variant="h6"
-                  sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => router.push('/operations')}
-                >
-                  Operations
-                </Typography>
-                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
-                  {pathname.startsWith('/operations/documents') ? 'Documents' : pathname.startsWith('/operations/tickets') ? 'Tickets' : pathname.startsWith('/operations/quotations') ? 'Quotations' : 'Maintenance'}
-                </Typography>
-              </>
-            )}
+            {pathname.startsWith('/operations/') && pathname !== '/operations' && (() => {
+              const sectionLabel = pathname.startsWith('/operations/documents') ? 'Documents' : pathname.startsWith('/operations/tickets') ? 'Tickets' : pathname.startsWith('/operations/quotations') ? 'Quotations' : 'Maintenance';
+              const isDocuments = pathname.startsWith('/operations/documents');
+              // Extract folder path segments from /operations/documents/seg1/seg2/...
+              const folderSegments = isDocuments
+                ? pathname.replace('/operations/documents', '').split('/').filter(Boolean)
+                : [];
+              // Resolve each segment to a folder name
+              const folderBreadcrumbs: { name: string; path: string }[] = [];
+              if (folderSegments.length > 0) {
+                let currentParentId: string | null = null;
+                let accPath = '/operations/documents';
+                for (const seg of folderSegments) {
+                  const folder = documentFolders.find(f => f.slug === seg && f.parentId === currentParentId);
+                  if (!folder) break;
+                  accPath += `/${seg}`;
+                  folderBreadcrumbs.push({ name: folder.name, path: accPath });
+                  currentParentId = folder.id;
+                }
+              }
+              const lastIndex = folderBreadcrumbs.length - 1;
+              return (
+                <>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
+                    onClick={() => router.push('/operations')}
+                  >
+                    Operations
+                  </Typography>
+                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600, fontSize: '0.8rem', fontFamily: '"Inter", sans-serif',
+                      color: folderBreadcrumbs.length > 0 ? 'text.secondary' : 'text.primary',
+                      cursor: folderBreadcrumbs.length > 0 ? 'pointer' : 'default',
+                      '&:hover': folderBreadcrumbs.length > 0 ? { textDecoration: 'underline' } : {},
+                    }}
+                    onClick={folderBreadcrumbs.length > 0 ? () => router.push('/operations/documents') : undefined}
+                  >
+                    {sectionLabel}
+                  </Typography>
+                  {folderBreadcrumbs.map((crumb, idx) => (
+                    <React.Fragment key={crumb.path}>
+                      <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 600, fontSize: '0.8rem', fontFamily: '"Inter", sans-serif',
+                          color: idx === lastIndex ? 'text.primary' : 'text.secondary',
+                          cursor: idx === lastIndex ? 'default' : 'pointer',
+                          '&:hover': idx !== lastIndex ? { textDecoration: 'underline' } : {},
+                        }}
+                        onClick={idx !== lastIndex ? () => router.push(crumb.path) : undefined}
+                      >
+                        {crumb.name}
+                      </Typography>
+                    </React.Fragment>
+                  ))}
+                </>
+              );
+            })()}
           </Box>
         )}
 
