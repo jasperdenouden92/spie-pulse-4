@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import Skeleton from '@mui/material/Skeleton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -50,7 +51,7 @@ export default function MaintenanceScheduleList({ schedules, buildingName, compa
       : schedules;
   }, [schedules, buildingName]);
 
-  const { visibleData, hasMore, loadMore, isLoading } = useInfiniteScroll({
+  const { visibleData, hasMore, loadMore, isLoading, initialLoading } = useInfiniteScroll({
     data: filteredSchedules,
     pageSize: 50
   });
@@ -93,14 +94,31 @@ export default function MaintenanceScheduleList({ schedules, buildingName, compa
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibleData.map((schedule) => (
-                <TableRow
-                  key={schedule.id}
-                  sx={{
-                    '&:hover': { bgcolor: c.bgPrimaryHover },
-                    cursor: 'pointer'
-                  }}
-                >
+              {initialLoading
+                ? Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={70} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Skeleton animation="wave"variant="text" width={`${50 + (i * 11) % 30}%`} />
+                        {!compact && <Skeleton animation="wave"variant="text" width="38%" sx={{ mt: 0.5 }} />}
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={110} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="rounded" width={65} height={20} sx={{ borderRadius: '16px' }} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="rounded" width={55} height={20} sx={{ borderRadius: '16px' }} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="rounded" width={75} height={20} sx={{ borderRadius: '16px' }} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={80} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={100} /></TableCell>
+                      {!compact && <TableCell><Skeleton animation="wave"variant="text" width={40} /></TableCell>}
+                    </TableRow>
+                  ))
+                : visibleData.map((schedule) => (
+                    <TableRow
+                      key={schedule.id}
+                      sx={{
+                        '&:hover': { bgcolor: c.bgPrimaryHover },
+                        cursor: 'pointer'
+                      }}
+                    >
                   <TableCell sx={{ py: compact ? 1 : undefined }}>
                     <Typography
                       variant="body2"

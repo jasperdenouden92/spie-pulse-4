@@ -50,7 +50,7 @@ export default function SidePeekPanel({
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '-8px 0 48px rgba(0, 0, 0, 0.15)',
+          boxShadow: open ? '-8px 0 48px rgba(0, 0, 0, 0.15)' : 'none',
           overflow: 'hidden',
         }}
       >

@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { handleSidePeekClick } from '@/components/SidePeekPanel';
+import { useAppState } from '@/context/AppStateContext';
+import { buildings as buildingsData } from '@/data/buildings';
+import { buildingToSlug } from '@/utils/slugs';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -20,17 +23,10 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import InputBase from '@mui/material/InputBase';
 import InputAdornment from '@mui/material/InputAdornment';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
-import Button from '@/components/Button';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import SwapVertIcon from '@mui/icons-material/SwapVert';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import LastPageIcon from '@mui/icons-material/LastPage';
@@ -113,6 +109,11 @@ function amountRangeLabel(range: RangeValue): string | null {
 const DEFAULT_DATE_RANGE = `2023-07-01|${new Date().toISOString().split('T')[0]}`;
 
 type GroupByKey = 'none' | 'building' | 'status';
+const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
+  { value: 'none', label: 'No grouping' },
+  { value: 'building', label: 'Building' },
+  { value: 'status', label: 'Status' },
+];
 
 const PLACEHOLDER_IMAGE = '/images/buildings/placeholder.png';
 
@@ -150,6 +151,15 @@ export default function OperationsQuotationsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
   const router = useRouter();
+  const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+
+  const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
+    e.stopPropagation();
+    handleSidePeekClick(e,
+      () => { const bld = buildingsData.find(x => x.name === buildingName); if (bld) { setSidePeekZone(null); setSidePeekBuilding(bld); setSidePeekBuildingTab('overview'); } },
+      () => router.push(`/buildings/${buildingToSlug(buildingName)}`),
+    );
+  };
 
   // Read initialStatuses from URL
   const searchParams = useSearchParams();
@@ -277,43 +287,41 @@ export default function OperationsQuotationsRoute() {
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 {/* Group by */}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  endIcon={<ExpandMoreIcon />}
+                <FilterChip
+                  label="Group by"
+                  value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                   onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
-                >
-                  Group by
-                </Button>
-                <Menu
+                  neutral
+                />
+                <FilterDropdown
                   anchorEl={groupByMenuAnchor}
-                  open={Boolean(groupByMenuAnchor)}
                   onClose={() => setGroupByMenuAnchor(null)}
-                  slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-                >
-                  <MenuItem selected={groupBy === 'none'} onClick={() => { set('groupBy', 'none'); setGroupByMenuAnchor(null); }}>
-                    <ListItemText>No grouping</ListItemText>
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem selected={groupBy === 'building'} onClick={() => { set('groupBy', 'building'); setGroupByMenuAnchor(null); }}>
-                    <ListItemText>Building</ListItemText>
-                  </MenuItem>
-                  <MenuItem selected={groupBy === 'status'} onClick={() => { set('groupBy', 'status'); setGroupByMenuAnchor(null); }}>
-                    <ListItemText>Status</ListItemText>
-                  </MenuItem>
-                </Menu>
+                  options={GROUP_BY_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+                  value={groupBy}
+                  onChange={(val) => { if (val) set('groupBy', val); }}
+                  hideSearch
+                />
+                {/* Sort */}
+                <FilterChip
+                  label="Sort"
+                  value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+                  onClick={(e) => setSortAnchor(e.currentTarget)}
+                  neutral
+                />
+                <FilterDropdown
+                  anchorEl={sortAnchor}
+                  onClose={() => setSortAnchor(null)}
+                  options={SORT_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+                  value={sortBy}
+                  onChange={(val) => { if (val) set('sortBy', val); }}
+                  hideSearch
+                />
                 {/* Search */}
                 <Box
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: 30,
-                    borderRadius: '6px',
-                    border: '1px solid',
-                    borderColor: c.borderSecondary,
-                    bgcolor: c.bgPrimary,
-                    px: 1,
-                    gap: 0.5,
+                    display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px',
+                    border: '1px solid', borderColor: c.borderSecondary, bgcolor: c.bgPrimary,
+                    px: 1, gap: 0.5,
                     '&:focus-within': { borderColor: c.brandSecondary },
                     transition: 'border-color 0.15s ease',
                   }}
@@ -336,37 +344,6 @@ export default function OperationsQuotationsRoute() {
                     }
                   />
                 </Box>
-                {/* Sort */}
-                <Box
-                  onClick={(e) => setSortAnchor(e.currentTarget)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: 30,
-                    borderRadius: '6px',
-                    border: '1px solid',
-                    borderColor: c.borderSecondary,
-                    bgcolor: c.bgPrimary,
-                    px: 1,
-                    gap: 0.5,
-                    cursor: 'pointer',
-                    '&:hover': { borderColor: c.borderSecondary },
-                    transition: 'border-color 0.15s ease',
-                  }}
-                >
-                  <SwapVertIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                  <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
-                    {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
-                  </Typography>
-                </Box>
-                <FilterDropdown
-                  anchorEl={sortAnchor}
-                  onClose={() => setSortAnchor(null)}
-                  options={SORT_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
-                  value={sortBy}
-                  onChange={(val) => { if (val) set('sortBy', val); }}
-                  hideSearch
-                />
                 {/* View toggle */}
                 <Box sx={{ display: 'flex', border: 1, borderColor: 'divider', borderRadius: '6px', overflow: 'hidden', height: 30 }}>
                   <Tooltip title="List">
@@ -556,7 +533,7 @@ export default function OperationsQuotationsRoute() {
                           <TableCell>
                             <Box
                               component="span"
-                              onClick={(e: React.MouseEvent) => { e.stopPropagation(); }}
+                              onClick={(e: React.MouseEvent) => handleBuildingClick(e, q.building)}
                               sx={{
                                 display: 'inline-flex', alignItems: 'center', gap: 0.25,
                                 fontSize: '0.8125rem', color: 'text.secondary', cursor: 'pointer',
@@ -705,7 +682,7 @@ export default function OperationsQuotationsRoute() {
                         {/* Building */}
                         <Box
                           component="span"
-                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); }}
+                          onClick={(e: React.MouseEvent) => handleBuildingClick(e, q.building)}
                           sx={{
                             display: 'inline-flex', alignItems: 'center', gap: 0.25,
                             fontSize: '0.8rem', color: 'text.secondary', cursor: 'pointer',
