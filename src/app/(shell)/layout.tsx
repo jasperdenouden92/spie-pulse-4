@@ -238,7 +238,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   const isAssetQuickviewOpen = !!quickviewAsset;
   const viewingAssetDetail = isAssetQuickviewOpen;
   const selectedAsset = quickviewAsset;
-  const hideTopBar = pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/');
+  const hideTopBar = pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/') || pathname.startsWith('/operations/tickets/') || pathname.startsWith('/operations/quotations/');
 
   // ── Active theme keys for tenant ───────────────────────────────────────
   const activeThemeKeys = TENANT_THEME_KEYS[selectedTenant] ?? PRIMARY_THEME_KEYS;
