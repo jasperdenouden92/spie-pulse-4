@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -34,7 +35,7 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
       : quotations;
   }, [quotations, buildingName]);
 
-  const { visibleData, hasMore, loadMore, isLoading } = useInfiniteScroll({
+  const { visibleData, hasMore, loadMore, isLoading, initialLoading } = useInfiniteScroll({
     data: filteredQuotations,
     pageSize: 50
   });
@@ -82,7 +83,22 @@ export default function QuotationsList({ quotations, buildingName, compact = fal
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibleData.map((quotation) => (
+              {initialLoading
+                ? Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={70} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Skeleton animation="wave"variant="text" width={`${50 + (i * 11) % 30}%`} />
+                        {!compact && <Skeleton animation="wave"variant="text" width="38%" sx={{ mt: 0.5 }} />}
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={110} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={100} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={70} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="rounded" width={70} height={22} sx={{ borderRadius: '6px' }} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={80} /></TableCell>
+                    </TableRow>
+                  ))
+                : visibleData.map((quotation) => (
                 <TableRow
                   key={quotation.id}
                   sx={{

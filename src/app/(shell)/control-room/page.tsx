@@ -13,6 +13,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import LinearProgress from '@mui/material/LinearProgress';
+import Skeleton from '@mui/material/Skeleton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -304,6 +305,7 @@ export default function ControlRoomPage() {
   const [hoveredBuilding, setHoveredBuilding] = useState<Building | null>(null);
   const [hoveredAsset, setHoveredAsset] = useState<{ id?: string; type?: string; name: string; category?: string } | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number } | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const buildingsPanelTab: BuildingsPanelTab = (tab === 'performance' || tab === 'insights') ? tab : 'portfolio';
   const setBuildingsPanelTab = (v: BuildingsPanelTab) => setTab(v);
@@ -312,6 +314,11 @@ export default function ControlRoomPage() {
   useEffect(() => {
     if (!tab) setTab('portfolio');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 700);
+    return () => clearTimeout(timer);
+  }, []);
   const buildingsViewMode = (new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('bview') ?? 'cards') as 'cards' | 'list';
   const setBuildingsViewMode = (v: 'cards' | 'list') => setURLParams({ bview: v });
 
@@ -718,28 +725,42 @@ export default function ControlRoomPage() {
 
                 return (
                   <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                    <svg width={sparkW} height={sparkH} style={{ overflow: 'visible' }}>
-                      <path d={sparkPath} fill="none" stroke={overallRating.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    {initialLoading ? (
+                      <Skeleton animation="wave"variant="rounded" width={sparkW} height={sparkH} sx={{ borderRadius: '4px' }} />
+                    ) : (
+                      <svg width={sparkW} height={sparkH} style={{ overflow: 'visible' }}>
+                        <path d={sparkPath} fill="none" stroke={overallRating.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
-                      <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
-                        <AnimatedNumber value={overallScore} />%
-                      </Typography>
-                      <Chip
-                        label={overallRating.label}
-                        size="small"
-                        sx={{
-                          height: 22,
-                          fontSize: isCompact ? '0.7rem' : '0.75rem',
-                          fontWeight: 600,
-                          bgcolor: `${overallRating.color}18`,
-                          color: overallRating.color,
-                          '& .MuiChip-label': { px: 1 },
-                        }}
-                      />
+                      {initialLoading ? (
+                        <Skeleton animation="wave"variant="text" width={isCompact ? 100 : 140} height={isCompact ? 56 : 84} />
+                      ) : (
+                        <Typography variant="h2" sx={{ fontSize: isCompact ? 48 : 72, fontWeight: 600, transition: 'font-size 0.3s ease' }}>
+                          <AnimatedNumber value={overallScore} />%
+                        </Typography>
+                      )}
+                      {initialLoading ? (
+                        <Skeleton animation="wave"variant="rounded" width={50} height={22} sx={{ borderRadius: '16px' }} />
+                      ) : (
+                        <Chip
+                          label={overallRating.label}
+                          size="small"
+                          sx={{
+                            height: 22,
+                            fontSize: isCompact ? '0.7rem' : '0.75rem',
+                            fontWeight: 600,
+                            bgcolor: `${overallRating.color}18`,
+                            color: overallRating.color,
+                            '& .MuiChip-label': { px: 1 },
+                          }}
+                        />
+                      )}
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                      {periodMetrics.periodLabel !== null && (
+                      {initialLoading ? (
+                        <Skeleton animation="wave"variant="text" width={60} height={20} />
+                      ) : periodMetrics.periodLabel !== null && (
                         <Tooltip title={`Compared to ${periodMetrics.periodLabel}`} arrow placement="top">
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: periodMetrics.overall.trend >= 0 ? 'success.main' : 'error.main' }}>
                             {periodMetrics.overall.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: isCompact ? 14 : 18 }} /> : <TrendingDownIcon sx={{ fontSize: isCompact ? 14 : 18 }} />}
@@ -840,34 +861,39 @@ export default function ControlRoomPage() {
                       gap: isCompact ? 1.5 : 2,
                       transition: 'gap 0.3s ease'
                     }}>
-                      {periodMetrics.themes.map((metric, index) => {
-                        const metricKey = PRIMARY_THEME_KEYS[index];
-                        if (!activeThemeKeys.includes(metricKey)) return null;
-                        if (contractFilter && (metricKey === 'compliance' || metricKey === 'comfort')) return null;
-                        const score = selectedBuilding
-                          ? selectedBuilding.metrics[metricKey].green
-                          : metric.score;
+                      {initialLoading
+                        ? Array.from({ length: 4 }).map((_, i) => (
+                            <Skeleton animation="wave"key={i} variant="rounded" height={isCompact ? 72 : 90} sx={{ borderRadius: '12px' }} />
+                          ))
+                        : periodMetrics.themes.map((metric, index) => {
+                            const metricKey = PRIMARY_THEME_KEYS[index];
+                            if (!activeThemeKeys.includes(metricKey)) return null;
+                            if (contractFilter && (metricKey === 'compliance' || metricKey === 'comfort')) return null;
+                            const score = selectedBuilding
+                              ? selectedBuilding.metrics[metricKey].green
+                              : metric.score;
 
-                        return (
-                          <KPICard
-                            key={metric.title}
-                            title={metric.title}
-                            icon={themeIcons[metric.title]}
-                            score={score}
-                            trend={metric.trend}
-                            sparklineData={metric.sparklineData}
-                            periodLabel={periodMetrics.periodLabel}
-                            onClick={() => handleMetricSelect(metricKey)}
-                            onToggle={() => handleMetricSelect(metricKey)}
-                            toggleState={getToggleState(metricKey, 'themes')}
-                            isSelected={selection === metricKey}
-                            isDimmed={getToggleState(metricKey, 'themes') === 'off'}
-                            isCompact={isCompact}
-                            performanceRating={getPerformanceRating(score)}
-                            variant="nested"
-                          />
-                        );
-                      })}
+                            return (
+                              <KPICard
+                                key={metric.title}
+                                title={metric.title}
+                                icon={themeIcons[metric.title]}
+                                score={score}
+                                trend={metric.trend}
+                                sparklineData={metric.sparklineData}
+                                periodLabel={periodMetrics.periodLabel}
+                                onClick={() => handleMetricSelect(metricKey)}
+                                onToggle={() => handleMetricSelect(metricKey)}
+                                toggleState={getToggleState(metricKey, 'themes')}
+                                isSelected={selection === metricKey}
+                                isDimmed={getToggleState(metricKey, 'themes') === 'off'}
+                                isCompact={isCompact}
+                                performanceRating={getPerformanceRating(score)}
+                                variant="nested"
+                              />
+                            );
+                          })
+                      }
                     </Box>
 
                   </Box>
@@ -942,32 +968,37 @@ export default function ControlRoomPage() {
                       gap: isCompact ? 1.5 : 2,
                       transition: 'gap 0.3s ease'
                     }}>
-                      {periodMetrics.operations.map((metric, index) => {
-                        const metricKey = OPERATIONS_KEYS[index];
-                        const score = selectedBuilding
-                          ? selectedBuilding.metrics[metricKey].green
-                          : metric.score;
+                      {initialLoading
+                        ? Array.from({ length: 3 }).map((_, i) => (
+                            <Skeleton animation="wave"key={i} variant="rounded" height={isCompact ? 72 : 90} sx={{ borderRadius: '12px' }} />
+                          ))
+                        : periodMetrics.operations.map((metric, index) => {
+                            const metricKey = OPERATIONS_KEYS[index];
+                            const score = selectedBuilding
+                              ? selectedBuilding.metrics[metricKey].green
+                              : metric.score;
 
-                        return (
-                          <KPICard
-                            key={metric.title}
-                            title={metric.title}
-                            icon={operationsIcons[metric.title]}
-                            score={score}
-                            trend={metric.trend}
-                            sparklineData={metric.sparklineData}
-                            periodLabel={periodMetrics.periodLabel}
-                            onClick={() => handleMetricSelect(metricKey)}
-                            onToggle={() => handleMetricSelect(metricKey)}
-                            toggleState={getToggleState(metricKey, 'operations')}
-                            isSelected={selection === metricKey}
-                            isDimmed={getToggleState(metricKey, 'operations') === 'off'}
-                            isCompact={isCompact}
-                            performanceRating={getPerformanceRating(score)}
-                            variant="nested"
-                          />
-                        );
-                      })}
+                            return (
+                              <KPICard
+                                key={metric.title}
+                                title={metric.title}
+                                icon={operationsIcons[metric.title]}
+                                score={score}
+                                trend={metric.trend}
+                                sparklineData={metric.sparklineData}
+                                periodLabel={periodMetrics.periodLabel}
+                                onClick={() => handleMetricSelect(metricKey)}
+                                onToggle={() => handleMetricSelect(metricKey)}
+                                toggleState={getToggleState(metricKey, 'operations')}
+                                isSelected={selection === metricKey}
+                                isDimmed={getToggleState(metricKey, 'operations') === 'off'}
+                                isCompact={isCompact}
+                                performanceRating={getPerformanceRating(score)}
+                                variant="nested"
+                              />
+                            );
+                          })
+                      }
                     </Box>
                   </Box>
                 </>

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -301,6 +302,12 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
   showFilters?: boolean;
 }) {
   const { themeColors: c } = useThemeMode();
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 700);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Internal filter state (used when showFilters is true)
   const [internalSearch, setInternalSearch] = useState('');
@@ -419,6 +426,50 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([key, items]) => ({ key, label: key, items }));
   }, [filteredAssets, castGroupBy]);
+
+  if (initialLoading) {
+    const skeletonCols = ['18%', '16%', '13%', '12%', '12%', '13%', '11%', '8%'];
+    return (
+      <Box sx={{ pt: 3 }}>
+        {filterBar}
+        <Box>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            <colgroup>{skeletonCols.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+            <TableHead>
+              <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+                {['Asset', 'Building', 'Category', 'Manufacturer', 'Model', 'Zone', 'Installation date', 'Status'].map((h) => (
+                  <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, whiteSpace: 'nowrap' }}>
+                    {h}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+          </Table>
+          <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+            <TableContainer>
+              <Table sx={{ tableLayout: 'fixed' }}>
+                <colgroup>{skeletonCols.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+                <TableBody>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="text" width={`${50 + (i * 11) % 30}%`} /></TableCell>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="text" width={`${45 + (i * 9) % 30}%`} /></TableCell>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="rounded" width={80} height={20} sx={{ borderRadius: '999px' }} /></TableCell>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="text" width={`${50 + (i * 7) % 25}%`} /></TableCell>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="text" width={`${40 + (i * 13) % 30}%`} /></TableCell>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="text" width={`${55 + (i * 5) % 25}%`} /></TableCell>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="text" width={80} /></TableCell>
+                      <TableCell sx={{ py: 1.25 }}><Skeleton animation="wave"variant="rounded" width={75} height={22} sx={{ borderRadius: '6px' }} /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ pt: 3 }}>
