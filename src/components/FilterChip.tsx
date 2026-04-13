@@ -19,6 +19,8 @@ interface FilterChipProps {
   onClear?: () => void;
   /** Whether to show the × button when a value is selected. Defaults to true if onClear is provided. */
   clearable?: boolean;
+  /** When true, always render the non-active (grey) look even when a value is set. */
+  neutral?: boolean;
 }
 
 export default function FilterChip({
@@ -27,9 +29,11 @@ export default function FilterChip({
   onClick,
   onClear,
   clearable = !!onClear,
+  neutral = false,
 }: FilterChipProps) {
   const { themeColors: c } = useThemeMode();
-  const isFilled = value != null && value !== '';
+  const hasValue = value != null && value !== '';
+  const isFilled = !neutral && hasValue;
   const showClear = clearable && onClear;
 
   return (
@@ -95,13 +99,13 @@ export default function FilterChip({
 
       {/* Right: value + chevron */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, pl: 1, pr: 0.75 }}>
-        {isFilled && (
+        {hasValue && (
           <Typography
             sx={{
               fontSize: '0.8rem',
               fontWeight: 600,
               lineHeight: 1,
-              color: c.brandSecondary,
+              color: isFilled ? c.brandSecondary : 'text.secondary',
               whiteSpace: 'nowrap',
               userSelect: 'none',
             }}

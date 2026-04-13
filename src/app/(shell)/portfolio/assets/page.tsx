@@ -8,10 +8,6 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
 import { useRouter } from 'next/navigation';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import { useThemeMode } from '@/theme-mode-context';
@@ -21,7 +17,6 @@ import PageHeader from '@/components/PageHeader';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown, { type FilterOption } from '@/components/FilterDropdown';
 import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
-import Button from '@/components/Button';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import { assetTree, type AssetNode, getAssetById } from '@/data/assetTree';
 import { buildings as allBuildings } from '@/data/buildings';
@@ -38,7 +33,6 @@ import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 
@@ -112,6 +106,21 @@ export default function PortfolioAssetsRoute() {
   const [statusAnchor, setStatusAnchor] = useState<null | HTMLElement>(null);
   const groupBy = get('groupBy', 'none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
+  const GROUP_BY_OPTIONS = [
+    { value: 'none', label: 'No grouping' },
+    { value: 'building', label: 'Building' },
+    { value: 'category', label: 'Category' },
+    { value: 'status', label: 'Status' },
+  ];
+  const SORT_OPTIONS = [
+    { value: 'name', label: 'Name (A → Z)' },
+    { value: 'building', label: 'Building (A → Z)' },
+    { value: 'category', label: 'Category (A → Z)' },
+    { value: 'status', label: 'Status' },
+    { value: 'manufacturer', label: 'Manufacturer (A → Z)' },
+  ];
+  const sortBy = get('sortBy', 'name');
+  const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
 
   // Building filter
   const selectedBuildings = getList('buildings');
@@ -160,8 +169,19 @@ export default function PortfolioAssetsRoute() {
       const toStr = to.toISOString().split('T')[0];
       list = list.filter(a => (a.metadata?.installDate ?? '') >= fromStr && (a.metadata?.installDate ?? '') <= toStr);
     }
-    return list;
-  }, [search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedZones, dateRange]);
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case 'name': return a.name.localeCompare(b.name);
+        case 'building': return a.building.localeCompare(b.building);
+        case 'category': return (a.metadata?.category ?? '').localeCompare(b.metadata?.category ?? '');
+        case 'status': return (a.metadata?.status ?? '').localeCompare(b.metadata?.status ?? '');
+        case 'manufacturer': return (a.metadata?.manufacturer ?? '').localeCompare(b.metadata?.manufacturer ?? '');
+      }
+      return 0;
+    });
+    return sorted;
+  }, [search, selectedCategories, selectedStatuses, selectedBuildings, selectedManufacturers, selectedModels, selectedZones, dateRange, sortBy]);
 
   // Chip display values
   const chipValue = (vals: string[], plural: string) =>
@@ -246,26 +266,14 @@ export default function PortfolioAssetsRoute() {
   );
 
   const groupByMenu = (
-    <Menu
+    <FilterDropdown
       anchorEl={groupByMenuAnchor}
-      open={Boolean(groupByMenuAnchor)}
       onClose={() => setGroupByMenuAnchor(null)}
-      slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 160 } } }}
-    >
-      <MenuItem selected={groupBy === 'none'} onClick={() => { set('groupBy', 'none'); setGroupByMenuAnchor(null); }}>
-        <ListItemText>No grouping</ListItemText>
-      </MenuItem>
-      <Divider />
-      <MenuItem selected={groupBy === 'building'} onClick={() => { set('groupBy', 'building'); setGroupByMenuAnchor(null); }}>
-        <ListItemText>Building</ListItemText>
-      </MenuItem>
-      <MenuItem selected={groupBy === 'category'} onClick={() => { set('groupBy', 'category'); setGroupByMenuAnchor(null); }}>
-        <ListItemText>Category</ListItemText>
-      </MenuItem>
-      <MenuItem selected={groupBy === 'status'} onClick={() => { set('groupBy', 'status'); setGroupByMenuAnchor(null); }}>
-        <ListItemText>Status</ListItemText>
-      </MenuItem>
-    </Menu>
+      options={GROUP_BY_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+      value={groupBy}
+      onChange={(val) => { if (val) set('groupBy', val); }}
+      hideSearch
+    />
   );
 
   const searchBox = (
@@ -306,10 +314,27 @@ export default function PortfolioAssetsRoute() {
               Assets <Typography component="span" sx={{ color: 'text.secondary', fontWeight: 400, fontSize: '1.25rem' }}>{filtered.length}</Typography>
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
-                Group by
-              </Button>
+              <FilterChip
+                label="Group by"
+                value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
+                onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
+                neutral
+              />
               {groupByMenu}
+              <FilterChip
+                label="Sort"
+                value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+                onClick={(e) => setSortAnchor(e.currentTarget)}
+                neutral
+              />
+              <FilterDropdown
+                anchorEl={sortAnchor}
+                onClose={() => setSortAnchor(null)}
+                options={SORT_OPTIONS.map(o => ({ value: o.value, label: o.label }))}
+                value={sortBy}
+                onChange={(val) => { if (val) set('sortBy', val); }}
+                hideSearch
+              />
               {searchBox}
             </Box>
           </Box>
