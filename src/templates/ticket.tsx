@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -112,7 +111,7 @@ export default function TicketDetailPage({
       onToggleCollapse={onToggleCollapse}
       panelActions={panelActions}
       breadcrumb={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0 }}>
+        <>
           <Typography
             sx={{ color: 'text.secondary', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: 'text.primary' } }}
             onClick={onBackToTickets}
@@ -123,7 +122,7 @@ export default function TicketDetailPage({
           <Typography noWrap sx={{ color: 'text.primary', fontSize: '0.8rem', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>
             {ticket.id}
           </Typography>
-        </Box>
+        </>
       }
       heroActions={
         <IconButton
