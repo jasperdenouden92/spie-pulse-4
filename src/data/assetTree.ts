@@ -79,19 +79,21 @@ const getStatus = () => {
   return statuses[Math.floor(seededRandom() * statuses.length)];
 };
 
-// Helper to create a building ID
-const getBuildingId = (name: string) =>
-  'building-' + name.toLowerCase().replace(/\s+/g, '-');
+// Global counters for clean IDs
+let nodeCounter = 0;
+const nextNodeId = (prefix: string) => `${prefix}-${String(++nodeCounter).padStart(4, '0')}`;
+
+// Helper to create a building ID (counter-based, stable due to deterministic generation order)
+const getBuildingId = (name: string) => nextNodeId('ab');
 
 // Generate assets for a zone
 const generateZoneAssets = (buildingId: string, floorNum: number, zone: string): AssetNode[] => {
   const assets: AssetNode[] = [];
-  const zoneId = zone.toLowerCase().replace(/\s+/g, '-');
 
   // HVAC unit
   const hvacManuf = getManufacturer('HVAC');
   assets.push({
-    id: `${buildingId}-hvac-${floorNum}-${zoneId}`,
+    id: nextNodeId('a'),
     name: `HVAC Unit ${floorNum}${zone.charAt(0)}`,
     type: 'asset',
     metadata: {
@@ -111,7 +113,7 @@ const generateZoneAssets = (buildingId: string, floorNum: number, zone: string):
   // Lighting control
   const lightManuf = getManufacturer('Lighting');
   assets.push({
-    id: `${buildingId}-light-${floorNum}-${zoneId}`,
+    id: nextNodeId('a'),
     name: `Lighting Control ${floorNum}${zone.charAt(0)}`,
     type: 'asset',
     metadata: {
@@ -131,7 +133,7 @@ const generateZoneAssets = (buildingId: string, floorNum: number, zone: string):
   if (floorNum % 2 === 0 || floorNum === 1) {
     const fireManuf = getManufacturer('Fire');
     assets.push({
-      id: `${buildingId}-fire-${floorNum}-${zoneId}`,
+      id: nextNodeId('a'),
       name: `Fire System ${floorNum}${zone.charAt(0)}`,
       type: 'asset',
       metadata: {
@@ -152,7 +154,7 @@ const generateZoneAssets = (buildingId: string, floorNum: number, zone: string):
   if (floorNum % 3 === 0 || floorNum === 1) {
     const elecManuf = getManufacturer('Electrical');
     assets.push({
-      id: `${buildingId}-elec-${floorNum}-${zoneId}`,
+      id: nextNodeId('a'),
       name: `Electrical Panel ${floorNum}${zone.charAt(0)}`,
       type: 'asset',
       metadata: {
@@ -189,7 +191,7 @@ const generateFloors = (buildingId: string, numFloors: number, buildingType: str
                   ['North Wing', 'South Wing', 'East Wing', 'West Wing'].slice(0, 2 + (i % 2));
 
     const zoneNodes: AssetNode[] = zones.map(zone => ({
-      id: `${buildingId}-floor-${i}-${zone.toLowerCase().replace(/\s+/g, '-')}`,
+      id: nextNodeId('az'),
       name: zone,
       type: 'zone',
       metadata: { status: 'operational' },
@@ -197,7 +199,7 @@ const generateFloors = (buildingId: string, numFloors: number, buildingType: str
     }));
 
     floors.push({
-      id: `${buildingId}-floor-${i}`,
+      id: nextNodeId('af'),
       name: floorName,
       type: 'floor',
       metadata: { status: 'operational' },
@@ -213,7 +215,7 @@ const generateBuilding = (name: string, numFloors: number, buildingType: string)
   const buildingId = getBuildingId(name);
 
   return {
-    id: buildingId,
+    id: nextNodeId('ab'),
     name: name,
     type: 'building',
     metadata: {
@@ -221,7 +223,7 @@ const generateBuilding = (name: string, numFloors: number, buildingType: string)
     },
     children: [
       {
-        id: `${buildingId}-floors`,
+        id: nextNodeId('ag'),
         name: 'By Floors',
         type: 'category',
         children: generateFloors(buildingId, numFloors, buildingType)

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -87,8 +88,6 @@ interface SidebarProps {
   onFavoritesChange?: (favorites: Favorite[]) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  currentPage?: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards';
-  onPageChange?: (page: 'home' | 'portfolio' | 'portfolio_buildings' | 'portfolio_zones' | 'portfolio_assets' | 'building_detail' | 'zone_detail' | 'asset_detail' | 'insights' | 'insights_alerts' | 'insights_analyses' | 'insights_performance' | 'bms' | 'bms_access' | 'bms_logging' | 'operations' | 'operations_docs' | 'operations_tickets' | 'operations_quotations' | 'operations_maintenance' | 'themes' | 'workspaces' | 'exports' | 'dashboards') => void;
   onAssetExplorerToggle?: () => void;
   isAssetExplorerOpen?: boolean;
   selection?: string;
@@ -333,7 +332,9 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
   );
 }
 
-function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, currentPage = 'portfolio', onPageChange, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, dataExplorerOpen = false, onDataExplorerToggle, onDashboardNavigate, selectedTenant, onTenantChange }: SidebarProps) {
+function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricSelect, favorites: externalFavorites, onFavoritesChange, isCollapsed = false, onToggleCollapse, onAssetExplorerToggle, isAssetExplorerOpen = false, selection, onSelectionChange, notificationsPanelOpen = false, onNotificationsPanelToggle, hasUnreadNotifications = false, dataExplorerOpen = false, onDataExplorerToggle, onDashboardNavigate, selectedTenant, onTenantChange }: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
   const selectedCustomer = selectedTenant ?? tenants[0];
   const setSelectedCustomer = (t: string) => onTenantChange?.(t);
   const [searchQuery, setSearchQuery] = useState('');
@@ -346,10 +347,10 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const { preference: themePreference, setThemePreference, themeColors: c } = useThemeMode();
   const newButtonRef = useRef<HTMLDivElement>(null);
-  const [operationsExpanded, setOperationsExpanded] = useState(() => Boolean(currentPage?.startsWith('operations')));
-  const [portfolioExpanded, setPortfolioExpanded] = useState(() => Boolean(currentPage?.startsWith('portfolio_') || currentPage === 'building_detail' || currentPage === 'zone_detail' || currentPage === 'asset_detail'));
-  const [bmsExpanded, setBmsExpanded] = useState(() => Boolean(currentPage?.startsWith('bms')));
-  const [insightsExpanded, setInsightsExpanded] = useState(() => Boolean(currentPage?.startsWith('insights')));
+  const [operationsExpanded, setOperationsExpanded] = useState(() => Boolean(pathname.startsWith('/operations')));
+  const [portfolioExpanded, setPortfolioExpanded] = useState(() => Boolean(pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')));
+  const [bmsExpanded, setBmsExpanded] = useState(() => Boolean(pathname.startsWith('/bms')));
+  const [insightsExpanded, setInsightsExpanded] = useState(() => Boolean(pathname.startsWith('/insights')));
 
   const NEW_MENU_ITEMS = [
     { label: 'Report issue', key: '1' },
@@ -656,79 +657,79 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             <NavItem
               label="Home"
               icon={<HomeOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'home'}
-              onClick={() => onPageChange?.('home')}
+              active={pathname === '/home'}
+              onClick={() => router.push('/home')}
             />
             <NavItem
               label="Control Room"
               icon={<MonitorHeartOutlined sx={{ fontSize: 16 }} />}
-              active={currentPage === 'portfolio'}
-              onClick={() => onPageChange?.('portfolio')}
+              active={pathname === '/control-room'}
+              onClick={() => router.push('/control-room')}
             />
             <NavItem
               label="Insights"
               icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage?.startsWith('insights')}
-              onClick={() => { onPageChange?.('insights_alerts'); setInsightsExpanded(true); }}
+              active={pathname.startsWith('/insights')}
+              onClick={() => { router.push('/insights/alerts'); setInsightsExpanded(true); }}
               expanded={insightsExpanded}
               onToggleExpand={() => setInsightsExpanded((v) => !v)}
             />
             {!isCollapsed && insightsExpanded && (
               <>
-                <NavItem label="Alerts" active={currentPage === 'insights_alerts'} onClick={() => onPageChange?.('insights_alerts')} />
-                <NavItem label="Analyses" active={currentPage === 'insights_analyses'} onClick={() => onPageChange?.('insights_analyses')} />
-                <NavItem label="Performance" active={currentPage === 'insights_performance'} onClick={() => onPageChange?.('insights_performance')} />
+                <NavItem label="Alerts" active={pathname === '/insights/alerts'} onClick={() => router.push('/insights/alerts')} />
+                <NavItem label="Analyses" active={pathname === '/insights/analyses'} onClick={() => router.push('/insights/analyses')} />
+                <NavItem label="Performance" active={pathname === '/insights/performance'} onClick={() => router.push('/insights/performance')} />
               </>
             )}
             <NavItem
               label="Portfolio"
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage?.startsWith('portfolio_') || currentPage === 'building_detail' || currentPage === 'zone_detail' || currentPage === 'asset_detail'}
-              onClick={() => { onPageChange?.('portfolio_buildings'); setPortfolioExpanded(true); }}
+              active={pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')}
+              onClick={() => { router.push('/portfolio/buildings'); setPortfolioExpanded(true); }}
               expanded={portfolioExpanded}
               onToggleExpand={() => setPortfolioExpanded((v) => !v)}
             />
             {!isCollapsed && portfolioExpanded && (
               <>
-                <NavItem label="Buildings" active={currentPage === 'portfolio_buildings' || currentPage === 'building_detail'} onClick={() => onPageChange?.('portfolio_buildings')} />
-                <NavItem label="Zones" active={currentPage === 'portfolio_zones' || currentPage === 'zone_detail'} onClick={() => onPageChange?.('portfolio_zones')} />
-                <NavItem label="Assets" active={currentPage === 'portfolio_assets' || currentPage === 'asset_detail'} onClick={() => onPageChange?.('portfolio_assets')} />
+                <NavItem label="Buildings" active={pathname === '/portfolio/buildings' || pathname.startsWith('/buildings/')} onClick={() => router.push('/portfolio/buildings')} />
+                <NavItem label="Zones" active={pathname === '/portfolio/zones' || pathname.startsWith('/zones/')} onClick={() => router.push('/portfolio/zones')} />
+                <NavItem label="Assets" active={pathname === '/portfolio/assets' || pathname.startsWith('/assets/')} onClick={() => router.push('/portfolio/assets')} />
               </>
             )}
             <NavItem
               label="Operations"
               icon={<EngineeringOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage?.startsWith('operations')}
-              onClick={() => { onPageChange?.('operations_tickets'); setOperationsExpanded(true); }}
+              active={pathname.startsWith('/operations')}
+              onClick={() => { router.push('/operations/tickets'); setOperationsExpanded(true); }}
               expanded={operationsExpanded}
               onToggleExpand={() => setOperationsExpanded((v) => !v)}
             />
             {!isCollapsed && operationsExpanded && (
               <>
-                <NavItem label="Tickets" active={currentPage === 'operations_tickets'} onClick={() => onPageChange?.('operations_tickets')} />
-                <NavItem label="Quotations" active={currentPage === 'operations_quotations'} onClick={() => onPageChange?.('operations_quotations')} />
-                <NavItem label="Documents" active={currentPage === 'operations_docs'} onClick={() => onPageChange?.('operations_docs')} />
-                <NavItem label="Maintenance" active={currentPage === 'operations_maintenance'} onClick={() => onPageChange?.('operations_maintenance')} />
+                <NavItem label="Tickets" active={pathname.startsWith('/operations/tickets')} onClick={() => router.push('/operations/tickets')} />
+                <NavItem label="Quotations" active={pathname.startsWith('/operations/quotations')} onClick={() => router.push('/operations/quotations')} />
+                <NavItem label="Documents" active={pathname.startsWith('/operations/documents')} onClick={() => router.push('/operations/documents')} />
+                <NavItem label="Maintenance" active={pathname.startsWith('/operations/maintenance')} onClick={() => router.push('/operations/maintenance')} />
               </>
             )}
             <NavItem
               label="Dashboards"
               icon={<DashboardOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage === 'dashboards'}
-              onClick={() => onPageChange?.('dashboards')}
+              active={pathname === '/dashboards'}
+              onClick={() => router.push('/dashboards')}
             />
             <NavItem
               label="BMS"
               icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
-              active={currentPage?.startsWith('bms')}
-              onClick={() => { onPageChange?.('bms_access'); setBmsExpanded(true); }}
+              active={pathname.startsWith('/bms')}
+              onClick={() => { router.push('/bms/access'); setBmsExpanded(true); }}
               expanded={bmsExpanded}
               onToggleExpand={() => setBmsExpanded((v) => !v)}
             />
             {!isCollapsed && bmsExpanded && (
               <>
-                <NavItem label="Access" active={currentPage === 'bms_access'} onClick={() => onPageChange?.('bms_access')} />
-                <NavItem label="Logging" active={currentPage === 'bms_logging'} onClick={() => onPageChange?.('bms_logging')} />
+                <NavItem label="Access" active={pathname === '/bms/access'} onClick={() => router.push('/bms/access')} />
+                <NavItem label="Logging" active={pathname === '/bms/logging'} onClick={() => router.push('/bms/logging')} />
               </>
             )}
           </List>
@@ -910,11 +911,11 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
         </Box>
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Settings</MenuItem>
-        <MenuItem onClick={() => { setUserAnchorEl(null); onPageChange?.('exports'); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Exports</MenuItem>
+        <MenuItem onClick={() => { setUserAnchorEl(null); router.push('/exports'); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Exports</MenuItem>
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Logout</MenuItem>
       </Popover>
-      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} onNavigate={(page, dashboardId) => { onPageChange?.(page as any); if (dashboardId) onDashboardNavigate?.(dashboardId); }} />
+      <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} onNavigate={(page, dashboardId) => { router.push(page); if (dashboardId) onDashboardNavigate?.(dashboardId); }} />
     </Box>
   );
 }

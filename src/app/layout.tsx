@@ -4,6 +4,7 @@ import { Inter, Jost } from "next/font/google";
 import "./globals.css";
 import { ThemeRegistry } from '@/theme-registry';
 import { Annotations } from "@/annotations/provider";
+import { AppStateProvider } from '@/context/AppStateContext';
 
 const inter = Inter({ subsets: ["latin"] });
 const jost = Jost({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: '--font-jost' });
@@ -19,9 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} ${jost.variable}`} suppressHydrationWarning>
         <ThemeRegistry>
           <Annotations>
-            <Suspense fallback={null}>
-              {children}
-            </Suspense>
+            <AppStateProvider>
+              <Suspense fallback={null}>
+                {children}
+              </Suspense>
+            </AppStateProvider>
           </Annotations>
         </ThemeRegistry>
       </body>

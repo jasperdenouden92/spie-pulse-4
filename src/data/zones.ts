@@ -37,11 +37,12 @@ export interface Zone {
   buildingType: string;
 }
 
+let zoneCounter = 0;
+
 export const zones: Zone[] = locations.flatMap((loc, i) => {
   const rng = configRng(i * 43 + 7);
   const floors = Math.floor(rng() * 12) + 2;
   const buildingType = BUILDING_TYPES[Math.floor(rng() * BUILDING_TYPES.length)];
-  const buildingId = 'building-' + loc.name.toLowerCase().replace(/\s+/g, '-');
   const result: Zone[] = [];
 
   for (let f = 1; f <= floors; f++) {
@@ -53,9 +54,9 @@ export const zones: Zone[] = locations.flatMap((loc, i) => {
     const assetCount = getAssetCount(f);
 
     for (const zoneName of zoneNames) {
-      const zoneId = zoneName.toLowerCase().replace(/\s+/g, '-');
+      zoneCounter++;
       result.push({
-        id: `${buildingId}-floor-${f}-${zoneId}`,
+        id: `z-${String(zoneCounter).padStart(4, '0')}`,
         name: zoneName,
         buildingName: loc.name,
         buildingCity: loc.city,
