@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -148,6 +149,7 @@ function QuotationThumbnail({ quotation, size = 40 }: { quotation: Quotation; si
 export default function OperationsQuotationsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
+  const router = useRouter();
 
   // Read initialStatuses from URL
   const searchParams = useSearchParams();
@@ -535,6 +537,7 @@ export default function OperationsQuotationsRoute() {
                       {group.items.map((q) => (
                         <TableRow
                           key={q.id}
+                          onClick={() => router.push(`/operations/quotations/${q.id}`)}
                           sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}
                         >
                           <TableCell sx={{ width: 56, p: '8px 8px 8px 16px' }}>
@@ -628,6 +631,7 @@ export default function OperationsQuotationsRoute() {
                   {group.items.map((q) => (
                     <Card
                       key={q.id}
+                      onClick={() => router.push(`/operations/quotations/${q.id}`)}
                       sx={{
                         borderRadius: '8px',
                         border: `1px solid ${c.cardBorder}`,
