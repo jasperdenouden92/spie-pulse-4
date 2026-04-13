@@ -340,7 +340,7 @@ function EntityHeader({
         mx: isNarrow ? -0.5 : -3,
         width: isNarrow ? 'calc(100% + 8px)' : 'calc(100% + 48px)',
         mb: 3,
-        bgcolor: '#fff',
+        bgcolor: 'background.paper',
         borderBottom: '1px solid',
         borderColor: 'divider',
         overflow: 'hidden',

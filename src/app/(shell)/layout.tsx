@@ -46,6 +46,7 @@ import BuildingTemplate from '@/templates/building';
 import ZoneTemplate from '@/templates/zone';
 import AssetTemplate from '@/templates/asset';
 import TicketTemplate from '@/templates/ticket';
+import QuotationTemplate from '@/templates/quotation';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import ChangelogButton from '@/components/ChangelogButton';
@@ -59,6 +60,7 @@ import { buildings as allBuildings, tenants, type Building, type MetricKeys } fr
 import { zones as allZones } from '@/data/zones';
 import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
 import { tickets as allTickets } from '@/data/tickets';
+import { quotations as allQuotations } from '@/data/quotations';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
 
@@ -120,6 +122,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     sidePeekAsset, setSidePeekAsset,
     sidePeekAssetTab, setSidePeekAssetTab,
     sidePeekTicket, setSidePeekTicket,
+    sidePeekQuotation, setSidePeekQuotation,
     favorites, setFavorites,
     localQuickviewAsset, setLocalQuickviewAsset,
     openedViaInspect, setOpenedViaInspect,
@@ -161,6 +164,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     setSidePeekZone(null);
     setSidePeekAsset(null);
     setSidePeekTicket(null);
+    setSidePeekQuotation(null);
     setLocalQuickviewAsset(null);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -179,10 +183,12 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       setURLParams({ peek: `asset:${sidePeekAsset.id}` });
     } else if (sidePeekTicket) {
       setURLParams({ peek: `ticket:${sidePeekTicket.id}` });
+    } else if (sidePeekQuotation) {
+      setURLParams({ peek: `quotation:${sidePeekQuotation.id}` });
     } else {
       setURLParams({ peek: '' });
     }
-  }, [sidePeekBuilding, sidePeekZone, sidePeekAsset, sidePeekTicket]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sidePeekBuilding, sidePeekZone, sidePeekAsset, sidePeekTicket, sidePeekQuotation]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Read: URL ?peek= param → side peek state (on mount only)
   useEffect(() => {
@@ -205,6 +211,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     } else if (type === 'ticket') {
       const t = allTickets.find(t => t.id === id);
       if (t) { setSidePeekTicket(t); }
+    } else if (type === 'quotation') {
+      const q = allQuotations.find(q => q.id === id);
+      if (q) { setSidePeekQuotation(q); }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -229,7 +238,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   const isAssetQuickviewOpen = !!quickviewAsset;
   const viewingAssetDetail = isAssetQuickviewOpen;
   const selectedAsset = quickviewAsset;
-  const hideTopBar = pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/');
+  const hideTopBar = pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/') || pathname.startsWith('/operations/tickets/') || pathname.startsWith('/operations/quotations/');
 
   // ── Active theme keys for tenant ───────────────────────────────────────
   const activeThemeKeys = TENANT_THEME_KEYS[selectedTenant] ?? PRIMARY_THEME_KEYS;
@@ -986,6 +995,25 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               onPanelClose={() => setSidePeekTicket(null)}
               onPanelFullscreen={() => {
                 router.push('/operations/tickets/' + sidePeekTicket.id);
+              }}
+            />
+          </Box>
+        )}
+      </SidePeekPanel>
+
+      {/* Quotation SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekQuotation}
+        onClose={() => setSidePeekQuotation(null)}
+      >
+        {sidePeekQuotation && (
+          <Box sx={{ px: 3 }}>
+            <QuotationTemplate
+              quotation={sidePeekQuotation}
+              onBackToQuotations={() => setSidePeekQuotation(null)}
+              onPanelClose={() => setSidePeekQuotation(null)}
+              onPanelFullscreen={() => {
+                router.push('/operations/quotations/' + sidePeekQuotation.id);
               }}
             />
           </Box>

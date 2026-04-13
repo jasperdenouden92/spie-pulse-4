@@ -8,6 +8,7 @@ import type { BuildingDetailTab } from '@/templates/building';
 import type { ZoneDetailTab } from '@/templates/zone';
 import type { AssetDetailTab } from '@/templates/asset';
 import type { Ticket } from '@/data/tickets';
+import type { Quotation } from '@/data/quotations';
 import type { NotificationsPanelHandle } from '@/components/NotificationsPanel';
 
 export interface Favorite {
@@ -66,6 +67,10 @@ interface AppStateValue {
   sidePeekTicket: Ticket | null;
   setSidePeekTicket: React.Dispatch<React.SetStateAction<Ticket | null>>;
 
+  // Side peek - quotation
+  sidePeekQuotation: Quotation | null;
+  setSidePeekQuotation: React.Dispatch<React.SetStateAction<Quotation | null>>;
+
   // Favorites
   favorites: Favorite[];
   setFavorites: React.Dispatch<React.SetStateAction<Favorite[]>>;
@@ -115,23 +120,28 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [sidePeekAsset, _setSidePeekAsset] = useState<AssetNode | null>(null);
   const [sidePeekAssetTab, setSidePeekAssetTab] = useState<AssetDetailTab>('overview');
   const [sidePeekTicket, _setSidePeekTicket] = useState<Ticket | null>(null);
+  const [sidePeekQuotation, _setSidePeekQuotation] = useState<Quotation | null>(null);
 
   // Wrappers that enforce single-peek: opening one closes the others
   const setSidePeekBuilding: typeof _setSidePeekBuilding = (v) => {
     _setSidePeekBuilding(v);
-    if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); }
+    if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); }
   };
   const setSidePeekZone: typeof _setSidePeekZone = (v) => {
     _setSidePeekZone(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); _setSidePeekTicket(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); }
   };
   const setSidePeekAsset: typeof _setSidePeekAsset = (v) => {
     _setSidePeekAsset(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekTicket(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); }
   };
   const setSidePeekTicket: typeof _setSidePeekTicket = (v) => {
     _setSidePeekTicket(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekQuotation(null); }
+  };
+  const setSidePeekQuotation: typeof _setSidePeekQuotation = (v) => {
+    _setSidePeekQuotation(v);
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); }
   };
 
   // Favorites
@@ -170,6 +180,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       sidePeekAsset, setSidePeekAsset,
       sidePeekAssetTab, setSidePeekAssetTab,
       sidePeekTicket, setSidePeekTicket,
+      sidePeekQuotation, setSidePeekQuotation,
       favorites, setFavorites,
       localQuickviewAsset, setLocalQuickviewAsset,
       openedViaInspect, setOpenedViaInspect,
