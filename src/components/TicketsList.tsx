@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import Skeleton from '@mui/material/Skeleton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -42,7 +43,7 @@ export default function TicketsList({ tickets, buildingName, compact = false }: 
       : tickets;
   }, [tickets, buildingName]);
 
-  const { visibleData, hasMore, loadMore, isLoading } = useInfiniteScroll({
+  const { visibleData, hasMore, loadMore, isLoading, initialLoading } = useInfiniteScroll({
     data: filteredTickets,
     pageSize: 50
   });
@@ -84,89 +85,106 @@ export default function TicketsList({ tickets, buildingName, compact = false }: 
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibleData.map((order) => (
-                <TableRow
-                  key={order.id}
-                  sx={{
-                    '&:hover': { bgcolor: c.bgPrimaryHover },
-                    cursor: 'pointer'
-                  }}
-                >
-                  <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Typography
-                      variant="body2"
+              {initialLoading
+                ? Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={70} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Skeleton animation="wave"variant="text" width={`${50 + (i * 11) % 30}%`} />
+                        {!compact && <Skeleton animation="wave"variant="text" width="38%" sx={{ mt: 0.5 }} />}
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={110} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="rounded" width={60} height={20} sx={{ borderRadius: '16px' }} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="rounded" width={80} height={20} sx={{ borderRadius: '16px' }} /></TableCell>
+                      {!compact && <TableCell><Skeleton animation="wave"variant="text" width={90} /></TableCell>}
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={100} /></TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}><Skeleton animation="wave"variant="text" width={80} /></TableCell>
+                    </TableRow>
+                  ))
+                : visibleData.map((order) => (
+                    <TableRow
+                      key={order.id}
                       sx={{
-                        fontWeight: 500,
-                        fontFamily: 'monospace',
-                        fontSize: compact ? '0.813rem' : undefined
+                        '&:hover': { bgcolor: c.bgPrimaryHover },
+                        cursor: 'pointer'
                       }}
                     >
-                      {order.id}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 500,
-                        fontSize: compact ? '0.813rem' : undefined
-                      }}
-                    >
-                      {order.title}
-                      {compact && ` - ${order.description}`}
-                    </Typography>
-                    {!compact && (
-                      <Typography variant="caption" color="text.secondary">
-                        {order.description}
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
-                      {order.building}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Chip
-                      label={order.priority}
-                      size="small"
-                      sx={{
-                        bgcolor: priorityColors[order.priority],
-                        color: '#fff',
-                        fontWeight: 600,
-                        fontSize: compact ? '0.7rem' : '0.75rem'
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Chip
-                      label={order.status}
-                      size="small"
-                      sx={{
-                        bgcolor: statusColors[order.status],
-                        color: '#fff',
-                        fontWeight: 500,
-                        fontSize: compact ? '0.7rem' : '0.75rem'
-                      }}
-                    />
-                  </TableCell>
-                  {!compact && (
-                    <TableCell>
-                      <Typography variant="body2">{order.category}</Typography>
-                    </TableCell>
-                  )}
-                  <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
-                      {order.assignedTo}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ py: compact ? 1 : undefined }}>
-                    <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
-                      {order.dueDate}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 500,
+                            fontFamily: 'monospace',
+                            fontSize: compact ? '0.813rem' : undefined
+                          }}
+                        >
+                          {order.id}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 500,
+                            fontSize: compact ? '0.813rem' : undefined
+                          }}
+                        >
+                          {order.title}
+                          {compact && ` - ${order.description}`}
+                        </Typography>
+                        {!compact && (
+                          <Typography variant="caption" color="text.secondary">
+                            {order.description}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
+                          {order.building}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Chip
+                          label={order.priority}
+                          size="small"
+                          sx={{
+                            bgcolor: priorityColors[order.priority],
+                            color: '#fff',
+                            fontWeight: 600,
+                            fontSize: compact ? '0.7rem' : '0.75rem'
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Chip
+                          label={order.status}
+                          size="small"
+                          sx={{
+                            bgcolor: statusColors[order.status],
+                            color: '#fff',
+                            fontWeight: 500,
+                            fontSize: compact ? '0.7rem' : '0.75rem'
+                          }}
+                        />
+                      </TableCell>
+                      {!compact && (
+                        <TableCell>
+                          <Typography variant="body2">{order.category}</Typography>
+                        </TableCell>
+                      )}
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
+                          {order.assignedTo}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: compact ? 1 : undefined }}>
+                        <Typography variant="body2" sx={{ fontSize: compact ? '0.813rem' : undefined }}>
+                          {order.dueDate}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))
+              }
             </TableBody>
           </Table>
         </TableContainer>

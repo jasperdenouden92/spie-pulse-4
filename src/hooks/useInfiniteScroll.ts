@@ -12,6 +12,7 @@ export interface UseInfiniteScrollReturn<T> {
   loadMore: () => void;
   reset: () => void;
   isLoading: boolean;
+  initialLoading: boolean;
 }
 
 /**
@@ -27,11 +28,18 @@ export function useInfiniteScroll<T>({
 }: UseInfiniteScrollOptions<T>): UseInfiniteScrollReturn<T> {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Reset to initial page when data changes
   useEffect(() => {
     setCurrentPage(initialPage);
   }, [data, initialPage]);
+
+  // Simulate initial data fetch delay
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 700);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculate visible data based on current page
   const visibleData = data.slice(0, currentPage * pageSize);
@@ -63,6 +71,7 @@ export function useInfiniteScroll<T>({
     hasMore,
     loadMore,
     reset,
-    isLoading
+    isLoading,
+    initialLoading
   };
 }

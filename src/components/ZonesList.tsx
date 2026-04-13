@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -210,6 +211,12 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
   showFilters?: boolean;
 }) {
   const { themeColors: c } = useThemeMode();
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 700);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Internal filter state (used when showFilters is true)
   const [internalSearch, setInternalSearch] = useState('');
@@ -312,6 +319,47 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
       </Box>
     </Box>
   ) : null;
+
+  if (initialLoading) {
+    const skeletonColWidths = ['25%', '20%', '15%', '20%', '20%'];
+    return (
+      <>
+        {filterBar}
+        <Box>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            <colgroup>{skeletonColWidths.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+            <TableHead>
+              <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+                {['Zone', 'Building', 'Floor', 'City', 'Assets'].map((h, i) => (
+                  <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, ...(i === 0 ? { pl: 2 } : {}), ...(i === 4 ? { textAlign: 'right', pr: 2 } : {}) }}>
+                    {h}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+          </Table>
+          <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+            <TableContainer>
+              <Table sx={{ tableLayout: 'fixed' }}>
+                <colgroup>{skeletonColWidths.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
+                <TableBody>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell sx={{ py: 1, pl: 2 }}><Skeleton animation="wave"variant="text" width={`${40 + (i * 13) % 30}%`} /></TableCell>
+                      <TableCell sx={{ py: 1 }}><Skeleton animation="wave"variant="text" width={`${50 + (i * 7) % 25}%`} /></TableCell>
+                      <TableCell sx={{ py: 1 }}><Skeleton animation="wave"variant="text" width="55%" /></TableCell>
+                      <TableCell sx={{ py: 1 }}><Skeleton animation="wave"variant="text" width={`${45 + (i * 9) % 30}%`} /></TableCell>
+                      <TableCell sx={{ py: 1, pr: 2, textAlign: 'right' }}><Skeleton animation="wave"variant="text" width={28} sx={{ ml: 'auto' }} /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Box>
+      </>
+    );
+  }
 
   if (filteredZones.length === 0) {
     return (
