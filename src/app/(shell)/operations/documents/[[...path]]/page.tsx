@@ -2,6 +2,10 @@
 
 import React, { use, useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { handleSidePeekClick } from '@/components/SidePeekPanel';
+import { useAppState } from '@/context/AppStateContext';
+import { buildings as buildingsData } from '@/data/buildings';
+import { buildingToSlug } from '@/utils/slugs';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -182,6 +186,15 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const router = useRouter();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
+  const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+
+  const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
+    e.stopPropagation();
+    handleSidePeekClick(e,
+      () => { const bld = buildingsData.find(x => x.name === buildingName); if (bld) { setSidePeekZone(null); setSidePeekBuilding(bld); setSidePeekBuildingTab('overview'); } },
+      () => router.push(`/buildings/${buildingToSlug(buildingName)}`),
+    );
+  };
 
   const { get, set, getList, setList, getNumber, setNumber } = useFilterParams();
 
@@ -527,7 +540,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                           </TableCell>
                           <TableCell>
                             {item.type === 'file' ? (
-                              <Box component="span" onClick={(e: React.MouseEvent) => { e.stopPropagation(); }} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, fontSize: '0.8125rem', color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'text.primary', '& .building-arrow': { opacity: 1 } } }}>
+                              <Box component="span" onClick={(e: React.MouseEvent) => handleBuildingClick(e, item.building)} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, fontSize: '0.8125rem', color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'text.primary', '& .building-arrow': { opacity: 1 } } }}>
                                 {item.building}
                                 <OpenInNewIcon className="building-arrow" sx={{ fontSize: 13, ml: 0.25, opacity: 0, transition: 'opacity 0.15s' }} />
                               </Box>

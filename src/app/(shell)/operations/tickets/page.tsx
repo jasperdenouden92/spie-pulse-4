@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { handleSidePeekClick } from '@/components/SidePeekPanel';
 import { useAppState } from '@/context/AppStateContext';
+import { buildings as buildingsData } from '@/data/buildings';
+import { buildingToSlug } from '@/utils/slugs';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -168,7 +170,7 @@ export default function OperationsTicketsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
   const router = useRouter();
-  const { setSidePeekTicket } = useAppState();
+  const { setSidePeekTicket, setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
 
   // Read initialStatuses from URL
   const searchParams = useSearchParams();
@@ -302,9 +304,12 @@ export default function OperationsTicketsRoute() {
     : selectedDisciplines.length === 1 ? selectedDisciplines[0]
     : `${selectedDisciplines.length} disciplines`;
 
-  const handleBuildingClick = (e: React.MouseEvent, _building: string) => {
+  const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
     e.stopPropagation();
-    // TODO: Open building side panel / navigate to building
+    handleSidePeekClick(e,
+      () => { const bld = buildingsData.find(x => x.name === buildingName); if (bld) { setSidePeekZone(null); setSidePeekBuilding(bld); setSidePeekBuildingTab('overview'); } },
+      () => router.push(`/buildings/${buildingToSlug(buildingName)}`),
+    );
   };
 
   return (
@@ -605,7 +610,7 @@ export default function OperationsTicketsRoute() {
                           <TableCell>
                             <Box
                               component="span"
-                              onClick={(e: React.MouseEvent) => { e.stopPropagation(); }}
+                              onClick={(e: React.MouseEvent) => handleBuildingClick(e, ticket.building)}
                               sx={{
                                 display: 'inline-flex', alignItems: 'center', gap: 0.25,
                                 fontSize: '0.8125rem', color: 'text.secondary', cursor: 'pointer',
@@ -777,7 +782,7 @@ export default function OperationsTicketsRoute() {
                         {/* Gebouw */}
                         <Box
                           component="span"
-                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); }}
+                          onClick={(e: React.MouseEvent) => handleBuildingClick(e, ticket.building)}
                           sx={{
                             display: 'inline-flex', alignItems: 'center', gap: 0.25,
                             fontSize: '0.8rem', color: 'text.secondary', cursor: 'pointer',
