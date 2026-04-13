@@ -3,18 +3,34 @@
 import { use } from 'react';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { useRouter } from 'next/navigation';
+import TicketTemplate from '@/templates/ticket';
+import { useAppState } from '@/context/AppStateContext';
+import { tickets } from '@/data/tickets';
 
 export default function TicketDetailRoute({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const ticket = tickets.find(t => t.id === id) ?? null;
   const isNarrow = useMediaQuery('(max-width:960px)');
+  const router = useRouter();
+  const { leftSidebarCollapsed, setLeftSidebarCollapsed } = useAppState();
+
+  if (!ticket) {
+    return (
+      <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 4, px: isNarrow ? 0.5 : 3, textAlign: 'center' }}>
+        Ticket not found.
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
-      <Box sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: 600, mb: 2 }}>Ticket: {id}</Typography>
-        <Typography color="text.secondary">Ticket detail template — coming soon</Typography>
-      </Box>
+    <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
+      <TicketTemplate
+        ticket={ticket}
+        isCollapsed={leftSidebarCollapsed}
+        onToggleCollapse={() => setLeftSidebarCollapsed(c => !c)}
+        onBackToTickets={() => router.push('/operations/tickets')}
+      />
     </Container>
   );
 }

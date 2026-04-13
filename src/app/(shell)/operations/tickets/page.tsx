@@ -2,6 +2,9 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { handleSidePeekClick } from '@/components/SidePeekPanel';
+import { useAppState } from '@/context/AppStateContext';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -164,6 +167,8 @@ function TicketThumbnail({ ticket, size = 40 }: { ticket: Ticket; size?: number 
 export default function OperationsTicketsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
+  const router = useRouter();
+  const { setSidePeekTicket } = useAppState();
 
   // Read initialStatuses from URL
   const searchParams = useSearchParams();
@@ -200,7 +205,9 @@ export default function OperationsTicketsRoute() {
   const selectedDisciplines = getList('disciplines');
   const [disciplineAnchor, setDisciplineAnchor] = useState<HTMLElement | null>(null);
 
-  const amountRange: RangeValue = { min: get('amountMin', ''), max: get('amountMax', '') };
+  const amountMin = get('amountMin', '');
+  const amountMax = get('amountMax', '');
+  const amountRange: RangeValue = { min: amountMin, max: amountMax };
   const [amountAnchor, setAmountAnchor] = useState<HTMLElement | null>(null);
 
   // Date range: stored as "YYYY-MM-DD|YYYY-MM-DD" string, empty = no filter
@@ -246,7 +253,12 @@ export default function OperationsTicketsRoute() {
   }, [selectedType, selectedStatuses, selectedClients, selectedBuildings, selectedDisciplines, amountRange, dateRange, search, sortBy]);
 
   // Reset page when filters/search change
-  useEffect(() => setNumber('page', 0, 0), [selectedType, selectedStatuses, selectedClients, selectedBuildings, selectedDisciplines, amountRange, dateRange, search, sortBy]);
+  // Use raw string primitives (not arrays/objects) to avoid firing on every render due to new references
+  const statusesStr = get('statuses', '');
+  const clientsStr = get('clients', '');
+  const buildingsStr = get('buildings', '');
+  const disciplinesStr = get('disciplines', '');
+  useEffect(() => setNumber('page', 0, 0), [selectedType, statusesStr, clientsStr, buildingsStr, disciplinesStr, amountMin, amountMax, dateRange, search, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
   const paginatedTickets = useMemo(() => {
@@ -602,6 +614,10 @@ export default function OperationsTicketsRoute() {
                       {group.items.map((ticket) => (
                         <TableRow
                           key={ticket.id}
+                          onClick={(e) => handleSidePeekClick(e,
+                            () => setSidePeekTicket(ticket),
+                            () => router.push(`/operations/tickets/${ticket.id}`),
+                          )}
                           sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}
                         >
                           <TableCell sx={{ py: 1, px: 1.5, width: 56 }}>
@@ -700,6 +716,10 @@ export default function OperationsTicketsRoute() {
                   {group.items.map((ticket) => (
                     <Card
                       key={ticket.id}
+                      onClick={(e) => handleSidePeekClick(e,
+                        () => setSidePeekTicket(ticket),
+                        () => router.push(`/operations/tickets/${ticket.id}`),
+                      )}
                       sx={{
                         borderRadius: '8px',
                         border: `1px solid ${c.cardBorder}`,
