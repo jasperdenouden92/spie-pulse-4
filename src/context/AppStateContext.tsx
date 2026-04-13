@@ -7,6 +7,7 @@ import type { AssetNode } from '@/data/assetTree';
 import type { BuildingDetailTab } from '@/templates/building';
 import type { ZoneDetailTab } from '@/templates/zone';
 import type { AssetDetailTab } from '@/templates/asset';
+import type { Ticket } from '@/data/tickets';
 import type { NotificationsPanelHandle } from '@/components/NotificationsPanel';
 
 export interface Favorite {
@@ -61,6 +62,10 @@ interface AppStateValue {
   sidePeekAssetTab: AssetDetailTab;
   setSidePeekAssetTab: React.Dispatch<React.SetStateAction<AssetDetailTab>>;
 
+  // Side peek - ticket
+  sidePeekTicket: Ticket | null;
+  setSidePeekTicket: React.Dispatch<React.SetStateAction<Ticket | null>>;
+
   // Favorites
   favorites: Favorite[];
   setFavorites: React.Dispatch<React.SetStateAction<Favorite[]>>;
@@ -109,19 +114,24 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [sidePeekZoneTab, setSidePeekZoneTab] = useState<ZoneDetailTab>('overview');
   const [sidePeekAsset, _setSidePeekAsset] = useState<AssetNode | null>(null);
   const [sidePeekAssetTab, setSidePeekAssetTab] = useState<AssetDetailTab>('overview');
+  const [sidePeekTicket, _setSidePeekTicket] = useState<Ticket | null>(null);
 
   // Wrappers that enforce single-peek: opening one closes the others
   const setSidePeekBuilding: typeof _setSidePeekBuilding = (v) => {
     _setSidePeekBuilding(v);
-    if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); }
+    if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); }
   };
   const setSidePeekZone: typeof _setSidePeekZone = (v) => {
     _setSidePeekZone(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); _setSidePeekTicket(null); }
   };
   const setSidePeekAsset: typeof _setSidePeekAsset = (v) => {
     _setSidePeekAsset(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekTicket(null); }
+  };
+  const setSidePeekTicket: typeof _setSidePeekTicket = (v) => {
+    _setSidePeekTicket(v);
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); }
   };
 
   // Favorites
@@ -159,6 +169,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       sidePeekZoneTab, setSidePeekZoneTab,
       sidePeekAsset, setSidePeekAsset,
       sidePeekAssetTab, setSidePeekAssetTab,
+      sidePeekTicket, setSidePeekTicket,
       favorites, setFavorites,
       localQuickviewAsset, setLocalQuickviewAsset,
       openedViaInspect, setOpenedViaInspect,

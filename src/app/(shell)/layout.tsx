@@ -45,6 +45,7 @@ import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
 import BuildingTemplate from '@/templates/building';
 import ZoneTemplate from '@/templates/zone';
 import AssetTemplate from '@/templates/asset';
+import TicketTemplate from '@/templates/ticket';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import ChangelogButton from '@/components/ChangelogButton';
@@ -57,6 +58,7 @@ import { useThemeMode } from '@/theme-mode-context';
 import { buildings as allBuildings, tenants, type Building, type MetricKeys } from '@/data/buildings';
 import { zones as allZones } from '@/data/zones';
 import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
+import { tickets as allTickets } from '@/data/tickets';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
 
@@ -117,6 +119,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     sidePeekZoneTab, setSidePeekZoneTab,
     sidePeekAsset, setSidePeekAsset,
     sidePeekAssetTab, setSidePeekAssetTab,
+    sidePeekTicket, setSidePeekTicket,
     favorites, setFavorites,
     localQuickviewAsset, setLocalQuickviewAsset,
     openedViaInspect, setOpenedViaInspect,
@@ -157,6 +160,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     setSidePeekBuilding(null);
     setSidePeekZone(null);
     setSidePeekAsset(null);
+    setSidePeekTicket(null);
     setLocalQuickviewAsset(null);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -173,10 +177,12 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       setURLParams({ peek: `zone:${sidePeekZone.id}` });
     } else if (sidePeekAsset) {
       setURLParams({ peek: `asset:${sidePeekAsset.id}` });
+    } else if (sidePeekTicket) {
+      setURLParams({ peek: `ticket:${sidePeekTicket.id}` });
     } else {
       setURLParams({ peek: '' });
     }
-  }, [sidePeekBuilding, sidePeekZone, sidePeekAsset]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sidePeekBuilding, sidePeekZone, sidePeekAsset, sidePeekTicket]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Read: URL ?peek= param → side peek state (on mount only)
   useEffect(() => {
@@ -196,6 +202,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     } else if (type === 'asset') {
       const a = getAssetById(id);
       if (a) { setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
+    } else if (type === 'ticket') {
+      const t = allTickets.find(t => t.id === id);
+      if (t) { setSidePeekTicket(t); }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -962,6 +971,25 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
             </Box>
           );
         })()}
+      </SidePeekPanel>
+
+      {/* Ticket SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekTicket}
+        onClose={() => setSidePeekTicket(null)}
+      >
+        {sidePeekTicket && (
+          <Box sx={{ px: 3 }}>
+            <TicketTemplate
+              ticket={sidePeekTicket}
+              onBackToTickets={() => setSidePeekTicket(null)}
+              onPanelClose={() => setSidePeekTicket(null)}
+              onPanelFullscreen={() => {
+                router.push('/operations/tickets/' + sidePeekTicket.id);
+              }}
+            />
+          </Box>
+        )}
       </SidePeekPanel>
 
       <ChangelogButton />
