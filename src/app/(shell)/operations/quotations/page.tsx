@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { handleSidePeekClick } from '@/components/SidePeekPanel';
+import { useAppState } from '@/context/AppStateContext';
+import { buildings as buildingsData } from '@/data/buildings';
+import { buildingToSlug } from '@/utils/slugs';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -146,6 +150,16 @@ function QuotationThumbnail({ quotation, size = 40 }: { quotation: Quotation; si
 export default function OperationsQuotationsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
+  const router = useRouter();
+  const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+
+  const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
+    e.stopPropagation();
+    handleSidePeekClick(e,
+      () => { const bld = buildingsData.find(x => x.name === buildingName); if (bld) { setSidePeekZone(null); setSidePeekBuilding(bld); setSidePeekBuildingTab('overview'); } },
+      () => router.push(`/buildings/${buildingToSlug(buildingName)}`),
+    );
+  };
 
   // Read initialStatuses from URL
   const searchParams = useSearchParams();
@@ -518,7 +532,7 @@ export default function OperationsQuotationsRoute() {
                           <TableCell>
                             <Box
                               component="span"
-                              onClick={(e: React.MouseEvent) => { e.stopPropagation(); }}
+                              onClick={(e: React.MouseEvent) => handleBuildingClick(e, q.building)}
                               sx={{
                                 display: 'inline-flex', alignItems: 'center', gap: 0.25,
                                 fontSize: '0.8125rem', color: 'text.secondary', cursor: 'pointer',
@@ -666,7 +680,7 @@ export default function OperationsQuotationsRoute() {
                         {/* Building */}
                         <Box
                           component="span"
-                          onClick={(e: React.MouseEvent) => { e.stopPropagation(); }}
+                          onClick={(e: React.MouseEvent) => handleBuildingClick(e, q.building)}
                           sx={{
                             display: 'inline-flex', alignItems: 'center', gap: 0.25,
                             fontSize: '0.8rem', color: 'text.secondary', cursor: 'pointer',
