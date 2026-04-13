@@ -175,7 +175,9 @@ export default function OperationsQuotationsRoute() {
   const selectedBuildings = getList('buildings');
   const [buildingAnchor, setBuildingAnchor] = useState<HTMLElement | null>(null);
 
-  const amountRange: RangeValue = { min: get('amountMin', ''), max: get('amountMax', '') };
+  const amountMin = get('amountMin', '');
+  const amountMax = get('amountMax', '');
+  const amountRange: RangeValue = { min: amountMin, max: amountMax };
   const [amountAnchor, setAmountAnchor] = useState<HTMLElement | null>(null);
 
   // Creation date range
@@ -223,7 +225,10 @@ export default function OperationsQuotationsRoute() {
   }, [selectedStatuses, selectedBuildings, amountRange, dateRange, expirationRange, search, sortBy]);
 
   // Reset page when filters/search change
-  useEffect(() => setNumber('page', 0, 0), [selectedStatuses, selectedBuildings, amountRange, dateRange, expirationRange, search, sortBy]);
+  // Use raw string primitives (not arrays/objects) to avoid firing on every render due to new references
+  const statusesStr = get('statuses', '');
+  const buildingsStr = get('buildings', '');
+  useEffect(() => setNumber('page', 0, 0), [statusesStr, buildingsStr, amountMin, amountMax, dateRange, expirationRange, search, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
   const paginatedQuotations = useMemo(() => {
