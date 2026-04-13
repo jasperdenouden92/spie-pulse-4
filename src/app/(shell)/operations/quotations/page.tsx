@@ -151,7 +151,7 @@ export default function OperationsQuotationsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
   const router = useRouter();
-  const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+  const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone, setSidePeekQuotation } = useAppState();
 
   const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
     e.stopPropagation();
@@ -514,7 +514,10 @@ export default function OperationsQuotationsRoute() {
                       {group.items.map((q) => (
                         <TableRow
                           key={q.id}
-                          onClick={() => router.push(`/operations/quotations/${q.id}`)}
+                          onClick={(e) => handleSidePeekClick(e,
+                            () => setSidePeekQuotation(q),
+                            () => router.push(`/operations/quotations/${q.id}`),
+                          )}
                           sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}
                         >
                           <TableCell sx={{ width: 56, p: '8px 8px 8px 16px' }}>
@@ -608,7 +611,10 @@ export default function OperationsQuotationsRoute() {
                   {group.items.map((q) => (
                     <Card
                       key={q.id}
-                      onClick={() => router.push(`/operations/quotations/${q.id}`)}
+                      onClick={(e) => handleSidePeekClick(e,
+                        () => setSidePeekQuotation(q),
+                        () => router.push(`/operations/quotations/${q.id}`),
+                      )}
                       sx={{
                         borderRadius: '8px',
                         border: `1px solid ${c.cardBorder}`,
