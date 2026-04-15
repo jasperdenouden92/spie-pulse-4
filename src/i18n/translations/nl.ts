@@ -102,6 +102,14 @@ const nl: Record<TranslationKey, string> = {
   'common.nBuildings': '{count} gebouwen',
   'common.nClusters': '{count} clusters',
   'common.unknownLocation': 'Onbekende locatie',
+  'common.buildings': 'Gebouwen',
+  'common.clusters': 'Clusters',
+  'common.allCities': 'Alle steden',
+  'common.recentBuildings': 'Recente gebouwen',
+  'common.recentClusters': 'Recente clusters',
+  'common.nResults': '{count} resultaten',
+  'common.noBuildings': 'Geen gebouwen gevonden',
+  'common.noClusters': 'Geen clusters gevonden',
 
   // Date range presets
   'date.thisMonth': 'Deze maand',
