@@ -45,6 +45,7 @@ import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverla
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
+import { useLanguage } from '@/i18n';
 
 // ── Topic definitions ──
 
@@ -253,6 +254,7 @@ interface ThemesPerformancePageProps {
 
 export default function ThemesPerformancePage({ themeScores, themeTrends, overallScore = 75, overallTrend = 3, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: ThemesPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const [chartView, setChartView] = useState<ViewMode>('sustainability');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
@@ -283,13 +285,23 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
     );
   }, []);
 
-  const topics = useMemo(() => buildTopics(themeScores, themeTrends), [themeScores, themeTrends]);
+  const topicLabelMap: Record<string, string> = useMemo(() => ({
+    sustainability: t('metric.sustainability'),
+    comfort: t('metric.comfort'),
+    asset_monitoring: t('metric.assetMonitoring'),
+    compliance: t('metric.compliance'),
+  }), [t]);
+
+  const topics = useMemo(() => buildTopics(themeScores, themeTrends).map(topic => ({
+    ...topic,
+    label: topicLabelMap[topic.key] ?? topic.label,
+  })), [themeScores, themeTrends, topicLabelMap]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Theme KPIs',
+    label: t('performance.themeKpis'),
     color: c.brand,
     data: [48, 52, 58, 54, 45, 56, 64, 70, 76, 73, 78, overallScore],
-  }), [overallScore]);
+  }), [overallScore, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -346,10 +358,10 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'sustainability', label: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'comfort', label: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'asset_monitoring', label: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'compliance', label: 'Compliance', icon: <GavelOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'sustainability', label: t('metric.sustainability'), icon: <NatureOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'comfort', label: t('metric.comfort'), icon: <SpaOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'asset_monitoring', label: t('metric.assetMonitoring'), icon: <SecurityOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'compliance', label: t('metric.compliance'), icon: <GavelOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   // Group dashboards by theme
@@ -367,11 +379,11 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
       {/* ═══ Theme KPIs Combined Score Over Time (card) ═══ */}
       <PerformanceChartCard
         icon={<StyleOutlinedIcon sx={{ color: c.brand }} />}
-        title="Theme KPIs"
+        title={t('performance.themeKpis')}
         score={overallScore}
         trend={overallTrend}
         data={themeSeries.data}
-        label="Theme KPIs"
+        label={t('performance.themeKpis')}
         goodAbove={THEME_GOOD_ABOVE}
         moderateAbove={THEME_MODERATE_ABOVE}
         gradientId="threshold-gradient-themes"
@@ -382,11 +394,11 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
       <GridCard
         size="sm"
         icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
-        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
+        title={buildingMode === 'clusters' ? t('performance.topClusters') : t('performance.topBuildings')}
         headerRight={
           <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>{t('performance.top')}</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>{t('performance.improved')}</Box>
           </Box>
         }
       >
@@ -434,7 +446,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
               </Box>
             );
           })}
-          <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+          <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>{t('performance.viewAll')}</Button>
       </GridCard>
 
       {/* ═══ Worst Buildings ═══ */}
@@ -493,7 +505,7 @@ export default function ThemesPerformancePage({ themeScores, themeTrends, overal
               </Box>
             );
           })}
-          <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+          <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>{t('performance.viewAll')}</Button>
       </GridCard>
 
       {/* ═══ KPI Score Over Time ═══ */}

@@ -10,6 +10,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import Tooltip from '@mui/material/Tooltip';
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 
 export interface Notification {
   id: string;
@@ -29,16 +30,16 @@ export interface NotificationsPanelHandle {
 
 const initialNotifications: Notification[] = [];
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, t: ReturnType<typeof useLanguage>['t']): string {
   const d = new Date(iso);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffMins < 1) return t('common.justNow');
+  if (diffMins < 60) return t('common.minutesAgo', { n: diffMins });
+  if (diffHours < 24) return t('common.hoursAgo', { n: diffHours });
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   if (d.getFullYear() === now.getFullYear()) {
@@ -56,6 +57,7 @@ interface NotificationsPanelProps {
 const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPanelProps>(
   function NotificationsPanel({ open, onClose, sidebarWidth }, ref) {
     const { themeColors: c } = useThemeMode();
+    const { t } = useLanguage();
     const [notifications, setNotifications] = useState(initialNotifications);
 
     useImperativeHandle(ref, () => ({
@@ -107,7 +109,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
         {/* Header */}
         <Box sx={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, flexShrink: 0, borderBottom: '1px solid', borderColor: 'divider' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Inbox</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>{t('notifications.inbox')}</Typography>
             {unreadCount > 0 && (
               <Box sx={{ bgcolor: c.brand, color: '#fff', borderRadius: '10px', px: 0.8, py: 0.1, fontSize: '0.7rem', fontWeight: 700, lineHeight: 1.4, minWidth: 18, textAlign: 'center' }}>
                 {unreadCount}
@@ -116,7 +118,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
           </Box>
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             {unreadCount > 0 && (
-              <Tooltip title="Mark all as read">
+              <Tooltip title={t('notifications.markAllRead')}>
                 <IconButton size="small" onClick={markAllRead} sx={{ color: 'text.secondary' }}>
                   <DoneAllIcon sx={{ fontSize: 18 }} />
                 </IconButton>
@@ -133,13 +135,13 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
           {notifications.length === 0 && (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'text.disabled' }}>
               <NotificationsNoneIcon sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="body2" color="text.secondary">No notifications yet</Typography>
+              <Typography variant="body2" color="text.secondary">{t('notifications.empty')}</Typography>
             </Box>
           )}
           {recentNotifications.length > 0 && (
             <>
               <Typography variant="caption" sx={{ display: 'block', px: 2.5, pt: 2, pb: 1, color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                This week
+                {t('common.thisWeek')}
               </Typography>
               {recentNotifications.map(n => (
                 <NotificationRow key={n.id} notification={n} onRead={markRead} />
@@ -149,7 +151,7 @@ const NotificationsPanel = forwardRef<NotificationsPanelHandle, NotificationsPan
           {olderNotifications.length > 0 && (
             <>
               <Typography variant="caption" sx={{ display: 'block', px: 2.5, pt: 2, pb: 1, color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Older
+                {t('common.older')}
               </Typography>
               {olderNotifications.map(n => (
                 <NotificationRow key={n.id} notification={n} onRead={markRead} />
@@ -166,6 +168,7 @@ export default NotificationsPanel;
 
 function NotificationRow({ notification, onRead }: { notification: Notification; onRead: (id: string) => void }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const n = notification;
   return (
     <Box
@@ -194,7 +197,7 @@ function NotificationRow({ notification, onRead }: { notification: Notification;
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0, mt: 0.25 }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap', fontSize: '0.7rem' }}>
-              {formatDate(n.date)}
+              {formatDate(n.date, t)}
             </Typography>
             {!n.read && (
               <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: c.brand, flexShrink: 0 }} />

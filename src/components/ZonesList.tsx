@@ -25,6 +25,7 @@ import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
 import { type Zone } from '@/data/zones';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 
 // ── Types ──
 
@@ -91,6 +92,7 @@ function SectionHeader({ label, count, onClick }: { label: string; count: number
 
 function ZonesTable({ zones, query, hideBuilding, hideCity, hideFloor, onZoneClick }: { zones: Zone[]; query: string; hideBuilding?: boolean; hideCity?: boolean; hideFloor?: boolean; onZoneClick?: (zoneId: string, e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
 
   const colWidths =
     hideBuilding && hideCity && hideFloor ? ['60%', '40%'] :
@@ -103,11 +105,11 @@ function ZonesTable({ zones, query, hideBuilding, hideCity, hideFloor, onZoneCli
     ['25%', '20%', '15%', '20%', '20%'];
 
   const headers = [
-    'Zone',
-    ...(!hideBuilding ? ['Building'] : []),
-    ...(!hideFloor ? ['Floor'] : []),
-    ...(!hideCity ? ['City'] : []),
-    'Assets',
+    t('zones.zone'),
+    ...(!hideBuilding ? [t('common.building')] : []),
+    ...(!hideFloor ? [t('common.floor')] : []),
+    ...(!hideCity ? [t('common.city')] : []),
+    t('nav.assets'),
   ];
 
   const colgroup = (
@@ -211,6 +213,7 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
   showFilters?: boolean;
 }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
@@ -274,7 +277,7 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, mt: 1 }}>
       {/* Left: Zone type filter */}
       <FilterChip
-        label="Zone type"
+        label={t('zones.zoneType')}
         value={zoneTypeChipValue}
         onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
         onClear={selectedZoneTypes.length > 0 ? () => setSelectedZoneTypes([]) : undefined}
@@ -282,30 +285,30 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
       <FilterDropdown
         anchorEl={zoneTypeAnchor}
         onClose={() => setZoneTypeAnchor(null)}
-        options={zoneTypes.map(t => ({ value: t }))}
+        options={zoneTypes.map(zt => ({ value: zt }))}
         multiple
         value={selectedZoneTypes}
         onChange={(v) => setSelectedZoneTypes(v as string[])}
-        placeholder="Search zone types…"
+        placeholder={t('zones.searchZoneTypes')}
       />
 
       {/* Right: Group by + Search */}
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
         <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
-          Group by
+          {t('common.groupBy')}
         </Button>
         <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
-          <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.noGrouping')}</ListItemText></MenuItem>
           <Divider />
-          <MenuItem selected={internalGroupBy === 'floor'} onClick={() => { setInternalGroupBy('floor'); setGroupByMenuAnchor(null); }}><ListItemText>Floor</ListItemText></MenuItem>
-          <MenuItem selected={internalGroupBy === 'zone_type'} onClick={() => { setInternalGroupBy('zone_type'); setGroupByMenuAnchor(null); }}><ListItemText>Zone type</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'floor'} onClick={() => { setInternalGroupBy('floor'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.floor')}</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'zone_type'} onClick={() => { setInternalGroupBy('zone_type'); setGroupByMenuAnchor(null); }}><ListItemText>{t('zones.zoneType')}</ListItemText></MenuItem>
         </Menu>
         <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
           <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
           <InputBase
             value={internalSearch}
             onChange={(e) => setInternalSearch(e.target.value)}
-            placeholder="Search zones…"
+            placeholder={t('portfolio.searchZones')}
             sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
             endAdornment={internalSearch ? (
               <InputAdornment position="end">
@@ -330,7 +333,7 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
             <colgroup>{skeletonColWidths.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
             <TableHead>
               <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
-                {['Zone', 'Building', 'Floor', 'City', 'Assets'].map((h, i) => (
+                {[t('zones.zone'), t('common.building'), t('common.floor'), t('common.city'), t('nav.assets')].map((h, i) => (
                   <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, ...(i === 0 ? { pl: 2 } : {}), ...(i === 4 ? { textAlign: 'right', pr: 2 } : {}) }}>
                     {h}
                   </TableCell>
@@ -366,7 +369,7 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
       <>
         {filterBar}
         <Box sx={{ py: 8, textAlign: 'center' }}>
-          <Typography variant="body1" color="text.secondary">No zones match your filters.</Typography>
+          <Typography variant="body1" color="text.secondary">{t('portfolio.noZones')}</Typography>
         </Box>
       </>
     );

@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchModal from '@/components/SearchModal';
+import { useLanguage } from '@/i18n';
 
 interface HeaderProps {
   hasRightSidebar?: boolean;
@@ -15,6 +16,7 @@ interface HeaderProps {
 }
 
 export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280, rightSidebarWidth = 64, onPageChange }: HeaderProps) {
+  const { t } = useLanguage();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   return (
@@ -45,7 +47,7 @@ export default function Header({ hasRightSidebar = false, leftSidebarWidth = 280
 
         {/* Center search bar */}
         <TextField
-          placeholder="Search..."
+          placeholder={t('common.search') + '...'}
           size="small"
           onClick={() => setSearchModalOpen(true)}
           InputProps={{

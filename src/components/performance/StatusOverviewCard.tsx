@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { PieChart } from '@mui/x-charts/PieChart';
+import { useLanguage } from '@/i18n';
 import GridCard from './GridCard';
 
 export interface StatusCount {
@@ -19,10 +20,11 @@ interface StatusOverviewCardProps {
 }
 
 export default function StatusOverviewCard({ statusCounts, onStatusFilter }: StatusOverviewCardProps) {
+  const { t } = useLanguage();
   const total = statusCounts.reduce((sum, s) => sum + s.count, 0);
 
   return (
-    <GridCard title="Status Overview" sx={{ gridColumn: { md: 'span 2', lg: 'span 1' } }}>
+    <GridCard title={t('performance.statusOverview')} sx={{ gridColumn: { md: 'span 2', lg: 'span 1' } }}>
       <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
         <PieChart
           series={[{
@@ -39,7 +41,7 @@ export default function StatusOverviewCard({ statusCounts, onStatusFilter }: Sta
         />
         <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
           <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1 }}>{total}</Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>total</Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>{t('common.total')}</Typography>
         </Box>
       </Box>
 

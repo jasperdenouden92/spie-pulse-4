@@ -13,6 +13,8 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Chip from '@mui/material/Chip';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
+import type { TranslationKey } from '@/i18n';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -168,31 +170,35 @@ export function dateRangeToString(from: Date, to: Date): string {
 
 export type Preset = { label: string; getRange: () => { from: Date; to: Date } };
 
-export const PRESETS: Preset[] = [
-  { label: 'This month', getRange: () => ({ from: startOfMonth(TODAY), to: new Date(TODAY) }) },
-  { label: 'Last month', getRange: () => { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - 1, 1); return { from: d, to: endOfMonth(d) }; } },
-  { label: 'This quarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) }; } },
-  { label: 'Last quarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); const s = new Date(TODAY.getFullYear(), (q - 1) * 3, 1); return { from: s, to: endOfQuarter(s) }; } },
-  { label: 'This year', getRange: () => ({ from: startOfYear(TODAY), to: new Date(TODAY) }) },
-  { label: 'Last year', getRange: () => { const d = new Date(TODAY.getFullYear() - 1, 0, 1); return { from: d, to: endOfYear(d) }; } },
+type PresetWithKey = { label: string; labelKey: TranslationKey; getRange: () => { from: Date; to: Date } };
+
+export const PRESETS: PresetWithKey[] = [
+  { label: 'This month', labelKey: 'date.thisMonth', getRange: () => ({ from: startOfMonth(TODAY), to: new Date(TODAY) }) },
+  { label: 'Last month', labelKey: 'date.lastMonth', getRange: () => { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - 1, 1); return { from: d, to: endOfMonth(d) }; } },
+  { label: 'This quarter', labelKey: 'date.thisQuarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) }; } },
+  { label: 'Last quarter', labelKey: 'date.lastQuarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); const s = new Date(TODAY.getFullYear(), (q - 1) * 3, 1); return { from: s, to: endOfQuarter(s) }; } },
+  { label: 'This year', labelKey: 'date.thisYear', getRange: () => ({ from: startOfYear(TODAY), to: new Date(TODAY) }) },
+  { label: 'Last year', labelKey: 'date.lastYear', getRange: () => { const d = new Date(TODAY.getFullYear() - 1, 0, 1); return { from: d, to: endOfYear(d) }; } },
 ];
 
-export const GRANULAR_PRESETS: Preset[] = [
-  { label: 'Today', getRange: () => ({ from: new Date(TODAY), to: new Date(TODAY) }) },
-  { label: 'Yesterday', getRange: () => { const y = new Date(TODAY); y.setDate(y.getDate() - 1); return { from: startOfDay(y), to: startOfDay(y) }; } },
-  { label: 'This week', getRange: () => ({ from: startOfWeek(TODAY), to: clampToToday(endOfWeek(TODAY)) }) },
-  { label: 'Last week', getRange: () => { const p = new Date(TODAY); p.setDate(p.getDate() - 7); return { from: startOfWeek(p), to: endOfWeek(p) }; } },
-  { label: 'This quarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) }; } },
-  { label: 'Last quarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); const s = new Date(TODAY.getFullYear(), (q - 1) * 3, 1); return { from: s, to: endOfQuarter(s) }; } },
+export const GRANULAR_PRESETS: PresetWithKey[] = [
+  { label: 'Today', labelKey: 'date.today', getRange: () => ({ from: new Date(TODAY), to: new Date(TODAY) }) },
+  { label: 'Yesterday', labelKey: 'date.yesterday', getRange: () => { const y = new Date(TODAY); y.setDate(y.getDate() - 1); return { from: startOfDay(y), to: startOfDay(y) }; } },
+  { label: 'This week', labelKey: 'date.thisWeek', getRange: () => ({ from: startOfWeek(TODAY), to: clampToToday(endOfWeek(TODAY)) }) },
+  { label: 'Last week', labelKey: 'date.lastWeek', getRange: () => { const p = new Date(TODAY); p.setDate(p.getDate() - 7); return { from: startOfWeek(p), to: endOfWeek(p) }; } },
+  { label: 'This quarter', labelKey: 'date.thisQuarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) }; } },
+  { label: 'Last quarter', labelKey: 'date.lastQuarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); const s = new Date(TODAY.getFullYear(), (q - 1) * 3, 1); return { from: s, to: endOfQuarter(s) }; } },
 ];
 
 const ALL_PRESETS = [...PRESETS, ...GRANULAR_PRESETS];
 
-export function getDateRangeDisplayLabel(value: string): string {
+export function getDateRangeDisplayLabel(value: string, t?: (key: any) => string): string {
   const { from, to } = parseDateRange(value);
   for (const preset of ALL_PRESETS) {
     const { from: pf, to: pt } = preset.getRange();
-    if (from.getTime() === pf.getTime() && to.getTime() === pt.getTime()) return preset.label;
+    if (from.getTime() === pf.getTime() && to.getTime() === pt.getTime()) {
+      return t ? t(preset.labelKey) : preset.label;
+    }
   }
   const fy = from.getFullYear(), ty = to.getFullYear(), fm = from.getMonth(), tm = to.getMonth();
   const isQuarterStart = (m: number) => m % 3 === 0;
@@ -214,28 +220,30 @@ export function getDateRangeDisplayLabel(value: string): string {
   return `${from.getDate()} ${MONTHS_SHORT[fm]} ${fy} – ${to.getDate()} ${MONTHS_SHORT[tm]} ${ty}`;
 }
 
-// ── Period quick presets (Dutch) ─────────────────────────────────────────────
+// ── Period quick presets ─────────────────────────────────────────────────────
 
-const PERIOD_QUICK_PRESETS: Record<PeriodMode, Preset[]> = {
+type PresetDef = { labelKey: TranslationKey; getRange: () => { from: Date; to: Date } };
+
+const PERIOD_QUICK_PRESET_DEFS: Record<PeriodMode, PresetDef[]> = {
   day: [
-    { label: 'Vandaag', getRange: () => ({ from: new Date(TODAY), to: new Date(TODAY) }) },
-    { label: 'Gisteren', getRange: () => { const y = new Date(TODAY); y.setDate(y.getDate() - 1); return { from: startOfDay(y), to: startOfDay(y) }; } },
+    { labelKey: 'date.today', getRange: () => ({ from: new Date(TODAY), to: new Date(TODAY) }) },
+    { labelKey: 'date.yesterday', getRange: () => { const y = new Date(TODAY); y.setDate(y.getDate() - 1); return { from: startOfDay(y), to: startOfDay(y) }; } },
   ],
   week: [
-    { label: 'Deze week', getRange: () => ({ from: startOfWeek(TODAY), to: clampToToday(endOfWeek(TODAY)) }) },
-    { label: 'Vorige week', getRange: () => { const p = new Date(TODAY); p.setDate(p.getDate() - 7); return { from: startOfWeek(p), to: endOfWeek(p) }; } },
+    { labelKey: 'date.thisWeek', getRange: () => ({ from: startOfWeek(TODAY), to: clampToToday(endOfWeek(TODAY)) }) },
+    { labelKey: 'date.lastWeek', getRange: () => { const p = new Date(TODAY); p.setDate(p.getDate() - 7); return { from: startOfWeek(p), to: endOfWeek(p) }; } },
   ],
   month: [
-    { label: 'Deze maand', getRange: () => ({ from: startOfMonth(TODAY), to: new Date(TODAY) }) },
-    { label: 'Vorige maand', getRange: () => { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - 1, 1); return { from: d, to: endOfMonth(d) }; } },
+    { labelKey: 'date.thisMonth', getRange: () => ({ from: startOfMonth(TODAY), to: new Date(TODAY) }) },
+    { labelKey: 'date.lastMonth', getRange: () => { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - 1, 1); return { from: d, to: endOfMonth(d) }; } },
   ],
   quarter: [
-    { label: 'Dit kwartaal', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) }; } },
-    { label: 'Vorig kwartaal', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); const s = new Date(TODAY.getFullYear(), (q - 1) * 3, 1); return { from: s, to: endOfQuarter(s) }; } },
+    { labelKey: 'date.thisQuarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); return { from: new Date(TODAY.getFullYear(), q * 3, 1), to: new Date(TODAY) }; } },
+    { labelKey: 'date.lastQuarter', getRange: () => { const q = Math.floor(TODAY.getMonth() / 3); const s = new Date(TODAY.getFullYear(), (q - 1) * 3, 1); return { from: s, to: endOfQuarter(s) }; } },
   ],
   year: [
-    { label: 'Dit jaar', getRange: () => ({ from: startOfYear(TODAY), to: new Date(TODAY) }) },
-    { label: 'Vorig jaar', getRange: () => { const d = new Date(TODAY.getFullYear() - 1, 0, 1); return { from: d, to: endOfYear(d) }; } },
+    { labelKey: 'date.thisYear', getRange: () => ({ from: startOfYear(TODAY), to: new Date(TODAY) }) },
+    { labelKey: 'date.lastYear', getRange: () => { const d = new Date(TODAY.getFullYear() - 1, 0, 1); return { from: d, to: endOfYear(d) }; } },
   ],
 };
 
@@ -326,6 +334,7 @@ const fromLinear = (lm: number) => ({ year: Math.floor(lm / 12), month: lm % 12 
 
 export default function DateRangeSelector({ value, onChange, anchorEl, onClose, hidePresets = false, inline = false, dialogOpen: externalDialogOpen, onDialogOpenChange, onShiftRangeRef, hideSlider = false }: DateRangeSelectorProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const open = inline || Boolean(anchorEl);
 
   // ── Shared state ──────────────────────────────────────────────────────────
@@ -1100,15 +1109,16 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5 }}>
           {/* Quick presets + date display */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, flexWrap: 'wrap' }}>
-            {PERIOD_QUICK_PRESETS[periodMode].map(preset => {
-              const { from: pf, to: pt } = preset.getRange();
+            {PERIOD_QUICK_PRESET_DEFS[periodMode].map(presetDef => {
+              const { from: pf, to: pt } = presetDef.getRange();
               const isActive = dialogFrom.getTime() === pf.getTime() && dialogTo.getTime() === pt.getTime();
+              const presetLabel = t(presetDef.labelKey);
               return (
                 <Chip
-                  key={preset.label}
-                  label={preset.label}
+                  key={presetDef.labelKey}
+                  label={presetLabel}
                   size="small"
-                  onClick={() => handleDialogPresetClick(preset)}
+                  onClick={() => handleDialogPresetClick({ label: presetLabel, getRange: presetDef.getRange })}
                   variant={isActive ? 'filled' : 'outlined'}
                   sx={{
                     fontWeight: isActive ? 600 : 500,
@@ -1648,7 +1658,7 @@ export default function DateRangeSelector({ value, onChange, anchorEl, onClose, 
             const { from: pf, to: pt } = preset.getRange();
             const isActive = rangeFrom.getTime() === pf.getTime() && rangeTo.getTime() === pt.getTime();
             return (
-              <Chip key={preset.label} label={preset.label} size="small" onClick={() => handlePresetClick(preset)}
+              <Chip key={preset.labelKey} label={t(preset.labelKey)} size="small" onClick={() => handlePresetClick(preset)}
                 sx={{
                   fontWeight: isActive ? 600 : 500, fontSize: '0.8rem', cursor: 'pointer',
                   bgcolor: isActive ? c.bgActive : 'transparent', color: isActive ? c.brand : c.textSecondary,

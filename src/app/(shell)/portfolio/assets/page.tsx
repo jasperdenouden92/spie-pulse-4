@@ -35,6 +35,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import { useLanguage } from '@/i18n';
 
 // ── Category config ──
 const CATEGORY_CONFIG: Record<string, { Icon: React.ElementType; color: string }> = {
@@ -87,6 +88,7 @@ export default function PortfolioAssetsRoute() {
   const router = useRouter();
   const { themeColors: c } = useThemeMode();
   const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone, setSidePeekAsset, setSidePeekAssetTab } = useAppState();
+  const { t } = useLanguage();
 
   // Derived option lists (computed once from static data)
   const allCategories = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.category).filter(Boolean) as string[])).sort(), []);
@@ -107,17 +109,17 @@ export default function PortfolioAssetsRoute() {
   const groupBy = get('groupBy', 'none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
   const GROUP_BY_OPTIONS = [
-    { value: 'none', label: 'No grouping' },
-    { value: 'building', label: 'Building' },
-    { value: 'category', label: 'Category' },
-    { value: 'status', label: 'Status' },
+    { value: 'none', label: t('common.noGrouping') },
+    { value: 'building', label: t('common.building') },
+    { value: 'category', label: t('common.category') },
+    { value: 'status', label: t('common.status') },
   ];
   const SORT_OPTIONS = [
-    { value: 'name', label: 'Name (A → Z)' },
-    { value: 'building', label: 'Building (A → Z)' },
-    { value: 'category', label: 'Category (A → Z)' },
-    { value: 'status', label: 'Status' },
-    { value: 'manufacturer', label: 'Manufacturer (A → Z)' },
+    { value: 'name', label: t('portfolio.sortNameAZ') },
+    { value: 'building', label: `${t('common.building')} (A \u2192 Z)` },
+    { value: 'category', label: `${t('common.category')} (A \u2192 Z)` },
+    { value: 'status', label: t('common.status') },
+    { value: 'manufacturer', label: `${t('assets.manufacturer')} (A \u2192 Z)` },
   ];
   const sortBy = get('sortBy', 'name');
   const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
@@ -197,59 +199,59 @@ export default function PortfolioAssetsRoute() {
   const filterChips = (
     <>
       {/* Always-visible filter chips */}
-      <FilterChip label="Category" value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setList('categories', []) : undefined} />
+      <FilterChip label={t('common.category')} value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setList('categories', []) : undefined} />
       <FilterDropdown
         anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)}
         options={allCategories.map(cat => { const { Icon, color } = getCatConfig(cat); return { value: cat, icon: <Icon sx={{ fontSize: 16, color }} /> } satisfies FilterOption; })}
-        multiple value={selectedCategories} onChange={(v) => setList('categories', v as string[])} placeholder="Search categories\u2026"
+        multiple value={selectedCategories} onChange={(v) => setList('categories', v as string[])} placeholder={t('assets.searchCategories')}
       />
 
-      <FilterChip label="Status" value={statusChipValue} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setList('statuses', []) : undefined} />
+      <FilterChip label={t('common.status')} value={statusChipValue} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setList('statuses', []) : undefined} />
       <FilterDropdown
         anchorEl={statusAnchor} onClose={() => setStatusAnchor(null)}
         options={allStatuses.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1), icon: <FiberManualRecordIcon sx={{ fontSize: 12, color: STATUS_COLOR[s] ?? '#9E9E9E' }} /> } satisfies FilterOption))}
-        multiple value={selectedStatuses} onChange={(v) => setList('statuses', v as string[])} placeholder="Search statuses\u2026"
+        multiple value={selectedStatuses} onChange={(v) => setList('statuses', v as string[])} placeholder={t('assets.searchStatuses')}
       />
 
       {/* Building */}
-      <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={selectedBuildings.length > 0 ? () => setList('buildings', []) : undefined} />
+      <FilterChip label={t('common.building')} value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} onClear={selectedBuildings.length > 0 ? () => setList('buildings', []) : undefined} />
       <FilterDropdown
         anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)}
         options={allBuildingNames.map(b => ({ value: b, icon: <ApartmentOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
         multiple value={selectedBuildings} onChange={(v) => setList('buildings', v as string[])}
-        placeholder="Search buildings\u2026"
+        placeholder={t('assets.searchBuildings')}
       />
 
       {/* Manufacturer */}
-      <FilterChip label="Manufacturer" value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setList('manufacturers', []) : undefined} />
+      <FilterChip label={t('assets.manufacturer')} value={manufacturerChipValue} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setList('manufacturers', []) : undefined} />
       <FilterDropdown
         anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)}
         options={allManufacturers.map(m => ({ value: m } satisfies FilterOption))}
         multiple value={selectedManufacturers} onChange={(v) => setList('manufacturers', v as string[])}
-        placeholder="Search manufacturers\u2026"
+        placeholder={t('assets.searchManufacturers')}
       />
 
       {/* Model */}
-      <FilterChip label="Model" value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setList('models', []) : undefined} />
+      <FilterChip label={t('assets.model')} value={modelChipValue} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setList('models', []) : undefined} />
       <FilterDropdown
         anchorEl={modelAnchor} onClose={() => setModelAnchor(null)}
         options={allModels.map(m => ({ value: m } satisfies FilterOption))}
         multiple value={selectedModels} onChange={(v) => setList('models', v as string[])}
-        placeholder="Search models\u2026"
+        placeholder={t('assets.searchModels')}
       />
 
       {/* Zone */}
-      <FilterChip label="Zone" value={zoneChipValue} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setList('zones', []) : undefined} />
+      <FilterChip label={t('assets.zone')} value={zoneChipValue} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setList('zones', []) : undefined} />
       <FilterDropdown
         anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)}
         options={allZones.map(l => ({ value: l, icon: <LocationOnOutlinedIcon sx={{ fontSize: 16 }} /> } satisfies FilterOption))}
         multiple value={selectedZones} onChange={(v) => setList('zones', v as string[])}
-        placeholder="Search zones\u2026"
+        placeholder={t('assets.searchZones')}
       />
 
       {/* Installation date */}
       <FilterChip
-        label="Installation date"
+        label={t('assets.installationDate')}
         value={dateRange ? getDateRangeDisplayLabel(dateRange) : null}
         onClick={() => setDateDialogOpen(true)}
         onClear={dateRange ? () => set('dateRange', '') : undefined}
@@ -290,7 +292,7 @@ export default function PortfolioAssetsRoute() {
       <InputBase
         value={search}
         onChange={(e) => set('search', e.target.value)}
-        placeholder="Search assets\u2026"
+        placeholder={t('portfolio.searchAssets')}
         sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
         endAdornment={
           search ? (
@@ -315,14 +317,14 @@ export default function PortfolioAssetsRoute() {
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <FilterChip
-                label="Group by"
+                label={t('common.groupBy')}
                 value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                 onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
                 neutral
               />
               {groupByMenu}
               <FilterChip
-                label="Sort"
+                label={t('common.sortBy')}
                 value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
                 onClick={(e) => setSortAnchor(e.currentTarget)}
                 neutral

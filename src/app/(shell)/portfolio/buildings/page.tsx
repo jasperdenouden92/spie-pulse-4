@@ -26,6 +26,7 @@ import { useURLState } from '@/hooks/useURLState';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import { useAppState } from '@/context/AppStateContext';
 import { handleSidePeekClick } from '@/components/SidePeekPanel';
+import { useLanguage } from '@/i18n';
 
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -39,20 +40,8 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
 type ViewMode = 'grid' | 'map';
 type GroupBy = 'none' | 'city' | 'group';
-const GROUP_BY_OPTIONS: { value: GroupBy; label: string }[] = [
-  { value: 'none', label: 'No grouping' },
-  { value: 'city', label: 'City' },
-  { value: 'group', label: 'Cluster' },
-];
-
+// Labels are set at render time via t() — see useMemo in the component
 type SortKey = 'name' | 'city' | 'group' | 'performance_desc' | 'performance_asc';
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: 'name', label: 'Name (A → Z)' },
-  { value: 'city', label: 'City (A → Z)' },
-  { value: 'group', label: 'Cluster (A → Z)' },
-  { value: 'performance_desc', label: 'Performance (high → low)' },
-  { value: 'performance_asc', label: 'Performance (low → high)' },
-];
 type ContractFilter = 'all' | 'has_contract' | 'no_contract';
 
 // ── Highlight matching text ──
@@ -90,6 +79,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 function BuildingTile({ building, query = '', onClick }: { building: typeof buildings[0]; query?: string; onClick?: (e?: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const stats = buildingOperationalStats[building.name];
   const energyRating = stats?.sustainability?.weiiRating;
 
@@ -141,7 +131,7 @@ function BuildingTile({ building, query = '', onClick }: { building: typeof buil
             {energyRating && <EnergyLabel rating={energyRating} size="small" />}
           </Box>
           <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.4 }}>
-            {building.address ? <HighlightText text={building.address} query={query} /> : 'Unknown location'}
+            {building.address ? <HighlightText text={building.address} query={query} /> : t('common.unknownLocation')}
           </Typography>
         </Box>
       </CardContent>
@@ -172,9 +162,23 @@ export default function PortfolioBuildingsRoute() {
   const { themeColors: c } = useThemeMode();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const router = useRouter();
+  const { t } = useLanguage();
   const { selectedTenant } = useURLState();
   const { get, set, getList, setList } = useFilterParams();
   const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+
+  const GROUP_BY_OPTIONS: { value: GroupBy; label: string }[] = [
+    { value: 'none', label: t('common.noGrouping') },
+    { value: 'city', label: t('common.city') },
+    { value: 'group', label: t('common.cluster') },
+  ];
+  const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+    { value: 'name', label: t('portfolio.sortNameAZ') },
+    { value: 'city', label: t('portfolio.sortCityAZ') },
+    { value: 'group', label: t('portfolio.sortClusterAZ') },
+    { value: 'performance_desc', label: t('portfolio.sortPerfHigh') },
+    { value: 'performance_asc', label: t('portfolio.sortPerfLow') },
+  ];
 
   const tenantBuildings = useMemo(() => buildings.filter(b => b.tenant === selectedTenant), [selectedTenant]);
 
@@ -280,7 +284,7 @@ export default function PortfolioBuildingsRoute() {
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <FilterChip
-                  label="Group by"
+                  label={t('common.groupBy')}
                   value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                   onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
                   neutral
@@ -295,7 +299,7 @@ export default function PortfolioBuildingsRoute() {
                 />
                 {/* Sort */}
                 <FilterChip
-                  label="Sort"
+                  label={t('common.sortBy')}
                   value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
                   onClick={(e) => setSortAnchor(e.currentTarget)}
                   neutral
@@ -328,7 +332,7 @@ export default function PortfolioBuildingsRoute() {
                     inputRef={searchRef}
                     value={search}
                     onChange={(e) => set('search', e.target.value)}
-                    placeholder="Search buildings…"
+                    placeholder={t('portfolio.searchBuildings')}
                     sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
                     endAdornment={
                       search ? (
@@ -388,7 +392,7 @@ export default function PortfolioBuildingsRoute() {
           }
         >
           <FilterChip
-            label="Contract"
+            label={t('common.contract')}
             value={contractFilter !== 'all' ? contractLabel : null}
             onClick={(e) => setContractAnchor(e.currentTarget)}
           />
@@ -401,14 +405,14 @@ export default function PortfolioBuildingsRoute() {
             ] as FilterOption[]}
             value={contractFilter === 'all' ? null : contractFilter}
             onChange={(val) => set('contract', val ?? 'all')}
-            placeholder="Search…"
+            placeholder={t('common.search')}
           />
-          <FilterChip label="City" value={cityChipValue} onClick={(e) => setCityAnchor(e.currentTarget)} />
-          <FilterDropdown anchorEl={cityAnchor} onClose={() => setCityAnchor(null)} options={cities.map(city => ({ value: city }))} multiple value={selectedCities} onChange={(v) => setList('cities', v as string[])} placeholder="Search cities…" />
-          <FilterChip label="Cluster" value={groupChipValue} onClick={(e) => setGroupAnchor(e.currentTarget)} onClear={selectedGroups.length > 0 ? () => setList('groups', []) : undefined} />
-          <FilterDropdown anchorEl={groupAnchor} onClose={() => setGroupAnchor(null)} options={groups.map(g => ({ value: g }))} multiple value={selectedGroups} onChange={(v) => setList('groups', v as string[])} placeholder="Search clusters…" />
-          <FilterChip label="Energy label" value={energyChipValue} onClick={(e) => setEnergyAnchor(e.currentTarget)} onClear={selectedEnergies.length > 0 ? () => setList('energies', []) : undefined} />
-          <FilterDropdown anchorEl={energyAnchor} onClose={() => setEnergyAnchor(null)} options={energyLabels.map(label => ({ value: label, icon: <EnergyLabel rating={label} /> }))} multiple value={selectedEnergies} onChange={(v) => setList('energies', v as string[])} placeholder="Search energy labels…" />
+          <FilterChip label={t('common.city')} value={cityChipValue} onClick={(e) => setCityAnchor(e.currentTarget)} />
+          <FilterDropdown anchorEl={cityAnchor} onClose={() => setCityAnchor(null)} options={cities.map(city => ({ value: city }))} multiple value={selectedCities} onChange={(v) => setList('cities', v as string[])} placeholder={t('common.searchCities')} />
+          <FilterChip label={t('common.cluster')} value={groupChipValue} onClick={(e) => setGroupAnchor(e.currentTarget)} onClear={selectedGroups.length > 0 ? () => setList('groups', []) : undefined} />
+          <FilterDropdown anchorEl={groupAnchor} onClose={() => setGroupAnchor(null)} options={groups.map(g => ({ value: g }))} multiple value={selectedGroups} onChange={(v) => setList('groups', v as string[])} placeholder={t('common.searchClusters')} />
+          <FilterChip label={t('common.energyLabel')} value={energyChipValue} onClick={(e) => setEnergyAnchor(e.currentTarget)} onClear={selectedEnergies.length > 0 ? () => setList('energies', []) : undefined} />
+          <FilterDropdown anchorEl={energyAnchor} onClose={() => setEnergyAnchor(null)} options={energyLabels.map(label => ({ value: label, icon: <EnergyLabel rating={label} /> }))} multiple value={selectedEnergies} onChange={(v) => setList('energies', v as string[])} placeholder={t('common.searchEnergyLabels')} />
         </PageHeader>
 
         {/* ── Content ── */}

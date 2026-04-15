@@ -14,17 +14,21 @@ import Tooltip from '@mui/material/Tooltip';
 import type { Building } from '@/data/buildings';
 import { BuildingSelectorPopover } from '@/components/BuildingSelector';
 import PageHeader from '@/components/PageHeader';
+import { useLanguage } from '@/i18n';
 
 export type BuildingDetailTab = 'overview' | 'performance' | 'zones' | 'assets' | 'tickets' | 'quotations';
 
-const TABS: { value: BuildingDetailTab; label: string }[] = [
-  { value: 'overview', label: 'Overview' },
-  { value: 'performance', label: 'Performance' },
-  { value: 'zones', label: 'Zones' },
-  { value: 'assets', label: 'Assets' },
-  { value: 'tickets', label: 'Tickets' },
-  { value: 'quotations', label: 'Quotations' },
-];
+function useTabs() {
+  const { t } = useLanguage();
+  return [
+    { value: 'overview' as BuildingDetailTab, label: t('common.overview') },
+    { value: 'performance' as BuildingDetailTab, label: t('building.performance') },
+    { value: 'zones' as BuildingDetailTab, label: t('building.zones') },
+    { value: 'assets' as BuildingDetailTab, label: t('building.assets') },
+    { value: 'tickets' as BuildingDetailTab, label: t('building.tickets') },
+    { value: 'quotations' as BuildingDetailTab, label: t('building.quotations') },
+  ];
+}
 
 interface BuildingDetailPageProps {
   building: Building;
@@ -49,20 +53,22 @@ export default function BuildingDetailPage({
   onPanelClose,
   onPanelFullscreen,
 }: BuildingDetailPageProps) {
+  const { t } = useLanguage();
+  const tabs = useTabs();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const [buildingAnchorEl, setBuildingAnchorEl] = useState<HTMLElement | null>(null);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>
       {onPanelClose && (
-        <Tooltip title="Close panel">
+        <Tooltip title={t('building.closePanel')}>
           <IconButton size="small" onClick={onPanelClose} sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}>
             <KeyboardDoubleArrowRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
       {onPanelFullscreen && (
-        <Tooltip title="Open fullscreen">
+        <Tooltip title={t('building.openFullscreen')}>
           <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}>
             <OpenInFullIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -77,7 +83,7 @@ export default function BuildingDetailPage({
       image={building.image}
       title={building.name}
       subtitle={building.address}
-      tabs={TABS}
+      tabs={tabs}
       activeTab={tab}
       onTabChange={(v) => onTabChange(v as BuildingDetailTab)}
       isCollapsed={isCollapsed}
@@ -89,7 +95,7 @@ export default function BuildingDetailPage({
             sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: '#fff' } }}
             onClick={onBackToPortfolio}
           >
-            Portfolio
+            {t('nav.portfolio')}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
           <Box

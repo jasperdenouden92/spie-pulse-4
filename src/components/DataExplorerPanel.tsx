@@ -50,6 +50,7 @@ import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { AssetNode, assetTree } from '@/data/assetTree';
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage, type TranslationKey } from '@/i18n';
 
 interface DataExplorerPanelProps {
   open: boolean;
@@ -63,13 +64,13 @@ interface DataExplorerPanelProps {
 const MENU_WIDTH = 260;
 const SUBPANE_WIDTH = 340;
 
-const folders = [
-  { id: 'alerts', label: 'Alert Overview', icon: <NotificationsActiveOutlinedIcon sx={{ fontSize: 18 }} />, count: 12 },
-  { id: 'analyses', label: 'Analyses Overview', icon: <BarChartOutlinedIcon sx={{ fontSize: 18 }} />, count: 8 },
-  { id: 'documents', label: 'Documents', icon: <DescriptionOutlinedIcon sx={{ fontSize: 18 }} />, count: 156 },
-  { id: 'tickets', label: 'Tickets', icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 18 }} />, count: 34 },
-  { id: 'performance', label: 'Performance Overview', icon: <SpeedOutlinedIcon sx={{ fontSize: 18 }} />, count: 5 },
-  { id: 'quotations', label: 'Quotations', icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />, count: 17 },
+const folderDefs: { id: string; labelKey: TranslationKey; icon: React.ReactNode; count: number }[] = [
+  { id: 'alerts', labelKey: 'explorer.alertOverview', icon: <NotificationsActiveOutlinedIcon sx={{ fontSize: 18 }} />, count: 12 },
+  { id: 'analyses', labelKey: 'explorer.analysesOverview', icon: <BarChartOutlinedIcon sx={{ fontSize: 18 }} />, count: 8 },
+  { id: 'documents', labelKey: 'nav.documents', icon: <DescriptionOutlinedIcon sx={{ fontSize: 18 }} />, count: 156 },
+  { id: 'tickets', labelKey: 'nav.tickets', icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 18 }} />, count: 34 },
+  { id: 'performance', labelKey: 'explorer.performanceOverview', icon: <SpeedOutlinedIcon sx={{ fontSize: 18 }} />, count: 5 },
+  { id: 'quotations', labelKey: 'nav.quotations', icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 18 }} />, count: 17 },
 ];
 
 const assetCategoryIcons: Record<string, React.ReactNode> = {
@@ -86,6 +87,8 @@ function countNodes(node: AssetNode): number {
 
 function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenInMainApp, onWidthChange }: DataExplorerPanelProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
+  const folders = folderDefs.map(f => ({ ...f, label: t(f.labelKey) }));
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [treeExpanded, setTreeExpanded] = useState<string[]>([]);
@@ -217,12 +220,12 @@ function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenI
                 sx={{ display: 'flex', alignItems: 'center', gap: 0.25, opacity: 0, transition: 'opacity 0.2s', ml: 'auto' }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <Tooltip title="Open in main app" placement="top">
+                <Tooltip title={t('explorer.openInMainApp')} placement="top">
                   <IconButton size="small" sx={{ width: 18, height: 18, p: 0 }} onClick={() => onOpenInMainApp?.(node)}>
                     <ArrowForwardIcon sx={{ fontSize: 11 }} />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="More" placement="top">
+                <Tooltip title={t('common.more')} placement="top">
                   <IconButton size="small" sx={{ width: 18, height: 18, p: 0 }} onClick={(e) => setContextMenuAnchor({ element: e.currentTarget, node })}>
                     <MoreVertIcon sx={{ fontSize: 11 }} />
                   </IconButton>
@@ -304,7 +307,7 @@ function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenI
         >
           {/* Header */}
           <Box sx={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, flexShrink: 0, borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Data Explorer</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>{t('explorer.title')}</Typography>
             <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary' }}>
               <CloseIcon sx={{ fontSize: 18 }} />
             </IconButton>
@@ -315,7 +318,7 @@ function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenI
             <List data-annotation-id="dataexplorerpanel-lijst" disablePadding>
               {/* Section: Buildings & Assets */}
               <Typography variant="caption" sx={{ px: 2.5, pt: 1.5, pb: 0.5, display: 'block', color: 'text.secondary', fontWeight: 600, fontSize: '0.675rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Buildings & Assets
+                {t('explorer.buildingsAndAssets')}
               </Typography>
 
               {treeData.map((category) => {
@@ -357,7 +360,7 @@ function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenI
 
               {/* Section: Other pages */}
               <Typography variant="caption" sx={{ px: 2.5, pt: 2, pb: 0.5, display: 'block', color: 'text.secondary', fontWeight: 600, fontSize: '0.675rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Other pages
+                {t('explorer.otherPages')}
               </Typography>
 
               {folders.map((folder) => {
@@ -440,7 +443,7 @@ function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenI
             <Box sx={{ px: 2, py: 1.5, flexShrink: 0 }}>
               <TextField
                 size="small"
-                placeholder="Search..."
+                placeholder={t('common.search') + '...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 fullWidth
@@ -498,19 +501,19 @@ function DataExplorerPanel({ open, onClose, sidebarWidth, onAssetSelect, onOpenI
       {/* Context Menu */}
       <Menu anchorEl={contextMenuAnchor?.element} open={Boolean(contextMenuAnchor)} onClose={() => setContextMenuAnchor(null)}>
         <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
-          <VisibilityOutlinedIcon fontSize="small" /> View Details
+          <VisibilityOutlinedIcon fontSize="small" /> {t('common.viewDetails')}
         </MenuItem>
         <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
-          <EditOutlinedIcon fontSize="small" /> Edit Properties
+          <EditOutlinedIcon fontSize="small" /> {t('explorer.editProperties')}
         </MenuItem>
         {contextMenuAnchor?.node.type === 'asset' ? (
           <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
-            <NotificationsOutlinedIcon fontSize="small" /> Alert Settings
+            <NotificationsOutlinedIcon fontSize="small" /> {t('explorer.alertSettings')}
           </MenuItem>
         ) : null}
         <Divider sx={{ my: 0.5 }} />
         <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
-          <ContentCopyOutlinedIcon fontSize="small" /> Copy ID
+          <ContentCopyOutlinedIcon fontSize="small" /> {t('explorer.copyId')}
         </MenuItem>
       </Menu>
     </>

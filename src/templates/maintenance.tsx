@@ -3,6 +3,7 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useLanguage } from '@/i18n';
 
 export type MaintenanceDetailTab = 'overview' | 'schedule' | 'history';
 
@@ -13,10 +14,11 @@ interface MaintenanceTemplateProps {
 }
 
 export default function MaintenanceTemplate({ maintenanceId, tab = 'overview' }: MaintenanceTemplateProps) {
+  const { t } = useLanguage();
   return (
     <Box>
-      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>Maintenance: {maintenanceId}</Typography>
-      <Typography color="text.secondary">Maintenance detail template — ready for implementation</Typography>
+      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>{t('maintenance.overview')}: {maintenanceId}</Typography>
+      <Typography color="text.secondary">{t('maintenance.schedule')} · {t('maintenance.history')}</Typography>
     </Box>
   );
 }

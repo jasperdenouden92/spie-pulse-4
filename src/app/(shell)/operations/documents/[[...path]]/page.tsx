@@ -44,6 +44,7 @@ import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/c
 import PageHeader from '@/components/PageHeader';
 import { documentFolders, documentFiles, allDocumentItems, resolveFolderPath, buildFolderPath } from '@/data/documents';
 import type { DocumentFile, DocumentFolder, DocumentItem, DocumentCategory } from '@/data/documents';
+import { useLanguage } from '@/i18n';
 
 // ── Constants ──
 
@@ -72,14 +73,6 @@ const CATEGORY_COLORS: Record<DocumentCategory, string> = {
 };
 
 type SortKey = 'modified_desc' | 'modified_asc' | 'name' | 'building' | 'category' | 'type';
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: 'modified_desc', label: 'Modified (newest first)' },
-  { value: 'modified_asc', label: 'Modified (oldest first)' },
-  { value: 'name', label: 'Name (A \u2192 Z)' },
-  { value: 'building', label: 'Building (A \u2192 Z)' },
-  { value: 'category', label: 'Category' },
-  { value: 'type', label: 'File type' },
-];
 
 function getItemName(item: DocumentItem): string {
   return item.type === 'folder' ? item.name : item.title;
@@ -138,11 +131,6 @@ function timeAgo(dateStr: string): string {
 const DEFAULT_DATE_RANGE = `2023-01-01|${new Date().toISOString().split('T')[0]}`;
 
 type GroupByKey = 'none' | 'building' | 'category';
-const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
-  { value: 'none', label: 'No grouping' },
-  { value: 'building', label: 'Building' },
-  { value: 'category', label: 'Category' },
-];
 
 const recentlyChanged = [...documentFiles]
   .sort((a, b) => b.modifiedDate.localeCompare(a.modifiedDate))
@@ -186,7 +174,22 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const router = useRouter();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+
+  const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+    { value: 'modified_desc', label: t('documents.sortModifiedNewest') },
+    { value: 'modified_asc', label: t('documents.sortModifiedOldest') },
+    { value: 'name', label: t('documents.sortNameAZ') },
+    { value: 'building', label: t('documents.sortBuildingAZ') },
+    { value: 'category', label: t('documents.sortCategory') },
+    { value: 'type', label: t('documents.sortFileType') },
+  ];
+  const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
+    { value: 'none', label: t('common.noGrouping') },
+    { value: 'building', label: t('common.building') },
+    { value: 'category', label: t('common.category') },
+  ];
 
   const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
     e.stopPropagation();
@@ -346,7 +349,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 {/* Group by */}
                 <FilterChip
-                  label="Group by"
+                  label={t('common.groupBy')}
                   value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                   onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
                   neutral
@@ -361,7 +364,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                 />
                 {/* Sort */}
                 <FilterChip
-                  label="Sort"
+                  label={t('common.sortBy')}
                   value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
                   onClick={(e) => setSortAnchor(e.currentTarget)}
                   neutral
@@ -389,7 +392,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                     inputRef={searchRef}
                     value={search}
                     onChange={(e) => set('search', e.target.value)}
-                    placeholder="Search documents..."
+                    placeholder={t('documents.searchDocuments')}
                     sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
                     endAdornment={
                       search ? (
@@ -413,7 +416,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
               <AccessTimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
               <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', color: 'text.secondary' }}>
-                Recently changed
+                {t('documents.recentlyChanged')}
               </Typography>
             </Box>
             <Box
@@ -461,13 +464,13 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
 
         {/* ── Filters ── */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-          <FilterChip label="Category" value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} />
-          <FilterDropdown anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)} options={CATEGORY_OPTIONS.map(ct => ({ value: ct }))} multiple value={selectedCategories} onChange={(v) => setList('categories', v as string[])} placeholder="Search categories..." />
-          <FilterChip label="Building" value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} />
-          <FilterDropdown anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)} options={allBuildings.map(b => ({ value: b }))} multiple value={selectedBuildings} onChange={(v) => setList('buildings', v as string[])} placeholder="Search buildings..." />
-          <FilterChip label="File type" value={fileTypeChipValue} onClick={(e) => setFileTypeAnchor(e.currentTarget)} />
-          <FilterDropdown anchorEl={fileTypeAnchor} onClose={() => setFileTypeAnchor(null)} options={allFileTypes.map(t => ({ value: t }))} multiple value={selectedFileTypes} onChange={(v) => setList('fileTypes', v as string[])} placeholder="Search file types..." />
-          <FilterChip label="Modified" value={modifiedRange ? getDateRangeDisplayLabel(modifiedRange) : null} onClick={() => setModifiedDialogOpen(true)} />
+          <FilterChip label={t('common.category')} value={categoryChipValue} onClick={(e) => setCategoryAnchor(e.currentTarget)} />
+          <FilterDropdown anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)} options={CATEGORY_OPTIONS.map(ct => ({ value: ct }))} multiple value={selectedCategories} onChange={(v) => setList('categories', v as string[])} placeholder={t('documents.searchCategories')} />
+          <FilterChip label={t('common.building')} value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} />
+          <FilterDropdown anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)} options={allBuildings.map(b => ({ value: b }))} multiple value={selectedBuildings} onChange={(v) => setList('buildings', v as string[])} placeholder={t('documents.searchBuildings')} />
+          <FilterChip label={t('documents.fileType')} value={fileTypeChipValue} onClick={(e) => setFileTypeAnchor(e.currentTarget)} />
+          <FilterDropdown anchorEl={fileTypeAnchor} onClose={() => setFileTypeAnchor(null)} options={allFileTypes.map(ft => ({ value: ft }))} multiple value={selectedFileTypes} onChange={(v) => setList('fileTypes', v as string[])} placeholder={t('documents.searchFileTypes')} />
+          <FilterChip label={t('common.modified')} value={modifiedRange ? getDateRangeDisplayLabel(modifiedRange) : null} onClick={() => setModifiedDialogOpen(true)} />
           <DateRangeSelector inline hideSlider dialogOpen={modifiedDialogOpen} onDialogOpenChange={setModifiedDialogOpen} value={modifiedRange || DEFAULT_DATE_RANGE} onChange={(v) => set('modifiedRange', v)} />
         </Box>
 
@@ -475,7 +478,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
         <Box>
           {filtered.length === 0 ? (
             <Box sx={{ py: 8, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">No documents match the current filters</Typography>
+              <Typography variant="body2" color="text.secondary">{t('documents.noDocumentsFound')}</Typography>
             </Box>
           ) : (
             grouped.map((group) => (
@@ -500,7 +503,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                   <TableHead>
                     <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
                       <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, p: '8px 4px 8px 16px' }} />
-                      {['Name', 'Building', 'Owner', 'Date modified', 'File type', 'File size'].map(h => (
+                      {[t('documents.name'), t('common.building'), t('documents.owner'), t('documents.dateModified'), t('documents.fileType'), t('documents.fileSize')].map(h => (
                         <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
                       ))}
                     </TableRow>
@@ -591,7 +594,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                 <IconButton size="small" disabled={page >= totalPages - 1} onClick={() => setNumber('page', totalPages - 1, 0)} sx={{ color: 'text.secondary' }}><LastPageIcon sx={{ fontSize: 18 }} /></IconButton>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>Results per page:</Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>{t('operations.resultsPerPage')}</Typography>
                 <Box onClick={(e) => setRowsPerPageAnchor(e.currentTarget)} sx={{ display: 'flex', alignItems: 'center', height: 28, borderRadius: '6px', border: '1px solid', borderColor: c.borderSecondary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, cursor: 'pointer', '&:hover': { borderColor: c.borderSecondary }, transition: 'border-color 0.15s ease' }}>
                   <Typography variant="body2" sx={{ fontSize: '0.8125rem', fontWeight: 500 }}>{rowsPerPage}</Typography>
                 </Box>

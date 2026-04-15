@@ -42,6 +42,7 @@ import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/c
 import PageHeader from '@/components/PageHeader';
 import { quotations } from '@/data/quotations';
 import type { Quotation, QuotationStatus } from '@/data/quotations';
+import { useLanguage } from '@/i18n';
 
 // ── Constants ──
 
@@ -57,15 +58,6 @@ const STATUS_COLORS: Record<QuotationStatus, string> = {
 
 // Sort options
 type SortKey = 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc' | 'building' | 'status' | 'contactPerson';
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: 'date_desc', label: 'Date (newest first)' },
-  { value: 'date_asc', label: 'Date (oldest first)' },
-  { value: 'amount_desc', label: 'Amount (high \u2192 low)' },
-  { value: 'amount_asc', label: 'Amount (low \u2192 high)' },
-  { value: 'building', label: 'Building (A \u2192 Z)' },
-  { value: 'status', label: 'Status' },
-  { value: 'contactPerson', label: 'Contact person (A \u2192 Z)' },
-];
 
 const STATUS_ORDER: Record<QuotationStatus, number> = {
   Pending: 0,
@@ -109,11 +101,6 @@ function amountRangeLabel(range: RangeValue): string | null {
 const DEFAULT_DATE_RANGE = `2023-07-01|${new Date().toISOString().split('T')[0]}`;
 
 type GroupByKey = 'none' | 'building' | 'status';
-const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
-  { value: 'none', label: 'No grouping' },
-  { value: 'building', label: 'Building' },
-  { value: 'status', label: 'Status' },
-];
 
 const PLACEHOLDER_IMAGE = '/images/buildings/placeholder.png';
 
@@ -151,7 +138,23 @@ export default function OperationsQuotationsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
   const router = useRouter();
+  const { t } = useLanguage();
   const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone, setSidePeekQuotation } = useAppState();
+
+  const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+    { value: 'date_desc', label: t('operations.sortDateNewest') },
+    { value: 'date_asc', label: t('operations.sortDateOldest') },
+    { value: 'amount_desc', label: t('operations.sortAmountHigh') },
+    { value: 'amount_asc', label: t('operations.sortAmountLow') },
+    { value: 'building', label: t('operations.sortBuildingAZ') },
+    { value: 'status', label: t('operations.sortStatus') },
+    { value: 'contactPerson', label: t('operations.sortContactAZ') },
+  ];
+  const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
+    { value: 'none', label: t('common.noGrouping') },
+    { value: 'building', label: t('common.building') },
+    { value: 'status', label: t('common.status') },
+  ];
 
   const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
     e.stopPropagation();
@@ -288,7 +291,7 @@ export default function OperationsQuotationsRoute() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 {/* Group by */}
                 <FilterChip
-                  label="Group by"
+                  label={t('common.groupBy')}
                   value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                   onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
                   neutral
@@ -303,7 +306,7 @@ export default function OperationsQuotationsRoute() {
                 />
                 {/* Sort */}
                 <FilterChip
-                  label="Sort"
+                  label={t('common.sortBy')}
                   value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
                   onClick={(e) => setSortAnchor(e.currentTarget)}
                   neutral
@@ -331,7 +334,7 @@ export default function OperationsQuotationsRoute() {
                     inputRef={searchRef}
                     value={search}
                     onChange={(e) => set('search', e.target.value)}
-                    placeholder="Search quotations..."
+                    placeholder={t('operations.searchQuotations')}
                     sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
                     endAdornment={
                       search ? (
@@ -381,7 +384,7 @@ export default function OperationsQuotationsRoute() {
           }
         >
           <FilterChip
-            label="Status"
+            label={t('common.status')}
             value={statusChipValue}
             onClick={(e) => setStatusAnchor(e.currentTarget)}
           />
@@ -392,10 +395,10 @@ export default function OperationsQuotationsRoute() {
             multiple
             value={selectedStatuses}
             onChange={(v) => setList('statuses', v as string[])}
-            placeholder="Search statuses..."
+            placeholder={t('operations.searchQuotationStatuses')}
           />
           <FilterChip
-            label="Building"
+            label={t('common.building')}
             value={buildingChipValue}
             onClick={(e) => setBuildingAnchor(e.currentTarget)}
           />
@@ -406,10 +409,10 @@ export default function OperationsQuotationsRoute() {
             multiple
             value={selectedBuildings}
             onChange={(v) => setList('buildings', v as string[])}
-            placeholder="Search buildings..."
+            placeholder={t('operations.searchQuotationBuildings')}
           />
           <FilterChip
-            label="Amount"
+            label={t('common.amount')}
             value={amountRangeLabel(amountRange)}
             onClick={(e) => setAmountAnchor(e.currentTarget)}
           />
@@ -424,7 +427,7 @@ export default function OperationsQuotationsRoute() {
             onChange={(v: RangeValue) => { set('amountMin', v.min); set('amountMax', v.max); }}
           />
           <FilterChip
-            label="Creation date"
+            label={t('operations.creationDate')}
             value={dateRange ? getDateRangeDisplayLabel(dateRange) : null}
             onClick={() => setDateDialogOpen(true)}
           />
@@ -437,7 +440,7 @@ export default function OperationsQuotationsRoute() {
             onChange={(v) => set('dateRange', v)}
           />
           <FilterChip
-            label="Expiration date"
+            label={t('operations.expirationDate')}
             value={expirationRange ? getDateRangeDisplayLabel(expirationRange) : null}
             onClick={() => setExpirationDialogOpen(true)}
           />
@@ -455,7 +458,7 @@ export default function OperationsQuotationsRoute() {
         <Box sx={{ pt: 3 }}>
           {filtered.length === 0 ? (
             <Box sx={{ py: 8, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">No quotations match the current filters</Typography>
+              <Typography variant="body2" color="text.secondary">{t('operations.noQuotationsFound')}</Typography>
             </Box>
           ) : viewMode === 'list' ? (
             /* ── Table view ── */
@@ -488,10 +491,10 @@ export default function OperationsQuotationsRoute() {
                   <TableHead>
                     <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
                       <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, width: 56, p: '8px 8px 8px 16px' }} />
-                      {['Nr', 'Title', 'Building', 'Contact person', 'Status', 'Creation date', 'Expiration date'].map(h => (
+                      {['Nr', t('common.name'), t('common.building'), t('operations.contactPerson'), t('common.status'), t('operations.creationDate'), t('operations.expirationDate')].map(h => (
                         <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
                       ))}
-                      <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>Amount</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>{t('common.amount')}</TableCell>
                     </TableRow>
                   </TableHead>
                 </Table>
@@ -739,7 +742,7 @@ export default function OperationsQuotationsRoute() {
               {/* Right: results per page */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
-                  Results per page:
+                  {t('operations.resultsPerPage')}
                 </Typography>
                 <Box
                   onClick={(e) => setRowsPerPageAnchor(e.currentTarget)}

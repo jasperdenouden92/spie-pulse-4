@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import GridCard from './GridCard';
 import type { GridCardSize } from './GridCard';
 import type { StatusCount } from './StatusOverviewCard';
@@ -47,6 +48,7 @@ export default function ActiveListCard({
   renderRowActions,
 }: ActiveListCardProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [actionFilter, setActionFilter] = useState(false);
 
   function getStatusColor(status: string): string {
@@ -83,7 +85,7 @@ export default function ActiveListCard({
             onClick={onViewAll}
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
           >
-            View all
+            {t('performance.viewAll')}
           </Button>
         </Box>
       }

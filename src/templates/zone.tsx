@@ -19,15 +19,19 @@ import type { Zone } from '@/data/zones';
 import { zones as allZones, getZoneColor } from '@/data/zones';
 import PageHeader from '@/components/PageHeader';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 
 export type ZoneDetailTab = 'overview' | 'assets' | 'tickets' | 'quotations';
 
-const TABS: { value: ZoneDetailTab; label: string }[] = [
-  { value: 'overview', label: 'Overview' },
-  { value: 'assets', label: 'Assets' },
-  { value: 'tickets', label: 'Tickets' },
-  { value: 'quotations', label: 'Quotations' },
-];
+function useZoneTabs() {
+  const { t } = useLanguage();
+  return [
+    { value: 'overview' as ZoneDetailTab, label: t('common.overview') },
+    { value: 'assets' as ZoneDetailTab, label: t('building.assets') },
+    { value: 'tickets' as ZoneDetailTab, label: t('building.tickets') },
+    { value: 'quotations' as ZoneDetailTab, label: t('building.quotations') },
+  ];
+}
 
 // ── Zone selector popover ──
 
@@ -41,6 +45,7 @@ interface ZoneSelectorPopoverProps {
 
 function ZoneSelectorPopover({ anchorEl, onClose, currentZoneId, buildingName, onZoneSelect }: ZoneSelectorPopoverProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -91,7 +96,7 @@ function ZoneSelectorPopover({ anchorEl, onClose, currentZoneId, buildingName, o
             inputRef={searchRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search zones…"
+            placeholder={t('zone.searchZones')}
             sx={{ fontSize: '0.8rem', flex: 1, '& input': { p: 0, lineHeight: 1 } }}
           />
         </Box>
@@ -100,7 +105,7 @@ function ZoneSelectorPopover({ anchorEl, onClose, currentZoneId, buildingName, o
       {/* Zone list */}
       <Box sx={{ overflowY: 'auto', pb: 1 }}>
         {grouped.length === 0 ? (
-          <Typography sx={{ px: 2, py: 2, fontSize: '0.8rem', color: 'text.disabled' }}>No zones found</Typography>
+          <Typography sx={{ px: 2, py: 2, fontSize: '0.8rem', color: 'text.disabled' }}>{t('zone.noZonesFound')}</Typography>
         ) : (
           grouped.map(([floor, zones]) => (
             <Box key={floor}>
@@ -165,20 +170,22 @@ export default function ZoneDetailPage({
   onPanelClose,
   onPanelFullscreen,
 }: ZoneDetailPageProps) {
+  const { t } = useLanguage();
+  const tabs = useZoneTabs();
   const zoneColor = getZoneColor(zone.name);
   const [zoneAnchorEl, setZoneAnchorEl] = useState<HTMLElement | null>(null);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>
       {onPanelClose && (
-        <Tooltip title="Close panel">
+        <Tooltip title={t('building.closePanel')}>
           <IconButton size="small" onClick={onPanelClose} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <KeyboardDoubleArrowRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
       {onPanelFullscreen && (
-        <Tooltip title="Open fullscreen">
+        <Tooltip title={t('building.openFullscreen')}>
           <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <OpenInFullIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -194,7 +201,7 @@ export default function ZoneDetailPage({
       entityIconBgColor={zoneColor}
       title={zone.name}
       subtitle={`${zone.floor} · ${zone.buildingName}`}
-      tabs={TABS}
+      tabs={tabs}
       activeTab={tab}
       onTabChange={(v) => onTabChange(v as ZoneDetailTab)}
       isCollapsed={isCollapsed}
@@ -206,7 +213,7 @@ export default function ZoneDetailPage({
             sx={{ color: 'text.secondary', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: 'text.primary' } }}
             onClick={onBackToPortfolio}
           >
-            Portfolio
+            {t('nav.portfolio')}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
           <Typography

@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import CheckIcon from '@mui/icons-material/Check';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { getKbdSx } from '@/components/BuildingSelector';
 
 export interface FilterOption {
@@ -96,8 +97,11 @@ function OptionRow({
 }
 
 export default function FilterDropdown(props: FilterDropdownProps) {
-  const { anchorEl, onClose, options, multiple, onRemove, placeholder = 'Search…', emptyText = 'No results', hideSearch = false } = props;
+  const { anchorEl, onClose, options, multiple, onRemove, placeholder: placeholderProp, emptyText: emptyTextProp, hideSearch = false } = props;
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
+  const placeholder = placeholderProp ?? (t('common.search') + '\u2026');
+  const emptyText = emptyTextProp ?? t('common.noResults');
   const [search, setSearch] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(0);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -255,11 +259,11 @@ export default function FilterDropdown(props: FilterDropdownProps) {
               <Box component="kbd" sx={kbdSx}>↑</Box>
               <Box component="kbd" sx={kbdSx}>↓</Box>
             </Box>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>Navigate</Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>{t('common.navigate')}</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Box component="kbd" sx={kbdSx}>↵</Box>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>Select</Typography>
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>{t('common.select')}</Typography>
           </Box>
         </Box>
 
@@ -279,7 +283,7 @@ export default function FilterDropdown(props: FilterDropdownProps) {
             '&:hover': { textDecoration: hasValue || onRemove ? 'underline' : 'none' },
           }}
         >
-          Clear
+          {t('common.clear')}
         </Box>
       </Box>
     </Popover>

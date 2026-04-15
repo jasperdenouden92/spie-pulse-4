@@ -19,6 +19,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import BusinessIcon from '@mui/icons-material/Business';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { useLanguage } from '@/i18n';
 
 interface Insight {
   id: string;
@@ -74,6 +75,7 @@ const getImpactColor = (impact: string) => {
 
 export default function InsightsAlertsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
+  const { t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
   return (
@@ -81,10 +83,10 @@ export default function InsightsAlertsRoute() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <Box sx={{ p: 3 }}>
           <Box sx={{ mb: 3, display: 'flex', gap: 1, alignItems: 'center' }}>
-            <Button variant={selectedFilter === 'all' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('all')} sx={{ textTransform: 'none' }}>All Insights</Button>
-            <Button variant={selectedFilter === 'opportunity' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('opportunity')} startIcon={<TrendingUpIcon />} sx={{ textTransform: 'none' }}>Opportunities</Button>
-            <Button variant={selectedFilter === 'warning' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('warning')} startIcon={<WarningIcon />} sx={{ textTransform: 'none' }}>Warnings</Button>
-            <Button variant={selectedFilter === 'recommendation' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('recommendation')} startIcon={<CheckCircleIcon />} sx={{ textTransform: 'none' }}>Recommendations</Button>
+            <Button variant={selectedFilter === 'all' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('all')} sx={{ textTransform: 'none' }}>{t('insights.allInsights')}</Button>
+            <Button variant={selectedFilter === 'opportunity' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('opportunity')} startIcon={<TrendingUpIcon />} sx={{ textTransform: 'none' }}>{t('insights.opportunities')}</Button>
+            <Button variant={selectedFilter === 'warning' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('warning')} startIcon={<WarningIcon />} sx={{ textTransform: 'none' }}>{t('insights.warnings')}</Button>
+            <Button variant={selectedFilter === 'recommendation' ? 'contained' : 'outlined'} size="small" onClick={() => setSelectedFilter('recommendation')} startIcon={<CheckCircleIcon />} sx={{ textTransform: 'none' }}>{t('insights.recommendations')}</Button>
             <Box sx={{ flex: 1 }} />
             <IconButton size="small"><FilterListIcon /></IconButton>
           </Box>
@@ -99,7 +101,7 @@ export default function InsightsAlertsRoute() {
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1.5, bgcolor: insightColors.bg, flexShrink: 0 }}>
                         {getInsightIcon(insight.insightType)}
-                        <Typography variant="caption" sx={{ fontWeight: 600, color: insightColors.text, textTransform: 'capitalize' }}>{insight.insightType}</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 600, color: insightColors.text, textTransform: 'capitalize' }}>{t(`insights.${insight.insightType}` as any)}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -112,7 +114,7 @@ export default function InsightsAlertsRoute() {
                         <Typography variant="caption" color="text.secondary">{insight.timestamp}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Chip label={insight.impact} size="small" color={getImpactColor(insight.impact) as any} sx={{ textTransform: 'capitalize', height: 24 }} />
+                        <Chip label={insight.impact === 'high' ? t('insights.highImpact') : insight.impact === 'medium' ? t('insights.mediumImpact') : t('insights.lowImpact')} size="small" color={getImpactColor(insight.impact) as any} sx={{ textTransform: 'capitalize', height: 24 }} />
                         <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}><MoreHorizIcon fontSize="small" /></IconButton>
                       </Box>
                     </Box>
@@ -122,8 +124,8 @@ export default function InsightsAlertsRoute() {
                       <Typography variant="body2" color="text.secondary">{insight.description}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button size="small" variant="outlined" endIcon={<ArrowForwardIcon />} sx={{ textTransform: 'none' }}>View Details</Button>
-                      <Button size="small" variant="text" sx={{ textTransform: 'none' }}>Dismiss</Button>
+                      <Button size="small" variant="outlined" endIcon={<ArrowForwardIcon />} sx={{ textTransform: 'none' }}>{t('common.viewDetails')}</Button>
+                      <Button size="small" variant="text" sx={{ textTransform: 'none' }}>{t('insights.dismiss')}</Button>
                     </Box>
                   </Paper>
                 );

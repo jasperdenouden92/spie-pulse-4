@@ -24,6 +24,7 @@ import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
@@ -75,21 +76,21 @@ function getStatusColor(score: number, goodAbove: number, moderateAbove: number)
   return '#f44336';
 }
 
-function getStatusLabel(score: number, goodAbove: number, moderateAbove: number): string {
-  if (score >= goodAbove) return 'Good';
-  if (score >= moderateAbove) return 'Moderate';
-  return 'Poor';
+function getStatusLabel(score: number, goodAbove: number, moderateAbove: number, t?: (key: string) => string): string {
+  if (score >= goodAbove) return t ? t('performance.good') : 'Good';
+  if (score >= moderateAbove) return t ? t('performance.moderate') : 'Moderate';
+  return t ? t('performance.poor') : 'Poor';
 }
 
 // Topics: progress, timeliness, reporting
 // Offsets: progress +4, timeliness -7, reporting +3 → sum = 0
 const TOPIC_DEFS = [
-  { key: 'progress', label: 'Progress', icon: <TaskAltOutlinedIcon sx={{ fontSize: 20 }} />, offset: 4, trend: 5, chartColor: '#2196f3', goodAbove: 80, moderateAbove: 60 },
-  { key: 'timeliness', label: 'Timeliness', icon: <ScheduleOutlinedIcon sx={{ fontSize: 20 }} />, offset: -7, trend: -2, chartColor: '#ff9800', goodAbove: 75, moderateAbove: 55 },
-  { key: 'reporting', label: 'Reporting', icon: <AssessmentOutlinedIcon sx={{ fontSize: 20 }} />, offset: 3, trend: 8, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
+  { key: 'progress', labelKey: 'topic.progress' as const, icon: <TaskAltOutlinedIcon sx={{ fontSize: 20 }} />, offset: 4, trend: 5, chartColor: '#2196f3', goodAbove: 80, moderateAbove: 60 },
+  { key: 'timeliness', labelKey: 'topic.timeliness' as const, icon: <ScheduleOutlinedIcon sx={{ fontSize: 20 }} />, offset: -7, trend: -2, chartColor: '#ff9800', goodAbove: 75, moderateAbove: 55 },
+  { key: 'reporting', labelKey: 'topic.reporting' as const, icon: <AssessmentOutlinedIcon sx={{ fontSize: 20 }} />, offset: 3, trend: 8, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
 ];
 
-function buildTopics(themeScore: number): TopicDef[] {
+function buildTopics(themeScore: number, t: (key: TranslationKey) => string): TopicDef[] {
   return TOPIC_DEFS.map(d => {
     const score = Math.max(0, Math.min(100, themeScore + d.offset));
     const sparkline = Array.from({ length: 10 }, (_, i) => {
@@ -100,7 +101,7 @@ function buildTopics(themeScore: number): TopicDef[] {
     sparkline[9] = score;
     return {
       key: d.key,
-      label: d.label,
+      label: t(d.labelKey),
       icon: d.icon,
       color: getStatusColor(score, d.goodAbove, d.moderateAbove),
       chartColor: d.chartColor,
@@ -132,11 +133,11 @@ function seededRandom(seed: number): () => number {
 // Compliance levels affect scores — simulate per-building variations
 type ComplianceLevel = 'all' | 'wetgeving' | 'overige_regelgeving' | 'regulier_onderhoud';
 
-const COMPLIANCE_OPTIONS: { key: ComplianceLevel; label: string; description: string }[] = [
-  { key: 'all', label: 'All levels', description: 'All compliance levels' },
-  { key: 'wetgeving', label: 'Legislation', description: 'Mandatory' },
-  { key: 'overige_regelgeving', label: 'Other regulations', description: 'E.g. insurer requirements' },
-  { key: 'regulier_onderhoud', label: 'Regular maintenance', description: 'N/A compliance' },
+const COMPLIANCE_OPTIONS: { key: ComplianceLevel; labelKey: string; descriptionKey: string }[] = [
+  { key: 'all', labelKey: 'performance.allLevels', descriptionKey: 'performance.allComplianceLevels' },
+  { key: 'wetgeving', labelKey: 'performance.legislation', descriptionKey: 'performance.mandatory' },
+  { key: 'overige_regelgeving', labelKey: 'performance.otherRegulations', descriptionKey: 'performance.insurerRequirements' },
+  { key: 'regulier_onderhoud', labelKey: 'performance.regularMaintenance', descriptionKey: 'performance.naCompliance' },
 ];
 
 // Generate compliance-adjusted scores per building
@@ -238,10 +239,10 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Maintenance dashboard links ──────────────────────────────────────────────
 
-const MAINTENANCE_DASHBOARDS: DashboardLink[] = [
-  { id: 'preventief_onderhoud', label: 'Preventive maintenance', subtitle: 'Scheduled maintenance, execution and status', icon: <GridViewOutlinedIcon /> },
-  { id: 'process_orders', label: 'Process orders', subtitle: 'Work orders, lead times and completion', icon: <TimelineOutlinedIcon /> },
-  { id: 'mjob', label: 'Multi-year maintenance budget', subtitle: 'Long-term maintenance planning and budget', icon: <CalendarMonthOutlinedIcon /> },
+const MAINTENANCE_DASHBOARD_DEFS = [
+  { id: 'preventief_onderhoud', labelKey: 'dashboard.preventiveMaintenance' as const, subtitleKey: 'dashboard.preventiveMaintenanceDesc' as const, icon: <GridViewOutlinedIcon /> },
+  { id: 'process_orders', labelKey: 'dashboard.processOrders' as const, subtitleKey: 'dashboard.processOrdersDesc' as const, icon: <TimelineOutlinedIcon /> },
+  { id: 'mjob', labelKey: 'dashboard.multiYearBudget' as const, subtitleKey: 'dashboard.multiYearBudgetDesc' as const, icon: <CalendarMonthOutlinedIcon /> },
 ];
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -257,6 +258,7 @@ interface MaintenancePerformancePageProps {
 
 export default function MaintenancePerformancePage({ themeScore = 78, themeTrend = 3, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: MaintenancePerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -302,13 +304,13 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
     );
   };
 
-  const topics = useMemo(() => buildTopics(adjustedThemeScore), [adjustedThemeScore]);
+  const topics = useMemo(() => buildTopics(adjustedThemeScore, t), [adjustedThemeScore, t]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Maintenance KPI',
+    label: t('performance.maintenanceKpi'),
     color: c.brand,
     data: generateKpiTimeSeries(`maintenance_theme_${complianceLevel}`, adjustedThemeScore),
-  }), [adjustedThemeScore, complianceLevel]);
+  }), [adjustedThemeScore, complianceLevel, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -361,10 +363,10 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Maintenance KPI', icon: <BuildOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'progress', label: 'Progress', icon: <TaskAltOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'timeliness', label: 'Timeliness', icon: <ScheduleOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'reporting', label: 'Reporting', icon: <AssessmentOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: t('performance.maintenanceKpi'), icon: <BuildOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'progress', label: t('topic.progress'), icon: <TaskAltOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'timeliness', label: t('topic.timeliness'), icon: <ScheduleOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'reporting', label: t('topic.reporting'), icon: <AssessmentOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   // Building / cluster lists based on compliance level
@@ -394,7 +396,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
                   boxShadow: isActive ? c.shadow : 'none',
                 }}
               >
-                {opt.label}
+                {t(opt.labelKey as TranslationKey)}
               </Box>
             );
           })}
@@ -445,7 +447,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
       />
 
       {/* ═══ SECTION 3: Maintenance Dashboards ═══ */}
-      <DashboardLinksCard title="Maintenance Dashboards" dashboards={MAINTENANCE_DASHBOARDS} onNavigate={onNavigateToDashboard} />
+      <DashboardLinksCard title={t('performance.maintenanceDashboards')} dashboards={MAINTENANCE_DASHBOARD_DEFS.map(d => ({ id: d.id, label: t(d.labelKey as TranslationKey), subtitle: t(d.subtitleKey as TranslationKey), icon: d.icon }))} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

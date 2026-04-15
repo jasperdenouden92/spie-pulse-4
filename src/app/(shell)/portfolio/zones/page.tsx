@@ -24,6 +24,7 @@ import { buildingToSlug } from '@/utils/slugs';
 
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
+import { useLanguage } from '@/i18n';
 
 export default function PortfolioZonesRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
@@ -31,6 +32,7 @@ export default function PortfolioZonesRoute() {
   const { themeColors: c } = useThemeMode();
   const { selectedTenant } = useURLState();
   const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone, setSidePeekZoneTab } = useAppState();
+  const { t } = useLanguage();
 
   const tenantZones = useMemo(
     () => allZones.filter(z => z.buildingTenant === selectedTenant),
@@ -42,18 +44,18 @@ export default function PortfolioZonesRoute() {
   const groupBy = get('groupBy', 'none');
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
   const GROUP_BY_OPTIONS = [
-    { value: 'none', label: 'No grouping' },
-    { value: 'building', label: 'Building' },
-    { value: 'city', label: 'City' },
-    { value: 'zone_type', label: 'Zone type' },
+    { value: 'none', label: t('common.noGrouping') },
+    { value: 'building', label: t('common.building') },
+    { value: 'city', label: t('common.city') },
+    { value: 'zone_type', label: t('zones.zoneType') },
   ];
 
   const SORT_OPTIONS = [
-    { value: 'name', label: 'Name (A → Z)' },
-    { value: 'building', label: 'Building (A → Z)' },
-    { value: 'city', label: 'City (A → Z)' },
-    { value: 'floor', label: 'Floor' },
-    { value: 'assets_desc', label: 'Assets (high → low)' },
+    { value: 'name', label: t('portfolio.sortNameAZ') },
+    { value: 'building', label: `${t('common.building')} (A \u2192 Z)` },
+    { value: 'city', label: t('portfolio.sortCityAZ') },
+    { value: 'floor', label: t('common.floor') },
+    { value: 'assets_desc', label: `${t('nav.assets')} (high \u2192 low)` },
   ];
   const sortBy = get('sortBy', 'name');
   const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
@@ -140,7 +142,7 @@ export default function PortfolioZonesRoute() {
       <InputBase
         value={search}
         onChange={(e) => set('search', e.target.value)}
-        placeholder="Search zones\u2026"
+        placeholder={t('portfolio.searchZones')}
         sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
         endAdornment={
           search ? (
@@ -166,7 +168,7 @@ export default function PortfolioZonesRoute() {
       multiple
       value={selectedZoneTypes}
       onChange={(v) => setList('zoneTypes', v as string[])}
-      placeholder="Search zone types\u2026"
+      placeholder={t('zones.searchZoneTypes')}
     />
   );
 
@@ -180,14 +182,14 @@ export default function PortfolioZonesRoute() {
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <FilterChip
-                label="Group by"
+                label={t('common.groupBy')}
                 value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                 onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
                 neutral
               />
               {groupByMenu}
               <FilterChip
-                label="Sort"
+                label={t('common.sortBy')}
                 value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
                 onClick={(e) => setSortAnchor(e.currentTarget)}
                 neutral
@@ -206,7 +208,7 @@ export default function PortfolioZonesRoute() {
         }
       >
         <FilterChip
-          label="Building"
+          label={t('common.building')}
           value={buildingChipValue}
           onClick={(e) => setBuildingAnchor(e.currentTarget)}
           onClear={selectedBuildings.length > 0 ? () => setList('buildings', []) : undefined}
@@ -218,10 +220,10 @@ export default function PortfolioZonesRoute() {
           multiple
           value={selectedBuildings}
           onChange={(v) => setList('buildings', v as string[])}
-          placeholder="Search buildings\u2026"
+          placeholder={t('common.searchBuildings')}
         />
         <FilterChip
-          label="City"
+          label={t('common.city')}
           value={cityChipValue}
           onClick={(e) => setCityAnchor(e.currentTarget)}
           onClear={selectedCities.length > 0 ? () => setList('cities', []) : undefined}
@@ -233,10 +235,10 @@ export default function PortfolioZonesRoute() {
           multiple
           value={selectedCities}
           onChange={(v) => setList('cities', v as string[])}
-          placeholder="Search cities\u2026"
+          placeholder={t('common.searchCities')}
         />
         <FilterChip
-          label="Zone type"
+          label={t('zones.zoneType')}
           value={zoneTypeChipValue}
           onClick={(e) => setZoneTypeAnchor(e.currentTarget)}
           onClear={selectedZoneTypes.length > 0 ? () => setList('zoneTypes', []) : undefined}

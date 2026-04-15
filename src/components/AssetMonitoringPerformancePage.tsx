@@ -30,6 +30,7 @@ import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverla
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
+import { useLanguage } from '@/i18n';
 
 // ── Threshold gradient ──
 
@@ -247,6 +248,7 @@ interface AssetMonitoringPerformancePageProps {
 
 export default function AssetMonitoringPerformancePage({ themeScore = 62, themeTrend = 2, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: AssetMonitoringPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -276,13 +278,25 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
     );
   }, []);
 
-  const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
+  const topicLabelMap: Record<string, string> = useMemo(() => ({
+    heating: t('topic.heating'),
+    cooling: t('topic.cooling'),
+    ventilation: t('topic.ventilation'),
+    distribution: t('topic.distribution'),
+    lighting: t('topic.lighting'),
+    transport: t('topic.transport'),
+  }), [t]);
+
+  const topics = useMemo(() => buildTopics(themeScore).map(topic => ({
+    ...topic,
+    label: topicLabelMap[topic.key] ?? topic.label,
+  })), [themeScore, topicLabelMap]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Asset Monitoring KPI',
+    label: t('performance.assetMonitoringKpi'),
     color: c.brand,
     data: generateKpiTimeSeries('asset_monitoring_theme', themeScore),
-  }), [themeScore]);
+  }), [themeScore, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -347,13 +361,13 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Asset Monitoring KPI', icon: <MonitorHeartOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'heating', label: 'Heating', icon: <ThermostatOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'cooling', label: 'Cooling', icon: <AcUnitOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'ventilation', label: 'Ventilation', icon: <AirOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'distribution', label: 'Distribution', icon: <AccountTreeOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'lighting', label: 'Lighting', icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'transport', label: 'Transport', icon: <ElevatorOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: t('performance.assetMonitoringKpi'), icon: <MonitorHeartOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'heating', label: t('topic.heating'), icon: <ThermostatOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'cooling', label: t('topic.cooling'), icon: <AcUnitOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'ventilation', label: t('topic.ventilation'), icon: <AirOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'distribution', label: t('topic.distribution'), icon: <AccountTreeOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'lighting', label: t('topic.lighting'), icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'transport', label: t('topic.transport'), icon: <ElevatorOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   return (
@@ -361,7 +375,7 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
       {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
       <PerformanceIndicatorsCard
         icon={<MonitorHeartOutlinedIcon sx={{ color: c.brand }} />}
-        title="Asset Monitoring Performance"
+        title={t('performance.assetMonitoringPerformance')}
         score={themeScore}
         trend={themeTrend}
         topics={topics}
@@ -403,7 +417,10 @@ export default function AssetMonitoringPerformancePage({ themeScore = 62, themeT
       />
 
       {/* ═══ SECTION 3: Related Dashboards ═══ */}
-      <DashboardLinksCard title="Asset Monitoring Dashboards" dashboards={ASSET_MONITORING_DASHBOARDS} onNavigate={onNavigateToDashboard} />
+      <DashboardLinksCard title={t('performance.assetMonitoringDashboards')} dashboards={[
+        { id: 'asset_trend', label: t('dashboard.assetTrend'), subtitle: t('dashboard.assetTrendDesc'), icon: <TimelineOutlinedIcon /> },
+        { id: 'warmte_koudeopslag', label: t('dashboard.wko'), subtitle: t('dashboard.wkoDesc'), icon: <HeatPumpOutlinedIcon /> },
+      ]} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

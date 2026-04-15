@@ -21,6 +21,7 @@ import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
 import PageHeader from '@/components/PageHeader';
+import { useLanguage } from '@/i18n';
 import type { Quotation } from '@/data/quotations';
 
 
@@ -92,20 +93,21 @@ export default function QuotationTemplate({
   onPanelClose,
   onPanelFullscreen,
 }: QuotationTemplateProps) {
+  const { t } = useLanguage();
   const category = inferCategory(quotation.title);
   const categoryColor = getCategoryColor(category);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>
       {onPanelClose && (
-        <Tooltip title="Close panel">
+        <Tooltip title={t('building.closePanel')}>
           <IconButton size="small" onClick={onPanelClose} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <KeyboardDoubleArrowRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
       {onPanelFullscreen && (
-        <Tooltip title="Open fullscreen">
+        <Tooltip title={t('building.openFullscreen')}>
           <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <OpenInFullIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -131,7 +133,7 @@ export default function QuotationTemplate({
             sx={{ color: 'text.secondary', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: 'text.primary' } }}
             onClick={onBackToQuotations}
           >
-            Quotations
+            {t('nav.quotations')}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
           <Typography noWrap sx={{ color: 'text.primary', fontSize: '0.8rem', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>

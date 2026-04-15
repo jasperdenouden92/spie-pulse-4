@@ -46,6 +46,7 @@ import PageHeader from '@/components/PageHeader';
 import { tickets } from '@/data/tickets';
 import type { Ticket, TicketStatus, TicketType } from '@/data/tickets';
 import { locations } from '@/data/locations';
+import { useLanguage } from '@/i18n';
 
 // ── Constants ──
 
@@ -66,15 +67,6 @@ const NO_AMOUNT_STATUSES: TicketStatus[] = ['Received', 'In progress', 'Function
 
 // Sort options
 type SortKey = 'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc' | 'building' | 'status' | 'type';
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: 'date_desc', label: 'Date (newest first)' },
-  { value: 'date_asc', label: 'Date (oldest first)' },
-  { value: 'amount_desc', label: 'Amount (high \u2192 low)' },
-  { value: 'amount_asc', label: 'Amount (low \u2192 high)' },
-  { value: 'building', label: 'Building (A \u2192 Z)' },
-  { value: 'status', label: 'Status' },
-  { value: 'type', label: 'Type' },
-];
 
 const STATUS_ORDER: Record<TicketStatus, number> = {
   'Received': 0,
@@ -121,13 +113,6 @@ function amountRangeLabel(range: RangeValue): string | null {
 const DEFAULT_DATE_RANGE = `2023-07-01|${new Date().toISOString().split('T')[0]}`;
 
 type GroupByKey = 'none' | 'building' | 'city' | 'discipline' | 'status';
-const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
-  { value: 'none', label: 'No grouping' },
-  { value: 'building', label: 'Building' },
-  { value: 'city', label: 'City' },
-  { value: 'discipline', label: 'Discipline' },
-  { value: 'status', label: 'Status' },
-];
 
 const BUILDING_CITY_MAP = new Map(locations.map(l => [l.name, l.city || 'Unknown']));
 function getCityForBuilding(building: string): string {
@@ -170,7 +155,25 @@ export default function OperationsTicketsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
   const router = useRouter();
+  const { t } = useLanguage();
   const { setSidePeekTicket, setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+
+  const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+    { value: 'date_desc', label: t('operations.sortDateNewest') },
+    { value: 'date_asc', label: t('operations.sortDateOldest') },
+    { value: 'amount_desc', label: t('operations.sortAmountHigh') },
+    { value: 'amount_asc', label: t('operations.sortAmountLow') },
+    { value: 'building', label: t('operations.sortBuildingAZ') },
+    { value: 'status', label: t('operations.sortStatus') },
+    { value: 'type', label: t('operations.sortType') },
+  ];
+  const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
+    { value: 'none', label: t('common.noGrouping') },
+    { value: 'building', label: t('common.building') },
+    { value: 'city', label: t('common.city') },
+    { value: 'discipline', label: t('operations.discipline') },
+    { value: 'status', label: t('common.status') },
+  ];
 
   // Read initialStatuses from URL
   const searchParams = useSearchParams();
@@ -324,7 +327,7 @@ export default function OperationsTicketsRoute() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 {/* Group by */}
                 <FilterChip
-                  label="Group by"
+                  label={t('common.groupBy')}
                   value={GROUP_BY_OPTIONS.find(o => o.value === groupBy)?.label}
                   onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}
                   neutral
@@ -339,7 +342,7 @@ export default function OperationsTicketsRoute() {
                 />
                 {/* Sort */}
                 <FilterChip
-                  label="Sort"
+                  label={t('common.sortBy')}
                   value={SORT_OPTIONS.find(o => o.value === sortBy)?.label}
                   onClick={(e) => setSortAnchor(e.currentTarget)}
                   neutral
@@ -367,7 +370,7 @@ export default function OperationsTicketsRoute() {
                     inputRef={searchRef}
                     value={search}
                     onChange={(e) => set('search', e.target.value)}
-                    placeholder="Search tickets..."
+                    placeholder={t('operations.searchTickets')}
                     sx={{ fontSize: '0.8rem', minWidth: 160, '& input': { p: 0, lineHeight: 1 } }}
                     endAdornment={
                       search ? (
@@ -417,7 +420,7 @@ export default function OperationsTicketsRoute() {
           }
         >
           <FilterChip
-            label="Client"
+            label={t('operations.client')}
             value={clientChipValue}
             onClick={(e) => setClientAnchor(e.currentTarget)}
           />
@@ -428,10 +431,10 @@ export default function OperationsTicketsRoute() {
             multiple
             value={selectedClients}
             onChange={(v) => setList('clients', v as string[])}
-            placeholder="Search client..."
+            placeholder={t('operations.searchClients')}
           />
           <FilterChip
-            label="Type"
+            label={t('common.type')}
             value={selectedType}
             onClick={(e) => setTypeAnchor(e.currentTarget)}
           />
@@ -441,10 +444,10 @@ export default function OperationsTicketsRoute() {
             options={TYPE_OPTIONS.map(t => ({ value: t }))}
             value={selectedType}
             onChange={(v) => set('type', v ?? '')}
-            placeholder="Search type..."
+            placeholder={t('operations.searchTypes')}
           />
           <FilterChip
-            label="Status"
+            label={t('common.status')}
             value={statusChipValue}
             onClick={(e) => setStatusAnchor(e.currentTarget)}
           />
@@ -455,10 +458,10 @@ export default function OperationsTicketsRoute() {
             multiple
             value={selectedStatuses}
             onChange={(v) => setList('statuses', v as string[])}
-            placeholder="Search status..."
+            placeholder={t('operations.searchStatuses')}
           />
           <FilterChip
-            label="Building"
+            label={t('common.building')}
             value={buildingChipValue}
             onClick={(e) => setBuildingAnchor(e.currentTarget)}
           />
@@ -469,10 +472,10 @@ export default function OperationsTicketsRoute() {
             multiple
             value={selectedBuildings}
             onChange={(v) => setList('buildings', v as string[])}
-            placeholder="Search building..."
+            placeholder={t('operations.searchBuildings')}
           />
           <FilterChip
-            label="Discipline"
+            label={t('operations.discipline')}
             value={disciplineChipValue}
             onClick={(e) => setDisciplineAnchor(e.currentTarget)}
           />
@@ -483,10 +486,10 @@ export default function OperationsTicketsRoute() {
             multiple
             value={selectedDisciplines}
             onChange={(v) => setList('disciplines', v as string[])}
-            placeholder="Search discipline..."
+            placeholder={t('operations.searchDisciplines')}
           />
           <FilterChip
-            label="Amount"
+            label={t('common.amount')}
             value={amountRangeLabel(amountRange)}
             onClick={(e) => setAmountAnchor(e.currentTarget)}
           />
@@ -501,7 +504,7 @@ export default function OperationsTicketsRoute() {
             onChange={(v: RangeValue) => { set('amountMin', v.min); set('amountMax', v.max); }}
           />
           <FilterChip
-            label="Date"
+            label={t('common.date')}
             value={dateRange ? getDateRangeDisplayLabel(dateRange) : null}
             onClick={() => setDateDialogOpen(true)}
           />
@@ -519,7 +522,7 @@ export default function OperationsTicketsRoute() {
         <Box sx={{ pt: 3 }}>
           {filtered.length === 0 ? (
             <Box sx={{ py: 8, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">No tickets found for the current filters</Typography>
+              <Typography variant="body2" color="text.secondary">{t('operations.noTicketsFound')}</Typography>
             </Box>
           ) : viewMode === 'list' ? (
             /* ── Table view ── */
@@ -553,10 +556,10 @@ export default function OperationsTicketsRoute() {
                   <TableHead>
                     <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
                       <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, px: 1.5 }}></TableCell>
-                      {['Ticket no.', 'Reference', 'Description', 'Building', 'Date', 'Discipline', 'Type', 'Status'].map(h => (
+                      {[t('operations.ticketNo'), t('operations.reference'), t('operations.description'), t('common.building'), t('common.date'), t('operations.discipline'), t('common.type'), t('common.status')].map(h => (
                         <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
                       ))}
-                      <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>Amount</TableCell>
+                      <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>{t('common.amount')}</TableCell>
                     </TableRow>
                   </TableHead>
                 </Table>
@@ -833,7 +836,7 @@ export default function OperationsTicketsRoute() {
               {/* Right: results per page */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
-                  Results per page:
+                  {t('operations.resultsPerPage')}
                 </Typography>
                 <Box
                   onClick={(e) => setRowsPerPageAnchor(e.currentTarget)}

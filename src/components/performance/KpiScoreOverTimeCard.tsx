@@ -11,6 +11,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ShowChartOutlinedIcon from '@mui/icons-material/ShowChartOutlined';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import { GridCard } from '@/components/performance';
 
@@ -50,6 +51,7 @@ export default function KpiScoreOverTimeCard({
   menuVariant = 'inline',
 }: KpiScoreOverTimeCardProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [dropdownAnchor, setDropdownAnchor] = useState<HTMLElement | null>(null);
 
   const areaGradientId = `${gradientId}-area`;
@@ -142,7 +144,7 @@ export default function KpiScoreOverTimeCard({
     <GridCard
       size="md"
       icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
-      title="KPI Score Over Time"
+      title={t('performance.kpiScoreOverTime')}
       headerRight={headerRight}
     >
       <Box sx={{ flex: 1, minHeight: 370 }}>
@@ -169,8 +171,8 @@ export default function KpiScoreOverTimeCard({
             <>
               <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={moderateAbove} id={areaGradientId} />
               <HorizontalThresholdGradient data={currentData} goodAbove={goodAbove} moderateAbove={moderateAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-              <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
-              <InteractiveThresholdLine y={moderateAbove} label={`Moderate: ${moderateAbove}–${goodAbove}%`} />
+              <InteractiveThresholdLine y={goodAbove} label={t('performance.goodThreshold', { min: goodAbove })} />
+              <InteractiveThresholdLine y={moderateAbove} label={t('performance.moderateThreshold', { min: moderateAbove, max: goodAbove })} />
             </>
           )}
           {showThresholds && (
