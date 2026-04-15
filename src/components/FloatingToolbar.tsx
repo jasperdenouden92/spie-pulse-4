@@ -53,6 +53,7 @@ import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { AssetNode, assetTree, filterTreeByBuilding } from '@/data/assetTree';
 import { colors, secondaryAlpha } from '@/colors';
+import { useLanguage } from '@/i18n';
 
 type ViewMode = 'dashboard' | 'list' | 'tree';
 
@@ -79,6 +80,7 @@ export default function FloatingToolbar({
   onClose,
   large = false,
 }: FloatingToolbarProps) {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNode, setSelectedNode] = useState<AssetNode | null>(null);
   const [expanded, setExpanded] = useState<string[]>([]);
@@ -279,7 +281,7 @@ export default function FloatingToolbar({
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Open in main app arrow */}
-                  <Tooltip title="Open in main app" placement="top">
+                  <Tooltip title={t('explorer.openInMainApp')} placement="top">
                     <IconButton
                       size="small"
                       sx={{ width: 18, height: 18, p: 0 }}
@@ -290,20 +292,20 @@ export default function FloatingToolbar({
                   </Tooltip>
                   {/* Add button for categories/zones */}
                   {(node.type === 'category' || node.type === 'zone' || node.type === 'floor' || node.type === 'system') && (
-                    <Tooltip title="Add" placement="top">
+                    <Tooltip title={t('common.add')} placement="top">
                       <IconButton size="small" sx={{ width: 18, height: 18, p: 0 }}>
                         <AddCircleOutlineIcon sx={{ fontSize: 11 }} />
                       </IconButton>
                     </Tooltip>
                   )}
                   {/* Edit button for all */}
-                  <Tooltip title="Edit" placement="top">
+                  <Tooltip title={t('common.edit')} placement="top">
                     <IconButton size="small" sx={{ width: 18, height: 18, p: 0 }}>
                       <EditOutlinedIcon sx={{ fontSize: 11 }} />
                     </IconButton>
                   </Tooltip>
                   {/* More menu for all */}
-                  <Tooltip title="More" placement="top">
+                  <Tooltip title={t('common.more')} placement="top">
                     <IconButton
                       size="small"
                       sx={{ width: 18, height: 18, p: 0 }}
@@ -356,7 +358,7 @@ export default function FloatingToolbar({
         /* Collapsed View - Icon Only */
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 2 }}>
           {/* Asset Tree Icon */}
-          <Tooltip title="Asset Explorer" placement="left">
+          <Tooltip title={t('explorer.assetExplorer')} placement="left">
             <IconButton
               sx={{
                 width: 48,
@@ -439,7 +441,7 @@ export default function FloatingToolbar({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <AccountTreeOutlinedIcon sx={{ fontSize: 20, color: 'text.primary' }} />
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-                Asset Explorer
+                {t('explorer.assetExplorer')}
               </Typography>
             </Box>
             <IconButton size="small" onClick={onClose}>
@@ -452,7 +454,7 @@ export default function FloatingToolbar({
           <Box sx={{ px: 2, pb: 1.5, pt: large ? 2 : 0, flexShrink: 0 }}>
             <TextField
               size="small"
-              placeholder="Quicksearch"
+              placeholder={t('explorer.quicksearch')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               fullWidth
@@ -528,40 +530,40 @@ export default function FloatingToolbar({
           >
             <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
               <VisibilityOutlinedIcon fontSize="small" />
-              View Details
+              {t('common.viewDetails')}
             </MenuItem>
             <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
               <EditOutlinedIcon fontSize="small" />
-              Edit Properties
+              {t('explorer.editProperties')}
             </MenuItem>
             {contextMenuAnchor?.node.type === 'asset' && (
               <>
                 <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
                   <BuildOutlinedIcon fontSize="small" />
-                  Maintenance Schedule
+                  {t('explorer.maintenanceSchedule')}
                 </MenuItem>
                 <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
                   <NotificationsOutlinedIcon fontSize="small" />
-                  Alert Settings
+                  {t('explorer.alertSettings')}
                 </MenuItem>
               </>
             )}
             <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
               <DescriptionOutlinedIcon fontSize="small" />
-              Generate Report
+              {t('explorer.generateReport')}
             </MenuItem>
             <Divider sx={{ my: 0.5 }} />
             <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
               <ContentCopyOutlinedIcon fontSize="small" />
-              Duplicate
+              {t('explorer.duplicate')}
             </MenuItem>
             <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5 }}>
               <ArchiveOutlinedIcon fontSize="small" />
-              Archive
+              {t('explorer.archive')}
             </MenuItem>
             <MenuItem onClick={() => setContextMenuAnchor(null)} sx={{ fontSize: '0.813rem', gap: 1.5, color: 'error.main' }}>
               <DeleteOutlineIcon fontSize="small" />
-              Delete
+              {t('common.delete')}
             </MenuItem>
           </Menu>
         </>

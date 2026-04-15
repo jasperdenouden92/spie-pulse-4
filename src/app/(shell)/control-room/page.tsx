@@ -113,6 +113,7 @@ import { motion } from 'framer-motion';
 import type { ToggleState } from '@/components/KPIToggle';
 import { colors, brandAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { buildingToSlug } from '@/utils/slugs';
@@ -160,75 +161,75 @@ const SELECTION_LABELS: Record<string, string> = {
 
 // ── Helper Functions ──────────────────────────────────────────────────────
 
-function getPerformanceRating(score: number): PerformanceRating {
-  if (score >= 80) return { label: 'Good', color: '#4caf50' };
-  if (score >= 60) return { label: 'Moderate', color: '#ff9800' };
-  return { label: 'Poor', color: '#f44336' };
+function getPerformanceRating(score: number, t?: (k: any) => string): PerformanceRating {
+  if (score >= 80) return { label: t ? t('performance.good') : 'Good', color: '#4caf50' };
+  if (score >= 60) return { label: t ? t('performance.moderate') : 'Moderate', color: '#ff9800' };
+  return { label: t ? t('performance.poor') : 'Poor', color: '#f44336' };
 }
 
-function getComfortTopics(comfortGreen: number): TopicScore[] {
+function getComfortTopics(comfortGreen: number, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'Temperature', score: Math.max(0, Math.min(100, comfortGreen + 7)), trend: 3, icon: <ThermostatOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
-    { label: 'Humidity', score: Math.max(0, Math.min(100, comfortGreen - 13)), trend: -4, icon: <WaterDropOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-    { label: 'Air Quality', score: Math.max(0, Math.min(100, comfortGreen + 6)), trend: 7, icon: <AirOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
+    { label: t ? t('topic.temperature') : 'Temperature', score: Math.max(0, Math.min(100, comfortGreen + 7)), trend: 3, icon: <ThermostatOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
+    { label: t ? t('topic.humidity') : 'Humidity', score: Math.max(0, Math.min(100, comfortGreen - 13)), trend: -4, icon: <WaterDropOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: t ? t('topic.airQuality') : 'Air Quality', score: Math.max(0, Math.min(100, comfortGreen + 6)), trend: 7, icon: <AirOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
   ];
 }
 
-function getSustainabilityTopics(sustainabilityGreen: number): TopicScore[] {
+function getSustainabilityTopics(sustainabilityGreen: number, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'Consumption', score: Math.max(0, Math.min(100, sustainabilityGreen + 5)), trend: 4, icon: <BoltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#f57c00' },
-    { label: 'Generation', score: Math.max(0, Math.min(100, sustainabilityGreen - 8)), trend: 6, icon: <SolarPowerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#66bb6a' },
-    { label: 'Emissions', score: Math.max(0, Math.min(100, sustainabilityGreen - 3)), trend: -2, icon: <FilterDramaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-    { label: 'Cost', score: Math.max(0, Math.min(100, sustainabilityGreen + 6)), trend: 3, icon: <PaidOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
+    { label: t ? t('topic.consumption') : 'Consumption', score: Math.max(0, Math.min(100, sustainabilityGreen + 5)), trend: 4, icon: <BoltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#f57c00' },
+    { label: t ? t('topic.generation') : 'Generation', score: Math.max(0, Math.min(100, sustainabilityGreen - 8)), trend: 6, icon: <SolarPowerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#66bb6a' },
+    { label: t ? t('topic.emissions') : 'Emissions', score: Math.max(0, Math.min(100, sustainabilityGreen - 3)), trend: -2, icon: <FilterDramaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: t ? t('topic.cost') : 'Cost', score: Math.max(0, Math.min(100, sustainabilityGreen + 6)), trend: 3, icon: <PaidOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
   ];
 }
 
-function getMaintenanceTopics(maintenanceGreen: number): TopicScore[] {
+function getMaintenanceTopics(maintenanceGreen: number, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'Progress', score: Math.max(0, Math.min(100, maintenanceGreen + 4)), trend: 5, icon: <TaskAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Timeliness', score: Math.max(0, Math.min(100, maintenanceGreen - 7)), trend: -2, icon: <ScheduleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Reporting', score: Math.max(0, Math.min(100, maintenanceGreen + 3)), trend: 8, icon: <AssessmentOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: t ? t('topic.progress') : 'Progress', score: Math.max(0, Math.min(100, maintenanceGreen + 4)), trend: 5, icon: <TaskAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: t ? t('topic.timeliness') : 'Timeliness', score: Math.max(0, Math.min(100, maintenanceGreen - 7)), trend: -2, icon: <ScheduleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: t ? t('topic.reporting') : 'Reporting', score: Math.max(0, Math.min(100, maintenanceGreen + 3)), trend: 8, icon: <AssessmentOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
   ];
 }
 
-function getQuotationsTopics(quotationsGreen: number): TopicScore[] {
+function getQuotationsTopics(quotationsGreen: number, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'Run time', score: Math.max(0, Math.min(100, quotationsGreen + 5)), trend: 3, icon: <TimerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Response time', score: Math.max(0, Math.min(100, quotationsGreen - 8)), trend: -3, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Approval time', score: Math.max(0, Math.min(100, quotationsGreen + 3)), trend: 6, icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: t ? t('topic.runTime') : 'Run time', score: Math.max(0, Math.min(100, quotationsGreen + 5)), trend: 3, icon: <TimerOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: t ? t('topic.responseTime') : 'Response time', score: Math.max(0, Math.min(100, quotationsGreen - 8)), trend: -3, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: t ? t('topic.approvalTime') : 'Approval time', score: Math.max(0, Math.min(100, quotationsGreen + 3)), trend: 6, icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
   ];
 }
 
-function getTicketsTopics(ticketsGreen: number): TopicScore[] {
+function getTicketsTopics(ticketsGreen: number, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'Response time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Restore time', score: Math.max(0, Math.min(100, ticketsGreen - 5)), trend: -2, icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: t ? t('topic.responseTime') : 'Response time', score: Math.max(0, Math.min(100, ticketsGreen + 3)), trend: 4, icon: <QuickreplyOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: t ? t('topic.restoreTime') : 'Restore time', score: Math.max(0, Math.min(100, ticketsGreen - 5)), trend: -2, icon: <SettingsBackupRestoreOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
   ];
 }
 
-function getAssetMonitoringTopics(assetMonitoringGreen: number): TopicScore[] {
+function getAssetMonitoringTopics(assetMonitoringGreen: number, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'Heating', score: Math.max(0, Math.min(100, assetMonitoringGreen + 4)), trend: 3, icon: <ThermostatOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
-    { label: 'Cooling', score: Math.max(0, Math.min(100, assetMonitoringGreen - 6)), trend: -2, icon: <AcUnitOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
-    { label: 'Ventilation', score: Math.max(0, Math.min(100, assetMonitoringGreen + 2)), trend: 5, icon: <AirOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-    { label: 'Distribution', score: Math.max(0, Math.min(100, assetMonitoringGreen - 3)), trend: -1, icon: <AccountTreeOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Lighting', score: Math.max(0, Math.min(100, assetMonitoringGreen + 7)), trend: 4, icon: <LightbulbOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ffc107' },
-    { label: 'Transport', score: Math.max(0, Math.min(100, assetMonitoringGreen - 8)), trend: -3, icon: <ElevatorOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
+    { label: t ? t('topic.heating') : 'Heating', score: Math.max(0, Math.min(100, assetMonitoringGreen + 4)), trend: 3, icon: <ThermostatOutlinedIcon sx={{ fontSize: 14 }} />, color: '#e91e63' },
+    { label: t ? t('topic.cooling') : 'Cooling', score: Math.max(0, Math.min(100, assetMonitoringGreen - 6)), trend: -2, icon: <AcUnitOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
+    { label: t ? t('topic.ventilation') : 'Ventilation', score: Math.max(0, Math.min(100, assetMonitoringGreen + 2)), trend: 5, icon: <AirOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: t ? t('topic.distribution') : 'Distribution', score: Math.max(0, Math.min(100, assetMonitoringGreen - 3)), trend: -1, icon: <AccountTreeOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: t ? t('topic.lighting') : 'Lighting', score: Math.max(0, Math.min(100, assetMonitoringGreen + 7)), trend: 4, icon: <LightbulbOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ffc107' },
+    { label: t ? t('topic.transport') : 'Transport', score: Math.max(0, Math.min(100, assetMonitoringGreen - 8)), trend: -3, icon: <ElevatorOutlinedIcon sx={{ fontSize: 14 }} />, color: '#0288d1' },
   ];
 }
 
-function getComplianceTopics(complianceGreen: number): TopicScore[] {
+function getComplianceTopics(complianceGreen: number, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'BACS', score: Math.max(0, Math.min(100, complianceGreen + 5)), trend: 3, icon: <SensorsOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Escape Routes', score: Math.max(0, Math.min(100, complianceGreen - 4)), trend: -2, icon: <DirectionsRunOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Fire Safety', score: Math.max(0, Math.min(100, complianceGreen + 3)), trend: 5, icon: <LocalFireDepartmentOutlinedIcon sx={{ fontSize: 14 }} />, color: '#f44336' },
-    { label: 'Legionella Prevention', score: Math.max(0, Math.min(100, complianceGreen - 6)), trend: -1, icon: <VaccinesOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-    { label: 'Maintenance & Inspection', score: Math.max(0, Math.min(100, complianceGreen + 2)), trend: 4, icon: <HandymanOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
-    { label: 'Permits', score: Math.max(0, Math.min(100, complianceGreen + 7)), trend: 2, icon: <DescriptionOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
+    { label: t ? t('topic.bacs') : 'BACS', score: Math.max(0, Math.min(100, complianceGreen + 5)), trend: 3, icon: <SensorsOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: t ? t('topic.escapeRoutes') : 'Escape Routes', score: Math.max(0, Math.min(100, complianceGreen - 4)), trend: -2, icon: <DirectionsRunOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: t ? t('topic.fireSafety') : 'Fire Safety', score: Math.max(0, Math.min(100, complianceGreen + 3)), trend: 5, icon: <LocalFireDepartmentOutlinedIcon sx={{ fontSize: 14 }} />, color: '#f44336' },
+    { label: t ? t('topic.legionellaPrevention') : 'Legionella Prevention', score: Math.max(0, Math.min(100, complianceGreen - 6)), trend: -1, icon: <VaccinesOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: t ? t('topic.maintenanceInspection') : 'Maintenance & Inspection', score: Math.max(0, Math.min(100, complianceGreen + 2)), trend: 4, icon: <HandymanOutlinedIcon sx={{ fontSize: 14 }} />, color: '#00bcd4' },
+    { label: t ? t('topic.permits') : 'Permits', score: Math.max(0, Math.min(100, complianceGreen + 7)), trend: 2, icon: <DescriptionOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
   ];
 }
 
-function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, themeKeysOverride?: MetricType[]): TopicScore[] {
+function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, themeKeysOverride?: MetricType[], t?: (k: any) => string): TopicScore[] {
   const themeKeys: MetricKeys[] = themeKeysOverride ?? ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
   const opsKeys: MetricKeys[] = ['tickets', 'quotations', 'maintenance'];
   const themeScore = Math.round(themeKeys.reduce((sum, k) => sum + metrics[k].green, 0) / themeKeys.length);
@@ -236,31 +237,34 @@ function getOverallTopics(metrics: Record<MetricKeys, { green: number }>, trends
   const opsScore = Math.round(opsKeys.reduce((sum, k) => sum + metrics[k].green, 0) / opsKeys.length);
   const opsTrend = Math.round(opsKeys.reduce((sum, k) => sum + trends[k], 0) / opsKeys.length * 10) / 10;
   return [
-    { label: 'Theme KPIs', score: themeScore, trend: themeTrend, icon: <StyleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
-    { label: 'Operational KPIs', score: opsScore, trend: opsTrend, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: t ? t('topic.themeKpis') : 'Theme KPIs', score: themeScore, trend: themeTrend, icon: <StyleOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
+    { label: t ? t('topic.operationalKpis') : 'Operational KPIs', score: opsScore, trend: opsTrend, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
   ];
 }
 
-const THEME_TOPIC_CONFIG: Record<MetricType, { label: string; icon: React.ReactNode; color: string }> = {
-  sustainability: { label: 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
-  comfort: { label: 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-  asset_monitoring: { label: 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-  compliance: { label: 'Compliance', icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
-} as Record<MetricType, { label: string; icon: React.ReactNode; color: string }>;
+function getThemeTopicConfig(t?: (k: any) => string): Record<string, { label: string; icon: React.ReactNode; color: string }> {
+  return {
+    sustainability: { label: t ? t('metric.sustainability') : 'Sustainability', icon: <NatureOutlinedIcon sx={{ fontSize: 14 }} />, color: '#4caf50' },
+    comfort: { label: t ? t('metric.comfort') : 'Comfort', icon: <SpaOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    asset_monitoring: { label: t ? t('metric.assetMonitoring') : 'Asset Monitoring', icon: <SecurityOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    compliance: { label: t ? t('metric.compliance') : 'Compliance', icon: <GavelOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+  };
+}
 
-function getThemesTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, keys: MetricType[] = PRIMARY_THEME_KEYS): TopicScore[] {
-  return keys.filter(k => THEME_TOPIC_CONFIG[k]).map(k => ({
-    ...THEME_TOPIC_CONFIG[k],
+function getThemesTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, keys: MetricType[] = PRIMARY_THEME_KEYS, t?: (k: any) => string): TopicScore[] {
+  const config = getThemeTopicConfig(t);
+  return keys.filter(k => config[k]).map(k => ({
+    ...config[k],
     score: metrics[k].green,
     trend: trends[k],
   }));
 }
 
-function getOperationsTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>): TopicScore[] {
+function getOperationsTopics(metrics: Record<MetricKeys, { green: number }>, trends: Record<MetricKeys, number>, t?: (k: any) => string): TopicScore[] {
   return [
-    { label: 'Tickets', score: metrics.tickets.green, trend: trends.tickets, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
-    { label: 'Quotations', score: metrics.quotations.green, trend: trends.quotations, icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
-    { label: 'Maintenance', score: metrics.maintenance.green, trend: trends.maintenance, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
+    { label: t ? t('metric.tickets') : 'Tickets', score: metrics.tickets.green, trend: trends.tickets, icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 14 }} />, color: '#2196f3' },
+    { label: t ? t('metric.quotations') : 'Quotations', score: metrics.quotations.green, trend: trends.quotations, icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 14 }} />, color: '#ff9800' },
+    { label: t ? t('metric.maintenance') : 'Maintenance', score: metrics.maintenance.green, trend: trends.maintenance, icon: <EngineeringOutlinedIcon sx={{ fontSize: 14 }} />, color: '#9c27b0' },
   ];
 }
 
@@ -268,6 +272,7 @@ function getOperationsTopics(metrics: Record<MetricKeys, { green: number }>, tre
 
 export default function ControlRoomPage() {
   const { themeColors: tc } = useThemeMode();
+  const { t } = useLanguage();
   const router = useRouter();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const isWide = useMediaQuery('(min-width:1200px)');
@@ -697,7 +702,7 @@ export default function ControlRoomPage() {
                 const overallScore = selectedBuilding
                   ? Math.round([...activeThemeKeys, ...OPERATIONS_KEYS].reduce((sum, k) => sum + selectedBuilding.metrics[k].green, 0) / (activeThemeKeys.length + OPERATIONS_KEYS.length))
                   : Math.round([...periodMetrics.themes, ...periodMetrics.operations].reduce((sum, m) => sum + m.score, 0) / (periodMetrics.themes.length + periodMetrics.operations.length));
-                const overallRating = getPerformanceRating(overallScore);
+                const overallRating = getPerformanceRating(overallScore, t);
                 // Generate sparkline data based on score
                 const sparkData = Array.from({ length: 8 }, (_, i) => {
                   const variation = Math.sin(i * 1.2) * 5 + Math.cos(i * 0.8) * 3;
@@ -888,7 +893,7 @@ export default function ControlRoomPage() {
                                 isSelected={selection === metricKey}
                                 isDimmed={getToggleState(metricKey, 'themes') === 'off'}
                                 isCompact={isCompact}
-                                performanceRating={getPerformanceRating(score)}
+                                performanceRating={getPerformanceRating(score, t)}
                                 variant="nested"
                               />
                             );
@@ -993,7 +998,7 @@ export default function ControlRoomPage() {
                                 isSelected={selection === metricKey}
                                 isDimmed={getToggleState(metricKey, 'operations') === 'off'}
                                 isCompact={isCompact}
-                                performanceRating={getPerformanceRating(score)}
+                                performanceRating={getPerformanceRating(score, t)}
                                 variant="nested"
                               />
                             );
@@ -1138,8 +1143,8 @@ export default function ControlRoomPage() {
                           const overallScore = (isCluster ? c.metrics : b.metrics).overall.green;
                           const trend = (isCluster ? c.trends : b.trends)[selectedMetric];
                           const stats = !isCluster ? buildingOperationalStats[b.name] : undefined;
-                          const rating = getPerformanceRating(score);
-                          const overallRating = getPerformanceRating(overallScore);
+                          const rating = getPerformanceRating(score, t);
+                          const overallRating = getPerformanceRating(overallScore, t);
 
                           const metrics = isCluster ? c.metrics : b.metrics;
                           const trends = isCluster ? c.trends : b.trends;

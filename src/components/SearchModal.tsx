@@ -24,6 +24,7 @@ import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colors, secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage, type TranslationKey } from '@/i18n';
 
 interface SearchModalProps {
   open: boolean;
@@ -112,20 +113,21 @@ function createInitialRecentItems(): RecentItem[] {
   ];
 }
 
-function getRelativeGroup(date: Date, now?: Date): string {
+function getRelativeGroupKey(date: Date, now?: Date): TranslationKey {
   const ref = now || new Date();
   const diffMs = ref.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays <= 7) return 'Past week';
-  return 'Older';
+  if (diffDays === 0) return 'common.today';
+  if (diffDays === 1) return 'common.yesterday';
+  if (diffDays <= 7) return 'common.pastWeek';
+  return 'common.older';
 }
 
-function groupByDate(items: RecentItem[]): { label: string; items: RecentItem[] }[] {
+function groupByDate(items: RecentItem[], t: (key: TranslationKey) => string): { label: string; items: RecentItem[] }[] {
   const groups: Map<string, RecentItem[]> = new Map();
   for (const item of items) {
-    const label = getRelativeGroup(item.searchedAt);
+    const key = getRelativeGroupKey(item.searchedAt);
+    const label = t(key);
     if (!groups.has(label)) groups.set(label, []);
     groups.get(label)!.push(item);
   }
@@ -165,13 +167,13 @@ const kbdSx = (bgPrimary: string) => ({
   lineHeight: 1,
 });
 
-const typeLabels: Record<string, string> = {
-  building: 'Building',
-  asset: 'Asset',
-  document: 'Document',
-  ticket: 'Ticket',
-  quotation: 'Quotation',
-  dashboard: 'Dashboard',
+const typeTranslationKeys: Record<string, TranslationKey> = {
+  building: 'common.building',
+  asset: 'assets.asset',
+  document: 'nav.documents',
+  ticket: 'nav.tickets',
+  quotation: 'nav.quotations',
+  dashboard: 'nav.dashboards',
 };
 
 function ResultRow({ result, onClick, active, rowRef, onMouseEnter }: { result: SearchResult; onClick: () => void; active?: boolean; rowRef?: React.Ref<HTMLDivElement>; onMouseEnter?: () => void }) {
@@ -224,6 +226,7 @@ const buildingPerformance: Record<string, { green: number; yellow: number; red: 
 
 function BuildingPreviewCard({ result }: { result: SearchResult }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const performance = buildingPerformance[result.title] ?? { green: 60, yellow: 25, red: 15 };
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -240,7 +243,7 @@ function BuildingPreviewCard({ result }: { result: SearchResult }) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box sx={{ color: 'text.disabled' }}>{typeIcons.building}</Box>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            Building
+            {t('common.building')}
           </Typography>
         </Box>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
@@ -408,6 +411,7 @@ function AISearchPreviewCard({ query }: { query: string }) {
 }
 
 function PreviewCard({ result }: { result: SearchResult }) {
+  const { t } = useLanguage();
   if (result.type === 'building') return <BuildingPreviewCard result={result} />;
   if (result.type === 'dashboard') return <DashboardPreviewCard result={result} />;
   return (
@@ -415,7 +419,7 @@ function PreviewCard({ result }: { result: SearchResult }) {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Box sx={{ color: 'text.disabled' }}>{typeIcons[result.type]}</Box>
         <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'capitalize' }}>
-          {typeLabels[result.type]}
+          {t(typeTranslationKeys[result.type])}
         </Typography>
       </Box>
       <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
@@ -471,6 +475,7 @@ function PreviewSkeleton() {
 
 export default function SearchModal({ open, onClose, onNavigate }: SearchModalProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filterType, setFilterType] = useState<string>('all');
@@ -647,7 +652,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
           <SearchIcon sx={{ color: 'text.disabled', fontSize: 22, ml: 0.5 }} />
           <InputBase
             fullWidth
-            placeholder="Search or ask a question..."
+            placeholder={t('search.placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -726,12 +731,12 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
                     }}
                   >
                     <MenuItem value="all">All types</MenuItem>
-                    <MenuItem value="building">Building</MenuItem>
-                    <MenuItem value="asset">Asset</MenuItem>
-                    <MenuItem value="document">Document</MenuItem>
-                    <MenuItem value="ticket">Ticket</MenuItem>
-                    <MenuItem value="quotation">Quotation</MenuItem>
-                    <MenuItem value="dashboard">Dashboard</MenuItem>
+                    <MenuItem value="building">{t('common.building')}</MenuItem>
+                    <MenuItem value="asset">{t('assets.asset')}</MenuItem>
+                    <MenuItem value="document">{t('nav.documents')}</MenuItem>
+                    <MenuItem value="ticket">{t('nav.tickets')}</MenuItem>
+                    <MenuItem value="quotation">{t('nav.quotations')}</MenuItem>
+                    <MenuItem value="dashboard">{t('nav.dashboards')}</MenuItem>
                   </Select>
                 </FormControl>
 
@@ -865,7 +870,7 @@ export default function SearchModal({ open, onClose, onNavigate }: SearchModalPr
             recentItems.length > 0 ? (
               (() => {
                 let flatIndex = 0;
-                return groupByDate(recentItems).map((group) => (
+                return groupByDate(recentItems, t).map((group) => (
                   <Box key={group.label}>
                     <Typography
                       variant="caption"

@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { buildings as allBuildingsData } from '@/data/buildings';
 import { secondaryAlpha, type ColorTokens } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 
 export type BuildingFilterMode = 'buildings' | 'clusters';
 export type ContractFilter = boolean;
@@ -440,10 +441,10 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
 }
 
 /** Helper to get the chip/inline label for the current selection */
-export function getBuildingSelectorLabel(selectedNames: string[], mode: BuildingFilterMode = 'buildings'): string {
-  if (selectedNames.length === 0) return mode === 'clusters' ? 'All Clusters' : 'All Buildings';
+export function getBuildingSelectorLabel(selectedNames: string[], mode: BuildingFilterMode = 'buildings', t?: (key: any, params?: Record<string, string | number>) => string): string {
+  if (selectedNames.length === 0) return t ? (mode === 'clusters' ? t('common.allClusters') : t('common.allBuildings')) : (mode === 'clusters' ? 'All Clusters' : 'All Buildings');
   if (selectedNames.length === 1) return selectedNames[0];
-  return `${selectedNames.length} ${mode === 'clusters' ? 'clusters' : 'buildings'}`;
+  return t ? (mode === 'clusters' ? t('common.nClusters', { count: selectedNames.length }) : t('common.nBuildings', { count: selectedNames.length })) : `${selectedNames.length} ${mode === 'clusters' ? 'clusters' : 'buildings'}`;
 }
 
 interface BuildingSelectorProps {
@@ -456,13 +457,12 @@ interface BuildingSelectorProps {
 /** Self-contained chip + popover variant */
 export default function BuildingSelector({ selectedNames, onSelectionChange, mode, onModeChange }: BuildingSelectorProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const hasFilter = selectedNames.length > 0;
 
-  const label = hasFilter
-    ? (selectedNames.length === 1 ? selectedNames[0] : `${selectedNames.length} ${mode === 'clusters' ? 'clusters' : 'buildings'}`)
-    : mode === 'clusters' ? 'All Clusters' : 'All Buildings';
+  const label = getBuildingSelectorLabel(selectedNames, mode, t);
 
   const chipSx = {
     height: 32, borderRadius: '6px',

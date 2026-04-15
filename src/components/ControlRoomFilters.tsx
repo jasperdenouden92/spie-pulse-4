@@ -9,6 +9,7 @@ import Collapse from '@mui/material/Collapse';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { assetTree, AssetNode } from '@/data/assetTree';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import BuildingSelector, { type BuildingFilterMode } from '@/components/BuildingSelector';
 import DateRangeSelector, { getDateRangeDisplayLabel } from './DateRangeSelector';
 
@@ -178,6 +179,7 @@ export default function ControlRoomFilters({
   onBuildingFilterModeChange,
 }: ControlRoomFiltersProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [selectedBuildingNames, setSelectedBuildingNames] = useState<string[]>([]);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [localDateRange, setLocalDateRange] = useState('This Month');
@@ -203,7 +205,7 @@ export default function ControlRoomFilters({
   const isAssetFiltered = !allAssetsSelected;
 
   const getAssetFilterLabel = () => {
-    if (!isAssetFiltered) return 'Alle assets';
+    if (!isAssetFiltered) return t('filter.allAssets');
     return `${selectedAssetIds.length} asset${selectedAssetIds.length !== 1 ? 's' : ''}`;
   };
 
@@ -280,14 +282,14 @@ export default function ControlRoomFilters({
           >
             {/* Header */}
             <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${c.bgSecondaryHover}` }}>
-              <Typography variant="subtitle2" fontWeight={600}>Filter assets</Typography>
+              <Typography variant="subtitle2" fontWeight={600}>{t('filter.filterAssets')}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Typography variant="caption" color="text.secondary">
-                  {isAssetFiltered ? selectedAssetIds.length : totalAssetCount}/{totalAssetCount} geselecteerd
+                  {isAssetFiltered ? selectedAssetIds.length : totalAssetCount}/{totalAssetCount} {t('common.selected')}
                 </Typography>
                 {isAssetFiltered && (
                   <Typography variant="caption" sx={{ color: 'primary.main', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={() => setSelectedAssetIds([])}>
-                    Wis alles
+                    {t('common.clearAll')}
                   </Typography>
                 )}
               </Box>
@@ -297,7 +299,7 @@ export default function ControlRoomFilters({
             <Box sx={{ p: 1, borderBottom: `1px solid ${c.bgSecondaryHover}` }}>
               <TextField
                 size="small"
-                placeholder="Zoek asset..."
+                placeholder={t('filter.searchAsset')}
                 value={assetSearch}
                 onChange={(e) => setAssetSearch(e.target.value)}
                 fullWidth

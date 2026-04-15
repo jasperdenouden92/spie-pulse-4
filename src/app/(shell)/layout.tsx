@@ -56,6 +56,7 @@ import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterM
 import { useAppState } from '@/context/AppStateContext';
 import { useURLState } from '@/hooks/useURLState';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { buildings as allBuildings, tenants, type Building, type MetricKeys } from '@/data/buildings';
 import { zones as allZones } from '@/data/zones';
 import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
@@ -102,6 +103,7 @@ const ALL_ASSETS: EnrichedAsset[] = buildingsTreeNode
 
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
   const { themeColors: tc } = useThemeMode();
+  const { t } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const isNarrow = useMediaQuery('(max-width:960px)');
@@ -323,8 +325,8 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     setTitleBuildingNames([]);
   };
 
-  const getTitleBuildingLabel = () => getBuildingSelectorLabel(titleBuildingNames, titleBuildingMode);
-  const getPeriodDisplayLabel = (range: string): string => getDateRangeDisplayLabel(range);
+  const getTitleBuildingLabel = () => getBuildingSelectorLabel(titleBuildingNames, titleBuildingMode, t);
+  const getPeriodDisplayLabel = (range: string): string => getDateRangeDisplayLabel(range, t);
 
   // Sequential closing of both drawers (concertina effect)
   const handleCloseBothDrawers = () => {

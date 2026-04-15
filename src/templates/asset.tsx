@@ -32,14 +32,18 @@ import { getPathToAsset } from '@/data/assetTree';
 import { buildings as allBuildings } from '@/data/buildings';
 import PageHeader from '@/components/PageHeader';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 
 export type AssetDetailTab = 'overview' | 'tickets' | 'quotations';
 
-const TABS: { value: AssetDetailTab; label: string }[] = [
-  { value: 'overview', label: 'Overview' },
-  { value: 'tickets', label: 'Tickets' },
-  { value: 'quotations', label: 'Quotations' },
-];
+function useAssetTabs() {
+  const { t } = useLanguage();
+  return [
+    { value: 'overview' as AssetDetailTab, label: t('common.overview') },
+    { value: 'tickets' as AssetDetailTab, label: t('building.tickets') },
+    { value: 'quotations' as AssetDetailTab, label: t('building.quotations') },
+  ];
+}
 
 const CATEGORY_COLORS: Record<string, string> = {
   'HVAC': '#3b82f6',
@@ -82,6 +86,7 @@ interface AssetSelectorPopoverProps {
 
 function AssetSelectorPopover({ anchorEl, onClose, currentAssetId, siblingAssets, onAssetSelect }: AssetSelectorPopoverProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -128,14 +133,14 @@ function AssetSelectorPopover({ anchorEl, onClose, currentAssetId, siblingAssets
             inputRef={searchRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search assets…"
+            placeholder={t('asset.searchAssets')}
             sx={{ fontSize: '0.8rem', flex: 1, '& input': { p: 0, lineHeight: 1 } }}
           />
         </Box>
       </Box>
       <Box sx={{ overflowY: 'auto', pb: 1 }}>
         {grouped.length === 0 ? (
-          <Typography sx={{ px: 2, py: 2, fontSize: '0.8rem', color: 'text.disabled' }}>No assets found</Typography>
+          <Typography sx={{ px: 2, py: 2, fontSize: '0.8rem', color: 'text.disabled' }}>{t('asset.noAssetsFound')}</Typography>
         ) : (
           grouped.map(([category, assets]) => (
             <Box key={category}>
@@ -343,6 +348,8 @@ export default function AssetDetailPage({
   onPanelClose,
   onPanelFullscreen,
 }: AssetDetailPageProps) {
+  const { t } = useLanguage();
+  const tabs = useAssetTabs();
   const assetColor = getAssetColor(asset.metadata?.category);
 
   // Resolve path: [building, floor, zone, ...parentAssets, currentAsset]
@@ -373,7 +380,7 @@ export default function AssetDetailPage({
   // Build ancestors array (everything before the current asset in the breadcrumb)
   const ancestors = useMemo<BreadcrumbSegment[]>(() => {
     const segs: BreadcrumbSegment[] = [];
-    segs.push({ label: 'Portfolio', onClick: onBackToPortfolio });
+    segs.push({ label: t('nav.portfolio'), onClick: onBackToPortfolio });
     if (clusterName) segs.push({ label: clusterName, onClick: onBackToCluster });
     if (buildingNode) segs.push({ label: buildingNode.name, onClick: onBackToBuilding });
     if (zoneNode) segs.push({ label: zoneNode.name, onClick: onBackToZone });
@@ -381,19 +388,19 @@ export default function AssetDetailPage({
       segs.push({ label: parentAsset.name, onClick: () => onAssetChange?.(parentAsset.id) });
     }
     return segs;
-  }, [clusterName, buildingNode, zoneNode, parentAssetNodes, onBackToPortfolio, onBackToCluster, onBackToBuilding, onBackToZone, onAssetChange]);
+  }, [t, clusterName, buildingNode, zoneNode, parentAssetNodes, onBackToPortfolio, onBackToCluster, onBackToBuilding, onBackToZone, onAssetChange]);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>
       {onPanelClose && (
-        <Tooltip title="Close panel">
+        <Tooltip title={t('building.closePanel')}>
           <IconButton size="small" onClick={onPanelClose} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <KeyboardDoubleArrowRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
       {onPanelFullscreen && (
-        <Tooltip title="Open fullscreen">
+        <Tooltip title={t('building.openFullscreen')}>
           <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <OpenInFullIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -410,7 +417,7 @@ export default function AssetDetailPage({
       entityType={asset.metadata?.category}
       title={asset.name}
       subtitle={[floorNode?.name, zoneNode?.name].filter(Boolean).join(' · ')}
-      tabs={TABS}
+      tabs={tabs}
       activeTab={tab}
       onTabChange={(v) => onTabChange(v as AssetDetailTab)}
       isCollapsed={isCollapsed}

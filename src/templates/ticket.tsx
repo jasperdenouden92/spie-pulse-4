@@ -19,6 +19,7 @@ import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import NatureIcon from '@mui/icons-material/Nature';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import PageHeader from '@/components/PageHeader';
+import { useLanguage } from '@/i18n';
 import type { Ticket } from '@/data/tickets';
 
 
@@ -78,19 +79,20 @@ export default function TicketDetailPage({
   onPanelClose,
   onPanelFullscreen,
 }: TicketDetailPageProps) {
+  const { t } = useLanguage();
   const categoryColor = getCategoryColor(ticket.category);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>
       {onPanelClose && (
-        <Tooltip title="Close panel">
+        <Tooltip title={t('building.closePanel')}>
           <IconButton size="small" onClick={onPanelClose} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <KeyboardDoubleArrowRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
       {onPanelFullscreen && (
-        <Tooltip title="Open fullscreen">
+        <Tooltip title={t('building.openFullscreen')}>
           <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
             <OpenInFullIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -116,7 +118,7 @@ export default function TicketDetailPage({
             sx={{ color: 'text.secondary', fontSize: '0.8rem', fontWeight: 500, fontFamily: '"Inter", sans-serif', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { color: 'text.primary' } }}
             onClick={onBackToTickets}
           >
-            Tickets
+            {t('nav.tickets')}
           </Typography>
           <KeyboardArrowRightIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
           <Typography noWrap sx={{ color: 'text.primary', fontSize: '0.8rem', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>

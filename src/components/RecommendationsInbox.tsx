@@ -1,5 +1,6 @@
 'use client';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
@@ -125,19 +126,20 @@ type FilterType = 'all' | 'opportunity' | 'warning' | 'info' | 'recommendation';
 
 export default function RecommendationsInbox() {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [filter, setFilter] = useState<FilterType>('all');
 
   const typeConfig = {
-    opportunity: { icon: <TrendingUpIcon sx={{ fontSize: 16 }} />, color: '#2e7d32', bg: '#e8f5e9', label: 'Opportunity' },
-    warning: { icon: <WarningAmberOutlinedIcon sx={{ fontSize: 16 }} />, color: '#e65100', bg: '#fff3e0', label: 'Warning' },
+    opportunity: { icon: <TrendingUpIcon sx={{ fontSize: 16 }} />, color: '#2e7d32', bg: '#e8f5e9', label: t('insights.opportunity') },
+    warning: { icon: <WarningAmberOutlinedIcon sx={{ fontSize: 16 }} />, color: '#e65100', bg: '#fff3e0', label: t('insights.warning') },
     info: { icon: <InfoOutlinedIcon sx={{ fontSize: 16 }} />, color: '#1565c0', bg: c.bgActive, label: 'Info' },
-    recommendation: { icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} />, color: '#7b1fa2', bg: '#f3e5f5', label: 'Recommendation' },
+    recommendation: { icon: <LightbulbOutlinedIcon sx={{ fontSize: 16 }} />, color: '#7b1fa2', bg: '#f3e5f5', label: t('insights.recommendation') },
   };
 
   const impactConfig = {
-    high: { color: '#d32f2f', bg: '#ffebee', label: 'High impact' },
-    medium: { color: '#ed6c02', bg: '#fff3e0', label: 'Medium impact' },
-    low: { color: '#757575', bg: c.bgPrimaryHover, label: 'Low impact' },
+    high: { color: '#d32f2f', bg: '#ffebee', label: t('insights.highImpact') },
+    medium: { color: '#ed6c02', bg: '#fff3e0', label: t('insights.mediumImpact') },
+    low: { color: '#757575', bg: c.bgPrimaryHover, label: t('insights.lowImpact') },
   };
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -160,11 +162,11 @@ export default function RecommendationsInbox() {
   };
 
   const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: 'All' },
-    { key: 'warning', label: 'Warnings' },
-    { key: 'opportunity', label: 'Opportunities' },
-    { key: 'recommendation', label: 'Tips' },
-    { key: 'info', label: 'Info' },
+    { key: 'all', label: t('insights.all') },
+    { key: 'warning', label: t('insights.warnings') },
+    { key: 'opportunity', label: t('insights.opportunities') },
+    { key: 'recommendation', label: t('insights.tips') },
+    { key: 'info', label: t('insights.info') },
   ];
 
   return (
@@ -174,7 +176,7 @@ export default function RecommendationsInbox() {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-              Insights
+              {t('insights.title')}
             </Typography>
             {unreadCount > 0 && (
               <Chip
@@ -215,7 +217,7 @@ export default function RecommendationsInbox() {
           <Box sx={{ textAlign: 'center', py: 6 }}>
             <CheckCircleOutlineIcon sx={{ fontSize: 48, color: '#c8e6c9', mb: 1 }} />
             <Typography variant="body2" color="text.secondary">
-              All caught up! No recommendations to review.
+              {t('insights.allCaughtUp')}
             </Typography>
           </Box>
         ) : (
@@ -354,7 +356,7 @@ export default function RecommendationsInbox() {
                         disableElevation
                         sx={{ textTransform: 'none', fontSize: '0.75rem', height: 30 }}
                       >
-                        View details
+                        {t('common.viewDetails')}
                       </Button>
                       <Button
                         size="small"
@@ -362,7 +364,7 @@ export default function RecommendationsInbox() {
                         onClick={(e) => { e.stopPropagation(); handleDismiss(insight.id); }}
                         sx={{ textTransform: 'none', fontSize: '0.75rem', height: 30, color: 'text.secondary' }}
                       >
-                        Dismiss
+                        {t('insights.dismiss')}
                       </Button>
                     </Box>
                   </Box>

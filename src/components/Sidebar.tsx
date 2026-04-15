@@ -72,6 +72,8 @@ import SettingsBrightnessOutlined from '@mui/icons-material/SettingsBrightnessOu
 import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
 import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage, type Locale } from '@/i18n';
+import TranslateOutlined from '@mui/icons-material/TranslateOutlined';
 
 interface Favorite {
   id: string;
@@ -346,6 +348,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [userAnchorEl, setUserAnchorEl] = useState<null | HTMLElement>(null);
   const { preference: themePreference, setThemePreference, themeColors: c } = useThemeMode();
+  const { t, locale, setLocale } = useLanguage();
   const newButtonRef = useRef<HTMLDivElement>(null);
   const [operationsExpanded, setOperationsExpanded] = useState(() => Boolean(pathname.startsWith('/operations')));
   const [portfolioExpanded, setPortfolioExpanded] = useState(() => Boolean(pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')));
@@ -353,9 +356,9 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const [insightsExpanded, setInsightsExpanded] = useState(() => Boolean(pathname.startsWith('/insights')));
 
   const NEW_MENU_ITEMS = [
-    { label: 'Report issue', key: '1' },
-    { label: 'Request quote', key: '2' },
-    { label: 'Service request', key: '3' },
+    { label: t('createNew.reportIssue'), key: '1' },
+    { label: t('createNew.requestQuote'), key: '2' },
+    { label: t('createNew.serviceRequest'), key: '3' },
   ];
 
   useEffect(() => {
@@ -513,13 +516,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   }, [searchQuery, selectedCustomer]);
 
   const buildingMenuItems = [
-    { label: 'Overview', icon: AssignmentOutlinedIcon, metric: 'overall' },
-    { label: 'Sustainability', icon: NatureOutlinedIcon, metric: 'sustainability' },
-    { label: 'Comfort', icon: SpaOutlinedIcon, metric: 'comfort' },
-    { label: 'Asset Monitoring', icon: SecurityOutlinedIcon, metric: 'asset_monitoring' },
-    { label: 'Tickets', icon: ShowChartOutlinedIcon, metric: 'tickets' },
-    { label: 'Quotations', icon: RequestQuoteOutlinedIcon, metric: 'quotations' },
-    { label: 'Maintenance', icon: BuildOutlinedIcon, metric: 'maintenance' },
+    { label: t('common.overview'), icon: AssignmentOutlinedIcon, metric: 'overall' },
+    { label: t('metric.sustainability'), icon: NatureOutlinedIcon, metric: 'sustainability' },
+    { label: t('metric.comfort'), icon: SpaOutlinedIcon, metric: 'comfort' },
+    { label: t('metric.assetMonitoring'), icon: SecurityOutlinedIcon, metric: 'asset_monitoring' },
+    { label: t('metric.tickets'), icon: ShowChartOutlinedIcon, metric: 'tickets' },
+    { label: t('metric.quotations'), icon: RequestQuoteOutlinedIcon, metric: 'quotations' },
+    { label: t('metric.maintenance'), icon: BuildOutlinedIcon, metric: 'maintenance' },
   ];
 
   const handleBuildingClick = (building: Building) => {
@@ -639,7 +642,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: isCollapsed ? 1.5 : 2, pt: 0, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
             <List data-annotation-id="sidebar-lijst-3" sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             <NavItem
-              label="New"
+              label={t('nav.new')}
               icon={<AddIcon sx={{ fontSize: 16 }} />}
               onClick={(e) => setNewMenuAnchorEl(e?.currentTarget as HTMLElement)}
               shortcut={modifierHeld ? 'N' : undefined}
@@ -648,26 +651,26 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               buttonRef={newButtonRef as React.Ref<HTMLDivElement>}
             />
             <NavItem
-              label="Search"
+              label={t('nav.search')}
               icon={<SearchIcon sx={{ fontSize: 16 }} />}
               onClick={() => setSearchModalOpen(true)}
               shortcut={modifierHeld ? 'F' : undefined}
             />
             <Divider sx={{ my: 1.5 }} />
             <NavItem
-              label="Home"
+              label={t('nav.home')}
               icon={<HomeOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname === '/home'}
               onClick={() => router.push('/home')}
             />
             <NavItem
-              label="Control Room"
+              label={t('nav.controlRoom')}
               icon={<MonitorHeartOutlined sx={{ fontSize: 16 }} />}
               active={pathname === '/control-room'}
               onClick={() => router.push('/control-room')}
             />
             <NavItem
-              label="Insights"
+              label={t('nav.insights')}
               icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/insights')}
               onClick={() => { router.push('/insights/alerts'); setInsightsExpanded(true); }}
@@ -676,13 +679,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             />
             {!isCollapsed && insightsExpanded && (
               <>
-                <NavItem label="Alerts" active={pathname === '/insights/alerts'} onClick={() => router.push('/insights/alerts')} />
-                <NavItem label="Analyses" active={pathname === '/insights/analyses'} onClick={() => router.push('/insights/analyses')} />
-                <NavItem label="Performance" active={pathname === '/insights/performance'} onClick={() => router.push('/insights/performance')} />
+                <NavItem label={t('nav.alerts')} active={pathname === '/insights/alerts'} onClick={() => router.push('/insights/alerts')} />
+                <NavItem label={t('nav.analyses')} active={pathname === '/insights/analyses'} onClick={() => router.push('/insights/analyses')} />
+                <NavItem label={t('nav.performance')} active={pathname === '/insights/performance'} onClick={() => router.push('/insights/performance')} />
               </>
             )}
             <NavItem
-              label="Portfolio"
+              label={t('nav.portfolio')}
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')}
               onClick={() => { router.push('/portfolio/buildings'); setPortfolioExpanded(true); }}
@@ -691,13 +694,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             />
             {!isCollapsed && portfolioExpanded && (
               <>
-                <NavItem label="Buildings" active={pathname === '/portfolio/buildings' || pathname.startsWith('/buildings/')} onClick={() => router.push('/portfolio/buildings')} />
-                <NavItem label="Zones" active={pathname === '/portfolio/zones' || pathname.startsWith('/zones/')} onClick={() => router.push('/portfolio/zones')} />
-                <NavItem label="Assets" active={pathname === '/portfolio/assets' || pathname.startsWith('/assets/')} onClick={() => router.push('/portfolio/assets')} />
+                <NavItem label={t('nav.buildings')} active={pathname === '/portfolio/buildings' || pathname.startsWith('/buildings/')} onClick={() => router.push('/portfolio/buildings')} />
+                <NavItem label={t('nav.zones')} active={pathname === '/portfolio/zones' || pathname.startsWith('/zones/')} onClick={() => router.push('/portfolio/zones')} />
+                <NavItem label={t('nav.assets')} active={pathname === '/portfolio/assets' || pathname.startsWith('/assets/')} onClick={() => router.push('/portfolio/assets')} />
               </>
             )}
             <NavItem
-              label="Operations"
+              label={t('nav.operations')}
               icon={<EngineeringOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/operations')}
               onClick={() => { router.push('/operations/tickets'); setOperationsExpanded(true); }}
@@ -706,20 +709,20 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             />
             {!isCollapsed && operationsExpanded && (
               <>
-                <NavItem label="Tickets" active={pathname.startsWith('/operations/tickets')} onClick={() => router.push('/operations/tickets')} />
-                <NavItem label="Quotations" active={pathname.startsWith('/operations/quotations')} onClick={() => router.push('/operations/quotations')} />
-                <NavItem label="Documents" active={pathname.startsWith('/operations/documents')} onClick={() => router.push('/operations/documents')} />
-                <NavItem label="Maintenance" active={pathname.startsWith('/operations/maintenance')} onClick={() => router.push('/operations/maintenance')} />
+                <NavItem label={t('nav.tickets')} active={pathname.startsWith('/operations/tickets')} onClick={() => router.push('/operations/tickets')} />
+                <NavItem label={t('nav.quotations')} active={pathname.startsWith('/operations/quotations')} onClick={() => router.push('/operations/quotations')} />
+                <NavItem label={t('nav.documents')} active={pathname.startsWith('/operations/documents')} onClick={() => router.push('/operations/documents')} />
+                <NavItem label={t('nav.maintenance')} active={pathname.startsWith('/operations/maintenance')} onClick={() => router.push('/operations/maintenance')} />
               </>
             )}
             <NavItem
-              label="Dashboards"
+              label={t('nav.dashboards')}
               icon={<DashboardOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname === '/dashboards'}
               onClick={() => router.push('/dashboards')}
             />
             <NavItem
-              label="BMS"
+              label={t('nav.bms')}
               icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/bms')}
               onClick={() => { router.push('/bms/access'); setBmsExpanded(true); }}
@@ -728,8 +731,8 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             />
             {!isCollapsed && bmsExpanded && (
               <>
-                <NavItem label="Access" active={pathname === '/bms/access'} onClick={() => router.push('/bms/access')} />
-                <NavItem label="Logging" active={pathname === '/bms/logging'} onClick={() => router.push('/bms/logging')} />
+                <NavItem label={t('nav.access')} active={pathname === '/bms/access'} onClick={() => router.push('/bms/access')} />
+                <NavItem label={t('nav.logging')} active={pathname === '/bms/logging'} onClick={() => router.push('/bms/logging')} />
               </>
             )}
           </List>
@@ -746,7 +749,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             </Box>
             <Box className="sidebar-hide-collapsed" sx={{ height: favoritesHeight, flexShrink: 0, overflowY: 'auto', overflowX: 'hidden', px: 2, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
               <Divider sx={{ mb: 1 }} />
-              <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>Favorites</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>{t('nav.favorites')}</Typography>
               <DndContext id="sidebar-favorites" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={favorites.map(f => f.id)} strategy={verticalListSortingStrategy}>
                   <List data-annotation-id="sidebar-lijst-2" dense sx={{ py: 0 }}>
@@ -778,7 +781,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                         <NotificationsOutlinedIcon sx={{ fontSize: 16 }} />
                       </Badge>
                     </Box>
-                    <ListItemText primary="Notifications" primaryTypographyProps={{ variant: 'body2' }} />
+                    <ListItemText primary={t('nav.notifications')} primaryTypographyProps={{ variant: 'body2' }} />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -786,7 +789,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <HelpOutlineIcon sx={{ fontSize: 16 }} />
                     </Box>
-                    <ListItemText primary="Help" primaryTypographyProps={{ variant: 'body2' }} />
+                    <ListItemText primary={t('nav.help')} primaryTypographyProps={{ variant: 'body2' }} />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -800,7 +803,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                     sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
-                    <ListItemText primary="Account" primaryTypographyProps={{ variant: 'body2' }} />
+                    <ListItemText primary={t('nav.account')} primaryTypographyProps={{ variant: 'body2' }} />
                   </ListItemButton>
                 </ListItem>
               </List>
@@ -823,7 +826,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
         sx={{ zIndex: 1600 }}
       >
         <Typography variant="caption" sx={{ display: 'block', px: 2, pt: 1, pb: 0.5, color: 'text.secondary', fontWeight: 500, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Create new
+          {t('createNew.title')}
         </Typography>
         {NEW_MENU_ITEMS.map((item, i) => (
           <MenuItem
@@ -842,7 +845,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               sx={{ flex: 1 }}
             />
             <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled', bgcolor: c.bgSecondaryHover, px: 0.75, py: 0.25, borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>
-              Press {item.key}
+              {t('common.press')} {item.key}
             </Typography>
           </MenuItem>
         ))}
@@ -890,12 +893,12 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
         sx={{ zIndex: 1600, pointerEvents: 'none', '& .MuiPopover-paper': { pointerEvents: 'auto' } }}
       >
         <Box sx={{ px: 1.5, py: 1 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>Admin User</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>{t('account.adminUser')}</Typography>
           <Typography variant="caption" color="text.secondary">admin@spie.com</Typography>
         </Box>
         <Divider sx={{ my: 0.5 }} />
         <Box sx={{ px: 1.5, py: 0.75 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Appearance</Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('account.appearance')}</Typography>
           <ToggleButtonGroup
             value={themePreference}
             exclusive
@@ -904,16 +907,30 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             fullWidth
             sx={{ mt: 0.75, '& .MuiToggleButton-root': { textTransform: 'none', fontSize: '0.75rem', py: 0.5, gap: 0.5 } }}
           >
-            <ToggleButton value="system"><SettingsBrightnessOutlined sx={{ fontSize: 16 }} />System</ToggleButton>
-            <ToggleButton value="light"><LightModeOutlined sx={{ fontSize: 16 }} />Light</ToggleButton>
-            <ToggleButton value="dark"><DarkModeOutlined sx={{ fontSize: 16 }} />Dark</ToggleButton>
+            <ToggleButton value="system"><SettingsBrightnessOutlined sx={{ fontSize: 16 }} />{t('account.system')}</ToggleButton>
+            <ToggleButton value="light"><LightModeOutlined sx={{ fontSize: 16 }} />{t('account.light')}</ToggleButton>
+            <ToggleButton value="dark"><DarkModeOutlined sx={{ fontSize: 16 }} />{t('account.dark')}</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+        <Box sx={{ px: 1.5, py: 0.75 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('account.language')}</Typography>
+          <ToggleButtonGroup
+            value={locale}
+            exclusive
+            onChange={(_, val) => { if (val) setLocale(val as Locale); }}
+            size="small"
+            fullWidth
+            sx={{ mt: 0.75, '& .MuiToggleButton-root': { textTransform: 'none', fontSize: '0.75rem', py: 0.5, gap: 0.5 } }}
+          >
+            <ToggleButton value="en"><TranslateOutlined sx={{ fontSize: 16 }} />English</ToggleButton>
+            <ToggleButton value="nl"><TranslateOutlined sx={{ fontSize: 16 }} />Nederlands</ToggleButton>
           </ToggleButtonGroup>
         </Box>
         <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Settings</MenuItem>
-        <MenuItem onClick={() => { setUserAnchorEl(null); router.push('/exports'); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Exports</MenuItem>
+        <MenuItem onClick={() => { setUserAnchorEl(null); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>{t('nav.settings')}</MenuItem>
+        <MenuItem onClick={() => { setUserAnchorEl(null); router.push('/exports'); }} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>{t('nav.exports')}</MenuItem>
         <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>Logout</MenuItem>
+        <MenuItem onClick={() => setUserAnchorEl(null)} sx={{ borderRadius: '6px', fontSize: '0.875rem', minHeight: 32 }}>{t('nav.logout')}</MenuItem>
       </Popover>
       <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} onNavigate={(page, dashboardId) => { router.push(page); if (dashboardId) onDashboardNavigate?.(dashboardId); }} />
     </Box>

@@ -10,6 +10,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { GridCard } from '@/components/performance';
 
 export interface TopicDef {
@@ -31,10 +32,11 @@ export function getStatusColor(score: number, goodAbove: number, moderateAbove: 
   return '#f44336';
 }
 
-export function getStatusLabel(score: number, goodAbove: number, moderateAbove: number): string {
-  if (score >= goodAbove) return 'Good';
-  if (score >= moderateAbove) return 'Moderate';
-  return 'Poor';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getStatusLabel(score: number, goodAbove: number, moderateAbove: number, t?: (k: any) => string): string {
+  if (score >= goodAbove) return t ? t('performance.good') : 'Good';
+  if (score >= moderateAbove) return t ? t('performance.moderate') : 'Moderate';
+  return t ? t('performance.poor') : 'Poor';
 }
 
 function renderSparkline(data: number[], color: string, w = 80, h = 28) {
@@ -72,6 +74,7 @@ interface PerformanceIndicatorsCardProps {
 
 export default function PerformanceIndicatorsCard({ icon, title, score, trend, topics }: PerformanceIndicatorsCardProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
 
   return (
     <GridCard size="xl">
@@ -100,7 +103,7 @@ export default function PerformanceIndicatorsCard({ icon, title, score, trend, t
           endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
           sx={{ ml: 'auto', textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
         >
-          View performance indicators
+          {t('performance.viewPerformanceIndicators')}
         </Button>
       </Box>
       <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${topics.length}, 1fr)`, gap: 2 }}>
@@ -133,7 +136,7 @@ export default function PerformanceIndicatorsCard({ icon, title, score, trend, t
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                   <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1.15rem', lineHeight: 1.2 }}>{topic.score}%</Typography>
-                  <Chip label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove)} size="small" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 600, bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`, color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove), '& .MuiChip-label': { px: 0.75 } }} />
+                  <Chip label={getStatusLabel(topic.score, topic.goodAbove, topic.moderateAbove, t)} size="small" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 600, bgcolor: `${getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove)}18`, color: getStatusColor(topic.score, topic.goodAbove, topic.moderateAbove), '& .MuiChip-label': { px: 0.75 } }} />
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: topic.trend >= 0 ? 'success.main' : 'error.main' }}>
                   {topic.trend >= 0 ? <TrendingUpIcon sx={{ fontSize: 12 }} /> : <TrendingDownIcon sx={{ fontSize: 12 }} />}

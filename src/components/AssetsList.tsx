@@ -26,6 +26,7 @@ import Button from '@/components/Button';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { type AssetNode } from '@/data/assetTree';
 
 import AcUnitIcon from '@mui/icons-material/AcUnit';
@@ -115,15 +116,17 @@ function CategoryCell({ category }: { category?: string }) {
 // ── Sortable columns ──
 type SortKey = 'name' | 'building' | 'category' | 'manufacturer' | 'model' | 'zone' | 'installDate' | 'status';
 
-const COLUMNS: { key: SortKey; label: string; width?: string }[] = [
-  { key: 'name',         label: 'Asset',        width: '18%' },
-  { key: 'building',     label: 'Building',     width: '16%' },
-  { key: 'category',     label: 'Category',     width: '13%' },
-  { key: 'manufacturer', label: 'Manufacturer', width: '12%' },
-  { key: 'model',        label: 'Model',        width: '12%' },
-  { key: 'zone',         label: 'Zone',         width: '13%' },
-  { key: 'installDate',  label: 'Installation date', width: '11%' },
-  { key: 'status',       label: 'Status',       width: '8%'  },
+type ColumnLabelKey = 'assets.asset' | 'common.building' | 'common.category' | 'assets.manufacturer' | 'assets.model' | 'assets.zone' | 'assets.installationDate' | 'common.status';
+
+const COLUMNS: { key: SortKey; labelKey: ColumnLabelKey; width?: string }[] = [
+  { key: 'name',         labelKey: 'assets.asset',            width: '18%' },
+  { key: 'building',     labelKey: 'common.building',         width: '16%' },
+  { key: 'category',     labelKey: 'common.category',         width: '13%' },
+  { key: 'manufacturer', labelKey: 'assets.manufacturer',     width: '12%' },
+  { key: 'model',        labelKey: 'assets.model',            width: '12%' },
+  { key: 'zone',         labelKey: 'assets.zone',             width: '13%' },
+  { key: 'installDate',  labelKey: 'assets.installationDate', width: '11%' },
+  { key: 'status',       labelKey: 'common.status',           width: '8%'  },
 ];
 
 function getSortValue(asset: EnrichedAsset, key: SortKey): string {
@@ -171,6 +174,7 @@ function SectionHeader({ label, count, onClick }: { label: string; count: number
 // ── Asset table (flat — grouping handled by parent) ──
 function AssetTable({ assets, query = '', hiddenCols = [], onAssetClick }: { assets: EnrichedAsset[]; query?: string; hiddenCols?: SortKey[]; onAssetClick?: (assetId: string, e: React.MouseEvent) => void }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const { get, set } = useFilterParams();
   const sortKey = get('sortKey', 'name') as SortKey;
   const sortDir = get('sortDir', 'asc') as 'asc' | 'desc';
@@ -218,7 +222,7 @@ function AssetTable({ assets, query = '', hiddenCols = [], onAssetClick }: { ass
                   onClick={() => handleSort(col.key)}
                   sx={{ fontSize: 'inherit', color: 'inherit', '&.Mui-active': { color: c.brandSecondary }, '& .MuiTableSortLabel-icon': { fontSize: 14 } }}
                 >
-                  {col.label}
+                  {t(col.labelKey)}
                 </TableSortLabel>
               </TableCell>
             ))}
@@ -302,6 +306,7 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
   showFilters?: boolean;
 }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
@@ -365,38 +370,38 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
   const filterBar = showFilters ? (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, mt: 1, flexWrap: 'wrap' }}>
       {/* Left: Category + optional filters */}
-      <FilterChip label="Category" value={catChip} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setSelectedCategories([]) : undefined} />
-      <FilterDropdown anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)} options={allCategories.map(c => ({ value: c }))} multiple value={selectedCategories} onChange={(v) => setSelectedCategories(v as string[])} placeholder="Search categories…" />
+      <FilterChip label={t('common.category')} value={catChip} onClick={(e) => setCategoryAnchor(e.currentTarget)} onClear={selectedCategories.length > 0 ? () => setSelectedCategories([]) : undefined} />
+      <FilterDropdown anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)} options={allCategories.map(c => ({ value: c }))} multiple value={selectedCategories} onChange={(v) => setSelectedCategories(v as string[])} placeholder={t('assets.searchCategories')} />
 
-      <FilterChip label="Status" value={statusChip} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setSelectedStatuses([]) : undefined} />
-      <FilterDropdown anchorEl={statusAnchor} onClose={() => setStatusAnchor(null)} options={allStatuses.map(s => ({ value: s }))} multiple value={selectedStatuses} onChange={(v) => setSelectedStatuses(v as string[])} placeholder="Search statuses…" />
+      <FilterChip label={t('common.status')} value={statusChip} onClick={(e) => setStatusAnchor(e.currentTarget)} onClear={selectedStatuses.length > 0 ? () => setSelectedStatuses([]) : undefined} />
+      <FilterDropdown anchorEl={statusAnchor} onClose={() => setStatusAnchor(null)} options={allStatuses.map(s => ({ value: s }))} multiple value={selectedStatuses} onChange={(v) => setSelectedStatuses(v as string[])} placeholder={t('assets.searchStatuses')} />
 
-      <FilterChip label="Manufacturer" value={mfgChip} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setSelectedManufacturers([]) : undefined} />
-      <FilterDropdown anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)} options={allManufacturers.map(m => ({ value: m }))} multiple value={selectedManufacturers} onChange={(v) => setSelectedManufacturers(v as string[])} placeholder="Search manufacturers…" />
+      <FilterChip label={t('assets.manufacturer')} value={mfgChip} onClick={(e) => setManufacturerAnchor(e.currentTarget)} onClear={selectedManufacturers.length > 0 ? () => setSelectedManufacturers([]) : undefined} />
+      <FilterDropdown anchorEl={manufacturerAnchor} onClose={() => setManufacturerAnchor(null)} options={allManufacturers.map(m => ({ value: m }))} multiple value={selectedManufacturers} onChange={(v) => setSelectedManufacturers(v as string[])} placeholder={t('assets.searchManufacturers')} />
 
-      <FilterChip label="Model" value={modelChip} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setSelectedModels([]) : undefined} />
-      <FilterDropdown anchorEl={modelAnchor} onClose={() => setModelAnchor(null)} options={allModels.map(m => ({ value: m }))} multiple value={selectedModels} onChange={(v) => setSelectedModels(v as string[])} placeholder="Search models…" />
+      <FilterChip label={t('assets.model')} value={modelChip} onClick={(e) => setModelAnchor(e.currentTarget)} onClear={selectedModels.length > 0 ? () => setSelectedModels([]) : undefined} />
+      <FilterDropdown anchorEl={modelAnchor} onClose={() => setModelAnchor(null)} options={allModels.map(m => ({ value: m }))} multiple value={selectedModels} onChange={(v) => setSelectedModels(v as string[])} placeholder={t('assets.searchModels')} />
 
-      <FilterChip label="Zone" value={zoneChip} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setSelectedZones([]) : undefined} />
-      <FilterDropdown anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)} options={allZoneNames.map(z => ({ value: z }))} multiple value={selectedZones} onChange={(v) => setSelectedZones(v as string[])} placeholder="Search zones…" />
+      <FilterChip label={t('assets.zone')} value={zoneChip} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setSelectedZones([]) : undefined} />
+      <FilterDropdown anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)} options={allZoneNames.map(z => ({ value: z }))} multiple value={selectedZones} onChange={(v) => setSelectedZones(v as string[])} placeholder={t('assets.searchZones')} />
 
       {/* Right: Group by + Search */}
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
         <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
-          Group by
+          {t('common.groupBy')}
         </Button>
         <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
-          <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>No grouping</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.noGrouping')}</ListItemText></MenuItem>
           <Divider />
-          <MenuItem selected={internalGroupBy === 'category'} onClick={() => { setInternalGroupBy('category'); setGroupByMenuAnchor(null); }}><ListItemText>Category</ListItemText></MenuItem>
-          <MenuItem selected={internalGroupBy === 'status'} onClick={() => { setInternalGroupBy('status'); setGroupByMenuAnchor(null); }}><ListItemText>Status</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'category'} onClick={() => { setInternalGroupBy('category'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.category')}</ListItemText></MenuItem>
+          <MenuItem selected={internalGroupBy === 'status'} onClick={() => { setInternalGroupBy('status'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.status')}</ListItemText></MenuItem>
         </Menu>
         <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
           <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
           <InputBase
             value={internalSearch}
             onChange={(e) => setInternalSearch(e.target.value)}
-            placeholder="Search assets…"
+            placeholder={t('portfolio.searchAssets')}
             sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
             endAdornment={internalSearch ? (
               <InputAdornment position="end">
@@ -437,7 +442,7 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
             <colgroup>{skeletonCols.map((w, i) => <col key={i} style={{ width: w }} />)}</colgroup>
             <TableHead>
               <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
-                {['Asset', 'Building', 'Category', 'Manufacturer', 'Model', 'Zone', 'Installation date', 'Status'].map((h) => (
+                {[t('assets.asset'), t('common.building'), t('common.category'), t('assets.manufacturer'), t('assets.model'), t('assets.zone'), t('assets.installationDate'), t('common.status')].map((h) => (
                   <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, whiteSpace: 'nowrap' }}>
                     {h}
                   </TableCell>
@@ -476,7 +481,7 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
       {filterBar}
       {filteredAssets.length === 0 ? (
         <Box sx={{ py: 8, textAlign: 'center' }}>
-          <Typography variant="body1" color="text.secondary">No assets match your filters.</Typography>
+          <Typography variant="body1" color="text.secondary">{t('portfolio.noAssets')}</Typography>
         </Box>
       ) : grouped ? (
         grouped.map(({ key, label, items }) => (

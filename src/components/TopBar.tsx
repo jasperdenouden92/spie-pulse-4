@@ -28,6 +28,7 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import { AssetNode } from '@/data/assetTree';
 import { secondaryAlpha } from '@/colors';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { ContractFilterToggle, type ContractFilter } from '@/components/BuildingSelector';
 import { documentFolders } from '@/data/documents';
 
@@ -72,27 +73,27 @@ interface TopBarProps {
   metricItems?: Array<{ key: string; label: string; icon: React.ReactNode; score: number; group: 'themes' | 'operations' }>;
 }
 
-// Mapping from selection values to display names for breadcrumb segments
-const THEME_CHILDREN: Record<string, string> = {
-  sustainability: 'Sustainability',
-  comfort: 'Comfort',
-  asset_monitoring: 'Asset Monitoring',
-  energy: 'Energy',
-  workspace: 'Workspace',
-  compliance: 'Compliance',
-  water_management: 'Water Management',
-  security_systems: 'Security Systems',
-  access_control: 'Access Control',
+// Keys for theme/operations children — labels are resolved via t() inside the component
+const ALL_THEME_KEYS = ['sustainability', 'comfort', 'asset_monitoring', 'energy', 'workspace', 'compliance', 'water_management', 'security_systems', 'access_control'];
+const ALL_OPERATIONS_KEYS = ['tickets', 'quotations', 'maintenance'];
+
+const THEME_CHILDREN_KEYS: Record<string, string> = {
+  sustainability: 'metric.sustainability',
+  comfort: 'metric.comfort',
+  asset_monitoring: 'metric.assetMonitoring',
+  energy: 'metric.energy',
+  workspace: 'metric.workspace',
+  compliance: 'metric.compliance',
+  water_management: 'metric.waterManagement',
+  security_systems: 'metric.securitySystems',
+  access_control: 'metric.accessControl',
 };
 
-const OPERATIONS_CHILDREN: Record<string, string> = {
-  tickets: 'Tickets',
-  quotations: 'Quotations',
-  maintenance: 'Maintenance',
+const OPERATIONS_CHILDREN_KEYS: Record<string, string> = {
+  tickets: 'metric.tickets',
+  quotations: 'metric.quotations',
+  maintenance: 'metric.maintenance',
 };
-
-const ALL_THEME_KEYS = Object.keys(THEME_CHILDREN);
-const ALL_OPERATIONS_KEYS = Object.keys(OPERATIONS_CHILDREN);
 
 function TopBar({
   selectedBuilding,
@@ -133,6 +134,7 @@ function TopBar({
   const pathname = usePathname();
   const router = useRouter();
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const isNarrow = useMediaQuery('(max-width:960px)');
   // Breadcrumb popover anchors
   const [groupCaretAnchor, setGroupCaretAnchor] = useState<null | HTMLElement>(null);
@@ -142,11 +144,11 @@ function TopBar({
 
   // Determine page name based on current page and selections
   const getPageName = () => {
-    if (pathname.startsWith('/insights')) return 'Insights';
-    if (pathname === '/themes') return 'Themes';
-    if (pathname === '/exports') return 'Exports';
-    if (pathname === '/dashboards') return activeDashboardLabel ? `Dashboards - ${activeDashboardLabel}` : 'Dashboards';
-    return selectedAsset?.type === 'asset' ? selectedAsset.name : selectedBuilding ? selectedBuilding.name : 'Control Room';
+    if (pathname.startsWith('/insights')) return t('nav.insights');
+    if (pathname === '/themes') return t('nav.themes');
+    if (pathname === '/exports') return t('nav.exports');
+    if (pathname === '/dashboards') return activeDashboardLabel ? `${t('nav.dashboards')} - ${activeDashboardLabel}` : t('nav.dashboards');
+    return selectedAsset?.type === 'asset' ? selectedAsset.name : selectedBuilding ? selectedBuilding.name : t('controlRoom.title');
   };
 
   const pageName = getPageName();
@@ -162,15 +164,15 @@ function TopBar({
   const isThemesGroup = selection === 'themes_group';
   const isOperationsGroup = selection === 'operations_group';
   const showGroupSegment = isThemesGroup || isOperationsGroup || isThemeChild || isOperationsChild;
-  const groupLabel = (isThemesGroup || isThemeChild) ? 'Themes' : (isOperationsGroup || isOperationsChild) ? 'Operations' : null;
+  const groupLabel = (isThemesGroup || isThemeChild) ? t('nav.themes') : (isOperationsGroup || isOperationsChild) ? t('nav.operations') : null;
   const showChildSegment = isThemeChild || isOperationsChild;
-  const childLabel = isThemeChild ? THEME_CHILDREN[selection] : isOperationsChild ? OPERATIONS_CHILDREN[selection] : null;
+  const childLabel = isThemeChild ? t(THEME_CHILDREN_KEYS[selection] as any) : isOperationsChild ? t(OPERATIONS_CHILDREN_KEYS[selection] as any) : null;
 
   // Sibling list for child caret popover
   const siblingEntries = isThemeChild
-    ? Object.entries(THEME_CHILDREN)
+    ? Object.entries(THEME_CHILDREN_KEYS).map(([key, tKey]) => [key, t(tKey as any)] as const)
     : isOperationsChild
-      ? Object.entries(OPERATIONS_CHILDREN)
+      ? Object.entries(OPERATIONS_CHILDREN_KEYS).map(([key, tKey]) => [key, t(tKey as any)] as const)
       : [];
 
   // Calculate left position accounting for Asset Explorer
@@ -244,16 +246,16 @@ function TopBar({
                 onSelectionChange?.('overall');
               }}
             >
-              Control Room
+              {t('controlRoom.title')}
             </Typography>
           </Box>
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {pathname === '/home' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Home</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.home')}</Typography>
             )}
             {pathname.startsWith('/insights') && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Insights</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.insights')}</Typography>
             )}
             {pathname === '/portfolio/buildings' && (
               <>
@@ -262,10 +264,10 @@ function TopBar({
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => router.push('/portfolio/buildings')}
                 >
-                  Portfolio
+                  {t('nav.portfolio')}
                 </Typography>
                 <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Buildings</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.buildings')}</Typography>
               </>
             )}
             {pathname === '/portfolio/zones' && (
@@ -275,10 +277,10 @@ function TopBar({
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => router.push('/portfolio/buildings')}
                 >
-                  Portfolio
+                  {t('nav.portfolio')}
                 </Typography>
                 <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Zones</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.zones')}</Typography>
               </>
             )}
             {pathname === '/portfolio/assets' && (
@@ -288,10 +290,10 @@ function TopBar({
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => router.push('/portfolio/buildings')}
                 >
-                  Portfolio
+                  {t('nav.portfolio')}
                 </Typography>
                 <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Assets</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.assets')}</Typography>
               </>
             )}
             {pathname.startsWith('/buildings/') && (
@@ -301,7 +303,7 @@ function TopBar({
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => router.push('/portfolio/buildings')}
                 >
-                  Portfolio
+                  {t('nav.portfolio')}
                 </Typography>
                 <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                 <Typography
@@ -309,7 +311,7 @@ function TopBar({
                   sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                   onClick={() => router.push('/portfolio/buildings')}
                 >
-                  Buildings
+                  {t('nav.buildings')}
                 </Typography>
                 <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>
@@ -318,16 +320,16 @@ function TopBar({
               </>
             )}
             {pathname.startsWith('/bms') && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>BMS</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.bms')}</Typography>
             )}
             {pathname === '/themes' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Themes</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.themes')}</Typography>
             )}
             {pathname === '/workspaces' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Workspaces</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.workspaces')}</Typography>
             )}
             {pathname === '/exports' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Exports</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.exports')}</Typography>
             )}
             {pathname === '/dashboards' && (
               <>
@@ -340,7 +342,7 @@ function TopBar({
                     fontFamily: '"Inter", sans-serif',
                   }}
                 >
-                  Dashboards
+                  {t('nav.dashboards')}
                 </Typography>
                 {activeDashboardLabel && (
                   <>
@@ -353,10 +355,10 @@ function TopBar({
               </>
             )}
             {pathname === '/operations' && (
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>Operations</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.operations')}</Typography>
             )}
             {pathname.startsWith('/operations/') && pathname !== '/operations' && (() => {
-              const sectionLabel = pathname.startsWith('/operations/documents') ? 'Documents' : pathname.startsWith('/operations/tickets') ? 'Tickets' : pathname.startsWith('/operations/quotations') ? 'Quotations' : 'Maintenance';
+              const sectionLabel = pathname.startsWith('/operations/documents') ? t('nav.documents') : pathname.startsWith('/operations/tickets') ? t('nav.tickets') : pathname.startsWith('/operations/quotations') ? t('nav.quotations') : t('nav.maintenance');
               const isDocuments = pathname.startsWith('/operations/documents');
               // Extract folder path segments from /operations/documents/seg1/seg2/...
               const folderSegments = isDocuments
@@ -383,7 +385,7 @@ function TopBar({
                     sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
                     onClick={() => router.push('/operations')}
                   >
-                    Operations
+                    {t('nav.operations')}
                   </Typography>
                   <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
                   <Typography
@@ -487,13 +489,13 @@ function TopBar({
                           selected={isThemesGroup}
                           onClick={() => { onSelectionChange?.('themes_group'); setGroupCaretAnchor(null); }}
                         >
-                          Themes
+                          {t('nav.themes')}
                         </MenuItem>
                         <MenuItem
                           selected={isOperationsGroup}
                           onClick={() => { onSelectionChange?.('operations_group'); setGroupCaretAnchor(null); }}
                         >
-                          Operations
+                          {t('nav.operations')}
                         </MenuItem>
                       </Menu>
                     </>
@@ -597,7 +599,7 @@ function TopBar({
           <>
             <Chip
               icon={<TuneIcon sx={{ fontSize: 16 }} />}
-              label="Filters"
+              label={t('common.filters')}
               onClick={(e) => setFilterMenuAnchor(e.currentTarget)}
               deleteIcon={<ExpandMoreIcon />}
               onDelete={(e) => setFilterMenuAnchor((e as any).currentTarget?.closest('.MuiChip-root') || filterMenuAnchor)}
@@ -689,7 +691,7 @@ function TopBar({
         {/* Export Button — on Control Room and Dashboards */}
         {(pathname === '/control-room' || pathname === '/dashboards') && (
           isNarrow ? (
-            <Tooltip title="Export">
+            <Tooltip title={t('common.export')}>
               <IconButton
                 size="small"
                 onClick={onExport}
@@ -722,7 +724,7 @@ function TopBar({
                 '&:hover': { boxShadow: 'none' }
               }}
             >
-              Export
+              {t('common.export')}
             </Button>
           )
         )}

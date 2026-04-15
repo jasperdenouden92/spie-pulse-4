@@ -8,6 +8,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import { GridCard } from '@/components/performance';
 
@@ -39,6 +40,7 @@ export default function PerformanceChartCard({
   annotationId,
 }: PerformanceChartCardProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const isNarrow = useMediaQuery('(max-width:960px)');
 
   const yMin = Math.max(0, Math.floor((Math.min(...data, moderateAbove) - 10) / 10) * 10);
@@ -94,8 +96,8 @@ export default function PerformanceChartCard({
         >
           <HorizontalThresholdGradient data={data} goodAbove={goodAbove} moderateAbove={moderateAbove} id={areaGradientId} />
           <HorizontalThresholdGradient data={data} goodAbove={goodAbove} moderateAbove={moderateAbove} id={lineGradientId} goodColor="#43a047" moderateColor="#ef6c00" poorColor="#c62828" />
-          <InteractiveThresholdLine y={goodAbove} label={`Good: ${goodAbove}–100%`} />
-          <InteractiveThresholdLine y={moderateAbove} label={`Moderate: ${moderateAbove}–${goodAbove}%`} />
+          <InteractiveThresholdLine y={goodAbove} label={t('performance.goodThreshold', { min: goodAbove })} />
+          <InteractiveThresholdLine y={moderateAbove} label={t('performance.moderateThreshold', { min: moderateAbove, max: goodAbove })} />
           <ChartHoverOverlay
             data={data}
             labels={MONTHS}

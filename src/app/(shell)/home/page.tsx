@@ -24,10 +24,12 @@ import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 
 export default function HomeRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [selectedTab, setSelectedTab] = useState(0);
   const [buildingFilter, setBuildingFilter] = useState<null | HTMLElement>(null);
   const [ticketsFilter, setTicketsFilter] = useState<null | HTMLElement>(null);
@@ -35,7 +37,7 @@ export default function HomeRoute() {
 
   const userName = 'Marc';
   const currentHour = new Date().getHours();
-  const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
+  const greeting = currentHour < 12 ? t('home.goodMorning') : currentHour < 18 ? t('home.goodAfternoon') : t('home.goodEvening');
 
   const recentlyVisited = [
     { id: 1, name: 'Downtown Arts Center', type: 'building', timestamp: 'Today', icon: BusinessIcon },
@@ -46,7 +48,7 @@ export default function HomeRoute() {
 
   const metrics = [
     {
-      label: 'Comfort',
+      label: t('metric.comfort'),
       icon: <SpaOutlinedIcon sx={{ fontSize: 20 }} />,
       good: 3,
       poor: 5,
@@ -54,7 +56,7 @@ export default function HomeRoute() {
       color: c.brand
     },
     {
-      label: 'Sustainability',
+      label: t('metric.sustainability'),
       icon: <NatureOutlinedIcon sx={{ fontSize: 20 }} />,
       good: 3,
       poor: 5,
@@ -62,7 +64,7 @@ export default function HomeRoute() {
       color: '#2e7d32'
     },
     {
-      label: 'Maintenance',
+      label: t('metric.maintenance'),
       icon: <BuildOutlinedIcon sx={{ fontSize: 20 }} />,
       good: 3,
       poor: 5,
@@ -70,7 +72,7 @@ export default function HomeRoute() {
       color: '#f57c00'
     },
     {
-      label: 'Asset performance',
+      label: t('metric.assetMonitoring'),
       icon: <SpeedOutlinedIcon sx={{ fontSize: 20 }} />,
       good: 3,
       poor: 5,
@@ -110,7 +112,7 @@ export default function HomeRoute() {
         <Box sx={{ mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              Recently visited
+              {t('home.recentlyVisited')}
             </Typography>
             <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
               <MoreHorizIcon fontSize="small" />
@@ -241,7 +243,7 @@ export default function HomeRoute() {
                   bgcolor: c.bgPrimary
                 }}
               >
-                This week
+                {t('common.thisWeek')}
               </Button>
               <Button
                 size="small"
@@ -255,14 +257,14 @@ export default function HomeRoute() {
                   bgcolor: c.bgPrimary
                 }}
               >
-                All buildings
+                {t('common.allBuildings')}
               </Button>
               <Menu
                 anchorEl={buildingFilter}
                 open={Boolean(buildingFilter)}
                 onClose={() => setBuildingFilter(null)}
               >
-                <MenuItem onClick={() => setBuildingFilter(null)}>All buildings</MenuItem>
+                <MenuItem onClick={() => setBuildingFilter(null)}>{t('common.allBuildings')}</MenuItem>
                 <MenuItem onClick={() => setBuildingFilter(null)}>Skyline Plaza</MenuItem>
                 <MenuItem onClick={() => setBuildingFilter(null)}>Innovation Hub</MenuItem>
               </Menu>
@@ -293,7 +295,7 @@ export default function HomeRoute() {
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Tickets
+                {t('nav.tickets')}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Button
@@ -306,7 +308,7 @@ export default function HomeRoute() {
                     fontSize: '0.813rem'
                   }}
                 >
-                  All buildings
+                  {t('common.allBuildings')}
                 </Button>
                 <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
                   <MoreHorizIcon fontSize="small" />
@@ -317,7 +319,7 @@ export default function HomeRoute() {
                 open={Boolean(ticketsFilter)}
                 onClose={() => setTicketsFilter(null)}
               >
-                <MenuItem onClick={() => setTicketsFilter(null)}>All buildings</MenuItem>
+                <MenuItem onClick={() => setTicketsFilter(null)}>{t('common.allBuildings')}</MenuItem>
                 <MenuItem onClick={() => setTicketsFilter(null)}>Skyline Plaza</MenuItem>
               </Menu>
             </Box>
@@ -372,7 +374,7 @@ export default function HomeRoute() {
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Quotations
+                {t('nav.quotations')}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Button
@@ -385,7 +387,7 @@ export default function HomeRoute() {
                     fontSize: '0.813rem'
                   }}
                 >
-                  All buildings
+                  {t('common.allBuildings')}
                 </Button>
                 <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
                   <MoreHorizIcon fontSize="small" />
@@ -396,7 +398,7 @@ export default function HomeRoute() {
                 open={Boolean(quotationsFilter)}
                 onClose={() => setQuotationsFilter(null)}
               >
-                <MenuItem onClick={() => setQuotationsFilter(null)}>All buildings</MenuItem>
+                <MenuItem onClick={() => setQuotationsFilter(null)}>{t('common.allBuildings')}</MenuItem>
                 <MenuItem onClick={() => setQuotationsFilter(null)}>Skyline Plaza</MenuItem>
               </Menu>
             </Box>

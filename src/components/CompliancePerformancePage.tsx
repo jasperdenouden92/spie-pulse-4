@@ -31,6 +31,7 @@ import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverla
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
+import { useLanguage } from '@/i18n';
 
 // ── Threshold gradient ──
 
@@ -248,6 +249,7 @@ interface CompliancePerformancePageProps {
 
 export default function CompliancePerformancePage({ themeScore = 88, themeTrend = 6, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: CompliancePerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -277,13 +279,25 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
     );
   }, []);
 
-  const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
+  const topicLabelMap: Record<string, string> = useMemo(() => ({
+    bacs: t('topic.bacs'),
+    escape_routes: t('topic.escapeRoutes'),
+    fire_safety: t('topic.fireSafety'),
+    legionella_prevention: t('topic.legionellaPrevention'),
+    maintenance_inspection: t('topic.maintenanceInspection'),
+    permits: t('topic.permits'),
+  }), [t]);
+
+  const topics = useMemo(() => buildTopics(themeScore).map(topic => ({
+    ...topic,
+    label: topicLabelMap[topic.key] ?? topic.label,
+  })), [themeScore, topicLabelMap]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Compliance KPI',
+    label: t('performance.complianceKpi'),
     color: c.brand,
     data: generateKpiTimeSeries('compliance_theme', themeScore),
-  }), [themeScore]);
+  }), [themeScore, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -348,13 +362,13 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Compliance KPI', icon: <GavelOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'bacs', label: 'BACS', icon: <SensorsOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'escape_routes', label: 'Escape Routes', icon: <DirectionsRunOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'fire_safety', label: 'Fire Safety', icon: <LocalFireDepartmentOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'legionella_prevention', label: 'Legionella Prevention', icon: <VaccinesOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'maintenance_inspection', label: 'Maintenance & Inspection', icon: <HandymanOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'permits', label: 'Permits', icon: <DescriptionOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: t('performance.complianceKpi'), icon: <GavelOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'bacs', label: t('topic.bacs'), icon: <SensorsOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'escape_routes', label: t('topic.escapeRoutes'), icon: <DirectionsRunOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'fire_safety', label: t('topic.fireSafety'), icon: <LocalFireDepartmentOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'legionella_prevention', label: t('topic.legionellaPrevention'), icon: <VaccinesOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'maintenance_inspection', label: t('topic.maintenanceInspection'), icon: <HandymanOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'permits', label: t('topic.permits'), icon: <DescriptionOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   return (
@@ -362,7 +376,7 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
       {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
       <PerformanceIndicatorsCard
         icon={<GavelOutlinedIcon sx={{ color: c.brand }} />}
-        title="Compliance Performance"
+        title={t('performance.compliancePerformance')}
         score={themeScore}
         trend={themeTrend}
         topics={topics}
@@ -405,7 +419,10 @@ export default function CompliancePerformancePage({ themeScore = 88, themeTrend 
       />
 
       {/* ═══ SECTION 3: Related Dashboards ═══ */}
-      <DashboardLinksCard title="Compliance Dashboards" dashboards={COMPLIANCE_DASHBOARDS} onNavigate={onNavigateToDashboard} />
+      <DashboardLinksCard title={t('performance.complianceDashboards')} dashboards={[
+        { id: 'compliance_dashboard', label: t('dashboard.complianceDashboard'), subtitle: t('dashboard.complianceDashboardDesc'), icon: <GavelOutlinedIcon /> },
+        { id: 'bacs_overview', label: t('dashboard.bacsOverview'), subtitle: t('dashboard.bacsOverviewDesc'), icon: <SensorsOutlinedIcon /> },
+      ]} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

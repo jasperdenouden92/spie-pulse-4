@@ -27,6 +27,7 @@ import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { ChartsReferenceLine } from '@mui/x-charts/ChartsReferenceLine';
 import { useDrawingArea, useYScale } from '@mui/x-charts/hooks';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
@@ -79,22 +80,22 @@ function getStatusColor(score: number, goodAbove: number, moderateAbove: number)
   return '#f44336';
 }
 
-function getStatusLabel(score: number, goodAbove: number, moderateAbove: number): string {
-  if (score >= goodAbove) return 'Good';
-  if (score >= moderateAbove) return 'Moderate';
-  return 'Poor';
+function getStatusLabel(score: number, goodAbove: number, moderateAbove: number, t?: (key: string) => string): string {
+  if (score >= goodAbove) return t ? t('performance.good') : 'Good';
+  if (score >= moderateAbove) return t ? t('performance.moderate') : 'Moderate';
+  return t ? t('performance.poor') : 'Poor';
 }
 
 // Topic definitions — offsets from theme score so they always average to exactly the theme KPI
 // Offsets: temperature +7, humidity -13, air_quality +6 → sum = 0
 // Per-topic thresholds: [good threshold, moderate threshold] — below moderate = poor
 const TOPIC_DEFS = [
-  { key: 'temperature', label: 'Temperature', icon: <ThermostatOutlinedIcon sx={{ fontSize: 20 }} />, offset: 7, trend: 3, chartColor: '#e91e63', goodAbove: 80, moderateAbove: 60 },
-  { key: 'humidity', label: 'Relative Humidity', icon: <WaterDropOutlinedIcon sx={{ fontSize: 20 }} />, offset: -13, trend: -4, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 55 },
-  { key: 'air_quality', label: 'Air Quality', icon: <AirOutlinedIcon sx={{ fontSize: 20 }} />, offset: 6, trend: 7, chartColor: '#00bcd4', goodAbove: 85, moderateAbove: 65 },
+  { key: 'temperature', labelKey: 'topic.temperature' as const, icon: <ThermostatOutlinedIcon sx={{ fontSize: 20 }} />, offset: 7, trend: 3, chartColor: '#e91e63', goodAbove: 80, moderateAbove: 60 },
+  { key: 'humidity', labelKey: 'topic.relativeHumidity' as const, icon: <WaterDropOutlinedIcon sx={{ fontSize: 20 }} />, offset: -13, trend: -4, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 55 },
+  { key: 'air_quality', labelKey: 'topic.airQuality' as const, icon: <AirOutlinedIcon sx={{ fontSize: 20 }} />, offset: 6, trend: 7, chartColor: '#00bcd4', goodAbove: 85, moderateAbove: 65 },
 ];
 
-function buildTopics(themeScore: number): TopicDef[] {
+function buildTopics(themeScore: number, t: (key: TranslationKey) => string): TopicDef[] {
   return TOPIC_DEFS.map(d => {
     const score = Math.max(0, Math.min(100, themeScore + d.offset));
     const sparkline = Array.from({ length: 10 }, (_, i) => {
@@ -105,7 +106,7 @@ function buildTopics(themeScore: number): TopicDef[] {
     sparkline[9] = score;
     return {
       key: d.key,
-      label: d.label,
+      label: t(d.labelKey),
       icon: d.icon,
       color: getStatusColor(score, d.goodAbove, d.moderateAbove),
       chartColor: d.chartColor,
@@ -239,11 +240,11 @@ const THEME_MODERATE_ABOVE = 60;
 
 // ── Comfort dashboard links ──────────────────────────────────────────────────
 
-const COMFORT_DASHBOARDS: DashboardLink[] = [
-  { id: 'comfort_gebouwoverzicht', label: 'Comfort Building Overview', subtitle: 'Heatmap, scores per building and zone', icon: <GridViewOutlinedIcon /> },
-  { id: 'comforttrend', label: 'Comfort Trend', subtitle: 'Temperature and air quality trends over time', icon: <TimelineOutlinedIcon /> },
-  { id: 'adaptieve_temperatuurgrenzen', label: 'Adaptive Temperature Limits', subtitle: 'Upper and lower bounds per season', icon: <TuneOutlinedIcon /> },
-  { id: 'frisse_scholen', label: 'Frisse Scholen', subtitle: 'CO₂, temperature and ventilation per school', icon: <ParkOutlinedIcon /> },
+const COMFORT_DASHBOARD_DEFS = [
+  { id: 'comfort_gebouwoverzicht', labelKey: 'dashboard.comfortBuildingOverview' as const, subtitleKey: 'dashboard.comfortBuildingOverviewDesc' as const, icon: <GridViewOutlinedIcon /> },
+  { id: 'comforttrend', labelKey: 'dashboard.comfortTrend' as const, subtitleKey: 'dashboard.comfortTrendDesc' as const, icon: <TimelineOutlinedIcon /> },
+  { id: 'adaptieve_temperatuurgrenzen', labelKey: 'dashboard.adaptiveTemperatureLimits' as const, subtitleKey: 'dashboard.adaptiveTemperatureLimitsDesc' as const, icon: <TuneOutlinedIcon /> },
+  { id: 'frisse_scholen', labelKey: 'dashboard.frisseScholen' as const, subtitleKey: 'dashboard.frisseScholenDesc' as const, icon: <ParkOutlinedIcon /> },
 ];
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -259,6 +260,7 @@ interface ComfortPerformancePageProps {
 
 export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: ComfortPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -290,14 +292,14 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
   };
 
   // Build topics from theme score so averages always match the KPI card
-  const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
+  const topics = useMemo(() => buildTopics(themeScore, t), [themeScore, t]);
 
   // Build chart series from current topics
   const themeSeries = useMemo(() => ({
-    label: 'Comfort KPI',
+    label: t('performance.comfortKpi'),
     color: c.brand,
     data: generateKpiTimeSeries('comfort_theme', themeScore),
-  }), [themeScore]);
+  }), [themeScore, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -353,10 +355,10 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Comfort KPI', icon: <SpaOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'temperature', label: 'Temperature', icon: <ThermostatOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'humidity', label: 'Relative Humidity', icon: <WaterDropOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'air_quality', label: 'Air Quality', icon: <AirOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: t('performance.comfortKpi'), icon: <SpaOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'temperature', label: t('topic.temperature'), icon: <ThermostatOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'humidity', label: t('topic.relativeHumidity'), icon: <WaterDropOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'air_quality', label: t('topic.airQuality'), icon: <AirOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   return (
@@ -364,7 +366,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
       {/* ═══ SECTION 1: Theme KPI + Topic KPI Cards ═══ */}
       <PerformanceIndicatorsCard
         icon={<SpaOutlinedIcon sx={{ color: c.brand }} />}
-        title="Comfort Performance"
+        title={t('performance.comfortPerformance')}
         score={themeScore}
         trend={themeTrend}
         topics={topics}
@@ -407,7 +409,7 @@ export default function ComfortPerformancePage({ themeScore = 92, themeTrend = 5
       />
 
       {/* ═══ SECTION 3: Comfort Dashboards ═══ */}
-      <DashboardLinksCard title="Comfort Dashboards" dashboards={COMFORT_DASHBOARDS} onNavigate={onNavigateToDashboard} />
+      <DashboardLinksCard title={t('performance.comfortDashboards')} dashboards={COMFORT_DASHBOARD_DEFS.map(d => ({ id: d.id, label: t(d.labelKey), subtitle: t(d.subtitleKey), icon: d.icon }))} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

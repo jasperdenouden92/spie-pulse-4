@@ -11,6 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
 import AppTabs from '@/components/AppTabs';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage, type TranslationKey } from '@/i18n';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import HistoryIcon from '@mui/icons-material/History';
@@ -41,12 +42,12 @@ interface HighlightsData {
   sections: { type: ChangeType; items: string[] }[];
 }
 
-function getTypeConfig(c: { brand: string; bgActive: string }): Record<ChangeType, { label: string; color: string; bg: string; border: string }> {
+function getTypeConfig(c: { brand: string; bgActive: string }, t: (key: TranslationKey) => string): Record<ChangeType, { label: string; color: string; bg: string; border: string }> {
   return {
-    feature:     { label: 'New',         color: c.brand, bg: c.bgActive, border: '#c7d7f5' },
-    improvement: { label: 'Improved',    color: '#7c3aed', bg: '#f3e8ff', border: '#d8b4fe' },
-    fix:         { label: 'Fixed',       color: '#b45309', bg: '#fef3c7', border: '#fcd34d' },
-    design:      { label: 'Design',      color: '#0f766e', bg: '#f0fdfa', border: '#99f6e4' },
+    feature:     { label: t('changelog.new'),      color: c.brand, bg: c.bgActive, border: '#c7d7f5' },
+    improvement: { label: t('changelog.improved'),  color: '#7c3aed', bg: '#f3e8ff', border: '#d8b4fe' },
+    fix:         { label: t('changelog.fixed'),     color: '#b45309', bg: '#fef3c7', border: '#fcd34d' },
+    design:      { label: t('changelog.design'),    color: '#0f766e', bg: '#f0fdfa', border: '#99f6e4' },
   };
 }
 
@@ -121,7 +122,8 @@ function getChangelogPosition(panelCorner: string): React.CSSProperties {
 
 export default function ChangelogButton() {
   const { themeColors: c } = useThemeMode();
-  const TYPE_CONFIG = getTypeConfig(c);
+  const { t } = useLanguage();
+  const TYPE_CONFIG = getTypeConfig(c, t);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'highlights' | 'commits'>('highlights');
   const { panelCorner, setPanelCorner } = useAnnotationsSafe();
@@ -251,7 +253,7 @@ export default function ChangelogButton() {
         <Box sx={{ px: 3, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <AutoAwesomeIcon sx={{ fontSize: 18, color: '#7c3aed' }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>Prototype changelog</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>{t('changelog.title')}</Typography>
           </Box>
           <IconButton size="small" onClick={() => setOpen(false)}>
             <CloseIcon fontSize="small" />
@@ -266,8 +268,8 @@ export default function ChangelogButton() {
           indicatorColor="#7c3aed"
           sx={{ px: 2, borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}
           tabs={[
-            { value: 'highlights', label: 'Highlights', icon: <AutoAwesomeIcon sx={{ fontSize: 14 }} /> },
-            { value: 'commits', label: 'Commits', icon: <FormatListBulletedIcon sx={{ fontSize: 14 }} /> },
+            { value: 'highlights', label: t('changelog.highlights'), icon: <AutoAwesomeIcon sx={{ fontSize: 14 }} /> },
+            { value: 'commits', label: t('changelog.commits'), icon: <FormatListBulletedIcon sx={{ fontSize: 14 }} /> },
           ]}
         />
 
@@ -280,7 +282,7 @@ export default function ChangelogButton() {
               {highlightsLoading && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 6, gap: 2 }}>
                   <CircularProgress size={28} sx={{ color: '#7c3aed' }} />
-                  <Typography variant="body2" color="text.secondary">Loading…</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('common.loading')}</Typography>
                 </Box>
               )}
               {highlightsError && (

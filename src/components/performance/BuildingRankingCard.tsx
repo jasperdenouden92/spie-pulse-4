@@ -10,6 +10,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { useThemeMode } from '@/theme-mode-context';
+import { useLanguage } from '@/i18n';
 import { Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
 import { GridCard } from '@/components/performance';
@@ -62,14 +63,15 @@ export default function BuildingRankingCard({
   onViewAllBuildings,
 }: BuildingRankingCardProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const isTop = variant === 'top';
 
   const [mode, setMode] = useState<'primary' | 'secondary'>('primary');
   const items = mode === 'primary' ? primaryItems : secondaryItems;
   const showTrend = mode === 'secondary';
 
-  const primaryLabel = isTop ? 'Top' : 'Worst';
-  const secondaryLabel = isTop ? 'Improved' : 'Dropping';
+  const primaryLabel = isTop ? t('performance.top') : t('performance.worst');
+  const secondaryLabel = isTop ? t('performance.improved') : t('performance.dropping');
 
   return (
     <GridCard
@@ -79,8 +81,8 @@ export default function BuildingRankingCard({
         : <WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />
       }
       title={isTop
-        ? (buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings')
-        : (buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings')
+        ? (buildingMode === 'clusters' ? t('performance.topClusters') : t('performance.topBuildings'))
+        : (buildingMode === 'clusters' ? t('performance.worstClusters') : t('performance.worstBuildings'))
       }
       headerRight={
         <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
@@ -132,7 +134,7 @@ export default function BuildingRankingCard({
         onClick={() => onViewAllBuildings?.(isTop ? 'Best to Worst' : 'Worst to Best')}
         sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
       >
-        View all
+        {t('performance.viewAll')}
       </Button>
     </GridCard>
   );
