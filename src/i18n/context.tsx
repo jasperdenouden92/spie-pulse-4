@@ -15,13 +15,13 @@ interface LanguageContextValue {
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
-  locale: 'en',
+  locale: 'nl',
   setLocale: () => {},
   t: (key) => key,
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en');
+  const [locale, setLocaleState] = useState<Locale>('nl');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback((key: TranslationKey, params?: Record<string, string | number>): string => {
-    let value = translations[locale]?.[key] ?? translations.en[key] ?? key;
+    let value = translations[locale]?.[key] ?? translations.nl[key] ?? key;
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         value = value.replace(`{${k}}`, String(v));

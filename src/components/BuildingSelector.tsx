@@ -122,6 +122,7 @@ const allCities = [...new Set(allBuildingsData.map(b => b.city))].sort();
  */
 export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSelectionChange, mode, onModeChange }: BuildingSelectorPopoverProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const [filterGroups, setFilterGroups] = useState<string[]>([]);
   const [filterCity, setFilterCity] = useState<string>('all');
@@ -237,10 +238,10 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
         <Box sx={{ px: 1.5, pt: 1.5, pb: 0, flexShrink: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
             <Box sx={{ ...segmentedControlSx(mode === 'buildings', c), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('buildings')}>
-              Buildings
+              {t('common.buildings')}
             </Box>
             <Box sx={{ ...segmentedControlSx(mode === 'clusters', c), flex: 1, textAlign: 'center' }} onClick={() => onModeChange('clusters')}>
-              Clusters
+              {t('common.clusters')}
             </Box>
           </Box>
         </Box>
@@ -251,7 +252,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
         <TextField
           inputRef={searchRef}
           size="small"
-          placeholder={mode === 'clusters' ? 'Search clusters...' : 'Search buildings...'}
+          placeholder={mode === 'clusters' ? t('common.searchClusters') : t('common.searchBuildings')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleSearchKeyDown}
@@ -280,7 +281,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               displayEmpty
               variant="standard"
               disableUnderline
-              renderValue={(selected) => selected.length === 0 ? 'All clusters' : `${selected.length} cluster${selected.length > 1 ? 's' : ''}`}
+              renderValue={(selected) => selected.length === 0 ? t('common.allClusters') : t('common.nClusters', { count: selected.length })}
               sx={filterSelectSx(filterGroups.length > 0)}
             >
               {allGroups.map(g => (
@@ -300,7 +301,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               disableUnderline
               sx={filterSelectSx(filterCity !== 'all')}
             >
-              <MenuItem value="all">All cities</MenuItem>
+              <MenuItem value="all">{t('common.allCities')}</MenuItem>
               {allCities.map(city => (
                 <MenuItem key={city} value={city}>{city}</MenuItem>
               ))}
@@ -312,7 +313,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               sx={{ color: 'primary.main', cursor: 'pointer', ml: 'auto', '&:hover': { textDecoration: 'underline' } }}
               onClick={() => { setFilterGroups([]); setFilterCity('all'); }}
             >
-              Clear
+              {t('common.clear')}
             </Typography>
           )}
         </Box>
@@ -328,7 +329,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               disableUnderline
               sx={filterSelectSx(filterCity !== 'all')}
             >
-              <MenuItem value="all">All cities</MenuItem>
+              <MenuItem value="all">{t('common.allCities')}</MenuItem>
               {allCities.map(city => (
                 <MenuItem key={city} value={city}>{city}</MenuItem>
               ))}
@@ -340,7 +341,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               sx={{ color: 'primary.main', cursor: 'pointer', ml: 'auto', '&:hover': { textDecoration: 'underline' } }}
               onClick={() => setFilterCity('all')}
             >
-              Clear
+              {t('common.clear')}
             </Typography>
           )}
         </Box>
@@ -369,8 +370,8 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
       {/* List header */}
       <Typography variant="caption" sx={{ px: 2, pt: 1, pb: 0.5, fontWeight: 600, color: 'text.secondary', fontSize: '0.7rem', display: 'block', flexShrink: 0 }}>
         {search
-          ? `${mode === 'buildings' ? filteredBuildings.length : filteredClusters.length} results`
-          : mode === 'clusters' ? 'Recent clusters' : 'Recent buildings'}
+          ? t('common.nResults', { count: mode === 'buildings' ? filteredBuildings.length : filteredClusters.length })
+          : mode === 'clusters' ? t('common.recentClusters') : t('common.recentBuildings')}
       </Typography>
 
       {/* List */}
@@ -390,7 +391,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
             ))
           ) : (
             <Box sx={{ p: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">No buildings found</Typography>
+              <Typography variant="body2" color="text.secondary">{t('common.noBuildings')}</Typography>
             </Box>
           )
         ) : (
@@ -399,7 +400,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
               <SelectorListItem
                 key={group}
                 label={group}
-                subtitle={`${allBuildingsData.filter(b => b.group === group).length} buildings`}
+                subtitle={t('common.nBuildings', { count: allBuildingsData.filter(b => b.group === group).length })}
                 selected={selectedNames.includes(group)}
                 highlighted={i === highlightIndex}
                 onClick={() => toggleItem(group)}
@@ -408,7 +409,7 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
             ))
           ) : (
             <Box sx={{ p: 3, textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">No clusters found</Typography>
+              <Typography variant="body2" color="text.secondary">{t('common.noClusters')}</Typography>
             </Box>
           )
         )}
@@ -424,15 +425,15 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
             <Box component="kbd" sx={kbdSx}>↑</Box>
             <Box component="kbd" sx={kbdSx}>↓</Box>
           </Box>
-          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>Navigate</Typography>
+          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>{t('common.navigate')}</Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
           <Box component="kbd" sx={kbdSx}>↵</Box>
-          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>Select</Typography>
+          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6875rem' }}>{t('common.select')}</Typography>
         </Box>
         {filterActive && (
           <Button size="small" variant="text" onClick={() => onSelectionChange([])} sx={{ fontSize: '0.75rem', textTransform: 'none', color: 'text.secondary', minWidth: 0, ml: 'auto', px: 1 }}>
-            Clear
+            {t('common.clear')}
           </Button>
         )}
       </Box>
@@ -442,9 +443,9 @@ export function BuildingSelectorPopover({ anchorEl, onClose, selectedNames, onSe
 
 /** Helper to get the chip/inline label for the current selection */
 export function getBuildingSelectorLabel(selectedNames: string[], mode: BuildingFilterMode = 'buildings', t?: (key: any, params?: Record<string, string | number>) => string): string {
-  if (selectedNames.length === 0) return t ? (mode === 'clusters' ? t('common.allClusters') : t('common.allBuildings')) : (mode === 'clusters' ? 'All Clusters' : 'All Buildings');
+  if (selectedNames.length === 0) return t ? (mode === 'clusters' ? t('common.allClusters') : t('common.allBuildings')) : (mode === 'clusters' ? 'Alle Clusters' : 'Alle Gebouwen');
   if (selectedNames.length === 1) return selectedNames[0];
-  return t ? (mode === 'clusters' ? t('common.nClusters', { count: selectedNames.length }) : t('common.nBuildings', { count: selectedNames.length })) : `${selectedNames.length} ${mode === 'clusters' ? 'clusters' : 'buildings'}`;
+  return t ? (mode === 'clusters' ? t('common.nClusters', { count: selectedNames.length }) : t('common.nBuildings', { count: selectedNames.length })) : `${selectedNames.length} ${mode === 'clusters' ? 'clusters' : 'gebouwen'}`;
 }
 
 interface BuildingSelectorProps {

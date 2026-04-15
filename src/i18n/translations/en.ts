@@ -100,6 +100,14 @@ const en = {
   'common.nBuildings': '{count} buildings',
   'common.nClusters': '{count} clusters',
   'common.unknownLocation': 'Unknown location',
+  'common.buildings': 'Buildings',
+  'common.clusters': 'Clusters',
+  'common.allCities': 'All cities',
+  'common.recentBuildings': 'Recent buildings',
+  'common.recentClusters': 'Recent clusters',
+  'common.nResults': '{count} results',
+  'common.noBuildings': 'No buildings found',
+  'common.noClusters': 'No clusters found',
 
   // Date range presets
   'date.thisMonth': 'This month',
