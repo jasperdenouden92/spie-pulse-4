@@ -420,7 +420,7 @@ export default function PropertyCard(props: PropertyCardProps) {
               position: 'absolute', bottom: -20, right: 0,
               display: 'flex', alignItems: 'center', gap: 0.5,
               bgcolor: c.bgPrimary, borderRadius: '32px 0 0 10px',
-              p: 1.5, borderTop: `2px solid ${c.bgPrimary}`, borderLeft: `2px solid ${c.bgPrimary}`, borderBottom: `2px solid ${c.bgPrimary}`,
+              p: 1.5, pt: 1, borderTop: `2px solid ${c.bgPrimary}`, borderLeft: `2px solid ${c.bgPrimary}`, borderBottom: `2px solid ${c.bgPrimary}`,
               color: getScoreColor(performance.green, c),
             }}>
               <ScoreBadge performance={performance} metricIcon={metricIcon} trend={trend} periodLabel={periodLabel} overallPerformance={overallPerformance} />
