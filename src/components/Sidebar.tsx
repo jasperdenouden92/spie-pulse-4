@@ -481,7 +481,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const [hoveredFavorite, setHoveredFavorite] = useState<string | null>(null);
   const [favoritesHeight, setFavoritesHeight] = useState(120);
   const [internalFavorites, setInternalFavorites] = useState<Favorite[]>([
-    { id: '1', name: 'Skyline Plaza', type: 'building' },
+    { id: '1', name: 'PHB Geb. HQ', type: 'building' },
     { id: '2', name: 'Aanpassen verlichting', type: 'task' },
     { id: '3', name: 'Reparatie toilet 1e ver', type: 'task' },
   ]);

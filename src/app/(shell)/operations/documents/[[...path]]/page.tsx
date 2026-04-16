@@ -50,6 +50,7 @@ import PageHeader from '@/components/PageHeader';
 import { documentFiles, allDocumentItems, resolveFolderPath, buildFolderPath } from '@/data/documents';
 import type { DocumentFile, DocumentItem, DocumentCategory } from '@/data/documents';
 import { getOwnerAvatarColor, getFirstInitial } from '@/components/DocumentsList';
+import { timeAgo } from '@/utils/timeAgo';
 import { useLanguage } from '@/i18n';
 import type { TranslationKey } from '@/i18n/translations/en';
 
@@ -118,18 +119,6 @@ function sortItems(list: DocumentItem[], key: SortKey): DocumentItem[] {
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-function timeAgo(dateStr: string): string {
-  const now = new Date('2024-01-24');
-  const d = new Date(dateStr);
-  const diffMs = now.getTime() - d.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  return `${Math.floor(diffDays / 30)} months ago`;
 }
 
 const DEFAULT_DATE_RANGE = `2023-01-01|${new Date().toISOString().split('T')[0]}`;

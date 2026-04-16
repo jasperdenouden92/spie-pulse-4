@@ -33,6 +33,7 @@ import { buildings as allBuildings } from '@/data/buildings';
 import PageHeader from '@/components/PageHeader';
 import { useThemeMode } from '@/theme-mode-context';
 import { useLanguage } from '@/i18n';
+import { useAppState } from '@/context/AppStateContext';
 
 export type AssetDetailTab = 'overview' | 'tickets' | 'quotations' | 'documents';
 
@@ -352,9 +353,20 @@ export default function AssetDetailPage({
   const { t } = useLanguage();
   const tabs = useAssetTabs();
   const assetColor = getAssetColor(asset.metadata?.category);
+  const { addRecentlyVisited } = useAppState();
 
   // Resolve path: [building, floor, zone, ...parentAssets, currentAsset]
   const path = useMemo(() => getPathToAsset(asset.id) ?? [], [asset.id]);
+
+  useEffect(() => {
+    const building = path.find(s => s.node.type === 'building')?.node.name;
+    addRecentlyVisited({
+      kind: 'asset',
+      id: asset.id,
+      label: asset.name,
+      subtitle: [asset.metadata?.category, building].filter(Boolean).join(' · '),
+    });
+  }, [asset.id, asset.name, asset.metadata?.category, path, addRecentlyVisited]);
 
   const buildingNode = useMemo(() => path.find(s => s.node.type === 'building')?.node ?? null, [path]);
   const floorNode = useMemo(() => path.find(s => s.node.type === 'floor')?.node ?? null, [path]);

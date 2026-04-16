@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useAppState } from '@/context/AppStateContext';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -81,6 +82,16 @@ export default function TicketDetailPage({
 }: TicketDetailPageProps) {
   const { t } = useLanguage();
   const categoryColor = getCategoryColor(ticket.category);
+  const { addRecentlyVisited } = useAppState();
+
+  useEffect(() => {
+    addRecentlyVisited({
+      kind: 'ticket',
+      id: ticket.id,
+      label: ticket.title,
+      subtitle: `${ticket.referenceNumber} · ${ticket.building}`,
+    });
+  }, [ticket.id, ticket.title, ticket.referenceNumber, ticket.building, addRecentlyVisited]);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>

@@ -48,6 +48,7 @@ import AssetTemplate from '@/templates/asset';
 import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import TicketTemplate from '@/templates/ticket';
 import QuotationTemplate from '@/templates/quotation';
+import PlaceholderSidePeek from '@/components/PlaceholderSidePeek';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import ChangelogButton from '@/components/ChangelogButton';
@@ -126,6 +127,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     sidePeekAssetTab, setSidePeekAssetTab,
     sidePeekTicket, setSidePeekTicket,
     sidePeekQuotation, setSidePeekQuotation,
+    sidePeekPlaceholder, setSidePeekPlaceholder,
     favorites, setFavorites,
     localQuickviewAsset, setLocalQuickviewAsset,
     openedViaInspect, setOpenedViaInspect,
@@ -168,6 +170,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     setSidePeekAsset(null);
     setSidePeekTicket(null);
     setSidePeekQuotation(null);
+    setSidePeekPlaceholder(null);
     setLocalQuickviewAsset(null);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1025,6 +1028,28 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
             />
           </Box>
+        )}
+      </SidePeekPanel>
+
+      {/* Placeholder SidePeek Panel — insights, mutations, maintenance, documents */}
+      <SidePeekPanel
+        open={!!sidePeekPlaceholder}
+        onClose={() => setSidePeekPlaceholder(null)}
+      >
+        {sidePeekPlaceholder && (
+          <PlaceholderSidePeek
+            peek={sidePeekPlaceholder}
+            onPanelClose={() => setSidePeekPlaceholder(null)}
+            onPanelFullscreen={() => {
+              const p = sidePeekPlaceholder;
+              const dest =
+                p.kind === 'insight' ? '/insights/alerts' :
+                p.kind === 'mutation' ? '/operations' :
+                p.kind === 'maintenance' ? `/operations/maintenance/${p.id}` :
+                `/operations/documents/${p.id}`;
+              router.push(dest);
+            }}
+          />
         )}
       </SidePeekPanel>
 

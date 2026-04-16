@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useAppState } from '@/context/AppStateContext';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -96,6 +97,16 @@ export default function QuotationTemplate({
   const { t } = useLanguage();
   const category = inferCategory(quotation.title);
   const categoryColor = getCategoryColor(category);
+  const { addRecentlyVisited } = useAppState();
+
+  useEffect(() => {
+    addRecentlyVisited({
+      kind: 'quotation',
+      id: quotation.id,
+      label: quotation.title,
+      subtitle: quotation.building,
+    });
+  }, [quotation.id, quotation.title, quotation.building, addRecentlyVisited]);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAppState } from '@/context/AppStateContext';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -58,6 +59,16 @@ export default function BuildingDetailPage({
   const tabs = useTabs();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const [buildingAnchorEl, setBuildingAnchorEl] = useState<HTMLElement | null>(null);
+  const { addRecentlyVisited } = useAppState();
+
+  useEffect(() => {
+    addRecentlyVisited({
+      kind: 'building',
+      id: building.id,
+      label: building.name,
+      subtitle: building.city,
+    });
+  }, [building.id, building.name, building.city, addRecentlyVisited]);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>

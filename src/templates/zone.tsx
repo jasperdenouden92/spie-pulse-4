@@ -20,6 +20,7 @@ import { zones as allZones, getZoneColor } from '@/data/zones';
 import PageHeader from '@/components/PageHeader';
 import { useThemeMode } from '@/theme-mode-context';
 import { useLanguage } from '@/i18n';
+import { useAppState } from '@/context/AppStateContext';
 
 export type ZoneDetailTab = 'overview' | 'assets' | 'tickets' | 'quotations';
 
@@ -174,6 +175,16 @@ export default function ZoneDetailPage({
   const tabs = useZoneTabs();
   const zoneColor = getZoneColor(zone.name);
   const [zoneAnchorEl, setZoneAnchorEl] = useState<HTMLElement | null>(null);
+  const { addRecentlyVisited } = useAppState();
+
+  useEffect(() => {
+    addRecentlyVisited({
+      kind: 'zone',
+      id: zone.id,
+      label: zone.name,
+      subtitle: `${zone.buildingName} · ${zone.floor}`,
+    });
+  }, [zone.id, zone.name, zone.buildingName, zone.floor, addRecentlyVisited]);
 
   const panelActions = (onPanelClose || onPanelFullscreen) ? (
     <>
