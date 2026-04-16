@@ -351,10 +351,19 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const { preference: themePreference, setThemePreference, themeColors: c } = useThemeMode();
   const { t, locale, setLocale } = useLanguage();
   const newButtonRef = useRef<HTMLDivElement>(null);
-  const [operationsExpanded, setOperationsExpanded] = useState(() => Boolean(pathname.startsWith('/operations')));
-  const [portfolioExpanded, setPortfolioExpanded] = useState(() => Boolean(pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')));
-  const [bmsExpanded, setBmsExpanded] = useState(() => Boolean(pathname.startsWith('/bms')));
-  const [insightsExpanded, setInsightsExpanded] = useState(() => Boolean(pathname.startsWith('/insights')));
+  type ExpandedMenu = 'insights' | 'portfolio' | 'operations' | 'bms' | null;
+  const [expandedMenu, setExpandedMenu] = useState<ExpandedMenu>(() => {
+    if (pathname.startsWith('/insights')) return 'insights';
+    if (pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')) return 'portfolio';
+    if (pathname.startsWith('/operations')) return 'operations';
+    if (pathname.startsWith('/bms')) return 'bms';
+    return null;
+  });
+  const toggleMenu = (menu: Exclude<ExpandedMenu, null>) => setExpandedMenu((prev) => (prev === menu ? null : menu));
+  const insightsExpanded = expandedMenu === 'insights';
+  const portfolioExpanded = expandedMenu === 'portfolio';
+  const operationsExpanded = expandedMenu === 'operations';
+  const bmsExpanded = expandedMenu === 'bms';
 
   const NEW_MENU_ITEMS = [
     { label: t('createNew.reportIssue'), key: '1' },
@@ -674,9 +683,9 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.insights')}
               icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/insights')}
-              onClick={() => { router.push('/insights/alerts'); setInsightsExpanded(true); }}
+              onClick={() => { router.push('/insights/alerts'); setExpandedMenu('insights'); }}
               expanded={insightsExpanded}
-              onToggleExpand={() => setInsightsExpanded((v) => !v)}
+              onToggleExpand={() => toggleMenu('insights')}
             />
             {!isCollapsed && insightsExpanded && (
               <>
@@ -689,9 +698,9 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.portfolio')}
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')}
-              onClick={() => { router.push('/portfolio/buildings'); setPortfolioExpanded(true); }}
+              onClick={() => { router.push('/portfolio/buildings'); setExpandedMenu('portfolio'); }}
               expanded={portfolioExpanded}
-              onToggleExpand={() => setPortfolioExpanded((v) => !v)}
+              onToggleExpand={() => toggleMenu('portfolio')}
             />
             {!isCollapsed && portfolioExpanded && (
               <>
@@ -704,9 +713,9 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.operations')}
               icon={<EngineeringOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/operations')}
-              onClick={() => { router.push('/operations/tickets'); setOperationsExpanded(true); }}
+              onClick={() => { router.push('/operations/tickets'); setExpandedMenu('operations'); }}
               expanded={operationsExpanded}
-              onToggleExpand={() => setOperationsExpanded((v) => !v)}
+              onToggleExpand={() => toggleMenu('operations')}
             />
             {!isCollapsed && operationsExpanded && (
               <>
@@ -725,9 +734,9 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.bms')}
               icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/bms')}
-              onClick={() => { router.push('/bms/access'); setBmsExpanded(true); }}
+              onClick={() => { router.push('/bms/access'); setExpandedMenu('bms'); }}
               expanded={bmsExpanded}
-              onToggleExpand={() => setBmsExpanded((v) => !v)}
+              onToggleExpand={() => toggleMenu('bms')}
             />
             {!isCollapsed && bmsExpanded && (
               <>
