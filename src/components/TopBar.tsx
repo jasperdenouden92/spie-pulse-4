@@ -358,8 +358,8 @@ function TopBar({
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.operations')}</Typography>
             )}
             {pathname.startsWith('/operations/') && pathname !== '/operations' && (() => {
-              const sectionLabel = pathname.startsWith('/operations/documents') ? t('nav.documents') : pathname.startsWith('/operations/tickets') ? t('nav.tickets') : pathname.startsWith('/operations/quotations') ? t('nav.quotations') : t('nav.maintenance');
               const isDocuments = pathname.startsWith('/operations/documents');
+              const sectionLabel = isDocuments ? t('nav.documents') : pathname.startsWith('/operations/tickets') ? t('nav.tickets') : pathname.startsWith('/operations/quotations') ? t('nav.quotations') : t('nav.maintenance');
               // Extract folder path segments from /operations/documents/seg1/seg2/...
               const folderSegments = isDocuments
                 ? pathname.replace('/operations/documents', '').split('/').filter(Boolean)
@@ -380,14 +380,18 @@ function TopBar({
               const lastIndex = folderBreadcrumbs.length - 1;
               return (
                 <>
-                  <Typography
-                    variant="h6"
-                    sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
-                    onClick={() => router.push('/operations')}
-                  >
-                    {t('nav.operations')}
-                  </Typography>
-                  <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                  {!isDocuments && (
+                    <>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', color: 'text.secondary', '&:hover': { textDecoration: 'underline' } }}
+                        onClick={() => router.push('/operations')}
+                      >
+                        {t('nav.operations')}
+                      </Typography>
+                      <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                    </>
+                  )}
                   <Typography
                     variant="h6"
                     sx={{

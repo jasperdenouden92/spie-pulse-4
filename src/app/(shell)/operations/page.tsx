@@ -4,7 +4,6 @@ import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import RequestQuoteOutlinedIcon from '@mui/icons-material/RequestQuoteOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
@@ -26,13 +25,6 @@ const MENU_ITEMS = [
     description: 'Pending quotes, approvals and cost overviews',
     icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 24 }} />,
     color: '#9c27b0',
-  },
-  {
-    path: '/operations/documents',
-    label: 'Documents',
-    description: 'Contracts, reports, manuals and certificates',
-    icon: <DescriptionOutlinedIcon sx={{ fontSize: 24 }} />,
-    color: '#2196f3',
   },
   {
     path: '/operations/maintenance',
