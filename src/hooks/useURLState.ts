@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { buildings as allBuildings, tenants, type Building, type MetricKeys } from '@/data/buildings';
+import { buildings as allBuildings, type Building, type MetricKeys } from '@/data/buildings';
 import { zones as allZones, type Zone } from '@/data/zones';
 import { getAssetById } from '@/data/assetTree';
 
@@ -98,7 +98,7 @@ export function useURLState() {
   const dateRange = searchParams.get('dateRange') ?? 'This Month';
   const selectedGroup = searchParams.get('group') ?? 'All Groups';
   const selectedCity = searchParams.get('city') ?? 'All Cities';
-  const selectedTenant = searchParams.get('tenant') ?? tenants[0];
+  const selectedTenant = searchParams.get('tenant') ?? 'Philips Healthcare Best';
   const isInspectMode = searchParams.get('inspect') === '1';
   const isAssetExplorerOpen = searchParams.get('explorer') === '1';
   const assetTab = parseInt(searchParams.get('assetTab') ?? '0', 10);
