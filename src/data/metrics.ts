@@ -69,16 +69,56 @@ export const kpiMetrics: MetricData[] = [
   ...operationsMetrics
 ];
 
-// Period label mapping for tooltip display
+// Period label mapping for tooltip display.
+// Returns a label describing the period the current range is compared against
+// (e.g. "This Quarter" → "last quarter", "Last Quarter" → "the previous quarter").
 export function getPeriodLabel(dateRange: string): string | null {
-  switch (dateRange) {
-    case 'Today': return 'yesterday';
-    case 'This Week': return 'last week';
-    case 'This Month': return 'last month';
-    case 'This Quarter': return 'last quarter';
-    case 'This Year': return 'last year';
-    default: return null;
+  // Named preset values (legacy / default values in URL)
+  const named: Record<string, string> = {
+    'Today': 'yesterday',
+    'Yesterday': 'the previous day',
+    'This Week': 'last week',
+    'Last Week': 'the previous week',
+    'This Month': 'last month',
+    'Last Month': 'the previous month',
+    'This Quarter': 'last quarter',
+    'Last Quarter': 'the previous quarter',
+    'This Year': 'last year',
+    'Last Year': 'the previous year',
+  };
+  if (dateRange in named) return named[dateRange];
+  if (dateRange === 'All Time') return null;
+
+  // Date-range strings: YYYY-MM-DD|YYYY-MM-DD (from DateRangeSelector)
+  if (dateRange.includes('|')) {
+    const [a, b] = dateRange.split('|');
+    const from = new Date(a); from.setHours(0, 0, 0, 0);
+    const to = new Date(b); to.setHours(0, 0, 0, 0);
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) return 'the previous period';
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const lastDayOfToMonth = new Date(to.getFullYear(), to.getMonth() + 1, 0).getDate();
+    const diffDays = Math.round((to.getTime() - from.getTime()) / 86400000) + 1;
+    const endsToday = to.getTime() === today.getTime();
+
+    // Full completed periods (e.g. "Last quarter", "Last year")
+    if (from.getMonth() === 0 && from.getDate() === 1 && to.getMonth() === 11 && to.getDate() === 31) return 'the previous year';
+    if (from.getDate() === 1 && from.getMonth() % 3 === 0 && (to.getMonth() + 1) % 3 === 0 && to.getDate() === lastDayOfToMonth) return 'the previous quarter';
+    if (from.getDate() === 1 && from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear() && to.getDate() === lastDayOfToMonth) return 'the previous month';
+    if (diffDays === 7 && from.getDay() === 1) return 'the previous week';
+    if (diffDays === 1) return endsToday ? 'yesterday' : 'the previous day';
+
+    // Partial "This X" periods (start of period → today)
+    if (endsToday) {
+      if (from.getMonth() === 0 && from.getDate() === 1) return 'last year';
+      if (from.getDate() === 1 && from.getMonth() % 3 === 0) return 'last quarter';
+      if (from.getDate() === 1) return 'last month';
+    }
+
+    return 'the previous period';
   }
+
+  return null;
 }
 
 // Seeded random to produce stable per-period variations
