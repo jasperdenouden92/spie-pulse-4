@@ -6,6 +6,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
 import AssetTemplate from '@/templates/asset';
 import type { AssetDetailTab } from '@/templates/asset';
+import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { buildingToSlug } from '@/utils/slugs';
@@ -62,6 +63,9 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
         }}
         onAssetChange={(aid) => router.push(`/assets/${aid}`)}
       />
+      {currentTab === 'documents' && (
+        <LinkedDocumentsList assetId={asset.id} />
+      )}
     </Container>
   );
 }

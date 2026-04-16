@@ -45,6 +45,7 @@ import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
 import BuildingTemplate from '@/templates/building';
 import ZoneTemplate from '@/templates/zone';
 import AssetTemplate from '@/templates/asset';
+import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import TicketTemplate from '@/templates/ticket';
 import QuotationTemplate from '@/templates/quotation';
 import ZonesList from '@/components/ZonesList';
@@ -979,6 +980,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
                   router.push('/assets/' + sidePeekAsset.id);
                 }}
               />
+              {sidePeekAssetTab === 'documents' && (
+                <LinkedDocumentsList assetId={sidePeekAsset.id} />
+              )}
             </Box>
           );
         })()}
