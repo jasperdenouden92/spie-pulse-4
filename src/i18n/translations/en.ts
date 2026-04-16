@@ -254,7 +254,6 @@ const en = {
   'documents.sortModifiedNewest': 'Modified (newest first)',
   'documents.sortModifiedOldest': 'Modified (oldest first)',
   'documents.sortNameAZ': 'Name (A \u2192 Z)',
-  'documents.sortBuildingAZ': 'Buildings/assets (A \u2192 Z)',
   'documents.sortCategory': 'Category',
   'documents.sortFileType': 'File type',
   'documents.name': 'Name',
@@ -270,6 +269,7 @@ const en = {
   'documents.linkedBuildings': 'Linked buildings',
   'documents.linkedAssets': 'Linked assets',
   'documents.noLinkedItems': 'No linked buildings or assets',
+  'documents.folders': 'Folders',
 
   // Insights
   'insights.title': 'Insights',

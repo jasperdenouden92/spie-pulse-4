@@ -256,7 +256,6 @@ const nl: Record<TranslationKey, string> = {
   'documents.sortModifiedNewest': 'Gewijzigd (nieuwste eerst)',
   'documents.sortModifiedOldest': 'Gewijzigd (oudste eerst)',
   'documents.sortNameAZ': 'Naam (A \u2192 Z)',
-  'documents.sortBuildingAZ': 'Gebouwen/assets (A \u2192 Z)',
   'documents.sortCategory': 'Categorie',
   'documents.sortFileType': 'Bestandstype',
   'documents.name': 'Naam',
@@ -272,6 +271,7 @@ const nl: Record<TranslationKey, string> = {
   'documents.linkedBuildings': 'Gekoppelde gebouwen',
   'documents.linkedAssets': 'Gekoppelde assets',
   'documents.noLinkedItems': 'Geen gekoppelde gebouwen of assets',
+  'documents.folders': 'Mappen',
 
   // Insights
   'insights.title': 'Inzichten',
