@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Box from '@mui/material/Box';
 import { useThemeMode } from '@/theme-mode-context';
 
@@ -31,6 +31,21 @@ export default function SidePeekPanel({
   children,
 }: SidePeekPanelProps) {
   const { themeColors: c } = useThemeMode();
+
+  // Close on Escape while open. Each open panel registers its own listener;
+  // single-peek enforcement in AppStateContext guarantees only one is mounted
+  // with open=true at a time, so there's no multi-handler conflict.
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onClose]);
 
   return (
     <>

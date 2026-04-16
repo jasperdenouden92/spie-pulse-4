@@ -1,106 +1,174 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import AppTabs from '@/components/AppTabs';
+import Button from '@mui/material/Button';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import BusinessIcon from '@mui/icons-material/Business';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import DescriptionIcon from '@mui/icons-material/Description';
-import NorthEastIcon from '@mui/icons-material/NorthEast';
-import SpaOutlinedIcon from '@mui/icons-material/SpaOutlined';
-import NatureOutlinedIcon from '@mui/icons-material/NatureOutlined';
-import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
-import SpeedOutlinedIcon from '@mui/icons-material/SpeedOutlined';
-import { useThemeMode } from '@/theme-mode-context';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
+import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useLanguage } from '@/i18n';
+import { useAppState } from '@/context/AppStateContext';
+import { handleSidePeekClick } from '@/components/SidePeekPanel';
+import { buildingToSlug } from '@/utils/slugs';
+import type { RecentItem, RecentItemKind } from '@/context/AppStateContext';
+import { resolveRecentEntity } from '@/components/home/recentHelpers';
+import RecentlyVisitedCard from '@/components/home/RecentlyVisitedCard';
+import WorkInProgressSection, { useWorkInProgressCount } from '@/components/home/WorkInProgressSection';
+import LatestActivitySection from '@/components/home/LatestActivitySection';
+import ControlRoomEntrance, { type HomeVariant, VARIANT_TITLE_KEYS } from '@/components/home/ControlRoomEntrance';
+import HomeVariantToolbar from '@/components/home/HomeVariantToolbar';
+import HomeSectionHeader from '@/components/home/HomeSectionHeader';
+import { buildings, type Building } from '@/data/buildings';
+import type { Zone } from '@/data/zones';
+import type { AssetNode } from '@/data/assetTree';
+import type { Ticket } from '@/data/tickets';
+import type { Quotation } from '@/data/quotations';
+import { useURLState } from '@/hooks/useURLState';
+
+/**
+ * Build the "Recently Visited" fallback using real tenant buildings and
+ * tickets/quotations, so subtitles show valid building names for the active
+ * tenant instead of legacy mock names (Skyline Plaza, Metro Heights, …).
+ */
+function buildFallbackRecent(tenant: string): RecentItem[] {
+  const tenantBuildings = buildings.filter(b => b.tenant === tenant);
+  const source = tenantBuildings.length > 0 ? tenantBuildings : buildings;
+  const pick = (i: number) => source[i % source.length];
+  const b0 = pick(0);
+  const b1 = pick(1);
+  const b2 = pick(2);
+  const b3 = pick(3);
+  return [
+    { kind: 'building', id: b0.id, label: b0.name, subtitle: b0.city, visitedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
+    { kind: 'ticket', id: 't-0001', label: 'HVAC malfunction in main office', subtitle: b1.name, visitedAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString() },
+    { kind: 'ticket', id: 't-0002', label: 'Leaky faucet in conference room A', subtitle: b2.name, visitedAt: new Date(Date.now() - 1000 * 60 * 60 * 28).toISOString() },
+    { kind: 'quotation', id: 'q-0001', label: 'Painting of the lobby area', subtitle: b3.name, visitedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString() },
+  ];
+}
+
+const VARIANT_STORAGE_KEY = 'pulse:homeControlRoomVariant';
+
+interface RecentSetters {
+  setSidePeekBuilding: (v: Building | null) => void;
+  setSidePeekZone: (v: Zone | null) => void;
+  setSidePeekAsset: (v: AssetNode | null) => void;
+  setSidePeekTicket: (v: Ticket | null) => void;
+  setSidePeekQuotation: (v: Quotation | null) => void;
+}
+
+function openRecentEntity(
+  item: RecentItem,
+  e: React.MouseEvent,
+  router: ReturnType<typeof useRouter>,
+  setters: RecentSetters,
+) {
+  const entity = resolveRecentEntity(item);
+  if (!entity) return;
+  switch (item.kind) {
+    case 'building': {
+      const b = entity as Building;
+      handleSidePeekClick(
+        e,
+        () => setters.setSidePeekBuilding(b),
+        () => router.push(`/buildings/${buildingToSlug(b)}`),
+      );
+      return;
+    }
+    case 'zone': {
+      const z = entity as Zone;
+      handleSidePeekClick(
+        e,
+        () => setters.setSidePeekZone(z),
+        () => router.push(`/zones/${z.id}`),
+      );
+      return;
+    }
+    case 'asset': {
+      const a = entity as AssetNode;
+      handleSidePeekClick(
+        e,
+        () => setters.setSidePeekAsset(a),
+        () => router.push(`/assets/${a.id}`),
+      );
+      return;
+    }
+    case 'ticket': {
+      const tk = entity as Ticket;
+      handleSidePeekClick(
+        e,
+        () => setters.setSidePeekTicket(tk),
+        () => router.push(`/operations/tickets/${tk.id}`),
+      );
+      return;
+    }
+    case 'quotation': {
+      const q = entity as Quotation;
+      handleSidePeekClick(
+        e,
+        () => setters.setSidePeekQuotation(q),
+        () => router.push(`/operations/quotations/${q.id}`),
+      );
+      return;
+    }
+  }
+}
 
 export default function HomeRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
-  const { themeColors: c } = useThemeMode();
   const { t } = useLanguage();
-  const [selectedTab, setSelectedTab] = useState(0);
-  const [buildingFilter, setBuildingFilter] = useState<null | HTMLElement>(null);
-  const [ticketsFilter, setTicketsFilter] = useState<null | HTMLElement>(null);
-  const [quotationsFilter, setQuotationsFilter] = useState<null | HTMLElement>(null);
+  const router = useRouter();
+  const { selectedTenant } = useURLState();
+  const {
+    recentlyVisited,
+    setSidePeekBuilding, setSidePeekZone, setSidePeekAsset, setSidePeekTicket, setSidePeekQuotation,
+  } = useAppState();
 
   const userName = 'Marc';
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? t('home.goodMorning') : currentHour < 18 ? t('home.goodAfternoon') : t('home.goodEvening');
 
-  const recentlyVisited = [
-    { id: 1, name: 'Downtown Arts Center', type: 'building', timestamp: 'Today', icon: BusinessIcon },
-    { id: 2, name: 'HVAC malfunction in main office and maintenance ro...', type: 'ticket', timestamp: 'Yesterday', icon: AssignmentIcon },
-    { id: 3, name: 'Leaky faucet in conference room A', type: 'ticket', timestamp: 'Yesterday', icon: AssignmentIcon },
-    { id: 4, name: 'Painting of the lobby area', type: 'quotation', timestamp: 'This week', icon: DescriptionIcon },
-  ];
+  // Variant selection persisted locally per browser
+  const [variant, setVariantState] = useState<HomeVariant>('A');
+  const [variantHydrated, setVariantHydrated] = useState(false);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(VARIANT_STORAGE_KEY);
+      if (stored === 'A' || stored === 'B' || stored === 'C') {
+        setVariantState(stored);
+      }
+    } catch { /* ignore */ }
+    setVariantHydrated(true);
+  }, []);
+  const setVariant = (v: HomeVariant) => {
+    setVariantState(v);
+    try { localStorage.setItem(VARIANT_STORAGE_KEY, v); } catch { /* ignore */ }
+  };
 
-  const metrics = [
-    {
-      label: t('metric.comfort'),
-      icon: <SpaOutlinedIcon sx={{ fontSize: 20 }} />,
-      good: 3,
-      poor: 5,
-      bad: 2,
-      color: c.brand
-    },
-    {
-      label: t('metric.sustainability'),
-      icon: <NatureOutlinedIcon sx={{ fontSize: 20 }} />,
-      good: 3,
-      poor: 5,
-      bad: 2,
-      color: '#2e7d32'
-    },
-    {
-      label: t('metric.maintenance'),
-      icon: <BuildOutlinedIcon sx={{ fontSize: 20 }} />,
-      good: 3,
-      poor: 5,
-      bad: 2,
-      color: '#f57c00'
-    },
-    {
-      label: t('metric.assetMonitoring'),
-      icon: <SpeedOutlinedIcon sx={{ fontSize: 20 }} />,
-      good: 3,
-      poor: 5,
-      bad: 2,
-      color: '#7b1fa2'
-    },
-  ];
+  const recentToShow = useMemo<RecentItem[]>(() => {
+    // Only include kinds we can still resolve; fall back to mock when empty.
+    const validKinds: RecentItemKind[] = ['building', 'zone', 'asset', 'ticket', 'quotation'];
+    const filtered = recentlyVisited.filter(r => validKinds.includes(r.kind));
+    if (filtered.length === 0) return buildFallbackRecent(selectedTenant);
+    return filtered.slice(0, 4);
+  }, [recentlyVisited, selectedTenant]);
 
-  const tickets = [
-    { id: 1, title: 'HVAC malfunction in main office', status: 'Incident', date: 'Aug 9' },
-    { id: 2, title: 'Leaky faucet in conference room A', status: 'Incident', date: 'Aug 9' },
-    { id: 3, title: 'Broken window in the west wing', status: 'Incident', date: 'Aug 9' },
-    { id: 4, title: 'Power outage in server room', status: 'Incident', date: 'Aug 9' },
-  ];
-
-  const quotations = [
-    { id: 1, title: 'New lighting installation', dateRange: 'Aug 9 to Dec 10' },
-    { id: 2, title: 'Roof inspection and repair', dateRange: 'Aug 9 to Dec 10' },
-    { id: 3, title: 'Painting of the lobby area', dateRange: 'Aug 9 to Dec 10' },
-    { id: 4, title: 'Plumbing upgrade in restrooms', dateRange: 'Aug 9 to Dec 10' },
-  ];
+  const workInProgressCount = useWorkInProgressCount();
 
   return (
-    <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
+    <Container maxWidth={false} sx={{ pb: 12, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
       <Box>
-        {/* Greeting Section */}
+        {/* Greeting */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <WbSunnyOutlinedIcon sx={{ fontSize: 24, color: '#f57c00' }} />
             <Typography variant="h5" sx={{ fontWeight: 600 }}>
               {greeting}, {userName}.
@@ -108,334 +176,137 @@ export default function HomeRoute() {
           </Box>
         </Box>
 
-        {/* Recently Visited Section */}
+        {/* Recently visited */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {t('home.recentlyVisited')}
-            </Typography>
-            <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
-              <MoreHorizIcon fontSize="small" />
-            </IconButton>
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
-            {recentlyVisited.map((item) => (
-              <Paper
-                key={item.id}
-                sx={{
-                  p: 2,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  '&:hover': {
-                    boxShadow: 2,
-                    borderColor: c.brand
-                  }
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 1,
-                      bgcolor: c.bgPrimaryHover,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}
-                  >
-                    <item.icon sx={{ fontSize: 18 }} />
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 500,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        lineHeight: 1.4
-                      }}
-                    >
-                      {item.name}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Typography variant="caption" color="text.secondary">
-                  {item.timestamp}
-                </Typography>
-              </Paper>
+          <HomeSectionHeader
+            icon={<AccessTimeIcon />}
+            label={t('home.recentlyVisited')}
+            action={
+              <IconButton size="small" sx={{ borderRadius: '50%', aspectRatio: 1 }}>
+                <MoreHorizIcon fontSize="small" />
+              </IconButton>
+            }
+          />
+          <Box sx={{ display: 'grid', gridTemplateColumns: isNarrow ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 1.5 }}>
+            {recentToShow.map(item => (
+              <RecentlyVisitedCard
+                key={`${item.kind}:${item.id}`}
+                item={item}
+                onClick={(e) => openRecentEntity(item, e, router, {
+                  setSidePeekBuilding, setSidePeekZone, setSidePeekAsset, setSidePeekTicket, setSidePeekQuotation,
+                })}
+              />
             ))}
           </Box>
         </Box>
 
-        {/* Metrics Cards */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, mb: 3 }}>
-          {metrics.map((metric, index) => (
-            <Paper
-              key={index}
-              sx={{
-                p: 2.5,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                border: '1px solid',
-                borderColor: 'divider',
-                '&:hover': {
-                  boxShadow: 2,
-                  borderColor: metric.color
+        {/*
+          Layout: variant B fuses the Control Room section into the same 2fr/1fr
+          grid as Work in progress + Latest activity, so the chart matches the
+          WIP card width and Latest activity can span both rows. Other variants
+          keep the full-width entrance above a 2fr/1fr grid.
+        */}
+        {variantHydrated && variant === 'B' ? (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: isNarrow ? '1fr' : 'minmax(0, 2fr) minmax(0, 1fr)',
+              columnGap: 4,
+              rowGap: 2,
+              alignItems: 'start',
+            }}
+          >
+            {/* Left column, row 1: Control Room */}
+            <Box sx={{ gridColumn: isNarrow ? 'auto' : 1, gridRow: isNarrow ? 'auto' : 1 }}>
+              <HomeSectionHeader
+                icon={<DashboardOutlinedIcon />}
+                label={t(VARIANT_TITLE_KEYS[variant])}
+                action={
+                  <Button
+                    size="small"
+                    endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+                    onClick={() => router.push('/control-room')}
+                    sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', minWidth: 0, color: 'primary.main' }}
+                  >
+                    {t('home.openControlRoom')}
+                  </Button>
                 }
+              />
+              <ControlRoomEntrance variant={variant} />
+            </Box>
+            {/* Left column, row 2: Work in progress */}
+            <Box sx={{ gridColumn: isNarrow ? 'auto' : 1, gridRow: isNarrow ? 'auto' : 2 }}>
+              <HomeSectionHeader
+                icon={<AssignmentTurnedInOutlinedIcon />}
+                label={t('home.workInProgress')}
+                infoTooltip={t('home.workInProgressSubtitle')}
+                sublabel={`${workInProgressCount} ${t('home.itemsForYou')}`}
+              />
+              <WorkInProgressSection variant={variant} />
+            </Box>
+            {/* Right column, spans both rows: Latest activity */}
+            <Box sx={{ gridColumn: isNarrow ? 'auto' : 2, gridRow: isNarrow ? 'auto' : '1 / span 2' }}>
+              <HomeSectionHeader
+                icon={<TimelineOutlinedIcon />}
+                label={t('home.latestActivity')}
+              />
+              <LatestActivitySection />
+            </Box>
+          </Box>
+        ) : (
+          <>
+            {/* Control Room entrance (variant switchable) */}
+            <Box sx={{ mb: 3 }}>
+              <HomeSectionHeader
+                icon={<DashboardOutlinedIcon />}
+                label={t(VARIANT_TITLE_KEYS[variantHydrated ? variant : 'A'])}
+                action={
+                  <Button
+                    size="small"
+                    endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+                    onClick={() => router.push('/control-room')}
+                    sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', minWidth: 0, color: 'primary.main' }}
+                  >
+                    {t('home.openControlRoom')}
+                  </Button>
+                }
+              />
+              {variantHydrated && <ControlRoomEntrance variant={variant} />}
+            </Box>
+
+            {/* Work in progress + Latest activity */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: isNarrow ? '1fr' : 'minmax(0, 2fr) minmax(0, 1fr)',
+                columnGap: 4,
+                rowGap: 2,
+                alignItems: 'start',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {metric.label}
-                </Typography>
-                <NorthEastIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Box>
+                <HomeSectionHeader
+                  icon={<AssignmentTurnedInOutlinedIcon />}
+                  label={t('home.workInProgress')}
+                  infoTooltip={t('home.workInProgressSubtitle')}
+                  sublabel={`${workInProgressCount} ${t('home.itemsForYou')}`}
+                />
+                <WorkInProgressSection variant={variant} />
               </Box>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                    Good
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {metric.good}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                    Poor
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {metric.poor}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                    Bad
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {metric.bad}
-                  </Typography>
-                </Box>
+              <Box>
+                <HomeSectionHeader
+                  icon={<TimelineOutlinedIcon />}
+                  label={t('home.latestActivity')}
+                />
+                <LatestActivitySection />
               </Box>
-            </Paper>
-          ))}
-        </Box>
-
-        {/* Chart Section */}
-        <Paper sx={{ mb: 3, border: '1px solid', borderColor: 'divider' }}>
-          {/* Chart Header */}
-          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <Button
-                size="small"
-                startIcon={<CalendarTodayIcon sx={{ fontSize: 16 }} />}
-                sx={{
-                  textTransform: 'none',
-                  color: 'text.primary',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: c.bgPrimary
-                }}
-              >
-                {t('common.thisWeek')}
-              </Button>
-              <Button
-                size="small"
-                endIcon={<ExpandMoreIcon />}
-                onClick={(e) => setBuildingFilter(e.currentTarget)}
-                sx={{
-                  textTransform: 'none',
-                  color: 'text.primary',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  bgcolor: c.bgPrimary
-                }}
-              >
-                {t('common.allBuildings')}
-              </Button>
-              <Menu
-                anchorEl={buildingFilter}
-                open={Boolean(buildingFilter)}
-                onClose={() => setBuildingFilter(null)}
-              >
-                <MenuItem onClick={() => setBuildingFilter(null)}>{t('common.allBuildings')}</MenuItem>
-                <MenuItem onClick={() => setBuildingFilter(null)}>Skyline Plaza</MenuItem>
-                <MenuItem onClick={() => setBuildingFilter(null)}>Innovation Hub</MenuItem>
-              </Menu>
             </Box>
-            <AppTabs
-              value={selectedTab}
-              onChange={setSelectedTab}
-              size="small"
-              tabs={[
-                { label: 'Building trend' },
-                { label: 'Comfort trend' },
-                { label: 'Asset trend' },
-              ]}
-            />
-          </Box>
-
-          {/* Chart Area */}
-          <Box sx={{ p: 3, height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: c.bgSecondary }}>
-            <Typography variant="body2" color="text.secondary">
-              Chart visualization would appear here
-            </Typography>
-          </Box>
-        </Paper>
-
-        {/* Tickets and Quotations Lists */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-          {/* Tickets */}
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {t('nav.tickets')}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Button
-                  size="small"
-                  endIcon={<ExpandMoreIcon />}
-                  onClick={(e) => setTicketsFilter(e.currentTarget)}
-                  sx={{
-                    textTransform: 'none',
-                    color: 'text.secondary',
-                    fontSize: '0.813rem'
-                  }}
-                >
-                  {t('common.allBuildings')}
-                </Button>
-                <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
-                  <MoreHorizIcon fontSize="small" />
-                </IconButton>
-              </Box>
-              <Menu
-                anchorEl={ticketsFilter}
-                open={Boolean(ticketsFilter)}
-                onClose={() => setTicketsFilter(null)}
-              >
-                <MenuItem onClick={() => setTicketsFilter(null)}>{t('common.allBuildings')}</MenuItem>
-                <MenuItem onClick={() => setTicketsFilter(null)}>Skyline Plaza</MenuItem>
-              </Menu>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {tickets.map((ticket) => (
-                <Paper
-                  key={ticket.id}
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    cursor: 'pointer',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      boxShadow: 1,
-                      borderColor: c.brand
-                    }
-                  }}
-                >
-                  <AssignmentIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {ticket.title}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: c.bgPrimaryHover,
-                      border: '1px solid',
-                      borderColor: 'divider'
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ fontSize: '0.688rem' }}>
-                      {ticket.status}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ minWidth: 50, textAlign: 'right' }}>
-                    {ticket.date}
-                  </Typography>
-                </Paper>
-              ))}
-            </Box>
-          </Box>
-
-          {/* Quotations */}
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {t('nav.quotations')}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Button
-                  size="small"
-                  endIcon={<ExpandMoreIcon />}
-                  onClick={(e) => setQuotationsFilter(e.currentTarget)}
-                  sx={{
-                    textTransform: 'none',
-                    color: 'text.secondary',
-                    fontSize: '0.813rem'
-                  }}
-                >
-                  {t('common.allBuildings')}
-                </Button>
-                <IconButton size="small" sx={{ borderRadius: "50%", aspectRatio: 1 }}>
-                  <MoreHorizIcon fontSize="small" />
-                </IconButton>
-              </Box>
-              <Menu
-                anchorEl={quotationsFilter}
-                open={Boolean(quotationsFilter)}
-                onClose={() => setQuotationsFilter(null)}
-              >
-                <MenuItem onClick={() => setQuotationsFilter(null)}>{t('common.allBuildings')}</MenuItem>
-                <MenuItem onClick={() => setQuotationsFilter(null)}>Skyline Plaza</MenuItem>
-              </Menu>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {quotations.map((quotation) => (
-                <Paper
-                  key={quotation.id}
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    cursor: 'pointer',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      boxShadow: 1,
-                      borderColor: c.brand
-                    }
-                  }}
-                >
-                  <DescriptionIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {quotation.title}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ minWidth: 120, textAlign: 'right' }}>
-                    {quotation.dateRange}
-                  </Typography>
-                </Paper>
-              ))}
-            </Box>
-          </Box>
-        </Box>
+          </>
+        )}
       </Box>
+
+      {/* Floating toolbar — demo control for picking Control Room variant */}
+      {variantHydrated && <HomeVariantToolbar value={variant} onChange={setVariant} />}
     </Container>
   );
 }
