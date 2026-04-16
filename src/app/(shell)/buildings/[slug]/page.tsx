@@ -8,13 +8,12 @@ import BuildingTemplate from '@/templates/building';
 import type { BuildingDetailTab } from '@/templates/building';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
-import DocumentsList from '@/components/DocumentsList';
+import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { slugToBuilding, buildingToSlug } from '@/utils/slugs';
 import { zones as allZones } from '@/data/zones';
 import { assetTree, type AssetNode, getAssetById } from '@/data/assetTree';
-import { documentFiles } from '@/data/documents';
 import { handleSidePeekClick } from '@/components/SidePeekPanel';
 
 // ── Flatten Buildings tree with building context ──
@@ -55,11 +54,6 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
 
   const buildingAssets = useMemo(
     () => ALL_ASSETS.filter(a => a.building === (building?.name ?? '')),
-    [building]
-  );
-
-  const buildingDocuments = useMemo(
-    () => documentFiles.filter(d => d.building === (building?.name ?? '')),
     [building]
   );
 
@@ -107,11 +101,7 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
         />
       )}
       {currentTab === 'documents' && (
-        <DocumentsList
-          documents={buildingDocuments}
-          hideBuildingColumn
-          showFilters
-        />
+        <LinkedDocumentsList buildingName={building.name} />
       )}
     </Container>
   );

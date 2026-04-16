@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { handleSidePeekClick } from '@/components/SidePeekPanel';
 import { useAppState } from '@/context/AppStateContext';
 import { buildings as buildingsData } from '@/data/buildings';
+import { getAssetById } from '@/data/assetTree';
 import { buildingToSlug } from '@/utils/slugs';
 import { useFilterParams } from '@/hooks/useFilterParams';
 import Container from '@mui/material/Container';
@@ -17,6 +18,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Popover from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -28,6 +30,8 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import GavelOutlinedIcon from '@mui/icons-material/GavelOutlined';
@@ -43,10 +47,13 @@ import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
 import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import PageHeader from '@/components/PageHeader';
-import { documentFolders, documentFiles, allDocumentItems, resolveFolderPath, buildFolderPath } from '@/data/documents';
-import type { DocumentFile, DocumentFolder, DocumentItem, DocumentCategory } from '@/data/documents';
+import { documentFiles, allDocumentItems, resolveFolderPath, buildFolderPath } from '@/data/documents';
+import type { DocumentFile, DocumentItem, DocumentCategory } from '@/data/documents';
 import { getOwnerAvatarColor, getFirstInitial } from '@/components/DocumentsList';
 import { useLanguage } from '@/i18n';
+import type { TranslationKey } from '@/i18n/translations/en';
+
+type TFn = (key: TranslationKey, params?: Record<string, string | number>) => string;
 
 // ── Constants ──
 
@@ -84,6 +91,13 @@ function getItemModified(item: DocumentItem): string {
   return item.modifiedDate;
 }
 
+/** Return the primary building for a document (first linked building, or first asset's building). */
+function primaryBuilding(f: DocumentFile): string {
+  if (f.buildings.length > 0) return f.buildings[0];
+  if (f.assets.length > 0) return f.assets[0].building;
+  return '';
+}
+
 function sortItems(list: DocumentItem[], key: SortKey): DocumentItem[] {
   const sorted = [...list];
   sorted.sort((a, b) => {
@@ -93,8 +107,8 @@ function sortItems(list: DocumentItem[], key: SortKey): DocumentItem[] {
       case 'modified_asc': return getItemModified(a).localeCompare(getItemModified(b));
       case 'name': return getItemName(a).localeCompare(getItemName(b));
       case 'building': {
-        const ab = a.type === 'file' ? a.building : '';
-        const bb = b.type === 'file' ? b.building : '';
+        const ab = a.type === 'file' ? primaryBuilding(a) : '';
+        const bb = b.type === 'file' ? primaryBuilding(b) : '';
         return ab.localeCompare(bb);
       }
       case 'category': {
@@ -169,6 +183,108 @@ function FolderIcon({ size = 36 }: { size?: number }) {
   );
 }
 
+function buildingCountLabel(n: number, t: TFn): string {
+  return n === 1 ? t('documents.oneBuilding') : t('documents.nBuildings', { n });
+}
+
+function assetCountLabel(n: number, t: TFn): string {
+  return n === 1 ? t('documents.oneAsset') : t('documents.nAssets', { n });
+}
+
+/** Cell rendering for the "gebouwen/assets" column. Single linked building/asset is clickable
+ *  directly; anything else opens a popover with the full list. */
+function LinkedCell({
+  file,
+  onBuildingClick,
+  onAssetClick,
+  onOpenPopover,
+  t,
+}: {
+  file: DocumentFile;
+  onBuildingClick: (e: React.MouseEvent, buildingName: string) => void;
+  onAssetClick: (e: React.MouseEvent, assetId: string) => void;
+  onOpenPopover: (e: React.MouseEvent<HTMLElement>, file: DocumentFile) => void;
+  t: TFn;
+}) {
+  const b = file.buildings.length;
+  const a = file.assets.length;
+
+  // Single building + no assets → direct link to building.
+  if (b === 1 && a === 0) {
+    return (
+      <Box
+        component="span"
+        onClick={(e: React.MouseEvent) => onBuildingClick(e, file.buildings[0])}
+        sx={{
+          display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.8125rem',
+          color: 'text.secondary', cursor: 'pointer', minWidth: 0,
+          '&:hover': { color: 'text.primary', '& .linked-arrow': { opacity: 1 } },
+        }}
+      >
+        <ApartmentOutlinedIcon sx={{ fontSize: 16, flexShrink: 0 }} />
+        <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+          {file.buildings[0]}
+        </Box>
+        <OpenInNewIcon className="linked-arrow" sx={{ fontSize: 13, opacity: 0, transition: 'opacity 0.15s', flexShrink: 0 }} />
+      </Box>
+    );
+  }
+
+  // Single asset + no buildings → direct link to asset.
+  if (b === 0 && a === 1) {
+    const asset = file.assets[0];
+    return (
+      <Box
+        component="span"
+        onClick={(e: React.MouseEvent) => onAssetClick(e, asset.id)}
+        sx={{
+          display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.8125rem',
+          color: 'text.secondary', cursor: 'pointer', minWidth: 0,
+          '&:hover': { color: 'text.primary', '& .linked-arrow': { opacity: 1 } },
+        }}
+      >
+        <SettingsInputAntennaIcon sx={{ fontSize: 16, flexShrink: 0 }} />
+        <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+          {asset.name}
+        </Box>
+        <OpenInNewIcon className="linked-arrow" sx={{ fontSize: 13, opacity: 0, transition: 'opacity 0.15s', flexShrink: 0 }} />
+      </Box>
+    );
+  }
+
+  if (b === 0 && a === 0) {
+    return <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>&mdash;</Typography>;
+  }
+
+  // Mixed / multiple: clickable chips per kind, opens popover.
+  return (
+    <Box
+      component="span"
+      role="button"
+      tabIndex={0}
+      onClick={(e) => onOpenPopover(e, file)}
+      sx={{
+        display: 'inline-flex', alignItems: 'center', gap: 1, fontSize: '0.8125rem',
+        color: 'text.secondary', cursor: 'pointer', minWidth: 0,
+        '&:hover': { color: 'text.primary' },
+      }}
+    >
+      {b > 0 && (
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+          <ApartmentOutlinedIcon sx={{ fontSize: 16, flexShrink: 0 }} />
+          <Box component="span" sx={{ whiteSpace: 'nowrap' }}>{buildingCountLabel(b, t)}</Box>
+        </Box>
+      )}
+      {a > 0 && (
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+          <SettingsInputAntennaIcon sx={{ fontSize: 16, flexShrink: 0 }} />
+          <Box component="span" sx={{ whiteSpace: 'nowrap' }}>{assetCountLabel(a, t)}</Box>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
 // ── Main component ──
 
 export default function OperationsDocumentsRoute({ params }: { params: Promise<{ path?: string[] }> }) {
@@ -177,7 +293,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
   const { t } = useLanguage();
-  const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
+  const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone, setSidePeekAsset, setSidePeekAssetTab } = useAppState();
 
   const SORT_OPTIONS: { value: SortKey; label: string }[] = [
     { value: 'modified_desc', label: t('documents.sortModifiedNewest') },
@@ -200,6 +316,24 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
       () => router.push(`/buildings/${buildingToSlug(buildingName)}`),
     );
   };
+
+  const handleAssetClick = (e: React.MouseEvent, assetId: string) => {
+    e.stopPropagation();
+    handleSidePeekClick(e,
+      () => { const asset = getAssetById(assetId); if (asset) { setSidePeekAsset(asset); setSidePeekAssetTab('overview'); } },
+      () => router.push(`/assets/${assetId}`),
+    );
+  };
+
+  // Popover state for the gebouwen/assets cell
+  const [linkedAnchor, setLinkedAnchor] = useState<HTMLElement | null>(null);
+  const [linkedFile, setLinkedFile] = useState<DocumentFile | null>(null);
+  const openLinkedPopover = (e: React.MouseEvent<HTMLElement>, file: DocumentFile) => {
+    e.stopPropagation();
+    setLinkedAnchor(e.currentTarget);
+    setLinkedFile(file);
+  };
+  const closeLinkedPopover = () => { setLinkedAnchor(null); setLinkedFile(null); };
 
   const { get, set, getList, setList, getNumber, setNumber } = useFilterParams();
 
@@ -235,8 +369,14 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const modifiedRange = get('modifiedRange', '');
   const [modifiedDialogOpen, setModifiedDialogOpen] = useState(false);
 
-  // Derived option lists
-  const allBuildings = useMemo(() => Array.from(new Set(documentFiles.map(d => d.building))).sort(), []);
+  // Derived option lists — include all linked buildings across docs (flattened, deduped).
+  const allBuildings = useMemo(
+    () => Array.from(new Set(documentFiles.flatMap(d => [
+      ...d.buildings,
+      ...d.assets.map(a => a.building),
+    ]))).sort(),
+    [],
+  );
   const allFileTypes = useMemo(() => Array.from(new Set(documentFiles.map(d => d.fileType))).sort(), []);
 
   // Items in current folder, filtered + searched + sorted
@@ -255,7 +395,13 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
           return true;
         }
         if (selectedCategories.length > 0 && !selectedCategories.includes(item.category)) return false;
-        if (selectedBuildings.length > 0 && !selectedBuildings.includes(item.building)) return false;
+        if (selectedBuildings.length > 0) {
+          const docBuildings = new Set<string>([
+            ...item.buildings,
+            ...item.assets.map(a => a.building),
+          ]);
+          if (!selectedBuildings.some(b => docBuildings.has(b))) return false;
+        }
         if (selectedFileTypes.length > 0 && !selectedFileTypes.includes(item.fileType)) return false;
         if (modifiedRange) {
           const { from, to } = parseDateRange(modifiedRange);
@@ -265,10 +411,13 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
         }
         if (search.trim()) {
           const q = search.trim().toLowerCase();
+          const buildingMatch = item.buildings.some(b => b.toLowerCase().includes(q));
+          const assetMatch = item.assets.some(a => a.name.toLowerCase().includes(q) || a.building.toLowerCase().includes(q));
           if (
             !item.id.toLowerCase().includes(q) &&
             !item.title.toLowerCase().includes(q) &&
-            !item.building.toLowerCase().includes(q) &&
+            !buildingMatch &&
+            !assetMatch &&
             !item.author.toLowerCase().includes(q) &&
             !item.category.toLowerCase().includes(q)
           ) return false;
@@ -302,7 +451,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
     const map = new Map<string, DocumentItem[]>();
     if (folders.length > 0) map.set('Folders', folders);
     for (const f of files) {
-      const key = groupBy === 'building' ? f.building : f.category;
+      const key = groupBy === 'building' ? (primaryBuilding(f) || '\u2014') : f.category;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(f);
     }
@@ -502,17 +651,17 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                 <Table sx={{ tableLayout: 'fixed' }}>
                   <colgroup>
                     <col style={{ width: 44 }} />
-                    <col style={{ width: '35%' }} />
-                    <col style={{ width: '18%' }} />
-                    <col style={{ width: '14%' }} />
-                    <col style={{ width: '14%' }} />
+                    <col style={{ width: '28%' }} />
+                    <col style={{ width: '28%' }} />
+                    <col style={{ width: '16%' }} />
+                    <col style={{ width: '12%' }} />
                     <col style={{ width: '8%' }} />
                     <col style={{ width: '8%' }} />
                   </colgroup>
                   <TableHead>
                     <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
                       <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, p: '8px 4px 8px 16px' }} />
-                      {[t('documents.name'), t('common.building'), t('documents.owner'), t('documents.dateModified'), t('documents.fileType'), t('documents.fileSize')].map(h => (
+                      {[t('documents.name'), t('documents.buildingsAndAssets'), t('documents.owner'), t('documents.dateModified'), t('documents.fileType'), t('documents.fileSize')].map(h => (
                         <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
                       ))}
                     </TableRow>
@@ -523,10 +672,10 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                   <Table sx={{ tableLayout: 'fixed' }}>
                     <colgroup>
                       <col style={{ width: 44 }} />
-                      <col style={{ width: '35%' }} />
-                      <col style={{ width: '18%' }} />
-                      <col style={{ width: '14%' }} />
-                      <col style={{ width: '14%' }} />
+                      <col style={{ width: '28%' }} />
+                      <col style={{ width: '28%' }} />
+                      <col style={{ width: '16%' }} />
+                      <col style={{ width: '12%' }} />
                       <col style={{ width: '8%' }} />
                       <col style={{ width: '8%' }} />
                     </colgroup>
@@ -540,7 +689,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                           <TableCell sx={{ width: 44, p: '8px 4px 8px 16px' }}>
                             {item.type === 'folder' ? <FolderIcon size={32} /> : <FileIcon category={item.category} size={32} />}
                           </TableCell>
-                          <TableCell sx={{ maxWidth: 280 }}>
+                          <TableCell sx={{ maxWidth: 320 }}>
                             <Typography variant="body2" sx={{ fontWeight: item.type === 'folder' ? 600 : 500, fontSize: '0.8125rem' }} noWrap>
                               {item.type === 'folder' ? item.name : item.title}
                             </Typography>
@@ -552,10 +701,13 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                           </TableCell>
                           <TableCell>
                             {item.type === 'file' ? (
-                              <Box component="span" onClick={(e: React.MouseEvent) => handleBuildingClick(e, item.building)} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, fontSize: '0.8125rem', color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'text.primary', '& .building-arrow': { opacity: 1 } } }}>
-                                {item.building}
-                                <OpenInNewIcon className="building-arrow" sx={{ fontSize: 13, ml: 0.25, opacity: 0, transition: 'opacity 0.15s' }} />
-                              </Box>
+                              <LinkedCell
+                                file={item}
+                                onBuildingClick={handleBuildingClick}
+                                onAssetClick={handleAssetClick}
+                                onOpenPopover={openLinkedPopover}
+                                t={t}
+                              />
                             ) : (
                               <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>&mdash;</Typography>
                             )}
@@ -624,6 +776,98 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
           )}
         </Box>
       </Box>
+
+      {/* ── Linked buildings / assets popover ── */}
+      <Popover
+        open={Boolean(linkedAnchor && linkedFile)}
+        anchorEl={linkedAnchor}
+        onClose={closeLinkedPopover}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 0.5, minWidth: 280, maxWidth: 360, maxHeight: 420,
+              border: `1px solid ${c.cardBorder}`, borderRadius: '10px',
+              boxShadow: c.cardShadow, overflow: 'auto',
+            },
+          },
+        }}
+      >
+        {linkedFile && (
+          <Box sx={{ py: 1 }}>
+            {linkedFile.buildings.length > 0 && (
+              <>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block', px: 1.5, py: 0.5,
+                    fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+                    color: 'text.disabled',
+                  }}
+                >
+                  {t('documents.linkedBuildings')} ({linkedFile.buildings.length})
+                </Typography>
+                {linkedFile.buildings.map((name) => (
+                  <Box
+                    key={`b-${name}`}
+                    onClick={(e: React.MouseEvent) => { handleBuildingClick(e, name); closeLinkedPopover(); }}
+                    sx={{
+                      display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75,
+                      cursor: 'pointer', '&:hover': { bgcolor: c.bgPrimaryHover },
+                    }}
+                  >
+                    <ApartmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', flex: 1, minWidth: 0 }} noWrap>
+                      {name}
+                    </Typography>
+                    <OpenInNewIcon sx={{ fontSize: 13, color: 'text.disabled' }} />
+                  </Box>
+                ))}
+              </>
+            )}
+
+            {linkedFile.assets.length > 0 && (
+              <>
+                {linkedFile.buildings.length > 0 && <Box sx={{ borderTop: `1px solid ${c.cardBorder}`, my: 0.5 }} />}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block', px: 1.5, py: 0.5,
+                    fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+                    color: 'text.disabled',
+                  }}
+                >
+                  {t('documents.linkedAssets')} ({linkedFile.assets.length})
+                </Typography>
+                {linkedFile.assets.map((a) => (
+                  <Box
+                    key={`a-${a.id}`}
+                    onClick={(e: React.MouseEvent) => { handleAssetClick(e, a.id); closeLinkedPopover(); }}
+                    sx={{
+                      display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75,
+                      cursor: 'pointer', '&:hover': { bgcolor: c.bgPrimaryHover },
+                    }}
+                  >
+                    <SettingsInputAntennaIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem' }} noWrap>{a.name}</Typography>
+                      <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }} noWrap>{a.building}</Typography>
+                    </Box>
+                    <OpenInNewIcon sx={{ fontSize: 13, color: 'text.disabled' }} />
+                  </Box>
+                ))}
+              </>
+            )}
+
+            {linkedFile.buildings.length === 0 && linkedFile.assets.length === 0 && (
+              <Typography variant="body2" sx={{ px: 1.5, py: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
+                {t('documents.noLinkedItems')}
+              </Typography>
+            )}
+          </Box>
+        )}
+      </Popover>
     </Container>
   );
 }

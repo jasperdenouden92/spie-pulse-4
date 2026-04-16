@@ -115,7 +115,7 @@ export default function DocumentsList({ documents, hideBuildingColumn, showFilte
         d.title.toLowerCase().includes(q) ||
         d.author.toLowerCase().includes(q) ||
         d.category.toLowerCase().includes(q) ||
-        (!hideBuildingColumn && d.building.toLowerCase().includes(q))
+        (!hideBuildingColumn && d.buildings.some(b => b.toLowerCase().includes(q)))
       );
     }
     // Sort by modified date, newest first
@@ -247,7 +247,7 @@ export default function DocumentsList({ documents, hideBuildingColumn, showFilte
                   {!hideBuildingColumn && (
                     <TableCell>
                       <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }} noWrap>
-                        {doc.building}
+                        {doc.buildings.join(', ')}
                       </Typography>
                     </TableCell>
                   )}

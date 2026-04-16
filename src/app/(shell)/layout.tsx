@@ -45,11 +45,11 @@ import SidePeekPanel, { handleSidePeekClick } from '@/components/SidePeekPanel';
 import BuildingTemplate from '@/templates/building';
 import ZoneTemplate from '@/templates/zone';
 import AssetTemplate from '@/templates/asset';
+import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import TicketTemplate from '@/templates/ticket';
 import QuotationTemplate from '@/templates/quotation';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
-import DocumentsList from '@/components/DocumentsList';
 import ChangelogButton from '@/components/ChangelogButton';
 import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
@@ -63,7 +63,6 @@ import { zones as allZones } from '@/data/zones';
 import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
 import { tickets as allTickets } from '@/data/tickets';
 import { quotations as allQuotations } from '@/data/quotations';
-import { documentFiles } from '@/data/documents';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
 
@@ -910,11 +909,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }} />
             )}
             {sidePeekBuildingTab === 'documents' && (
-              <DocumentsList
-                documents={documentFiles.filter(d => d.building === sidePeekBuilding.name)}
-                hideBuildingColumn
-                showFilters
-              />
+              <LinkedDocumentsList buildingName={sidePeekBuilding.name} />
             )}
           </Box>
         )}
@@ -989,11 +984,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
                 }}
               />
               {sidePeekAssetTab === 'documents' && (
-                <DocumentsList
-                  documents={documentFiles.filter(d => d.building === (peekBuilding?.name ?? ''))}
-                  hideBuildingColumn
-                  showFilters
-                />
+                <LinkedDocumentsList assetId={sidePeekAsset.id} />
               )}
             </Box>
           );

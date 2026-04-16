@@ -1,18 +1,17 @@
 'use client';
 
-import { use, useEffect, useMemo } from 'react';
+import { use, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useRouter } from 'next/navigation';
 import AssetTemplate from '@/templates/asset';
 import type { AssetDetailTab } from '@/templates/asset';
-import DocumentsList from '@/components/DocumentsList';
+import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { buildingToSlug } from '@/utils/slugs';
 import { zones as allZones } from '@/data/zones';
 import { getAssetById, getPathToAsset } from '@/data/assetTree';
-import { documentFiles } from '@/data/documents';
 
 const DEFAULT_TAB: AssetDetailTab = 'overview';
 
@@ -46,11 +45,6 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
     ? (allZones.find(z => z.buildingName === buildingNode.name && z.name === zoneNode.name) ?? null)
     : null;
 
-  const assetDocuments = useMemo(
-    () => documentFiles.filter(d => d.building === (buildingNode?.name ?? '')),
-    [buildingNode]
-  );
-
   return (
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, pt: 0, px: isNarrow ? 0.5 : 3 }}>
       <AssetTemplate
@@ -70,11 +64,7 @@ export default function AssetDetailRoute({ params }: { params: Promise<{ id: str
         onAssetChange={(aid) => router.push(`/assets/${aid}`)}
       />
       {currentTab === 'documents' && (
-        <DocumentsList
-          documents={assetDocuments}
-          hideBuildingColumn
-          showFilters
-        />
+        <LinkedDocumentsList assetId={asset.id} />
       )}
     </Container>
   );

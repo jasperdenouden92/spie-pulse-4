@@ -1,4 +1,5 @@
 import { randomFromArray, randomDate, padNumber, randomInt, STAFF_POOL, BUILDING_POOL } from './generators';
+import { assetTree, type AssetNode } from './assetTree';
 
 export type DocumentCategory = 'Contract' | 'Report' | 'Manual' | 'Certificate' | 'Drawing' | 'Specification' | 'Invoice' | 'Permit';
 
@@ -12,11 +13,21 @@ export interface DocumentFolder {
   itemCount: number;
 }
 
+/** Reference to an asset linked to a document — id, display name, and the building it belongs to. */
+export interface DocumentAssetRef {
+  id: string;
+  name: string;
+  building: string;
+}
+
 export interface DocumentFile {
   id: string;
   type: 'file';
   title: string;
-  building: string;
+  /** List of building names this document relates to (can be empty if only asset-scoped). */
+  buildings: string[];
+  /** List of asset references this document relates to. */
+  assets: DocumentAssetRef[];
   category: DocumentCategory;
   author: string;
   createdDate: string;
@@ -185,10 +196,96 @@ const CATEGORY_FOLDER_MAP: Record<DocumentCategory, string[]> = {
   Permit: ['folder-permits'],
 };
 
+/** Collect flat list of asset nodes per building from the asset tree. */
+function collectAssetsByBuilding(): Map<string, DocumentAssetRef[]> {
+  const byBuilding = new Map<string, DocumentAssetRef[]>();
+  const buildingsNode = assetTree.find(n => n.id === 'dt-buildings');
+  if (!buildingsNode?.children) return byBuilding;
+
+  const traverse = (node: AssetNode, building: string) => {
+    const nextBuilding = node.type === 'building' ? node.name : building;
+    if (node.type === 'asset') {
+      if (!byBuilding.has(nextBuilding)) byBuilding.set(nextBuilding, []);
+      byBuilding.get(nextBuilding)!.push({ id: node.id, name: node.name, building: nextBuilding });
+    }
+    if (node.children) node.children.forEach(c => traverse(c, nextBuilding));
+  };
+
+  buildingsNode.children.forEach(b => traverse(b, ''));
+  return byBuilding;
+}
+
+/** Pick N distinct items from an array (using seeded generator). */
+function pickDistinct<T>(arr: T[], n: number): T[] {
+  if (n >= arr.length) return [...arr];
+  const pool = [...arr];
+  const result: T[] = [];
+  for (let i = 0; i < n; i++) {
+    const idx = randomInt(0, pool.length - 1);
+    result.push(pool[idx]);
+    pool.splice(idx, 1);
+  }
+  return result;
+}
+
+/**
+ * Decide how a document should be linked to buildings/assets based on its category.
+ * Returns the number of buildings and assets to attach.
+ */
+function pickLinkageCounts(category: DocumentCategory): { buildingCount: number; assetCount: number } {
+  // Roll a 1..100 bucket
+  const roll = randomInt(1, 100);
+
+  // Category-driven profiles — some categories lean wider (reports, manuals),
+  // others lean narrower (certificates, permits, invoices).
+  switch (category) {
+    case 'Report':
+      if (roll <= 40) return { buildingCount: 1, assetCount: 0 };
+      if (roll <= 60) return { buildingCount: randomInt(2, 5), assetCount: 0 };
+      if (roll <= 80) return { buildingCount: randomInt(3, 8), assetCount: randomInt(0, 3) };
+      if (roll <= 92) return { buildingCount: randomInt(10, 15), assetCount: 0 };
+      return { buildingCount: randomInt(1, 2), assetCount: randomInt(2, 6) };
+    case 'Manual':
+      if (roll <= 30) return { buildingCount: 0, assetCount: randomInt(1, 3) };
+      if (roll <= 55) return { buildingCount: 1, assetCount: randomInt(1, 2) };
+      if (roll <= 80) return { buildingCount: randomInt(2, 6), assetCount: randomInt(0, 2) };
+      return { buildingCount: randomInt(8, 15), assetCount: 0 };
+    case 'Drawing':
+      if (roll <= 55) return { buildingCount: 1, assetCount: 0 };
+      if (roll <= 80) return { buildingCount: 1, assetCount: randomInt(1, 4) };
+      if (roll <= 95) return { buildingCount: 0, assetCount: randomInt(1, 3) };
+      return { buildingCount: randomInt(2, 4), assetCount: randomInt(0, 2) };
+    case 'Specification':
+      if (roll <= 40) return { buildingCount: 0, assetCount: randomInt(1, 3) };
+      if (roll <= 65) return { buildingCount: 1, assetCount: randomInt(0, 2) };
+      if (roll <= 90) return { buildingCount: randomInt(2, 5), assetCount: randomInt(1, 3) };
+      return { buildingCount: randomInt(6, 12), assetCount: randomInt(0, 2) };
+    case 'Contract':
+      if (roll <= 60) return { buildingCount: 1, assetCount: 0 };
+      if (roll <= 85) return { buildingCount: randomInt(2, 4), assetCount: 0 };
+      return { buildingCount: randomInt(5, 12), assetCount: 0 };
+    case 'Invoice':
+      if (roll <= 70) return { buildingCount: 1, assetCount: 0 };
+      if (roll <= 90) return { buildingCount: 1, assetCount: randomInt(1, 2) };
+      return { buildingCount: randomInt(2, 4), assetCount: 0 };
+    case 'Certificate':
+      if (roll <= 70) return { buildingCount: 1, assetCount: 0 };
+      if (roll <= 90) return { buildingCount: 1, assetCount: randomInt(1, 2) };
+      return { buildingCount: randomInt(2, 5), assetCount: 0 };
+    case 'Permit':
+      if (roll <= 75) return { buildingCount: 1, assetCount: 0 };
+      if (roll <= 95) return { buildingCount: 1, assetCount: randomInt(1, 3) };
+      return { buildingCount: randomInt(2, 3), assetCount: 0 };
+  }
+}
+
 function generateDocuments(): { folders: DocumentFolder[]; files: DocumentFile[]; allItems: DocumentItem[] } {
   const startDate = new Date('2023-01-01');
   const endDate = new Date('2024-01-23');
   const modifiedEnd = new Date('2024-01-23');
+
+  const assetsByBuilding = collectAssetsByBuilding();
+  const buildingsWithAssets = Array.from(assetsByBuilding.keys());
 
   // Create folder objects
   const folders: DocumentFolder[] = [];
@@ -234,11 +331,32 @@ function generateDocuments(): { folders: DocumentFolder[]; files: DocumentFile[]
     const majorVersion = randomInt(1, 5);
     const minorVersion = randomInt(0, 9);
 
+    // Pick buildings + assets per category profile
+    const { buildingCount, assetCount } = pickLinkageCounts(category);
+    const buildings = pickDistinct(BUILDING_POOL, buildingCount);
+
+    // Assets must belong to one of the linked buildings — or, if no buildings were
+    // picked, source them from any building (makes sense for purely asset-scoped docs).
+    const assetSourceBuildings = buildings.length > 0
+      ? buildings.filter(b => assetsByBuilding.has(b))
+      : buildingsWithAssets;
+
+    const assetPool: DocumentAssetRef[] = assetSourceBuildings.flatMap(b => assetsByBuilding.get(b) ?? []);
+    const assets = assetCount > 0 && assetPool.length > 0
+      ? pickDistinct(assetPool, Math.min(assetCount, assetPool.length))
+      : [];
+
+    // Guarantee every document is linked to at least one building or asset
+    const safeBuildings = buildings.length === 0 && assets.length === 0
+      ? [randomFromArray(BUILDING_POOL)]
+      : buildings;
+
     files.push({
       id: `DOC-2024-${padNumber(i, 3)}`,
       type: 'file',
       title: generateTitle(category),
-      building: randomFromArray(BUILDING_POOL),
+      buildings: safeBuildings,
+      assets,
       category,
       author: randomFromArray(STAFF_POOL),
       createdDate,
