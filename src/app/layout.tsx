@@ -6,6 +6,7 @@ import { ThemeRegistry } from '@/theme-registry';
 import { Annotations } from "@/annotations/provider";
 import { AppStateProvider } from '@/context/AppStateContext';
 import { LanguageProvider } from '@/i18n';
+import DevToolsToggle from '@/components/DevToolsToggle';
 
 const inter = Inter({ subsets: ["latin"] });
 const jost = Jost({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: '--font-jost' });
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LanguageProvider>
             <Annotations>
               <AppStateProvider>
+                <DevToolsToggle />
                 <Suspense fallback={null}>
                   {children}
                 </Suspense>
