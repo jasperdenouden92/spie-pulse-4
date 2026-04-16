@@ -417,10 +417,10 @@ export default function PropertyCard(props: PropertyCardProps) {
           {/* Score badge (floating on image) */}
           {hasTopics && (
             <Box sx={{
-              position: 'absolute', bottom: -14, right: 12,
+              position: 'absolute', bottom: -20, right: 0,
               display: 'flex', alignItems: 'center', gap: 0.5,
-              bgcolor: c.bgPrimary, borderRadius: '10px',
-              px: 1.5, py: 0.5, border: `2px solid ${c.bgPrimary}`,
+              bgcolor: c.bgPrimary, borderRadius: '32px 0 0 10px',
+              p: 1.5, borderTop: `2px solid ${c.bgPrimary}`, borderLeft: `2px solid ${c.bgPrimary}`, borderBottom: `2px solid ${c.bgPrimary}`,
               color: getScoreColor(performance.green, c),
             }}>
               <ScoreBadge performance={performance} metricIcon={metricIcon} trend={trend} periodLabel={periodLabel} overallPerformance={overallPerformance} />
