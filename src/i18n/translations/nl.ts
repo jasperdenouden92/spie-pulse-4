@@ -199,6 +199,8 @@ const nl: Record<TranslationKey, string> = {
   'assets.searchModels': 'Zoek modellen\u2026',
   'assets.searchZones': 'Zoek zones\u2026',
   'assets.searchBuildings': 'Zoek gebouwen\u2026',
+  'assets.expandAll': 'Alles uitklappen',
+  'assets.collapseAll': 'Alles inklappen',
 
   // Zones list
   'zones.zone': 'Zone',

@@ -44,8 +44,7 @@ Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 | `/control-room` | Main dashboard with KPI metrics |
 | `/portfolio/buildings` | Buildings list |
 | `/portfolio/clusters` | Clusters view |
-| `/portfolio/zones` | Zones list |
-| `/portfolio/assets` | Assets list |
+| `/portfolio/assets` | Assets list (supports `groupBy=zone` tree view) |
 | `/portfolio/equipment-types` | Equipment types |
 | `/buildings/[slug]` | Building detail (dynamic, numeric ID e.g. `b-001`) |
 | `/zones/[id]` | Zone detail (dynamic, e.g. `z-0001`) |
@@ -107,7 +106,7 @@ src/
 │   │   ├── page.tsx      # / → redirects to /control-room
 │   │   ├── control-room/ # Main KPI dashboard
 │   │   ├── home/         # Home page
-│   │   ├── portfolio/    # buildings/, clusters/, zones/, assets/, equipment-types/
+│   │   ├── portfolio/    # buildings/, clusters/, assets/, equipment-types/
 │   │   ├── buildings/[slug]/  # Building detail (dynamic route)
 │   │   ├── zones/[id]/        # Zone detail (dynamic route)
 │   │   ├── assets/[id]/       # Asset detail (dynamic route)

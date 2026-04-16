@@ -705,8 +705,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             {!isCollapsed && portfolioExpanded && (
               <>
                 <NavItem label={t('nav.buildings')} active={pathname === '/portfolio/buildings' || pathname.startsWith('/buildings/')} onClick={() => router.push('/portfolio/buildings')} />
-                <NavItem label={t('nav.zones')} active={pathname === '/portfolio/zones' || pathname.startsWith('/zones/')} onClick={() => router.push('/portfolio/zones')} />
-                <NavItem label={t('nav.assets')} active={pathname === '/portfolio/assets' || pathname.startsWith('/assets/')} onClick={() => router.push('/portfolio/assets')} />
+                <NavItem label={t('nav.assets')} active={pathname === '/portfolio/assets' || pathname.startsWith('/assets/') || pathname.startsWith('/zones/')} onClick={() => router.push('/portfolio/assets')} />
               </>
             )}
             <NavItem

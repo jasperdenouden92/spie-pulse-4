@@ -270,19 +270,6 @@ function TopBar({
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.buildings')}</Typography>
               </>
             )}
-            {pathname === '/portfolio/zones' && (
-              <>
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', fontFamily: '"Inter", sans-serif', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => router.push('/portfolio/buildings')}
-                >
-                  {t('nav.portfolio')}
-                </Typography>
-                <KeyboardArrowRightIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.primary', fontFamily: '"Inter", sans-serif' }}>{t('nav.zones')}</Typography>
-              </>
-            )}
             {pathname === '/portfolio/assets' && (
               <>
                 <Typography
