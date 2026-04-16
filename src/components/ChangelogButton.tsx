@@ -194,6 +194,7 @@ export default function ChangelogButton() {
       {/* Floating button — follows AnnotationButton position */}
       <Box
         component="button"
+        data-changelog-button=""
         onClick={() => { if (!dragRef.current.didDrag) setOpen(true); }}
         onMouseDown={handleMouseDown}
         sx={{

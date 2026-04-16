@@ -40,3 +40,14 @@ button[data-annotation-inspector] {
     top: 72px !important;
   }
 }
+
+/*
+ * Dev/feedback floating buttons (annotations toggle, inspector toggle,
+ * changelog) are hidden by default so they don't distract during user
+ * testing. Press Shift+A to toggle visibility — see DevToolsToggle.tsx.
+ */
+html:not([data-dev-tools="visible"]) [data-annotation-button],
+html:not([data-dev-tools="visible"]) [data-annotation-inspector],
+html:not([data-dev-tools="visible"]) [data-changelog-button] {
+  display: none !important;
+}
