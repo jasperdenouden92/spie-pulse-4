@@ -81,7 +81,7 @@ const CATEGORY_COLORS: Record<DocumentCategory, string> = {
   Permit: '#37474f',
 };
 
-type SortKey = 'modified_desc' | 'modified_asc' | 'name' | 'building' | 'category' | 'type';
+type SortKey = 'modified_desc' | 'modified_asc' | 'name' | 'category' | 'type';
 
 function getItemName(item: DocumentItem): string {
   return item.type === 'folder' ? item.name : item.title;
@@ -89,13 +89,6 @@ function getItemName(item: DocumentItem): string {
 
 function getItemModified(item: DocumentItem): string {
   return item.modifiedDate;
-}
-
-/** Return the primary building for a document (first linked building, or first asset's building). */
-function primaryBuilding(f: DocumentFile): string {
-  if (f.buildings.length > 0) return f.buildings[0];
-  if (f.assets.length > 0) return f.assets[0].building;
-  return '';
 }
 
 function sortItems(list: DocumentItem[], key: SortKey): DocumentItem[] {
@@ -106,11 +99,6 @@ function sortItems(list: DocumentItem[], key: SortKey): DocumentItem[] {
       case 'modified_desc': return getItemModified(b).localeCompare(getItemModified(a));
       case 'modified_asc': return getItemModified(a).localeCompare(getItemModified(b));
       case 'name': return getItemName(a).localeCompare(getItemName(b));
-      case 'building': {
-        const ab = a.type === 'file' ? primaryBuilding(a) : '';
-        const bb = b.type === 'file' ? primaryBuilding(b) : '';
-        return ab.localeCompare(bb);
-      }
       case 'category': {
         const ac = a.type === 'file' ? a.category : '';
         const bc = b.type === 'file' ? b.category : '';
@@ -146,7 +134,29 @@ function timeAgo(dateStr: string): string {
 
 const DEFAULT_DATE_RANGE = `2023-01-01|${new Date().toISOString().split('T')[0]}`;
 
-type GroupByKey = 'none' | 'building' | 'category';
+type GroupByKey = 'none' | 'category' | 'type' | 'modified';
+
+/** Bucket label + sortable representative date for the "modified" grouping.
+ *  Within the last 12 months → month bucket ("April 2026"); older → year bucket ("2024"). */
+function modifiedBucket(dateStr: string, now: Date, locale: string): { key: string; label: string; sortDate: number } {
+  const d = new Date(dateStr);
+  const monthsDiff = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+  if (monthsDiff < 12) {
+    const localeTag = locale === 'nl' ? 'nl-NL' : 'en-US';
+    const raw = d.toLocaleDateString(localeTag, { month: 'long', year: 'numeric' });
+    const label = raw.charAt(0).toUpperCase() + raw.slice(1);
+    return {
+      key: `m-${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}`,
+      label,
+      sortDate: new Date(d.getFullYear(), d.getMonth(), 1).getTime(),
+    };
+  }
+  return {
+    key: `y-${d.getFullYear()}`,
+    label: String(d.getFullYear()),
+    sortDate: new Date(d.getFullYear(), 0, 1).getTime(),
+  };
+}
 
 const recentlyChanged = [...documentFiles]
   .sort((a, b) => b.modifiedDate.localeCompare(a.modifiedDate))
@@ -292,21 +302,21 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const router = useRouter();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { themeColors: c } = useThemeMode();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone, setSidePeekAsset, setSidePeekAssetTab } = useAppState();
 
   const SORT_OPTIONS: { value: SortKey; label: string }[] = [
     { value: 'modified_desc', label: t('documents.sortModifiedNewest') },
     { value: 'modified_asc', label: t('documents.sortModifiedOldest') },
     { value: 'name', label: t('documents.sortNameAZ') },
-    { value: 'building', label: t('documents.sortBuildingAZ') },
     { value: 'category', label: t('documents.sortCategory') },
     { value: 'type', label: t('documents.sortFileType') },
   ];
   const GROUP_BY_OPTIONS: { value: GroupByKey; label: string }[] = [
     { value: 'none', label: t('common.noGrouping') },
-    { value: 'building', label: t('common.building') },
     { value: 'category', label: t('common.category') },
+    { value: 'type', label: t('common.type') },
+    { value: 'modified', label: t('common.modified') },
   ];
 
   const handleBuildingClick = (e: React.MouseEvent, buildingName: string) => {
@@ -448,21 +458,29 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
     if (groupBy === 'none') return [{ key: '__all__', label: '', items: paginatedItems }];
     const folders = paginatedItems.filter(i => i.type === 'folder');
     const files = paginatedItems.filter(i => i.type === 'file') as DocumentFile[];
-    const map = new Map<string, DocumentItem[]>();
-    if (folders.length > 0) map.set('Folders', folders);
+    const now = new Date('2024-01-24');
+    type Bucket = { key: string; label: string; items: DocumentItem[]; sortDate?: number };
+    const buckets = new Map<string, Bucket>();
+    if (folders.length > 0) buckets.set('__folders__', { key: '__folders__', label: t('documents.folders'), items: folders });
     for (const f of files) {
-      const key = groupBy === 'building' ? (primaryBuilding(f) || '\u2014') : f.category;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(f);
+      let key: string;
+      let label: string;
+      let sortDate: number | undefined;
+      if (groupBy === 'category') { key = f.category; label = f.category; }
+      else if (groupBy === 'type') { key = f.fileType; label = f.fileType; }
+      else { const b = modifiedBucket(f.modifiedDate, now, locale); key = b.key; label = b.label; sortDate = b.sortDate; }
+      const existing = buckets.get(key);
+      if (existing) existing.items.push(f);
+      else buckets.set(key, { key, label, items: [f], sortDate });
     }
-    return Array.from(map.entries())
+    return Array.from(buckets.values())
       .sort((a, b) => {
-        if (a[0] === 'Folders') return -1;
-        if (b[0] === 'Folders') return 1;
-        return a[0].localeCompare(b[0]);
-      })
-      .map(([key, items]) => ({ key, label: key, items }));
-  }, [paginatedItems, groupBy]);
+        if (a.key === '__folders__') return -1;
+        if (b.key === '__folders__') return 1;
+        if (groupBy === 'modified') return (b.sortDate ?? 0) - (a.sortDate ?? 0);
+        return a.label.localeCompare(b.label);
+      });
+  }, [paginatedItems, groupBy, locale, t]);
 
   // Chip value labels
   const categoryChipValue = selectedCategories.length === 0 ? null
