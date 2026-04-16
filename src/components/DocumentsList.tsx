@@ -12,6 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import InputBase from '@mui/material/InputBase';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
+import Avatar from '@mui/material/Avatar';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
@@ -70,6 +71,18 @@ function FileIcon({ category, size = 32 }: { category: DocumentCategory; size?: 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+const OWNER_AVATAR_COLORS = ['#c084fc', '#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#2dd4bf'];
+
+export function getOwnerAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return OWNER_AVATAR_COLORS[Math.abs(hash) % OWNER_AVATAR_COLORS.length];
+}
+
+export function getFirstInitial(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || '?';
 }
 
 export interface DocumentsListProps {
@@ -239,9 +252,16 @@ export default function DocumentsList({ documents, hideBuildingColumn, showFilte
                     </TableCell>
                   )}
                   <TableCell>
-                    <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }} noWrap>
-                      {doc.author}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                      <Avatar
+                        sx={{ width: 24, height: 24, bgcolor: getOwnerAvatarColor(doc.author), fontSize: '0.65rem', fontWeight: 600, flexShrink: 0 }}
+                      >
+                        {getFirstInitial(doc.author)}
+                      </Avatar>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', minWidth: 0 }} noWrap>
+                        {doc.author}
+                      </Typography>
+                    </Box>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap', color: 'text.secondary' }}>
