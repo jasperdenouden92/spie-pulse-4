@@ -246,7 +246,7 @@ const nl: Record<TranslationKey, string> = {
   'documents.title': 'Documenten',
   'documents.searchDocuments': 'Zoek documenten\u2026',
   'documents.noDocuments': 'Geen documenten gevonden.',
-  'documents.fileType': 'Bestandstype',
+  'documents.fileType': 'Type',
   'documents.modifiedDate': 'Wijzigingsdatum',
   'documents.searchFileTypes': 'Zoek bestandstypen\u2026',
   'documents.searchCategories': 'Zoek categorie\u00ebn\u2026',
@@ -262,7 +262,7 @@ const nl: Record<TranslationKey, string> = {
   'documents.name': 'Naam',
   'documents.owner': 'Eigenaar',
   'documents.dateModified': 'Wijzigingsdatum',
-  'documents.fileSize': 'Bestandsgrootte',
+  'documents.fileSize': 'Grootte',
 
   // Insights
   'insights.title': 'Inzichten',
@@ -292,6 +292,7 @@ const nl: Record<TranslationKey, string> = {
   'building.assets': 'Assets',
   'building.tickets': 'Tickets',
   'building.quotations': 'Offertes',
+  'building.documents': 'Documenten',
 
   // Zone template
   'zone.searchZones': 'Zoek zones\u2026',

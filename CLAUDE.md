@@ -137,6 +137,7 @@ src/
 │   ├── SidePeekPanel.tsx # Slide-in detail preview panel
 │   ├── ZonesList.tsx     # Reusable zones table (used by portfolio, building detail, side peek)
 │   ├── AssetsList.tsx    # Reusable assets table (used by portfolio, building detail, side peek)
+│   ├── DocumentsList.tsx # Reusable documents table (used by building/asset detail documents tab, side peek)
 │   ├── FilterChip.tsx    # Filter chip UI component
 │   ├── FilterDropdown.tsx # Filter dropdown popover
 │   └── ...               # Cards, lists, modals, etc.

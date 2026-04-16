@@ -34,7 +34,7 @@ import PageHeader from '@/components/PageHeader';
 import { useThemeMode } from '@/theme-mode-context';
 import { useLanguage } from '@/i18n';
 
-export type AssetDetailTab = 'overview' | 'tickets' | 'quotations';
+export type AssetDetailTab = 'overview' | 'tickets' | 'quotations' | 'documents';
 
 function useAssetTabs() {
   const { t } = useLanguage();
@@ -42,6 +42,7 @@ function useAssetTabs() {
     { value: 'overview' as AssetDetailTab, label: t('common.overview') },
     { value: 'tickets' as AssetDetailTab, label: t('building.tickets') },
     { value: 'quotations' as AssetDetailTab, label: t('building.quotations') },
+    { value: 'documents' as AssetDetailTab, label: t('building.documents') },
   ];
 }
 

@@ -244,7 +244,7 @@ const en = {
   'documents.title': 'Documents',
   'documents.searchDocuments': 'Search documents\u2026',
   'documents.noDocuments': 'No documents match your filters.',
-  'documents.fileType': 'File type',
+  'documents.fileType': 'Type',
   'documents.modifiedDate': 'Modified date',
   'documents.searchFileTypes': 'Search file types\u2026',
   'documents.searchCategories': 'Search categories...',
@@ -260,7 +260,7 @@ const en = {
   'documents.name': 'Name',
   'documents.owner': 'Owner',
   'documents.dateModified': 'Date modified',
-  'documents.fileSize': 'File size',
+  'documents.fileSize': 'Size',
 
   // Insights
   'insights.title': 'Insights',
@@ -290,6 +290,7 @@ const en = {
   'building.assets': 'Assets',
   'building.tickets': 'Tickets',
   'building.quotations': 'Quotations',
+  'building.documents': 'Documents',
 
   // Zone template
   'zone.searchZones': 'Search zones\u2026',
