@@ -197,6 +197,8 @@ const en = {
   'assets.searchModels': 'Search models\u2026',
   'assets.searchZones': 'Search zones\u2026',
   'assets.searchBuildings': 'Search buildings\u2026',
+  'assets.expandAll': 'Expand all',
+  'assets.collapseAll': 'Collapse all',
 
   // Zones list
   'zones.zone': 'Zone',

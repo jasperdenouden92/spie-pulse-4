@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       { source: '/', has: [{ type: 'query', key: 'page', value: 'home' }], destination: '/home', permanent: true },
       { source: '/', has: [{ type: 'query', key: 'page', value: 'portfolio' }], destination: '/control-room', permanent: true },
       { source: '/', has: [{ type: 'query', key: 'page', value: 'portfolio_buildings' }], destination: '/portfolio/buildings', permanent: true },
-      { source: '/', has: [{ type: 'query', key: 'page', value: 'portfolio_zones' }], destination: '/portfolio/zones', permanent: true },
+      { source: '/', has: [{ type: 'query', key: 'page', value: 'portfolio_zones' }], destination: '/portfolio/assets?groupBy=zone', permanent: true },
       { source: '/', has: [{ type: 'query', key: 'page', value: 'portfolio_assets' }], destination: '/portfolio/assets', permanent: true },
       { source: '/', has: [{ type: 'query', key: 'page', value: 'insights' }], destination: '/insights/alerts', permanent: true },
       { source: '/', has: [{ type: 'query', key: 'page', value: 'insights_alerts' }], destination: '/insights/alerts', permanent: true },

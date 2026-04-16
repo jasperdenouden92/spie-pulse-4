@@ -110,6 +110,7 @@ export default function PortfolioAssetsRoute() {
   const [groupByMenuAnchor, setGroupByMenuAnchor] = useState<null | HTMLElement>(null);
   const GROUP_BY_OPTIONS = [
     { value: 'none', label: t('common.noGrouping') },
+    { value: 'zone', label: t('assets.zone') },
     { value: 'building', label: t('common.building') },
     { value: 'category', label: t('common.category') },
     { value: 'status', label: t('common.status') },

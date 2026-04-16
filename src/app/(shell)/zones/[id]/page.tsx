@@ -43,7 +43,7 @@ export default function ZoneDetailRoute({ params }: { params: Promise<{ id: stri
         onTabChange={(t) => setTab(t)}
         isCollapsed={leftSidebarCollapsed}
         onToggleCollapse={() => setLeftSidebarCollapsed(c => !c)}
-        onBackToPortfolio={() => router.push('/portfolio/zones')}
+        onBackToPortfolio={() => router.push('/portfolio/assets?groupBy=zone')}
         onBackToBuilding={() => router.push(`/buildings/${buildingToSlug(zone.buildingName)}`)}
         onZoneChange={(zid) => router.push(`/zones/${zid}`)}
       />

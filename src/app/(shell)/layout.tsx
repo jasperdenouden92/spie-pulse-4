@@ -412,7 +412,6 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     if (pathname === '/themes') return 'Themes';
     if (pathname === '/exports') return 'Exports';
     if (pathname === '/portfolio/buildings') return 'Portfolio';
-    if (pathname === '/portfolio/zones') return 'Zones';
     if (pathname === '/portfolio/assets') return 'Assets';
     if (pathname.startsWith('/buildings/')) return selectedBuilding?.name ?? 'Building';
     if (pathname.startsWith('/zones/')) return 'Zone';

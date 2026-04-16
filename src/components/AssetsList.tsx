@@ -22,6 +22,13 @@ import Divider from '@mui/material/Divider';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import Button from '@/components/Button';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
@@ -143,7 +150,101 @@ function getSortValue(asset: EnrichedAsset, key: SortKey): string {
 }
 
 // ── Types ──
-type GroupBy = 'none' | 'building' | 'category' | 'status';
+type GroupBy = 'none' | 'building' | 'category' | 'status' | 'zone';
+
+// ── Zone-tree structures ──
+type GroupLevel = 'building' | 'floor' | 'zone';
+
+interface AssetTreeGroup {
+  key: string;
+  label: string;
+  level: GroupLevel;
+  assets: EnrichedAsset[];       // direct assets at this node
+  children: AssetTreeGroup[];
+  totalAssets: number;           // recursive sum (own + descendants)
+}
+
+function buildAssetTree(assets: EnrichedAsset[]): AssetTreeGroup[] {
+  type FloorBucket = { assets: EnrichedAsset[]; zones: Map<string, EnrichedAsset[]> };
+  type BuildingBucket = { assets: EnrichedAsset[]; floors: Map<string, FloorBucket> };
+  const byBuilding = new Map<string, BuildingBucket>();
+
+  for (const a of assets) {
+    const bName = a.building || '—';
+    let bEntry = byBuilding.get(bName);
+    if (!bEntry) { bEntry = { assets: [], floors: new Map() }; byBuilding.set(bName, bEntry); }
+
+    const fName = a.metadata?.floor || null;
+    if (!fName) { bEntry.assets.push(a); continue; }
+
+    let fEntry = bEntry.floors.get(fName);
+    if (!fEntry) { fEntry = { assets: [], zones: new Map() }; bEntry.floors.set(fName, fEntry); }
+
+    const zName = a.metadata?.zone || null;
+    if (!zName) { fEntry.assets.push(a); continue; }
+
+    let zAssets = fEntry.zones.get(zName);
+    if (!zAssets) { zAssets = []; fEntry.zones.set(zName, zAssets); }
+    zAssets.push(a);
+  }
+
+  const floorNum = (label: string) => {
+    const m = label.match(/\d+/);
+    return m ? parseInt(m[0], 10) : 0;
+  };
+
+  const result: AssetTreeGroup[] = [];
+  for (const [bName, bEntry] of byBuilding) {
+    const floorGroups: AssetTreeGroup[] = [];
+    let bTotal = bEntry.assets.length;
+    for (const [fName, fEntry] of bEntry.floors) {
+      const zoneGroups: AssetTreeGroup[] = [];
+      let fTotal = fEntry.assets.length;
+      for (const [zName, zAssets] of fEntry.zones) {
+        fTotal += zAssets.length;
+        zoneGroups.push({
+          key: `${bName}|${fName}|${zName}`,
+          label: zName,
+          level: 'zone',
+          assets: zAssets,
+          children: [],
+          totalAssets: zAssets.length,
+        });
+      }
+      zoneGroups.sort((a, b) => a.label.localeCompare(b.label));
+      bTotal += fTotal;
+      floorGroups.push({
+        key: `${bName}|${fName}`,
+        label: fName,
+        level: 'floor',
+        assets: fEntry.assets,
+        children: zoneGroups,
+        totalAssets: fTotal,
+      });
+    }
+    floorGroups.sort((a, b) => floorNum(a.label) - floorNum(b.label));
+    result.push({
+      key: bName,
+      label: bName,
+      level: 'building',
+      assets: bEntry.assets,
+      children: floorGroups,
+      totalAssets: bTotal,
+    });
+  }
+  result.sort((a, b) => a.label.localeCompare(b.label));
+  return result;
+}
+
+function collectGroupKeys(groups: AssetTreeGroup[]): string[] {
+  const keys: string[] = [];
+  const walk = (g: AssetTreeGroup) => {
+    keys.push(g.key);
+    g.children.forEach(walk);
+  };
+  groups.forEach(walk);
+  return keys;
+}
 
 // ── Section header (matches Zones pattern) ──
 function SectionHeader({ label, count, onClick }: { label: string; count: number; onClick?: (e: React.MouseEvent) => void }) {
@@ -295,6 +396,251 @@ function AssetTable({ assets, query = '', hiddenCols = [], onAssetClick }: { ass
   );
 }
 
+// ── Zone-tree view (nested building → floor → zone → assets) ──
+type TreeRow =
+  | { kind: 'group'; group: AssetTreeGroup; depth: number; expanded: boolean }
+  | { kind: 'asset'; asset: EnrichedAsset; depth: number };
+
+function flattenTree(groups: AssetTreeGroup[], expandedSet: Set<string>, sortKey: SortKey, sortDir: 'asc' | 'desc', depth = 0, out: TreeRow[] = []): TreeRow[] {
+  for (const g of groups) {
+    const expanded = expandedSet.has(g.key);
+    out.push({ kind: 'group', group: g, depth, expanded });
+    if (expanded) {
+      flattenTree(g.children, expandedSet, sortKey, sortDir, depth + 1, out);
+      const sortedAssets = [...g.assets].sort((a, b) => {
+        const av = getSortValue(a, sortKey);
+        const bv = getSortValue(b, sortKey);
+        return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+      for (const a of sortedAssets) out.push({ kind: 'asset', asset: a, depth: depth + 1 });
+    }
+  }
+  return out;
+}
+
+function GroupLevelIcon({ level }: { level: GroupLevel }) {
+  const sx = { fontSize: 14, color: 'text.secondary', flexShrink: 0 };
+  if (level === 'building') return <ApartmentOutlinedIcon sx={sx} />;
+  if (level === 'floor') return <LayersOutlinedIcon sx={sx} />;
+  return <LocationOnOutlinedIcon sx={sx} />;
+}
+
+function AssetTreeView({
+  groups,
+  expandedSet,
+  onToggle,
+  onExpandAll,
+  onCollapseAll,
+  query,
+  hideBuildingColumn,
+  onAssetClick,
+  onBuildingLabelClick,
+}: {
+  groups: AssetTreeGroup[];
+  expandedSet: Set<string>;
+  onToggle: (key: string) => void;
+  onExpandAll: () => void;
+  onCollapseAll: () => void;
+  query: string;
+  hideBuildingColumn?: boolean;
+  onAssetClick?: (assetId: string, e: React.MouseEvent) => void;
+  onBuildingLabelClick?: (buildingName: string, e?: React.MouseEvent) => void;
+}) {
+  const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
+  const { get, set } = useFilterParams();
+  const sortKey = get('sortKey', 'name') as SortKey;
+  const sortDir = get('sortDir', 'asc') as 'asc' | 'desc';
+
+  // Always hide `zone` column (redundant with tree path). Optionally hide `building`.
+  const hiddenCols = useMemo<SortKey[]>(() => {
+    const hc: SortKey[] = ['zone'];
+    if (hideBuildingColumn) hc.push('building');
+    return hc;
+  }, [hideBuildingColumn]);
+
+  const visibleColumns = useMemo(() => COLUMNS.filter(col => !hiddenCols.includes(col.key)), [hiddenCols]);
+  const colSpan = visibleColumns.length;
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) set('sortDir', sortDir === 'asc' ? 'desc' : 'asc');
+    else { set('sortKey', key); set('sortDir', 'asc'); }
+  };
+
+  const rows = useMemo(
+    () => flattenTree(groups, expandedSet, sortKey, sortDir),
+    [groups, expandedSet, sortKey, sortDir],
+  );
+
+  const colgroup = (
+    <colgroup>
+      {visibleColumns.map(col => <col key={col.key} style={{ width: col.width }} />)}
+    </colgroup>
+  );
+
+  const hasAnyExpanded = expandedSet.size > 0;
+
+  return (
+    <Box>
+      {/* Controls row: expand/collapse all */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Button
+          variant="secondary"
+          size="sm"
+          startIcon={hasAnyExpanded ? <UnfoldLessIcon /> : <UnfoldMoreIcon />}
+          onClick={hasAnyExpanded ? onCollapseAll : onExpandAll}
+        >
+          {hasAnyExpanded ? t('assets.collapseAll') : t('assets.expandAll')}
+        </Button>
+      </Box>
+
+      {/* Header row outside card */}
+      <Table sx={{ tableLayout: 'fixed' }}>
+        {colgroup}
+        <TableHead>
+          <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
+            {visibleColumns.map(col => (
+              <TableCell
+                key={col.key}
+                sortDirection={sortKey === col.key ? sortDir : false}
+                sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, whiteSpace: 'nowrap' }}
+              >
+                <TableSortLabel
+                  active={sortKey === col.key}
+                  direction={sortKey === col.key ? sortDir : 'asc'}
+                  onClick={() => handleSort(col.key)}
+                  sx={{ fontSize: 'inherit', color: 'inherit', '&.Mui-active': { color: c.brandSecondary }, '& .MuiTableSortLabel-icon': { fontSize: 14 } }}
+                >
+                  {t(col.labelKey)}
+                </TableSortLabel>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+      </Table>
+
+      {/* Body inside a single card */}
+      <Box sx={{ border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary, boxShadow: c.cardShadow, overflow: 'hidden' }}>
+        <TableContainer>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            {colgroup}
+            <TableBody>
+              {rows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={colSpan} sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
+                    {t('portfolio.noAssets')}
+                  </TableCell>
+                </TableRow>
+              )}
+              {rows.map(row => {
+                if (row.kind === 'group') {
+                  const g = row.group;
+                  const isBuilding = g.level === 'building';
+                  const isNavigable = isBuilding && onBuildingLabelClick;
+                  return (
+                    <TableRow
+                      key={`g:${g.key}`}
+                      onClick={() => onToggle(g.key)}
+                      sx={{
+                        cursor: 'pointer',
+                        bgcolor: row.depth === 0 ? c.bgPrimaryHover : 'transparent',
+                        '&:hover': { bgcolor: c.bgPrimaryHover },
+                        '& > td': { borderBottom: `1px solid ${c.cardBorder}` },
+                      }}
+                    >
+                      <TableCell
+                        colSpan={colSpan}
+                        sx={{
+                          py: 0.75,
+                          pl: `${12 + row.depth * 20}px`,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', flexShrink: 0 }}>
+                            {row.expanded
+                              ? <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
+                              : <ChevronRightIcon sx={{ fontSize: 16 }} />}
+                          </Box>
+                          <GroupLevelIcon level={g.level} />
+                          <Typography
+                            component="span"
+                            onClick={isNavigable ? (e) => { e.stopPropagation(); onBuildingLabelClick!(g.label, e); } : undefined}
+                            sx={{
+                              fontSize: '0.8125rem',
+                              fontWeight: isBuilding ? 600 : g.level === 'floor' ? 600 : 500,
+                              color: isBuilding ? 'text.primary' : 'text.primary',
+                              cursor: isNavigable ? 'pointer' : 'inherit',
+                              '&:hover': isNavigable ? { textDecoration: 'underline' } : {},
+                            }}
+                          >
+                            <HighlightText text={g.label} query={query} />
+                          </Typography>
+                          <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
+                            {g.totalAssets}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+
+                // Asset row
+                const asset = row.asset;
+                const indentPx = 12 + row.depth * 20;
+                return (
+                  <TableRow
+                    key={`a:${asset.id}`}
+                    onClick={(e) => onAssetClick?.(asset.id, e)}
+                    sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}
+                  >
+                    <TableCell sx={{ py: 1.25, pl: `${indentPx}px` }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <HighlightText text={asset.name} query={query} />
+                      </Typography>
+                    </TableCell>
+                    {!hiddenCols.includes('building') && (
+                      <TableCell sx={{ py: 1.25 }}>
+                        <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <HighlightText text={asset.building} query={query} />
+                        </Typography>
+                      </TableCell>
+                    )}
+                    <TableCell sx={{ py: 1.25 }}>
+                      <CategoryCell category={asset.metadata?.category} />
+                    </TableCell>
+                    <TableCell sx={{ py: 1.25 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {asset.metadata?.manufacturer
+                          ? <HighlightText text={asset.metadata.manufacturer} query={query} />
+                          : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ py: 1.25 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {asset.metadata?.model
+                          ? <HighlightText text={asset.metadata.model} query={query} />
+                          : <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ py: 1.25 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                        {asset.metadata?.installDate ?? <Box component="span" sx={{ color: 'text.disabled' }}>—</Box>}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ py: 1.25 }}>
+                      <StatusCell status={asset.metadata?.status} />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </Box>
+  );
+}
+
 // ── Main exported component ──
 export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick, groupBy: groupByProp = 'none', search: searchProp = '', hideBuildingColumn, showFilters }: {
   assets: EnrichedAsset[];
@@ -328,6 +674,9 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
   const [modelAnchor, setModelAnchor] = useState<null | HTMLElement>(null);
   const [selectedZones, setSelectedZones] = useState<string[]>([]);
   const [zoneAnchor, setZoneAnchor] = useState<null | HTMLElement>(null);
+
+  // Zone-tree expand/collapse state
+  const [expandedSet, setExpandedSet] = useState<Set<string>>(() => new Set());
 
   const search = showFilters ? internalSearch : searchProp;
   const groupBy = showFilters ? internalGroupBy : groupByProp;
@@ -393,6 +742,7 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
         <Menu anchorEl={groupByMenuAnchor} open={Boolean(groupByMenuAnchor)} onClose={() => setGroupByMenuAnchor(null)} slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 140 } } }}>
           <MenuItem selected={internalGroupBy === 'none'} onClick={() => { setInternalGroupBy('none'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.noGrouping')}</ListItemText></MenuItem>
           <Divider />
+          <MenuItem selected={internalGroupBy === 'zone'} onClick={() => { setInternalGroupBy('zone'); setGroupByMenuAnchor(null); }}><ListItemText>{t('assets.zone')}</ListItemText></MenuItem>
           <MenuItem selected={internalGroupBy === 'category'} onClick={() => { setInternalGroupBy('category'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.category')}</ListItemText></MenuItem>
           <MenuItem selected={internalGroupBy === 'status'} onClick={() => { setInternalGroupBy('status'); setGroupByMenuAnchor(null); }}><ListItemText>{t('common.status')}</ListItemText></MenuItem>
         </Menu>
@@ -416,9 +766,9 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
     </Box>
   ) : null;
 
-  // Grouped output
+  // Grouped output (flat section groups)
   const grouped = useMemo(() => {
-    if (castGroupBy === 'none') return null;
+    if (castGroupBy === 'none' || castGroupBy === 'zone') return null;
     const map = new Map<string, EnrichedAsset[]>();
     for (const a of filteredAssets) {
       const key = castGroupBy === 'building' ? a.building :
@@ -431,6 +781,23 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([key, items]) => ({ key, label: key, items }));
   }, [filteredAssets, castGroupBy]);
+
+  // Zone-tree structure (only when group-by-zone is active)
+  const zoneTree = useMemo(
+    () => (castGroupBy === 'zone' ? buildAssetTree(filteredAssets) : []),
+    [filteredAssets, castGroupBy],
+  );
+
+  const onToggleGroup = (key: string) => {
+    setExpandedSet(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+  const onExpandAll = () => setExpandedSet(new Set(collectGroupKeys(zoneTree)));
+  const onCollapseAll = () => setExpandedSet(new Set());
 
   if (initialLoading) {
     const skeletonCols = ['18%', '16%', '13%', '12%', '12%', '13%', '11%', '8%'];
@@ -483,6 +850,18 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
         <Box sx={{ py: 8, textAlign: 'center' }}>
           <Typography variant="body1" color="text.secondary">{t('portfolio.noAssets')}</Typography>
         </Box>
+      ) : castGroupBy === 'zone' ? (
+        <AssetTreeView
+          groups={zoneTree}
+          expandedSet={expandedSet}
+          onToggle={onToggleGroup}
+          onExpandAll={onExpandAll}
+          onCollapseAll={onCollapseAll}
+          query={search}
+          hideBuildingColumn={hideBuildingColumn}
+          onAssetClick={onAssetClick}
+          onBuildingLabelClick={onBuildingLabelClick}
+        />
       ) : grouped ? (
         grouped.map(({ key, label, items }) => (
           <Box key={key} sx={{ mb: 4 }}>
