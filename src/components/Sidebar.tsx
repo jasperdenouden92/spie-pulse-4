@@ -48,6 +48,7 @@ import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import EngineeringOutlinedIcon from '@mui/icons-material/EngineeringOutlined';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { buildings, Building, tenants, tenantLogos } from '@/data/buildings';
 import {
   DndContext,
@@ -711,7 +712,6 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               <>
                 <NavItem label={t('nav.tickets')} active={pathname.startsWith('/operations/tickets')} onClick={() => router.push('/operations/tickets')} />
                 <NavItem label={t('nav.quotations')} active={pathname.startsWith('/operations/quotations')} onClick={() => router.push('/operations/quotations')} />
-                <NavItem label={t('nav.documents')} active={pathname.startsWith('/operations/documents')} onClick={() => router.push('/operations/documents')} />
                 <NavItem label={t('nav.maintenance')} active={pathname.startsWith('/operations/maintenance')} onClick={() => router.push('/operations/maintenance')} />
               </>
             )}
@@ -735,6 +735,12 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                 <NavItem label={t('nav.logging')} active={pathname === '/bms/logging'} onClick={() => router.push('/bms/logging')} />
               </>
             )}
+            <NavItem
+              label={t('nav.documents')}
+              icon={<DescriptionOutlinedIcon sx={{ fontSize: 16 }} />}
+              active={pathname.startsWith('/operations/documents')}
+              onClick={() => router.push('/operations/documents')}
+            />
           </List>
             </Box>
           </Box>
