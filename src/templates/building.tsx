@@ -16,7 +16,7 @@ import { BuildingSelectorPopover } from '@/components/BuildingSelector';
 import PageHeader from '@/components/PageHeader';
 import { useLanguage } from '@/i18n';
 
-export type BuildingDetailTab = 'overview' | 'performance' | 'zones' | 'assets' | 'tickets' | 'quotations';
+export type BuildingDetailTab = 'overview' | 'performance' | 'zones' | 'assets' | 'tickets' | 'quotations' | 'documents';
 
 function useTabs() {
   const { t } = useLanguage();
@@ -27,6 +27,7 @@ function useTabs() {
     { value: 'assets' as BuildingDetailTab, label: t('building.assets') },
     { value: 'tickets' as BuildingDetailTab, label: t('building.tickets') },
     { value: 'quotations' as BuildingDetailTab, label: t('building.quotations') },
+    { value: 'documents' as BuildingDetailTab, label: t('building.documents') },
   ];
 }
 

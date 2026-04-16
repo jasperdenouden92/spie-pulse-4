@@ -49,6 +49,7 @@ import TicketTemplate from '@/templates/ticket';
 import QuotationTemplate from '@/templates/quotation';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
+import DocumentsList from '@/components/DocumentsList';
 import ChangelogButton from '@/components/ChangelogButton';
 import DateRangeSelector, { getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import { BuildingSelectorPopover, getBuildingSelectorLabel, type BuildingFilterMode, type ContractFilter } from '@/components/BuildingSelector';
@@ -62,6 +63,7 @@ import { zones as allZones } from '@/data/zones';
 import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
 import { tickets as allTickets } from '@/data/tickets';
 import { quotations as allQuotations } from '@/data/quotations';
+import { documentFiles } from '@/data/documents';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
 
@@ -887,7 +889,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
               onPanelClose={() => setSidePeekBuilding(null)}
               onPanelFullscreen={() => {
-                router.push(`/buildings/${sidePeekBuilding.id}`);
+                router.push(`/buildings/${sidePeekBuilding.id}?tab=${sidePeekBuildingTab}`);
               }}
             />
             {sidePeekBuildingTab === 'zones' && (
@@ -906,6 +908,13 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
                 const a = getAssetById(id);
                 if (a) { setSidePeekBuilding(null); setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
               }} />
+            )}
+            {sidePeekBuildingTab === 'documents' && (
+              <DocumentsList
+                documents={documentFiles.filter(d => d.building === sidePeekBuilding.name)}
+                hideBuildingColumn
+                showFilters
+              />
             )}
           </Box>
         )}
@@ -934,7 +943,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
               onPanelClose={() => setSidePeekZone(null)}
               onPanelFullscreen={() => {
-                router.push('/zones/' + sidePeekZone.id);
+                router.push(`/zones/${sidePeekZone.id}?tab=${sidePeekZoneTab}`);
               }}
             />
           </Box>
@@ -976,9 +985,16 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
                 }}
                 onPanelClose={() => setSidePeekAsset(null)}
                 onPanelFullscreen={() => {
-                  router.push('/assets/' + sidePeekAsset.id);
+                  router.push(`/assets/${sidePeekAsset.id}?tab=${sidePeekAssetTab}`);
                 }}
               />
+              {sidePeekAssetTab === 'documents' && (
+                <DocumentsList
+                  documents={documentFiles.filter(d => d.building === (peekBuilding?.name ?? ''))}
+                  hideBuildingColumn
+                  showFilters
+                />
+              )}
             </Box>
           );
         })()}
