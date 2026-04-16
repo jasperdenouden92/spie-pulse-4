@@ -8,6 +8,7 @@ import BuildingTemplate from '@/templates/building';
 import type { BuildingDetailTab } from '@/templates/building';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
+import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { slugToBuilding, buildingToSlug } from '@/utils/slugs';
@@ -98,6 +99,9 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
             () => router.push(`/assets/${id}`),
           )}
         />
+      )}
+      {currentTab === 'documents' && (
+        <LinkedDocumentsList buildingName={building.name} />
       )}
     </Container>
   );

@@ -22,6 +22,7 @@ import Popover from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
 import InputAdornment from '@mui/material/InputAdornment';
+import Avatar from '@mui/material/Avatar';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
@@ -48,6 +49,7 @@ import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/c
 import PageHeader from '@/components/PageHeader';
 import { documentFiles, allDocumentItems, resolveFolderPath, buildFolderPath } from '@/data/documents';
 import type { DocumentFile, DocumentItem, DocumentCategory } from '@/data/documents';
+import { getOwnerAvatarColor, getFirstInitial } from '@/components/DocumentsList';
 import { useLanguage } from '@/i18n';
 import type { TranslationKey } from '@/i18n/translations/en';
 
@@ -597,13 +599,20 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                       </Typography>
                     </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mt: 'auto', minWidth: 0 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', flexShrink: 0 }}>
                       {timeAgo(doc.modifiedDate)}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-                      {doc.author}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+                      <Avatar
+                        sx={{ width: 20, height: 20, bgcolor: getOwnerAvatarColor(doc.author), fontSize: '0.6rem', fontWeight: 600, flexShrink: 0 }}
+                      >
+                        {getFirstInitial(doc.author)}
+                      </Avatar>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', minWidth: 0 }} noWrap>
+                        {doc.author}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
               ))}
@@ -704,9 +713,20 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                             )}
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
-                              {item.type === 'file' ? item.author : '\u2014'}
-                            </Typography>
+                            {item.type === 'file' ? (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                <Avatar
+                                  sx={{ width: 24, height: 24, bgcolor: getOwnerAvatarColor(item.author), fontSize: '0.65rem', fontWeight: 600, flexShrink: 0 }}
+                                >
+                                  {getFirstInitial(item.author)}
+                                </Avatar>
+                                <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', minWidth: 0 }} noWrap>
+                                  {item.author}
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>&mdash;</Typography>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap', color: 'text.secondary' }}>

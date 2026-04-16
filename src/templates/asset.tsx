@@ -42,7 +42,7 @@ function useAssetTabs() {
     { value: 'overview' as AssetDetailTab, label: t('common.overview') },
     { value: 'tickets' as AssetDetailTab, label: t('building.tickets') },
     { value: 'quotations' as AssetDetailTab, label: t('building.quotations') },
-    { value: 'documents' as AssetDetailTab, label: t('nav.documents') },
+    { value: 'documents' as AssetDetailTab, label: t('building.documents') },
   ];
 }
 

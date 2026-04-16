@@ -301,6 +301,7 @@ const nl: Record<TranslationKey, string> = {
   'building.assets': 'Assets',
   'building.tickets': 'Tickets',
   'building.quotations': 'Offertes',
+  'building.documents': 'Documenten',
 
   // Zone template
   'zone.searchZones': 'Zoek zones\u2026',

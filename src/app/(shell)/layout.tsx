@@ -888,7 +888,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
               onPanelClose={() => setSidePeekBuilding(null)}
               onPanelFullscreen={() => {
-                router.push(`/buildings/${sidePeekBuilding.id}`);
+                router.push(`/buildings/${sidePeekBuilding.id}?tab=${sidePeekBuildingTab}`);
               }}
             />
             {sidePeekBuildingTab === 'zones' && (
@@ -907,6 +907,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
                 const a = getAssetById(id);
                 if (a) { setSidePeekBuilding(null); setSidePeekAsset(a); setSidePeekAssetTab('overview'); }
               }} />
+            )}
+            {sidePeekBuildingTab === 'documents' && (
+              <LinkedDocumentsList buildingName={sidePeekBuilding.name} />
             )}
           </Box>
         )}
@@ -935,7 +938,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               }}
               onPanelClose={() => setSidePeekZone(null)}
               onPanelFullscreen={() => {
-                router.push('/zones/' + sidePeekZone.id);
+                router.push(`/zones/${sidePeekZone.id}?tab=${sidePeekZoneTab}`);
               }}
             />
           </Box>
@@ -977,7 +980,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
                 }}
                 onPanelClose={() => setSidePeekAsset(null)}
                 onPanelFullscreen={() => {
-                  router.push('/assets/' + sidePeekAsset.id);
+                  router.push(`/assets/${sidePeekAsset.id}?tab=${sidePeekAssetTab}`);
                 }}
               />
               {sidePeekAssetTab === 'documents' && (

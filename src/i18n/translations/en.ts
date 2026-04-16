@@ -299,6 +299,7 @@ const en = {
   'building.assets': 'Assets',
   'building.tickets': 'Tickets',
   'building.quotations': 'Quotations',
+  'building.documents': 'Documents',
 
   // Zone template
   'zone.searchZones': 'Search zones\u2026',
