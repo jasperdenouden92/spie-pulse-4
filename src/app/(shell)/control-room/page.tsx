@@ -275,7 +275,9 @@ export default function ControlRoomPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const isNarrow = useMediaQuery('(max-width:960px)');
-  const isWide = useMediaQuery('(min-width:1200px)');
+  const isSmall = useMediaQuery('(max-width:748px)');
+  const isVeryNarrow = useMediaQuery('(max-width:480px)');
+  const isWide = useMediaQuery('(min-width:1536px)');
 
   // ── URL state ──────────────────────────────────────────────────────────
   const {
@@ -862,7 +864,7 @@ export default function ControlRoomPage() {
                     {/* Primary Theme KPIs */}
                     <Box sx={{
                       display: 'grid',
-                      gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : isWide ? `repeat(${maxKpiColumns}, 1fr)` : 'repeat(auto-fill, minmax(180px, 1fr))',
+                      gridTemplateColumns: isVeryNarrow ? '1fr' : isSmall ? 'repeat(2, 1fr)' : isWide ? `repeat(${maxKpiColumns}, 1fr)` : 'repeat(auto-fill, minmax(220px, 1fr))',
                       gap: isCompact ? 1.5 : 2,
                       transition: 'gap 0.3s ease'
                     }}>
@@ -969,7 +971,7 @@ export default function ControlRoomPage() {
                     {/* Operations KPIs */}
                     <Box sx={{
                       display: 'grid',
-                      gridTemplateColumns: isNarrow ? 'repeat(auto-fill, minmax(140px, 1fr))' : isWide ? `repeat(${maxKpiColumns}, 1fr)` : 'repeat(auto-fill, minmax(180px, 1fr))',
+                      gridTemplateColumns: isVeryNarrow ? '1fr' : isSmall ? 'repeat(2, 1fr)' : isWide ? `repeat(${maxKpiColumns}, 1fr)` : 'repeat(auto-fill, minmax(220px, 1fr))',
                       gap: isCompact ? 1.5 : 2,
                       transition: 'gap 0.3s ease'
                     }}>
