@@ -228,6 +228,30 @@ const en = {
   'home.submittedPrefix': 'Submitted',
   'home.processedPrefix': 'Processed',
 
+  // Asset mutation row titles (Work in progress)
+  'home.mutation.created': 'New asset',
+  'home.mutation.deleted': 'Deleted asset',
+  'home.mutation.moved': 'Moved asset',
+  'home.mutation.renamed': 'Renamed asset',
+
+  // Ticket priority labels
+  'priority.low': 'Low',
+  'priority.medium': 'Medium',
+  'priority.high': 'High',
+  'priority.critical': 'Critical',
+
+  // Placeholder side peek metadata labels
+  'placeholder.type': 'Type',
+  'placeholder.impact': 'Impact',
+  'placeholder.actor': 'Actor',
+  'placeholder.status': 'Status',
+  'placeholder.frequency': 'Frequency',
+  'placeholder.category': 'Category',
+  'placeholder.assignedTo': 'Assigned to',
+  'placeholder.author': 'Author',
+  'placeholder.version': 'Version',
+  'placeholder.file': 'File',
+
   // Time-ago labels (used via t(key, { count }))
   'time.now': 'Now',
   'time.minutesAgo': '{count} minutes ago',
