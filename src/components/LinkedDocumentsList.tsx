@@ -31,6 +31,7 @@ import { handleSidePeekClick } from '@/components/SidePeekPanel';
 import { buildings as allBuildings } from '@/data/buildings';
 import { getAssetById } from '@/data/assetTree';
 import { buildingToSlug } from '@/utils/slugs';
+import { useURLState } from '@/hooks/useURLState';
 
 const CATEGORY_ICONS: Record<DocumentCategory, React.ReactNode> = {
   Contract: <GavelOutlinedIcon sx={{ fontSize: 16 }} />,
@@ -96,6 +97,7 @@ export default function LinkedDocumentsList({
   hideOtherLinks,
 }: LinkedDocumentsListProps) {
   const router = useRouter();
+  const { setURLParams } = useURLState();
   const { themeColors: c } = useThemeMode();
   const { t } = useLanguage();
   const {
@@ -146,7 +148,7 @@ export default function LinkedDocumentsList({
   };
   const closeOther = () => { setOtherAnchor(null); setOtherFile(null); };
 
-  const rowClick = (file: DocumentFile) => router.push(`/operations/documents/${file.id}`);
+  const rowClick = (file: DocumentFile) => setURLParams({ doc: file.id });
 
   if (scoped.length === 0) {
     return (

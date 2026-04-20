@@ -57,8 +57,7 @@ Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 | `/operations/tickets/[id]` | Ticket detail |
 | `/operations/quotations` | Quotations list |
 | `/operations/quotations/[id]` | Quotation detail |
-| `/operations/documents` | Documents list |
-| `/operations/documents/[id]` | Document detail |
+| `/operations/documents/[[...path]]` | Documents list (root + folder navigation) |
 | `/operations/maintenance` | Maintenance list |
 | `/operations/maintenance/[id]` | Maintenance detail |
 | `/bms/access` | BMS — Access |
@@ -82,6 +81,7 @@ Two URL helpers from `useURLState()` hook (`src/hooks/useURLState.ts`):
 | `tab` | varies by page | Active tab (building: `overview`/`zones`/etc., control room: `portfolio`/`performance`/`insights`) |
 | `contract` | `yes` | Contract filter active (omitted = overall/all buildings) |
 | `peek` | `building:b-001` \| `zone:z-0001` \| `asset:a-0001` | Side peek entity (shareable) |
+| `doc` | document id (e.g. `DOC-2024-001`) | Open document preview overlay (global, shareable) |
 | `statusFilter` | comma-separated status values | Pre-filter tickets/quotations by status |
 | `search` | text | Search filter (portfolio pages, tickets, quotations) |
 | `groupBy` | `none` \| `city` \| `group` \| etc. | Group by filter |
@@ -137,6 +137,7 @@ src/
 │   ├── ZonesList.tsx     # Reusable zones table (used by portfolio, building detail, side peek)
 │   ├── AssetsList.tsx    # Reusable assets table (used by portfolio, building detail, side peek)
 │   ├── LinkedDocumentsList.tsx # Reusable documents table scoped by asset/building (detail pages + side peek)
+│   ├── DocumentPreviewOverlay.tsx # Fullscreen document preview overlay driven by `?doc=` query param
 │   ├── FilterChip.tsx    # Filter chip UI component
 │   ├── FilterDropdown.tsx # Filter dropdown popover
 │   └── ...               # Cards, lists, modals, etc.

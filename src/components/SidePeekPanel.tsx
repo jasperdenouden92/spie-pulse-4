@@ -59,7 +59,7 @@ export default function SidePeekPanel({
           maxWidth: '100vw',
           height: '100vh',
           bgcolor: c.bgPrimary,
-          zIndex: 1201,
+          zIndex: 1700,
           transform: open ? 'translateX(0)' : 'translateX(100%)',
           pointerEvents: open ? 'auto' : 'none',
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
