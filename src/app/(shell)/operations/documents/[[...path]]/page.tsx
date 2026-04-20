@@ -50,7 +50,7 @@ import PageHeader from '@/components/PageHeader';
 import { documentFiles, allDocumentItems, resolveFolderPath, buildFolderPath } from '@/data/documents';
 import type { DocumentFile, DocumentItem, DocumentCategory } from '@/data/documents';
 import { getOwnerAvatarColor, getFirstInitial } from '@/components/DocumentsList';
-import { timeAgo } from '@/utils/timeAgo';
+import { timeAgoDayParts } from '@/utils/timeAgo';
 import { useLanguage } from '@/i18n';
 import type { TranslationKey } from '@/i18n/translations/en';
 
@@ -345,7 +345,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const isRoot = currentFolderId === null;
 
   // Page title
-  const pageTitle = currentFolder ? currentFolder.name : 'Documents';
+  const pageTitle = currentFolder ? currentFolder.name : t('documents.title');
 
   // Search, sort, pagination, grouping
   const search = get('search', '');
@@ -608,7 +608,10 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mt: 'auto', minWidth: 0 }}>
                     <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', flexShrink: 0 }}>
-                      {timeAgo(doc.modifiedDate)}
+                      {(() => {
+                        const parts = timeAgoDayParts(doc.modifiedDate);
+                        return parts.count !== undefined ? t(parts.key, { count: parts.count }) : t(parts.key);
+                      })()}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
                       <Avatar

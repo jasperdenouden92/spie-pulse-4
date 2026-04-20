@@ -9,7 +9,8 @@ import SettingsInputAntennaIcon from '@mui/icons-material/SettingsInputAntenna';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import { useThemeMode } from '@/theme-mode-context';
-import { timeAgo } from '@/utils/timeAgo';
+import { timeAgoDayParts } from '@/utils/timeAgo';
+import { useLanguage } from '@/i18n';
 import type { RecentItem, RecentItemKind } from '@/context/AppStateContext';
 import { colorForRecentKind, labelForRecentKind } from './recentHelpers';
 
@@ -28,6 +29,7 @@ export interface RecentlyVisitedCardProps {
 
 export default function RecentlyVisitedCard({ item, onClick }: RecentlyVisitedCardProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const Icon = ICONS[item.kind];
   const color = colorForRecentKind(item.kind);
 
@@ -77,7 +79,10 @@ export default function RecentlyVisitedCard({ item, onClick }: RecentlyVisitedCa
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
         <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
-          {timeAgo(item.visitedAt, new Date())}
+          {(() => {
+            const parts = timeAgoDayParts(item.visitedAt, new Date());
+            return parts.count !== undefined ? t(parts.key, { count: parts.count }) : t(parts.key);
+          })()}
         </Typography>
       </Box>
     </Box>

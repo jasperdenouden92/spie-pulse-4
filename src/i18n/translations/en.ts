@@ -254,6 +254,9 @@ const en = {
 
   // Time-ago labels (used via t(key, { count }))
   'time.now': 'Now',
+  'time.today': 'Today',
+  'time.yesterday': 'Yesterday',
+  'time.inFuture': 'In the future',
   'time.minutesAgo': '{count} minutes ago',
   'time.hoursAgo': '{count} hours ago',
   'time.daysAgo': '{count} days ago',
