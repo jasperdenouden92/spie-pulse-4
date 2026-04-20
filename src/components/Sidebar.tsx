@@ -365,6 +365,36 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
   const operationsExpanded = expandedMenu === 'operations';
   const bmsExpanded = expandedMenu === 'bms';
 
+  const [collapsedMenuAnchor, setCollapsedMenuAnchor] = useState<null | HTMLElement>(null);
+  const [collapsedMenuKey, setCollapsedMenuKey] = useState<Exclude<ExpandedMenu, null> | null>(null);
+  const closeCollapsedMenu = () => { setCollapsedMenuAnchor(null); setCollapsedMenuKey(null); };
+  const openCollapsedMenu = (e: React.MouseEvent | undefined, key: Exclude<ExpandedMenu, null>) => {
+    if (!e) return;
+    setCollapsedMenuAnchor(e.currentTarget as HTMLElement);
+    setCollapsedMenuKey(key);
+  };
+
+  const collapsedSubmenus: Record<Exclude<ExpandedMenu, null>, Array<{ label: string; path: string; active: boolean }>> = {
+    insights: [
+      { label: t('nav.alerts'), path: '/insights/alerts', active: pathname === '/insights/alerts' },
+      { label: t('nav.analyses'), path: '/insights/analyses', active: pathname === '/insights/analyses' },
+      { label: t('nav.performance'), path: '/insights/performance', active: pathname === '/insights/performance' },
+    ],
+    portfolio: [
+      { label: t('nav.buildings'), path: '/portfolio/buildings', active: pathname === '/portfolio/buildings' || pathname.startsWith('/buildings/') },
+      { label: t('nav.assets'), path: '/portfolio/assets', active: pathname === '/portfolio/assets' || pathname.startsWith('/assets/') || pathname.startsWith('/zones/') },
+    ],
+    operations: [
+      { label: t('nav.tickets'), path: '/operations/tickets', active: pathname.startsWith('/operations/tickets') },
+      { label: t('nav.quotations'), path: '/operations/quotations', active: pathname.startsWith('/operations/quotations') },
+      { label: t('nav.maintenance'), path: '/operations/maintenance', active: pathname.startsWith('/operations/maintenance') },
+    ],
+    bms: [
+      { label: t('nav.access'), path: '/bms/access', active: pathname === '/bms/access' },
+      { label: t('nav.logging'), path: '/bms/logging', active: pathname === '/bms/logging' },
+    ],
+  };
+
   const NEW_MENU_ITEMS = [
     { label: t('createNew.reportIssue'), key: '1' },
     { label: t('createNew.requestQuote'), key: '2' },
@@ -683,9 +713,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.insights')}
               icon={<TipsAndUpdatesOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/insights')}
-              onClick={() => { router.push('/insights/alerts'); setExpandedMenu('insights'); }}
-              expanded={insightsExpanded}
-              onToggleExpand={() => toggleMenu('insights')}
+              onClick={(e) => {
+                if (isCollapsed) { openCollapsedMenu(e, 'insights'); return; }
+                router.push('/insights/alerts');
+                setExpandedMenu('insights');
+              }}
+              expanded={isCollapsed ? undefined : insightsExpanded}
+              onToggleExpand={isCollapsed ? undefined : () => toggleMenu('insights')}
             />
             {!isCollapsed && insightsExpanded && (
               <>
@@ -698,9 +732,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.portfolio')}
               icon={<ApartmentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/portfolio/') || pathname.startsWith('/buildings/') || pathname.startsWith('/zones/') || pathname.startsWith('/assets/')}
-              onClick={() => { router.push('/portfolio/buildings'); setExpandedMenu('portfolio'); }}
-              expanded={portfolioExpanded}
-              onToggleExpand={() => toggleMenu('portfolio')}
+              onClick={(e) => {
+                if (isCollapsed) { openCollapsedMenu(e, 'portfolio'); return; }
+                router.push('/portfolio/buildings');
+                setExpandedMenu('portfolio');
+              }}
+              expanded={isCollapsed ? undefined : portfolioExpanded}
+              onToggleExpand={isCollapsed ? undefined : () => toggleMenu('portfolio')}
             />
             {!isCollapsed && portfolioExpanded && (
               <>
@@ -712,9 +750,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.operations')}
               icon={<EngineeringOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/operations')}
-              onClick={() => { router.push('/operations/tickets'); setExpandedMenu('operations'); }}
-              expanded={operationsExpanded}
-              onToggleExpand={() => toggleMenu('operations')}
+              onClick={(e) => {
+                if (isCollapsed) { openCollapsedMenu(e, 'operations'); return; }
+                router.push('/operations/tickets');
+                setExpandedMenu('operations');
+              }}
+              expanded={isCollapsed ? undefined : operationsExpanded}
+              onToggleExpand={isCollapsed ? undefined : () => toggleMenu('operations')}
             />
             {!isCollapsed && operationsExpanded && (
               <>
@@ -733,9 +775,13 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               label={t('nav.bms')}
               icon={<SettingsInputComponentOutlinedIcon sx={{ fontSize: 16 }} />}
               active={pathname.startsWith('/bms')}
-              onClick={() => { router.push('/bms/access'); setExpandedMenu('bms'); }}
-              expanded={bmsExpanded}
-              onToggleExpand={() => toggleMenu('bms')}
+              onClick={(e) => {
+                if (isCollapsed) { openCollapsedMenu(e, 'bms'); return; }
+                router.push('/bms/access');
+                setExpandedMenu('bms');
+              }}
+              expanded={isCollapsed ? undefined : bmsExpanded}
+              onToggleExpand={isCollapsed ? undefined : () => toggleMenu('bms')}
             />
             {!isCollapsed && bmsExpanded && (
               <>
@@ -828,6 +874,37 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               <img className="sidebar-logo-icon" src="/images/pulse-core-icon.svg" alt="Pulse Core" style={{ height: 24, opacity: 0.5, display: 'none' }} />
             </Box>
         </Box>
+
+      {/* Collapsed-mode submenu dropdown — appears to the right of the nav item */}
+      <Menu
+        anchorEl={collapsedMenuAnchor}
+        open={Boolean(collapsedMenuAnchor)}
+        onClose={closeCollapsedMenu}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{ paper: { sx: { ml: 1, minWidth: 180, borderRadius: '8px', py: 0.5 } } }}
+        sx={{ zIndex: 1600 }}
+      >
+        {collapsedMenuKey && collapsedSubmenus[collapsedMenuKey].map((item) => (
+          <MenuItem
+            key={item.path}
+            selected={item.active}
+            onClick={() => { router.push(item.path); closeCollapsedMenu(); }}
+            sx={{
+              borderRadius: '6px',
+              mx: 0.5,
+              py: 0.75,
+              px: 1.5,
+              fontSize: '0.875rem',
+              minHeight: 32,
+              '&:hover': { backgroundColor: c.bgPrimaryHover },
+              '&.Mui-selected': { backgroundColor: c.bgActive, color: c.brand, fontWeight: 600, '&:hover': { backgroundColor: c.bgActiveHover } },
+            }}
+          >
+            {item.label}
+          </MenuItem>
+        ))}
+      </Menu>
 
       {/* "+ New" dropdown */}
       <Menu
