@@ -154,11 +154,14 @@ export default function HomeRoute() {
   };
 
   const recentToShow = useMemo<RecentItem[]>(() => {
-    // Only include kinds we can still resolve; fall back to mock when empty.
+    // Session items take the leftmost slots; mock items shift right to fill the
+    // remaining slots so the row never collapses to fewer than 4 cards.
     const validKinds: RecentItemKind[] = ['building', 'zone', 'asset', 'ticket', 'quotation'];
-    const filtered = recentlyVisited.filter(r => validKinds.includes(r.kind));
-    if (filtered.length === 0) return buildFallbackRecent(selectedTenant);
-    return filtered.slice(0, 4);
+    const session = recentlyVisited.filter(r => validKinds.includes(r.kind)).slice(0, 4);
+    if (session.length >= 4) return session;
+    const seen = new Set(session.map(r => `${r.kind}:${r.id}`));
+    const fallback = buildFallbackRecent(selectedTenant).filter(r => !seen.has(`${r.kind}:${r.id}`));
+    return [...session, ...fallback].slice(0, 4);
   }, [recentlyVisited, selectedTenant]);
 
   const workInProgressCount = useWorkInProgressCount();
