@@ -230,6 +230,30 @@ const nl: Record<TranslationKey, string> = {
   'home.submittedPrefix': 'Ingediend',
   'home.processedPrefix': 'Verwerkt',
 
+  // Asset mutation row titles (Work in progress)
+  'home.mutation.created': 'Nieuw asset',
+  'home.mutation.deleted': 'Verwijderd asset',
+  'home.mutation.moved': 'Verplaatst asset',
+  'home.mutation.renamed': 'Hernoemd asset',
+
+  // Ticket priority labels
+  'priority.low': 'Laag',
+  'priority.medium': 'Gemiddeld',
+  'priority.high': 'Hoog',
+  'priority.critical': 'Kritiek',
+
+  // Placeholder side peek metadata labels
+  'placeholder.type': 'Type',
+  'placeholder.impact': 'Impact',
+  'placeholder.actor': 'Gebruiker',
+  'placeholder.status': 'Status',
+  'placeholder.frequency': 'Frequentie',
+  'placeholder.category': 'Categorie',
+  'placeholder.assignedTo': 'Toegewezen aan',
+  'placeholder.author': 'Auteur',
+  'placeholder.version': 'Versie',
+  'placeholder.file': 'Bestand',
+
   // Time-ago labels (used via t(key, { count }))
   'time.now': 'Nu',
   'time.minutesAgo': '{count} minuten geleden',

@@ -93,10 +93,10 @@ export default function LatestActivitySection() {
           description: m?.description,
           timestamp: ev.timestamp,
           metadata: m ? [
-            { label: 'Frequency', value: m.frequency },
-            { label: 'Category', value: m.category },
-            { label: 'Assigned to', value: m.assignedTo },
-            { label: 'Status', value: m.status },
+            { label: t('placeholder.frequency'), value: m.frequency },
+            { label: t('placeholder.category'), value: m.category },
+            { label: t('placeholder.assignedTo'), value: m.assignedTo },
+            { label: t('placeholder.status'), value: m.status },
           ] : undefined,
         };
         handleSidePeekClick(e, () => setSidePeekPlaceholder(peek), () => router.push(`/operations/maintenance/${ev.target.id}`));
@@ -111,10 +111,10 @@ export default function LatestActivitySection() {
           subtitle: d?.buildings?.[0],
           timestamp: ev.timestamp,
           metadata: d ? [
-            { label: 'Category', value: d.category },
-            { label: 'Author', value: d.author },
-            { label: 'Version', value: d.version },
-            { label: 'File', value: `${d.fileType} · ${d.fileSize}` },
+            { label: t('placeholder.category'), value: d.category },
+            { label: t('placeholder.author'), value: d.author },
+            { label: t('placeholder.version'), value: d.version },
+            { label: t('placeholder.file'), value: `${d.fileType} · ${d.fileSize}` },
           ] : undefined,
         };
         handleSidePeekClick(e, () => setSidePeekPlaceholder(peek), () => router.push('/operations/documents'));

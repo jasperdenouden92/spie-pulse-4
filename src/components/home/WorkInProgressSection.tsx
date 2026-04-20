@@ -92,14 +92,19 @@ function parseRelativeTimestamp(s: string, now: Date = MOCK_NOW): Date {
   return now;
 }
 
-function mutationTitle(kind: 'created' | 'deleted' | 'moved' | 'renamed'): string {
-  return (
-    kind === 'created' ? 'New asset' :
-    kind === 'deleted' ? 'Deleted asset' :
-    kind === 'moved' ? 'Moved asset' :
-    'Renamed asset'
-  );
-}
+const MUTATION_TITLE_KEY: Record<'created' | 'deleted' | 'moved' | 'renamed', TranslationKey> = {
+  created: 'home.mutation.created',
+  deleted: 'home.mutation.deleted',
+  moved: 'home.mutation.moved',
+  renamed: 'home.mutation.renamed',
+};
+
+const PRIORITY_KEY: Record<'Low' | 'Medium' | 'High' | 'Critical', TranslationKey> = {
+  Low: 'priority.low',
+  Medium: 'priority.medium',
+  High: 'priority.high',
+  Critical: 'priority.critical',
+};
 
 // ── Data assembly ────────────────────────────────────────────────
 
@@ -409,8 +414,8 @@ export default function WorkInProgressSection({ variant = 'A' }: WorkInProgressS
           : insight.assetName,
       description: insight.description,
       metadata: [
-        { label: 'Type', value: insight.insightType },
-        { label: 'Impact', value: insight.impact },
+        { label: t('placeholder.type'), value: insight.insightType },
+        { label: t('placeholder.impact'), value: insight.impact },
       ],
     };
     handleSidePeekClick(
@@ -423,13 +428,13 @@ export default function WorkInProgressSection({ variant = 'A' }: WorkInProgressS
     const peek: PlaceholderPeek = {
       kind: 'mutation',
       id: mutation.id,
-      title: `${mutationTitle(mutation.kind)} · ${mutation.assetName}`,
+      title: `${t(MUTATION_TITLE_KEY[mutation.kind])} · ${mutation.assetName}`,
       subtitle: buildingName || mutation.building,
       description: mutation.detail,
       timestamp: mutation.timestamp,
       metadata: [
-        { label: 'Actor', value: mutation.actor },
-        { label: 'Status', value: mutation.status },
+        { label: t('placeholder.actor'), value: mutation.actor },
+        { label: t('placeholder.status'), value: mutation.status },
       ],
     };
     handleSidePeekClick(
@@ -482,7 +487,7 @@ export default function WorkInProgressSection({ variant = 'A' }: WorkInProgressS
         return {
           id: rowId,
           title: ticket.title,
-          meta: `${ticket.referenceNumber} · ${buildingName} · ${ticket.priority}`,
+          meta: `${ticket.referenceNumber} · ${buildingName} · ${t(PRIORITY_KEY[ticket.priority])}`,
           trailing: fmtRelative('home.createdPrefix', ticket.createdDate),
           leadingAvatar,
           sortDate: new Date(ticket.createdDate),
@@ -591,7 +596,7 @@ export default function WorkInProgressSection({ variant = 'A' }: WorkInProgressS
         const { buildingName, leadingAvatar } = resolveRowBuilding(rowId, icon);
         return {
           id: rowId,
-          title: mutationTitle(m.kind),
+          title: t(MUTATION_TITLE_KEY[m.kind]),
           meta: `${buildingName} / ${m.assetName}`,
           trailing: fmtRelative('home.submittedPrefix', m.timestamp),
           leadingAvatar,
@@ -614,7 +619,7 @@ export default function WorkInProgressSection({ variant = 'A' }: WorkInProgressS
         const { buildingName, leadingAvatar } = resolveRowBuilding(rowId, icon);
         return {
           id: rowId,
-          title: mutationTitle(m.kind),
+          title: t(MUTATION_TITLE_KEY[m.kind]),
           meta: `${buildingName} / ${m.assetName}`,
           trailing: fmtRelative('home.processedPrefix', m.timestamp),
           leadingAvatar,
