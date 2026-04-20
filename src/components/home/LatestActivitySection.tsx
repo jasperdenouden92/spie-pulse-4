@@ -170,7 +170,7 @@ export default function LatestActivitySection() {
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="body2" sx={{ fontSize: '0.8125rem', lineHeight: 1.4 }}>
                 <Box component="span" sx={{ fontWeight: 600 }}>{ev.actor}</Box>
-                {' '}{ev.description}
+                {' '}{t(`activity.${ev.action}`, { label: ev.actionLabel })}
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
                 {(() => {

@@ -7,12 +7,26 @@ import { MOCK_NOW } from '@/utils/timeAgo';
 
 export type ActivityTargetKind = 'ticket' | 'quotation' | 'maintenance' | 'document' | 'asset' | 'building';
 
+export type ActivityAction =
+  | 'completedWorkorder'
+  | 'openedTicket'
+  | 'approvedQuotation'
+  | 'rejectedQuotation'
+  | 'completedMaintenance'
+  | 'updatedDocument'
+  | 'addedAsset'
+  | 'deletedAsset'
+  | 'movedAsset'
+  | 'renamedAsset';
+
 export interface ActivityEvent {
   id: string;
   /** Who performed the action. */
   actor: string;
-  /** Short human-readable sentence, e.g. "approved quotation 'Boiler service'". */
-  description: string;
+  /** Localizable action verb; resolved to `activity.<action>` at render time. */
+  action: ActivityAction;
+  /** The quoted noun inside the action phrase (e.g. the ticket title). */
+  actionLabel: string;
   /** ISO timestamp. */
   timestamp: string;
   /** The related entity that should open in a side peek on click. */
@@ -43,7 +57,8 @@ export function getLatestActivity(limit: number = 10): ActivityEvent[] {
       events.push({
         id: `tc-${t.id}`,
         actor: t.assignedTo,
-        description: `completed workorder "${t.title}"`,
+        action: 'completedWorkorder',
+        actionLabel: t.title,
         timestamp: t.completedDate,
         target: { kind: 'ticket', id: t.id, label: t.title },
       });
@@ -56,7 +71,8 @@ export function getLatestActivity(limit: number = 10): ActivityEvent[] {
       events.push({
         id: `tn-${t.id}`,
         actor: t.assignedTo,
-        description: `opened ticket "${t.title}"`,
+        action: 'openedTicket',
+        actionLabel: t.title,
         timestamp: t.createdDate,
         target: { kind: 'ticket', id: t.id, label: t.title },
       });
@@ -71,7 +87,8 @@ export function getLatestActivity(limit: number = 10): ActivityEvent[] {
       events.push({
         id: `qa-${q.id}`,
         actor: q.contactPerson,
-        description: `approved quotation "${q.title}"`,
+        action: 'approvedQuotation',
+        actionLabel: q.title,
         timestamp: q.createdDate,
         target: { kind: 'quotation', id: q.id, label: q.title },
       });
@@ -79,7 +96,8 @@ export function getLatestActivity(limit: number = 10): ActivityEvent[] {
       events.push({
         id: `qr-${q.id}`,
         actor: q.contactPerson,
-        description: `rejected quotation "${q.title}"`,
+        action: 'rejectedQuotation',
+        actionLabel: q.title,
         timestamp: q.createdDate,
         target: { kind: 'quotation', id: q.id, label: q.title },
       });
@@ -92,7 +110,8 @@ export function getLatestActivity(limit: number = 10): ActivityEvent[] {
       events.push({
         id: `mc-${m.id}`,
         actor: m.assignedTo,
-        description: `completed maintenance "${m.title}"`,
+        action: 'completedMaintenance',
+        actionLabel: m.title,
         timestamp: m.lastCompleted,
         target: { kind: 'maintenance', id: m.id, label: m.title },
       });
@@ -107,7 +126,8 @@ export function getLatestActivity(limit: number = 10): ActivityEvent[] {
     events.push({
       id: `dm-${d.id}`,
       actor: d.author,
-      description: `updated document "${d.title}"`,
+      action: 'updatedDocument',
+      actionLabel: d.title,
       timestamp: d.modifiedDate,
       target: { kind: 'document', id: d.id, label: d.title },
     });
@@ -115,15 +135,16 @@ export function getLatestActivity(limit: number = 10): ActivityEvent[] {
 
   // Asset mutations
   for (const m of assetMutations) {
-    const verb =
-      m.kind === 'created' ? 'added asset' :
-      m.kind === 'deleted' ? 'deleted asset' :
-      m.kind === 'moved' ? 'moved asset' :
-      'renamed asset';
+    const action: ActivityAction =
+      m.kind === 'created' ? 'addedAsset' :
+      m.kind === 'deleted' ? 'deletedAsset' :
+      m.kind === 'moved' ? 'movedAsset' :
+      'renamedAsset';
     events.push({
       id: `am-${m.id}`,
       actor: m.actor,
-      description: `${verb} "${m.assetName}"`,
+      action,
+      actionLabel: m.assetName,
       timestamp: m.timestamp,
       target: { kind: 'asset', id: m.id, label: m.assetName },
     });

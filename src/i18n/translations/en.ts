@@ -190,6 +190,28 @@ const en = {
   'home.contractKpis': 'Operational KPIs',
   'home.openControlRoom': 'Open Control Room',
 
+  // Latest Impact stories (home Variant C cards)
+  'home.impact.sustainability.emphasis': 'Performance is dropping a bit',
+  'home.impact.sustainability.context': ' compared to last year',
+  'home.impact.maintenanceGrowth.emphasis': 'Maintenance Performance',
+  'home.impact.maintenanceGrowth.context': ' has grown significantly last month',
+  'home.impact.buildingsImproved.emphasis': '4 buildings',
+  'home.impact.buildingsImproved.context': ' went from Poor to Moderate',
+  'home.impact.buildingsPerformingGood.emphasis': '92% of buildings',
+  'home.impact.buildingsPerformingGood.context': ' are now performing Good',
+
+  // Latest activity feed verbs (rendered after the actor name)
+  'activity.completedWorkorder': 'completed workorder "{label}"',
+  'activity.openedTicket': 'opened ticket "{label}"',
+  'activity.approvedQuotation': 'approved quotation "{label}"',
+  'activity.rejectedQuotation': 'rejected quotation "{label}"',
+  'activity.completedMaintenance': 'completed maintenance "{label}"',
+  'activity.updatedDocument': 'updated document "{label}"',
+  'activity.addedAsset': 'added asset "{label}"',
+  'activity.deletedAsset': 'deleted asset "{label}"',
+  'activity.movedAsset': 'moved asset "{label}"',
+  'activity.renamedAsset': 'renamed asset "{label}"',
+
   // Placeholder side peek
   'home.placeholderComingSoon': 'Detailed view coming soon',
   'home.placeholderBody': 'A dedicated detail view for this item hasn\u2019t shipped yet. For now, this panel shows the core metadata captured from the homepage feed.',
