@@ -132,7 +132,7 @@ function NavItem({ label, icon, active, onClick, shortcut, expanded, onToggleExp
         ref={buttonRef}
         onClick={onClick}
         sx={{
-          height: 40,
+          height: 32,
           paddingLeft: '4px',
           gap: 1,
           borderRadius: '6px',
@@ -251,7 +251,7 @@ function SortableFavoriteItem({ favorite, isHovered, onMouseEnter, onMouseLeave,
         />
       )}
 
-      <ListItemButton sx={{ height: 40, pl: '4px', gap: 1, borderRadius: '6px', position: 'relative', overflow: 'hidden' }}>
+      <ListItemButton sx={{ height: 32, pl: '4px', gap: 1, borderRadius: '6px', position: 'relative', overflow: 'hidden' }}>
         {/* Drag Handle - appears on left on hover */}
         <Box
           {...attributes}
@@ -766,7 +766,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'text.secondary' }}>{t('nav.favorites')}</Typography>
               <DndContext id="sidebar-favorites" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={favorites.map(f => f.id)} strategy={verticalListSortingStrategy}>
-                  <List data-annotation-id="sidebar-lijst-2" dense sx={{ py: 0 }}>
+                  <List data-annotation-id="sidebar-lijst-2" dense sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {favorites.map((fav) => (
                       <SortableFavoriteItem
                         key={fav.id}
@@ -784,11 +784,11 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
             {/* Bottom sticky: Notifications, Help, Account */}
             <Box sx={{ flexShrink: 0, px: isCollapsed ? 1.5 : 2, pt: 1, pb: 0.5 }}>
               <Divider sx={{ mb: 1 }} />
-              <List data-annotation-id="sidebar-lijst" dense sx={{ py: 0 }}>
+              <List data-annotation-id="sidebar-lijst" dense sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 <ListItem disablePadding>
                   <ListItemButton
                     onClick={() => onNotificationsPanelToggle?.()}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? c.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
+                    sx={{ height: 32, paddingLeft: '4px', gap: 1, borderRadius: '6px', bgcolor: notificationsPanelOpen ? c.bgSecondaryHover : 'transparent', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Badge color="error" variant="dot" invisible={!hasUnreadNotifications} sx={{ '& .MuiBadge-badge': { width: 8, height: 8, minWidth: 8, top: 2, right: 2 } }}>
@@ -799,7 +799,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}>
+                  <ListItemButton sx={{ height: 32, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}>
                     <Box sx={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <HelpOutlineIcon sx={{ fontSize: 16 }} />
                     </Box>
@@ -814,7 +814,7 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
                       setUserAnchorEl(e.currentTarget);
                     }}
                     onMouseLeave={(e) => handleSubmenuTriggerLeave(e, 'account-menu', setUserAnchorEl)}
-                    sx={{ height: 40, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
+                    sx={{ height: 32, paddingLeft: '4px', gap: 1, borderRadius: '6px', '&:hover': { backgroundColor: c.bgPrimaryHover } }}
                   >
                     <Avatar sx={{ width: 28, height: 28, bgcolor: '#c084fc', fontSize: '0.75rem', fontWeight: 600 }}>A</Avatar>
                     <ListItemText primary={t('nav.account')} primaryTypographyProps={{ variant: 'body2' }} />
