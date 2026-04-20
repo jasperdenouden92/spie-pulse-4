@@ -348,6 +348,7 @@ const nl: Record<TranslationKey, string> = {
   'documents.searchFileTypes': 'Zoek bestandstypen\u2026',
   'documents.searchCategories': 'Zoek categorie\u00ebn\u2026',
   'documents.searchBuildings': 'Zoek gebouwen\u2026',
+  'documents.searchAssets': 'Zoek assets\u2026',
   'documents.recentlyChanged': 'Recent gewijzigd',
   'documents.noDocumentsFound': 'Geen documenten gevonden voor de huidige filters',
   'documents.sortModifiedNewest': 'Gewijzigd (nieuwste eerst)',
@@ -469,6 +470,7 @@ const nl: Record<TranslationKey, string> = {
   'filter.allAssets': 'Alle assets',
   'filter.filterAssets': 'Assets filteren',
   'filter.searchAsset': 'Zoek asset\u2026',
+  'filters.reset': 'Filters resetten',
 
   // Performance components
   'performance.overallPerformance': 'Totale Prestaties',

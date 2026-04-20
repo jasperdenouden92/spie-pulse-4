@@ -45,6 +45,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useThemeMode } from '@/theme-mode-context';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import PageHeader from '@/components/PageHeader';
 import { documentFiles, allDocumentItems, resolveFolderPath, buildFolderPath } from '@/data/documents';
@@ -334,7 +335,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   };
   const closeLinkedPopover = () => { setLinkedAnchor(null); setLinkedFile(null); };
 
-  const { get, set, getList, setList, getNumber, setNumber } = useFilterParams();
+  const { get, set, getList, setList, getNumber, setNumber, clearKeys } = useFilterParams();
 
   // Resolve current folder from URL path
   const currentFolder = useMemo(() => {
@@ -363,6 +364,8 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const [categoryAnchor, setCategoryAnchor] = useState<HTMLElement | null>(null);
   const selectedBuildings = getList('buildings');
   const [buildingAnchor, setBuildingAnchor] = useState<HTMLElement | null>(null);
+  const selectedAssets = getList('assets');
+  const [assetAnchor, setAssetAnchor] = useState<HTMLElement | null>(null);
   const selectedFileTypes = getList('fileTypes');
   const [fileTypeAnchor, setFileTypeAnchor] = useState<HTMLElement | null>(null);
   const modifiedRange = get('modifiedRange', '');
@@ -376,13 +379,22 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
     ]))).sort(),
     [],
   );
+  const allAssets = useMemo(() => {
+    const map = new Map<string, { value: string; label: string; sublabel: string }>();
+    for (const d of documentFiles) {
+      for (const a of d.assets) {
+        if (!map.has(a.id)) map.set(a.id, { value: a.id, label: a.name, sublabel: a.building });
+      }
+    }
+    return Array.from(map.values()).sort((x, y) => x.label.localeCompare(y.label));
+  }, []);
   const allFileTypes = useMemo(() => Array.from(new Set(documentFiles.map(d => d.fileType))).sort(), []);
 
   // Items in current folder, filtered + searched + sorted
   const filtered = useMemo<DocumentItem[]>(() => {
     let items: DocumentItem[] = allDocumentItems.filter(item => item.parentId === currentFolderId);
 
-    const hasFilters = selectedCategories.length > 0 || selectedBuildings.length > 0 || selectedFileTypes.length > 0 || modifiedRange || search.trim();
+    const hasFilters = selectedCategories.length > 0 || selectedBuildings.length > 0 || selectedAssets.length > 0 || selectedFileTypes.length > 0 || modifiedRange || search.trim();
 
     if (hasFilters) {
       items = items.filter(item => {
@@ -400,6 +412,10 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
             ...item.assets.map(a => a.building),
           ]);
           if (!selectedBuildings.some(b => docBuildings.has(b))) return false;
+        }
+        if (selectedAssets.length > 0) {
+          const docAssetIds = new Set<string>(item.assets.map(a => a.id));
+          if (!selectedAssets.some(id => docAssetIds.has(id))) return false;
         }
         if (selectedFileTypes.length > 0 && !selectedFileTypes.includes(item.fileType)) return false;
         if (modifiedRange) {
@@ -426,13 +442,14 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
     }
 
     return sortItems(items, sortBy);
-  }, [currentFolderId, selectedCategories, selectedBuildings, selectedFileTypes, modifiedRange, search, sortBy]);
+  }, [currentFolderId, selectedCategories, selectedBuildings, selectedAssets, selectedFileTypes, modifiedRange, search, sortBy]);
 
   // Reset page when filters/search/folder change
   const buildingsStr = get('buildings', '');
   const categoriesStr = get('categories', '');
+  const assetsStr = get('assets', '');
   const fileTypesStr = get('fileTypes', '');
-  useEffect(() => setNumber('page', 0, 0), [buildingsStr, categoriesStr, fileTypesStr, modifiedRange, search, sortBy, currentFolderId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => setNumber('page', 0, 0), [buildingsStr, categoriesStr, assetsStr, fileTypesStr, modifiedRange, search, sortBy, currentFolderId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
   const paginatedItems = useMemo(() => {
@@ -478,6 +495,9 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
   const buildingChipValue = selectedBuildings.length === 0 ? null
     : selectedBuildings.length === 1 ? selectedBuildings[0]
     : `${selectedBuildings.length} buildings`;
+  const assetChipValue = selectedAssets.length === 0 ? null
+    : selectedAssets.length === 1 ? (allAssets.find(a => a.value === selectedAssets[0])?.label ?? selectedAssets[0])
+    : t('documents.nAssets', { n: selectedAssets.length });
   const fileTypeChipValue = selectedFileTypes.length === 0 ? null
     : selectedFileTypes.length === 1 ? selectedFileTypes[0]
     : `${selectedFileTypes.length} types`;
@@ -633,10 +653,17 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
           <FilterDropdown anchorEl={categoryAnchor} onClose={() => setCategoryAnchor(null)} options={CATEGORY_OPTIONS.map(ct => ({ value: ct }))} multiple value={selectedCategories} onChange={(v) => setList('categories', v as string[])} placeholder={t('documents.searchCategories')} />
           <FilterChip label={t('common.building')} value={buildingChipValue} onClick={(e) => setBuildingAnchor(e.currentTarget)} />
           <FilterDropdown anchorEl={buildingAnchor} onClose={() => setBuildingAnchor(null)} options={allBuildings.map(b => ({ value: b }))} multiple value={selectedBuildings} onChange={(v) => setList('buildings', v as string[])} placeholder={t('documents.searchBuildings')} />
+          <FilterChip label={t('assets.asset')} value={assetChipValue} onClick={(e) => setAssetAnchor(e.currentTarget)} />
+          <FilterDropdown anchorEl={assetAnchor} onClose={() => setAssetAnchor(null)} options={allAssets.map(a => ({ value: a.value, label: `${a.label} · ${a.sublabel}` }))} multiple value={selectedAssets} onChange={(v) => setList('assets', v as string[])} placeholder={t('documents.searchAssets')} />
           <FilterChip label={t('documents.fileType')} value={fileTypeChipValue} onClick={(e) => setFileTypeAnchor(e.currentTarget)} />
           <FilterDropdown anchorEl={fileTypeAnchor} onClose={() => setFileTypeAnchor(null)} options={allFileTypes.map(ft => ({ value: ft }))} multiple value={selectedFileTypes} onChange={(v) => setList('fileTypes', v as string[])} placeholder={t('documents.searchFileTypes')} />
           <FilterChip label={t('common.modified')} value={modifiedRange ? getDateRangeDisplayLabel(modifiedRange) : null} onClick={() => setModifiedDialogOpen(true)} />
           <DateRangeSelector inline hideSlider dialogOpen={modifiedDialogOpen} onDialogOpenChange={setModifiedDialogOpen} value={modifiedRange || DEFAULT_DATE_RANGE} onChange={(v) => set('modifiedRange', v)} />
+          <ResetFiltersButton
+            show={selectedCategories.length > 0 || selectedBuildings.length > 0 || selectedAssets.length > 0 || selectedFileTypes.length > 0 || Boolean(modifiedRange)}
+            onReset={() => clearKeys(['categories', 'buildings', 'assets', 'fileTypes', 'modifiedRange'])}
+            sx={{ ml: 'auto' }}
+          />
         </Box>
 
         {/* ── Content ── */}

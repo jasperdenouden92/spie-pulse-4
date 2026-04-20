@@ -87,5 +87,14 @@ export function useFilterParams() {
     router.replace(qs ? `${path}?${qs}` : path, { scroll: false });
   }, [router, searchParams]);
 
-  return { get, set, getList, setList, getNumber, setNumber, setMany };
+  /** Remove multiple params at once. */
+  const clearKeys = useCallback((keys: string[]) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const key of keys) params.delete(key);
+    const qs = params.toString();
+    const path = window.location.pathname;
+    router.replace(qs ? `${path}?${qs}` : path, { scroll: false });
+  }, [router, searchParams]);
+
+  return { get, set, getList, setList, getNumber, setNumber, setMany, clearKeys };
 }

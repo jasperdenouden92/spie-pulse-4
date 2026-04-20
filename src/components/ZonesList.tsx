@@ -23,6 +23,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Button from '@/components/Button';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import { type Zone } from '@/data/zones';
 import { useThemeMode } from '@/theme-mode-context';
 import { useLanguage } from '@/i18n';
@@ -292,8 +293,12 @@ export default function ZonesList({ zones, onZoneClick, onBuildingLabelClick, gr
         placeholder={t('zones.searchZoneTypes')}
       />
 
-      {/* Right: Group by + Search */}
+      {/* Right: Reset + Group by + Search */}
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ResetFiltersButton
+          show={selectedZoneTypes.length > 0}
+          onReset={() => setSelectedZoneTypes([])}
+        />
         <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
           {t('common.groupBy')}
         </Button>

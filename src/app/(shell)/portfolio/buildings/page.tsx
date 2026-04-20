@@ -15,6 +15,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import FilterDropdown from '@/components/FilterDropdown';
 import type { FilterOption } from '@/components/FilterDropdown';
 import PageHeader from '@/components/PageHeader';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildings } from '@/data/buildings';
 import { buildingOperationalStats } from '@/data/buildingOperationalStats';
@@ -164,7 +165,7 @@ export default function PortfolioBuildingsRoute() {
   const router = useRouter();
   const { t } = useLanguage();
   const { selectedTenant } = useURLState();
-  const { get, set, getList, setList } = useFilterParams();
+  const { get, set, getList, setList, clearKeys } = useFilterParams();
   const { setSidePeekBuilding, setSidePeekBuildingTab, setSidePeekZone } = useAppState();
 
   const GROUP_BY_OPTIONS: { value: GroupBy; label: string }[] = [
@@ -277,6 +278,12 @@ export default function PortfolioBuildingsRoute() {
     }}>
       <Box sx={viewMode === 'map' ? { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' } : {}}>
         <PageHeader
+          actions={
+            <ResetFiltersButton
+              show={contractFilter !== 'all' || selectedCities.length > 0 || selectedGroups.length > 0 || selectedEnergies.length > 0}
+              onReset={() => clearKeys(['contract', 'cities', 'groups', 'energies'])}
+            />
+          }
           title={
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
