@@ -8,20 +8,6 @@
  */
 export const MOCK_NOW = new Date('2024-01-24');
 
-/** Return a human-readable relative time, e.g. "Today", "3 days ago", "2 weeks ago". */
-export function timeAgo(dateStr: string, now: Date = MOCK_NOW): string {
-  const d = new Date(dateStr);
-  const diffMs = now.getTime() - d.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays < 0) return 'In the future';
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-  return `${Math.floor(diffDays / 365)} years ago`;
-}
-
 /**
  * Locale-agnostic breakdown of a relative time into an i18n key + count. The
  * caller runs it through `t(...)` so labels like "12 minutes ago" /
@@ -29,6 +15,9 @@ export function timeAgo(dateStr: string, now: Date = MOCK_NOW): string {
  */
 export type TimeAgoKey =
   | 'time.now'
+  | 'time.today'
+  | 'time.yesterday'
+  | 'time.inFuture'
   | 'time.minutesAgo'
   | 'time.hoursAgo'
   | 'time.daysAgo'
@@ -57,6 +46,24 @@ export function timeAgoParts(dateStr: string, now: Date = MOCK_NOW): TimeAgoPart
   const diffMo = Math.floor(diffD / 30);
   if (diffMo < 12) return { key: 'time.monthsAgo', count: diffMo };
   return { key: 'time.yearsAgo', count: Math.floor(diffD / 365) };
+}
+
+/**
+ * Day-based breakdown mirroring {@link timeAgo} — returns `time.today` /
+ * `time.yesterday` instead of sub-day buckets. Use when the display only cares
+ * about days (e.g. document lists), not hours/minutes.
+ */
+export function timeAgoDayParts(dateStr: string, now: Date = MOCK_NOW): TimeAgoParts {
+  const d = new Date(dateStr);
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return { key: 'time.inFuture' };
+  if (diffDays === 0) return { key: 'time.today' };
+  if (diffDays === 1) return { key: 'time.yesterday' };
+  if (diffDays < 7) return { key: 'time.daysAgo', count: diffDays };
+  if (diffDays < 30) return { key: 'time.weeksAgo', count: Math.floor(diffDays / 7) };
+  if (diffDays < 365) return { key: 'time.monthsAgo', count: Math.floor(diffDays / 30) };
+  return { key: 'time.yearsAgo', count: Math.floor(diffDays / 365) };
 }
 
 /** Short relative time, e.g. "5m", "3h", "2d", "3w". Useful for dense timelines. */

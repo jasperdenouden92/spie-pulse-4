@@ -256,6 +256,9 @@ const nl: Record<TranslationKey, string> = {
 
   // Time-ago labels (used via t(key, { count }))
   'time.now': 'Nu',
+  'time.today': 'Vandaag',
+  'time.yesterday': 'Gisteren',
+  'time.inFuture': 'In de toekomst',
   'time.minutesAgo': '{count} minuten geleden',
   'time.hoursAgo': '{count} uur geleden',
   'time.daysAgo': '{count} dagen geleden',
