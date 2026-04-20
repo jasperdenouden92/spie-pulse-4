@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -49,6 +49,7 @@ import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import TicketTemplate from '@/templates/ticket';
 import QuotationTemplate from '@/templates/quotation';
 import PlaceholderSidePeek from '@/components/PlaceholderSidePeek';
+import DocumentPreviewOverlay from '@/components/DocumentPreviewOverlay';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import ChangelogButton from '@/components/ChangelogButton';
@@ -64,6 +65,7 @@ import { zones as allZones } from '@/data/zones';
 import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
 import { tickets as allTickets } from '@/data/tickets';
 import { quotations as allQuotations } from '@/data/quotations';
+import { documentFiles } from '@/data/documents';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
 
@@ -108,6 +110,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
   const { t } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isNarrow = useMediaQuery('(max-width:960px)');
 
   // ── Context state ──────────────────────────────────────────────────────
@@ -475,6 +478,14 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       setHasUnreadNotifications(true);
     }, 3000);
   };
+
+  // ── Document preview overlay (?doc=<id>) ─────────────────────────────
+  const docParam = searchParams.get('doc') ?? '';
+  const previewDocument = useMemo(
+    () => (docParam ? documentFiles.find(d => d.id === docParam) ?? null : null),
+    [docParam],
+  );
+  const closeDocumentPreview = useCallback(() => setURLParams({ doc: '' }), [setURLParams]);
 
   const setSelectedBuilding = useCallback((b: Building | null) => {
     if (b) {
@@ -1042,16 +1053,23 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
             onPanelClose={() => setSidePeekPlaceholder(null)}
             onPanelFullscreen={() => {
               const p = sidePeekPlaceholder;
+              if (p.kind === 'document') {
+                setSidePeekPlaceholder(null);
+                setURLParams({ doc: p.id });
+                return;
+              }
               const dest =
                 p.kind === 'insight' ? '/insights/alerts' :
                 p.kind === 'mutation' ? '/operations' :
-                p.kind === 'maintenance' ? `/operations/maintenance/${p.id}` :
-                `/operations/documents/${p.id}`;
+                `/operations/maintenance/${p.id}`;
               router.push(dest);
             }}
           />
         )}
       </SidePeekPanel>
+
+      {/* Document preview overlay (fullscreen) */}
+      <DocumentPreviewOverlay file={previewDocument} onClose={closeDocumentPreview} />
 
       <ChangelogButton />
 

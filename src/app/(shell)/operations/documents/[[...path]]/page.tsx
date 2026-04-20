@@ -337,6 +337,8 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
 
   const { get, set, getList, setList, getNumber, setNumber, clearKeys } = useFilterParams();
 
+  const openDocument = (id: string) => set('doc', id);
+
   // Resolve current folder from URL path
   const currentFolder = useMemo(() => {
     if (pathSegments.length === 0) return null;
@@ -607,6 +609,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
               {recentlyChanged.map((doc) => (
                 <Box
                   key={doc.id}
+                  onClick={() => openDocument(doc.id)}
                   sx={{
                     border: `1px solid ${c.cardBorder}`, borderRadius: '12px', bgcolor: c.bgPrimary,
                     boxShadow: c.cardShadow, p: 2, cursor: 'pointer',
@@ -717,7 +720,7 @@ export default function OperationsDocumentsRoute({ params }: { params: Promise<{
                       {group.items.map((item) => (
                         <TableRow
                           key={item.id}
-                          onClick={() => item.type === 'folder' ? navigateToFolder(item.id) : undefined}
+                          onClick={() => item.type === 'folder' ? navigateToFolder(item.id) : openDocument(item.id)}
                           sx={{ '&:hover': { bgcolor: c.bgPrimaryHover }, cursor: 'pointer' }}
                         >
                           <TableCell sx={{ width: 44, p: '8px 4px 8px 16px' }}>
