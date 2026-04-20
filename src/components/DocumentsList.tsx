@@ -25,6 +25,7 @@ import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import { useThemeMode } from '@/theme-mode-context';
 import { useLanguage } from '@/i18n';
 import type { DocumentFile, DocumentCategory } from '@/data/documents';
@@ -162,21 +163,27 @@ export default function DocumentsList({ documents, hideBuildingColumn, showFilte
         placeholder={t('documents.searchFileTypes')}
       />
 
-      <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
-        <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
-        <InputBase
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('documents.searchDocuments')}
-          sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
-          endAdornment={search ? (
-            <InputAdornment position="end">
-              <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
-                <CloseIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </InputAdornment>
-          ) : null}
+      <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ResetFiltersButton
+          show={selectedCategories.length > 0 || selectedFileTypes.length > 0}
+          onReset={() => { setSelectedCategories([]); setSelectedFileTypes([]); }}
         />
+        <Box sx={{ display: 'flex', alignItems: 'center', height: 30, borderRadius: '6px', border: '1px solid', borderColor: c.borderPrimary, bgcolor: c.bgPrimary, px: 1, gap: 0.5, '&:focus-within': { borderColor: c.brandSecondary }, transition: 'border-color 0.15s ease' }}>
+          <SearchIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
+          <InputBase
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('documents.searchDocuments')}
+            sx={{ fontSize: '0.8rem', minWidth: 140, '& input': { p: 0, lineHeight: 1 } }}
+            endAdornment={search ? (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={() => setSearch('')} sx={{ p: 0.25 }}>
+                  <CloseIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              </InputAdornment>
+            ) : null}
+          />
+        </Box>
       </Box>
     </Box>
   ) : null;

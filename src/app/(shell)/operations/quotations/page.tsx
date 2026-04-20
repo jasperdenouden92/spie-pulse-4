@@ -40,6 +40,7 @@ import FilterRangeDropdown from '@/components/FilterRangeDropdown';
 import type { RangeValue } from '@/components/FilterRangeDropdown';
 import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import PageHeader from '@/components/PageHeader';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import { quotations } from '@/data/quotations';
 import type { Quotation, QuotationStatus } from '@/data/quotations';
 import { useLanguage } from '@/i18n';
@@ -168,7 +169,7 @@ export default function OperationsQuotationsRoute() {
   const searchParams = useSearchParams();
   const initialStatuses = searchParams.get('statusFilter')?.split(',');
 
-  const { get, set, getList, setList, getNumber, setNumber } = useFilterParams();
+  const { get, set, getList, setList, getNumber, setNumber, clearKeys } = useFilterParams();
 
   // View mode, search, sort, pagination, grouping
   const viewMode = get('viewMode', 'list') as 'list' | 'grid';
@@ -283,6 +284,12 @@ export default function OperationsQuotationsRoute() {
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
       <Box>
         <PageHeader
+          actions={
+            <ResetFiltersButton
+              show={selectedStatuses.length > 0 || selectedBuildings.length > 0 || Boolean(amountMin) || Boolean(amountMax) || Boolean(dateRange) || Boolean(expirationRange)}
+              onReset={() => clearKeys(['statuses', 'statusFilter', 'buildings', 'amountMin', 'amountMax', 'dateRange', 'expirationRange'])}
+            />
+          }
           title={
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>

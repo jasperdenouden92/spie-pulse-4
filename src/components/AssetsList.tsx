@@ -32,6 +32,7 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import Button from '@/components/Button';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import { useThemeMode } from '@/theme-mode-context';
 import { useLanguage } from '@/i18n';
 import { type AssetNode } from '@/data/assetTree';
@@ -734,8 +735,18 @@ export default function AssetsList({ assets, onAssetClick, onBuildingLabelClick,
       <FilterChip label={t('assets.zone')} value={zoneChip} onClick={(e) => setZoneAnchor(e.currentTarget)} onClear={selectedZones.length > 0 ? () => setSelectedZones([]) : undefined} />
       <FilterDropdown anchorEl={zoneAnchor} onClose={() => setZoneAnchor(null)} options={allZoneNames.map(z => ({ value: z }))} multiple value={selectedZones} onChange={(v) => setSelectedZones(v as string[])} placeholder={t('assets.searchZones')} />
 
-      {/* Right: Group by + Search */}
+      {/* Right: Reset + Group by + Search */}
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <ResetFiltersButton
+          show={selectedCategories.length > 0 || selectedStatuses.length > 0 || selectedManufacturers.length > 0 || selectedModels.length > 0 || selectedZones.length > 0}
+          onReset={() => {
+            setSelectedCategories([]);
+            setSelectedStatuses([]);
+            setSelectedManufacturers([]);
+            setSelectedModels([]);
+            setSelectedZones([]);
+          }}
+        />
         <Button variant="secondary" size="sm" endIcon={<ExpandMoreIcon />} onClick={(e) => setGroupByMenuAnchor(e.currentTarget)}>
           {t('common.groupBy')}
         </Button>

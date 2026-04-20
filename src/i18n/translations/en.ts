@@ -346,6 +346,7 @@ const en = {
   'documents.searchFileTypes': 'Search file types\u2026',
   'documents.searchCategories': 'Search categories...',
   'documents.searchBuildings': 'Search buildings...',
+  'documents.searchAssets': 'Search assets\u2026',
   'documents.recentlyChanged': 'Recently changed',
   'documents.noDocumentsFound': 'No documents match the current filters',
   'documents.sortModifiedNewest': 'Modified (newest first)',
@@ -467,6 +468,7 @@ const en = {
   'filter.allAssets': 'All assets',
   'filter.filterAssets': 'Filter assets',
   'filter.searchAsset': 'Search asset\u2026',
+  'filters.reset': 'Reset filters',
 
   // Performance components
   'performance.overallPerformance': 'Overall Performance',

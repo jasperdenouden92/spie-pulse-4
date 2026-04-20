@@ -14,6 +14,7 @@ import { useThemeMode } from '@/theme-mode-context';
 import { useAppState } from '@/context/AppStateContext';
 import { handleSidePeekClick } from '@/components/SidePeekPanel';
 import PageHeader from '@/components/PageHeader';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown, { type FilterOption } from '@/components/FilterDropdown';
 import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
@@ -98,7 +99,7 @@ export default function PortfolioAssetsRoute() {
   const allModels     = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.model).filter(Boolean) as string[])).sort(), []);
   const allZones      = useMemo(() => Array.from(new Set(ALL_ASSETS.map(a => a.metadata?.zone).filter(Boolean) as string[])).sort(), []);
 
-  const { get, set, getList, setList } = useFilterParams();
+  const { get, set, getList, setList, clearKeys } = useFilterParams();
 
   // Always-visible filters
   const search = get('search', '');
@@ -311,6 +312,12 @@ export default function PortfolioAssetsRoute() {
   return (
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
       <PageHeader
+        actions={
+          <ResetFiltersButton
+            show={selectedCategories.length > 0 || selectedStatuses.length > 0 || selectedBuildings.length > 0 || selectedManufacturers.length > 0 || selectedModels.length > 0 || selectedZones.length > 0 || Boolean(dateRange)}
+            onReset={() => clearKeys(['categories', 'statuses', 'buildings', 'manufacturers', 'models', 'zones', 'dateRange'])}
+          />
+        }
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>

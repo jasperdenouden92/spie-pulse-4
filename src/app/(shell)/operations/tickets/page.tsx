@@ -40,6 +40,7 @@ import { useThemeMode } from '@/theme-mode-context';
 import FilterChip from '@/components/FilterChip';
 import FilterDropdown from '@/components/FilterDropdown';
 import FilterRangeDropdown from '@/components/FilterRangeDropdown';
+import ResetFiltersButton from '@/components/ResetFiltersButton';
 import type { RangeValue } from '@/components/FilterRangeDropdown';
 import DateRangeSelector, { parseDateRange, getDateRangeDisplayLabel } from '@/components/DateRangeSelector';
 import PageHeader from '@/components/PageHeader';
@@ -179,7 +180,7 @@ export default function OperationsTicketsRoute() {
   const searchParams = useSearchParams();
   const initialStatuses = searchParams.get('statusFilter')?.split(',');
 
-  const { get, set, getList, setList, getNumber, setNumber } = useFilterParams();
+  const { get, set, getList, setList, getNumber, setNumber, clearKeys } = useFilterParams();
 
   // View mode, search, sort, pagination, grouping
   const viewMode = get('viewMode', 'list') as 'list' | 'grid';
@@ -319,6 +320,12 @@ export default function OperationsTicketsRoute() {
     <Container maxWidth={false} sx={{ pb: 3, flex: 1, mt: '56px', pt: 2, px: isNarrow ? 0.5 : 3 }}>
       <Box>
         <PageHeader
+          actions={
+            <ResetFiltersButton
+              show={selectedClients.length > 0 || Boolean(selectedType) || selectedStatuses.length > 0 || selectedBuildings.length > 0 || selectedDisciplines.length > 0 || Boolean(amountMin) || Boolean(amountMax) || Boolean(dateRange)}
+              onReset={() => clearKeys(['clients', 'type', 'statuses', 'statusFilter', 'buildings', 'disciplines', 'amountMin', 'amountMax', 'dateRange'])}
+            />
+          }
           title={
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '2rem', lineHeight: 1.3 }}>
