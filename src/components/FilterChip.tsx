@@ -3,7 +3,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useThemeMode } from '@/theme-mode-context';
@@ -34,7 +33,7 @@ export default function FilterChip({
   const { themeColors: c } = useThemeMode();
   const hasValue = value != null && value !== '';
   const isFilled = !neutral && hasValue;
-  const showClear = clearable && onClear;
+  const showClear = clearable && !!onClear && hasValue;
 
   return (
     <Box
