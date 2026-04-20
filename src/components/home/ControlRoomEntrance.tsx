@@ -234,12 +234,12 @@ function VariantB() {
 type ImpactSentiment = 'positive' | 'moderate' | 'negative';
 
 interface ImpactItem {
-  kpi: string;
+  kpiKey: TranslationKey;
   icon: React.ReactNode;
   /** Bolded phrase — the "what happened" part that carries the story. */
-  emphasis: string;
+  emphasisKey: TranslationKey;
   /** Rest of the sentence, continues straight after `emphasis` with a leading space if needed. */
-  context: string;
+  contextKey: TranslationKey;
   sentiment: ImpactSentiment;
   metricKey: string;
   /** Drop the user into a specific Control Room tab (e.g. `performance`). */
@@ -258,40 +258,40 @@ const SENTIMENT_COLORS: Record<ImpactSentiment, string> = {
 // in production — surface the "so what?" behind the numbers.
 const IMPACT_ITEMS: ImpactItem[] = [
   {
-    kpi: 'Sustainability',
+    kpiKey: 'metric.sustainability',
     icon: <NatureOutlinedIcon />,
-    emphasis: 'Performance is dropping a bit',
-    context: ' compared to last year',
+    emphasisKey: 'home.impact.sustainability.emphasis',
+    contextKey: 'home.impact.sustainability.context',
     sentiment: 'moderate',
     metricKey: 'sustainability',
     tab: 'performance',
     dateRange: 'This Year',
   },
   {
-    kpi: 'Maintenance',
+    kpiKey: 'metric.maintenance',
     icon: <BuildOutlinedIcon />,
-    emphasis: 'Maintenance Performance',
-    context: ' has grown significantly last month',
+    emphasisKey: 'home.impact.maintenanceGrowth.emphasis',
+    contextKey: 'home.impact.maintenanceGrowth.context',
     sentiment: 'positive',
     metricKey: 'maintenance',
     tab: 'performance',
     dateRange: 'Last Month',
   },
   {
-    kpi: 'Maintenance',
+    kpiKey: 'metric.maintenance',
     icon: <BuildOutlinedIcon />,
-    emphasis: '4 buildings',
-    context: ' went from Poor to Moderate',
+    emphasisKey: 'home.impact.buildingsImproved.emphasis',
+    contextKey: 'home.impact.buildingsImproved.context',
     sentiment: 'positive',
     metricKey: 'maintenance',
     tab: 'performance',
     dateRange: 'Last Month',
   },
   {
-    kpi: 'Overall',
+    kpiKey: 'metric.overall',
     icon: <DashboardOutlinedIcon />,
-    emphasis: '92% of buildings',
-    context: ' are now performing Good',
+    emphasisKey: 'home.impact.buildingsPerformingGood.emphasis',
+    contextKey: 'home.impact.buildingsPerformingGood.context',
     sentiment: 'positive',
     metricKey: 'overall',
     tab: 'performance',
@@ -300,6 +300,7 @@ const IMPACT_ITEMS: ImpactItem[] = [
 
 function VariantC({ onOpenImpact }: { onOpenImpact: (item: ImpactItem) => void }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
 
   return (
     <Box
@@ -313,7 +314,7 @@ function VariantC({ onOpenImpact }: { onOpenImpact: (item: ImpactItem) => void }
         const color = SENTIMENT_COLORS[item.sentiment];
         return (
           <Box
-            key={`${item.kpi}-${idx}`}
+            key={`${item.kpiKey}-${idx}`}
             onClick={() => onOpenImpact(item)}
             sx={{
               border: `1px solid ${c.cardBorder}`,
@@ -359,14 +360,14 @@ function VariantC({ onOpenImpact }: { onOpenImpact: (item: ImpactItem) => void }
                   letterSpacing: '0.04em',
                 }}
               >
-                {item.kpi}
+                {t(item.kpiKey)}
               </Typography>
               <Typography
                 variant="body2"
                 sx={{ fontSize: '0.8125rem', lineHeight: 1.4, color: 'text.primary' }}
               >
-                <Box component="span" sx={{ fontWeight: 700 }}>{item.emphasis}</Box>
-                {item.context}
+                <Box component="span" sx={{ fontWeight: 700 }}>{t(item.emphasisKey)}</Box>
+                {t(item.contextKey)}
               </Typography>
             </Box>
           </Box>

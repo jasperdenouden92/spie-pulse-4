@@ -192,6 +192,28 @@ const nl: Record<TranslationKey, string> = {
   'home.contractKpis': 'Operationele KPI\u2019s',
   'home.openControlRoom': 'Open Controlekamer',
 
+  // Latest Impact stories (home Variant C cards)
+  'home.impact.sustainability.emphasis': 'Prestatie daalt licht',
+  'home.impact.sustainability.context': ' ten opzichte van vorig jaar',
+  'home.impact.maintenanceGrowth.emphasis': 'Onderhoudsprestatie',
+  'home.impact.maintenanceGrowth.context': ' is afgelopen maand flink gestegen',
+  'home.impact.buildingsImproved.emphasis': '4 gebouwen',
+  'home.impact.buildingsImproved.context': ' zijn van Slecht naar Matig gegaan',
+  'home.impact.buildingsPerformingGood.emphasis': '92% van de gebouwen',
+  'home.impact.buildingsPerformingGood.context': ' presteert nu Goed',
+
+  // Latest activity feed verbs (rendered after the actor name)
+  'activity.completedWorkorder': 'heeft werkorder "{label}" afgerond',
+  'activity.openedTicket': 'heeft ticket "{label}" geopend',
+  'activity.approvedQuotation': 'heeft offerte "{label}" goedgekeurd',
+  'activity.rejectedQuotation': 'heeft offerte "{label}" afgewezen',
+  'activity.completedMaintenance': 'heeft onderhoud "{label}" afgerond',
+  'activity.updatedDocument': 'heeft document "{label}" bijgewerkt',
+  'activity.addedAsset': 'heeft asset "{label}" toegevoegd',
+  'activity.deletedAsset': 'heeft asset "{label}" verwijderd',
+  'activity.movedAsset': 'heeft asset "{label}" verplaatst',
+  'activity.renamedAsset': 'heeft asset "{label}" hernoemd',
+
   // Placeholder side peek
   'home.placeholderComingSoon': 'Gedetailleerde weergave volgt binnenkort',
   'home.placeholderBody': 'Een speciale detailweergave voor dit item is nog niet beschikbaar. Dit paneel toont voorlopig de basisgegevens uit de homepage-feed.',
