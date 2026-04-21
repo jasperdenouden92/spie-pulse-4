@@ -2,11 +2,13 @@
 
 import React, { useEffect } from 'react';
 import { useAppState } from '@/context/AppStateContext';
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
@@ -97,7 +99,7 @@ export default function QuotationTemplate({
   const { t } = useLanguage();
   const category = inferCategory(quotation.title);
   const categoryColor = getCategoryColor(category);
-  const { addRecentlyVisited } = useAppState();
+  const { addRecentlyVisited, hasPeekHistory, goBackPeek } = useAppState();
 
   useEffect(() => {
     addRecentlyVisited({
@@ -108,7 +110,8 @@ export default function QuotationTemplate({
     });
   }, [quotation.id, quotation.title, quotation.building, addRecentlyVisited]);
 
-  const panelActions = (onPanelClose || onPanelFullscreen) ? (
+  const showBack = !!onPanelClose && hasPeekHistory;
+  const panelActions = (onPanelClose || showBack) ? (
     <>
       {onPanelClose && (
         <Tooltip title={t('building.closePanel')}>
@@ -117,10 +120,10 @@ export default function QuotationTemplate({
           </IconButton>
         </Tooltip>
       )}
-      {onPanelFullscreen && (
-        <Tooltip title={t('building.openFullscreen')}>
-          <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
-            <OpenInFullIcon sx={{ fontSize: 18 }} />
+      {showBack && (
+        <Tooltip title={t('common.back')}>
+          <IconButton size="small" onClick={goBackPeek} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+            <ArrowBackIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
@@ -153,12 +156,21 @@ export default function QuotationTemplate({
         </>
       }
       heroActions={
-        <IconButton
-          size="small"
-          sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}
-        >
-          <StarOutlineIcon sx={{ fontSize: 18 }} />
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          {onPanelFullscreen && (
+            <Tooltip title={t('building.openFullscreen')}>
+              <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+                <OpenInFullIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+          <IconButton
+            size="small"
+            sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}
+          >
+            <StarOutlineIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
       }
     />
   );

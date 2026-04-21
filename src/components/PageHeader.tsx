@@ -52,6 +52,8 @@ interface PageHeaderProps {
   entityIconBgColor?: string;
   /** Short type label shown in the subtitle row (e.g. "Zone", "Asset"). */
   entityType?: string;
+  /** Optional inline meta row rendered below the subtitle in the entity title block. */
+  entityMeta?: React.ReactNode;
 }
 
 function DefaultHeader({ topBar, title, children, actions, c }: {
@@ -329,6 +331,7 @@ function EntityHeader({
   entityIcon,
   entityIconBgColor,
   entityType,
+  entityMeta,
   panelActions,
 }: PageHeaderProps) {
   const isNarrow = useMediaQuery('(max-width:960px)');
@@ -450,6 +453,11 @@ function EntityHeader({
             >
               {subtitle}
             </Typography>
+          )}
+          {entityMeta && (
+            <Box sx={{ mt: 0.75, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
+              {entityMeta}
+            </Box>
           )}
         </Box>
       </Box>

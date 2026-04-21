@@ -112,6 +112,10 @@ interface AppStateValue {
   sidePeekPlaceholder: PlaceholderPeek | null;
   setSidePeekPlaceholder: React.Dispatch<React.SetStateAction<PlaceholderPeek | null>>;
 
+  // Peek history (back navigation between linked side peeks)
+  hasPeekHistory: boolean;
+  goBackPeek: () => void;
+
   // Favorites
   favorites: Favorite[];
   setFavorites: React.Dispatch<React.SetStateAction<Favorite[]>>;
@@ -170,35 +174,104 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [sidePeekServiceOrder, _setSidePeekServiceOrder] = useState<ServiceOrder | null>(null);
   const [sidePeekPlaceholder, _setSidePeekPlaceholder] = useState<PlaceholderPeek | null>(null);
 
+  // Peek navigation history — captures the current peek when a new one is opened
+  // so the user can go back to the prior peek (e.g. service order → building → back).
+  type PeekSnapshot =
+    | { kind: 'building'; data: Building; tab: BuildingDetailTab }
+    | { kind: 'zone'; data: Zone; tab: ZoneDetailTab }
+    | { kind: 'asset'; data: AssetNode; tab: AssetDetailTab }
+    | { kind: 'ticket'; data: Ticket }
+    | { kind: 'quotation'; data: Quotation }
+    | { kind: 'serviceOrder'; data: ServiceOrder }
+    | { kind: 'placeholder'; data: PlaceholderPeek };
+  const [peekHistory, setPeekHistory] = useState<PeekSnapshot[]>([]);
+  const isRestoringPeekRef = useRef(false);
+
+  const captureCurrentPeek = (): PeekSnapshot | null => {
+    if (sidePeekBuilding) return { kind: 'building', data: sidePeekBuilding, tab: sidePeekBuildingTab };
+    if (sidePeekZone) return { kind: 'zone', data: sidePeekZone, tab: sidePeekZoneTab };
+    if (sidePeekAsset) return { kind: 'asset', data: sidePeekAsset, tab: sidePeekAssetTab };
+    if (sidePeekTicket) return { kind: 'ticket', data: sidePeekTicket };
+    if (sidePeekQuotation) return { kind: 'quotation', data: sidePeekQuotation };
+    if (sidePeekServiceOrder) return { kind: 'serviceOrder', data: sidePeekServiceOrder };
+    if (sidePeekPlaceholder) return { kind: 'placeholder', data: sidePeekPlaceholder };
+    return null;
+  };
+
+  const onWrappedPeekChange = (v: unknown) => {
+    if (isRestoringPeekRef.current) return;
+    if (v) {
+      const current = captureCurrentPeek();
+      if (current) setPeekHistory(h => [...h, current]);
+    } else {
+      // Explicit close (e.g. close button) ends the navigation session.
+      setPeekHistory([]);
+    }
+  };
+
   // Wrappers that enforce single-peek: opening one closes the others
   const setSidePeekBuilding: typeof _setSidePeekBuilding = (v) => {
+    onWrappedPeekChange(v);
     _setSidePeekBuilding(v);
     if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekZone: typeof _setSidePeekZone = (v) => {
+    onWrappedPeekChange(v);
     _setSidePeekZone(v);
     if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekAsset: typeof _setSidePeekAsset = (v) => {
+    onWrappedPeekChange(v);
     _setSidePeekAsset(v);
     if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekTicket: typeof _setSidePeekTicket = (v) => {
+    onWrappedPeekChange(v);
     _setSidePeekTicket(v);
     if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekQuotation: typeof _setSidePeekQuotation = (v) => {
+    onWrappedPeekChange(v);
     _setSidePeekQuotation(v);
     if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekServiceOrder: typeof _setSidePeekServiceOrder = (v) => {
+    onWrappedPeekChange(v);
     _setSidePeekServiceOrder(v);
     if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekPlaceholder: typeof _setSidePeekPlaceholder = (v) => {
+    onWrappedPeekChange(v);
     _setSidePeekPlaceholder(v);
     if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); }
   };
+
+  const goBackPeek = () => {
+    setPeekHistory(h => {
+      if (h.length === 0) return h;
+      const snapshot = h[h.length - 1];
+      const next = h.slice(0, -1);
+      isRestoringPeekRef.current = true;
+      try {
+        // Use underscore setters so this restore doesn't trigger the history wrapper.
+        _setSidePeekBuilding(snapshot.kind === 'building' ? snapshot.data : null);
+        _setSidePeekZone(snapshot.kind === 'zone' ? snapshot.data : null);
+        _setSidePeekAsset(snapshot.kind === 'asset' ? snapshot.data : null);
+        _setSidePeekTicket(snapshot.kind === 'ticket' ? snapshot.data : null);
+        _setSidePeekQuotation(snapshot.kind === 'quotation' ? snapshot.data : null);
+        _setSidePeekServiceOrder(snapshot.kind === 'serviceOrder' ? snapshot.data : null);
+        _setSidePeekPlaceholder(snapshot.kind === 'placeholder' ? snapshot.data : null);
+        if (snapshot.kind === 'building') setSidePeekBuildingTab(snapshot.tab);
+        else if (snapshot.kind === 'zone') setSidePeekZoneTab(snapshot.tab);
+        else if (snapshot.kind === 'asset') setSidePeekAssetTab(snapshot.tab);
+      } finally {
+        isRestoringPeekRef.current = false;
+      }
+      return next;
+    });
+  };
+
+  const hasPeekHistory = peekHistory.length > 0;
 
   // Favorites — default to a real tenant building so the sidebar never shows
   // legacy mock names. "Philips Healthcare Best" is the portfolio default.
@@ -273,6 +346,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       sidePeekQuotation, setSidePeekQuotation,
       sidePeekServiceOrder, setSidePeekServiceOrder,
       sidePeekPlaceholder, setSidePeekPlaceholder,
+      hasPeekHistory, goBackPeek,
       favorites, setFavorites,
       localQuickviewAsset, setLocalQuickviewAsset,
       openedViaInspect, setOpenedViaInspect,

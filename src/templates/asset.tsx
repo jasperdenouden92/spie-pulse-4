@@ -15,6 +15,7 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Tooltip from '@mui/material/Tooltip';
 import SearchIcon from '@mui/icons-material/Search';
@@ -353,7 +354,7 @@ export default function AssetDetailPage({
   const { t } = useLanguage();
   const tabs = useAssetTabs();
   const assetColor = getAssetColor(asset.metadata?.category);
-  const { addRecentlyVisited } = useAppState();
+  const { addRecentlyVisited, hasPeekHistory, goBackPeek } = useAppState();
 
   // Resolve path: [building, floor, zone, ...parentAssets, currentAsset]
   const path = useMemo(() => getPathToAsset(asset.id) ?? [], [asset.id]);
@@ -403,7 +404,8 @@ export default function AssetDetailPage({
     return segs;
   }, [t, clusterName, buildingNode, zoneNode, parentAssetNodes, onBackToPortfolio, onBackToCluster, onBackToBuilding, onBackToZone, onAssetChange]);
 
-  const panelActions = (onPanelClose || onPanelFullscreen) ? (
+  const showBack = !!onPanelClose && hasPeekHistory;
+  const panelActions = (onPanelClose || showBack) ? (
     <>
       {onPanelClose && (
         <Tooltip title={t('building.closePanel')}>
@@ -412,10 +414,10 @@ export default function AssetDetailPage({
           </IconButton>
         </Tooltip>
       )}
-      {onPanelFullscreen && (
-        <Tooltip title={t('building.openFullscreen')}>
-          <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
-            <OpenInFullIcon sx={{ fontSize: 18 }} />
+      {showBack && (
+        <Tooltip title={t('common.back')}>
+          <IconButton size="small" onClick={goBackPeek} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+            <ArrowBackIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
@@ -445,12 +447,21 @@ export default function AssetDetailPage({
         />
       }
       heroActions={
-        <IconButton
-          size="small"
-          sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}
-        >
-          <StarOutlineIcon sx={{ fontSize: 18 }} />
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          {onPanelFullscreen && (
+            <Tooltip title={t('building.openFullscreen')}>
+              <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+                <OpenInFullIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+          <IconButton
+            size="small"
+            sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}
+          >
+            <StarOutlineIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
       }
     />
   );

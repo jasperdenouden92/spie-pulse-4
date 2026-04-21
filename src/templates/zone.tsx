@@ -11,6 +11,7 @@ import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Tooltip from '@mui/material/Tooltip';
 import SearchIcon from '@mui/icons-material/Search';
@@ -175,7 +176,7 @@ export default function ZoneDetailPage({
   const tabs = useZoneTabs();
   const zoneColor = getZoneColor(zone.name);
   const [zoneAnchorEl, setZoneAnchorEl] = useState<HTMLElement | null>(null);
-  const { addRecentlyVisited } = useAppState();
+  const { addRecentlyVisited, hasPeekHistory, goBackPeek } = useAppState();
 
   useEffect(() => {
     addRecentlyVisited({
@@ -186,7 +187,8 @@ export default function ZoneDetailPage({
     });
   }, [zone.id, zone.name, zone.buildingName, zone.floor, addRecentlyVisited]);
 
-  const panelActions = (onPanelClose || onPanelFullscreen) ? (
+  const showBack = !!onPanelClose && hasPeekHistory;
+  const panelActions = (onPanelClose || showBack) ? (
     <>
       {onPanelClose && (
         <Tooltip title={t('building.closePanel')}>
@@ -195,10 +197,10 @@ export default function ZoneDetailPage({
           </IconButton>
         </Tooltip>
       )}
-      {onPanelFullscreen && (
-        <Tooltip title={t('building.openFullscreen')}>
-          <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
-            <OpenInFullIcon sx={{ fontSize: 18 }} />
+      {showBack && (
+        <Tooltip title={t('common.back')}>
+          <IconButton size="small" onClick={goBackPeek} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+            <ArrowBackIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
@@ -254,12 +256,21 @@ export default function ZoneDetailPage({
         </>
       }
       heroActions={
-        <IconButton
-          size="small"
-          sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}
-        >
-          <StarOutlineIcon sx={{ fontSize: 18 }} />
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          {onPanelFullscreen && (
+            <Tooltip title={t('building.openFullscreen')}>
+              <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}>
+                <OpenInFullIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+          <IconButton
+            size="small"
+            sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'action.hover', color: 'text.primary' } }}
+          >
+            <StarOutlineIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
       }
     />
   );

@@ -10,6 +10,7 @@ import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Tooltip from '@mui/material/Tooltip';
 import type { Building } from '@/data/buildings';
@@ -59,7 +60,7 @@ export default function BuildingDetailPage({
   const tabs = useTabs();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const [buildingAnchorEl, setBuildingAnchorEl] = useState<HTMLElement | null>(null);
-  const { addRecentlyVisited } = useAppState();
+  const { addRecentlyVisited, hasPeekHistory, goBackPeek } = useAppState();
 
   useEffect(() => {
     addRecentlyVisited({
@@ -70,7 +71,8 @@ export default function BuildingDetailPage({
     });
   }, [building.id, building.name, building.city, addRecentlyVisited]);
 
-  const panelActions = (onPanelClose || onPanelFullscreen) ? (
+  const showBack = !!onPanelClose && hasPeekHistory;
+  const panelActions = (onPanelClose || showBack) ? (
     <>
       {onPanelClose && (
         <Tooltip title={t('building.closePanel')}>
@@ -79,10 +81,10 @@ export default function BuildingDetailPage({
           </IconButton>
         </Tooltip>
       )}
-      {onPanelFullscreen && (
-        <Tooltip title={t('building.openFullscreen')}>
-          <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}>
-            <OpenInFullIcon sx={{ fontSize: 18 }} />
+      {showBack && (
+        <Tooltip title={t('common.back')}>
+          <IconButton size="small" onClick={goBackPeek} sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}>
+            <ArrowBackIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
       )}
@@ -135,12 +137,21 @@ export default function BuildingDetailPage({
         </>
       }
       heroActions={
-        <IconButton
-          size="small"
-          sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}
-        >
-          <StarOutlineIcon sx={{ fontSize: 18 }} />
-        </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          {onPanelFullscreen && (
+            <Tooltip title={t('building.openFullscreen')}>
+              <IconButton size="small" onClick={onPanelFullscreen} sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}>
+                <OpenInFullIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+          <IconButton
+            size="small"
+            sx={{ color: 'rgba(255,255,255,0.85)', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' } }}
+          >
+            <StarOutlineIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
       }
     />
   );
