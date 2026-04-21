@@ -48,6 +48,7 @@ import AssetTemplate from '@/templates/asset';
 import LinkedDocumentsList from '@/components/LinkedDocumentsList';
 import TicketTemplate from '@/templates/ticket';
 import QuotationTemplate from '@/templates/quotation';
+import ServiceOrderTemplate from '@/templates/serviceOrder';
 import PlaceholderSidePeek from '@/components/PlaceholderSidePeek';
 import DocumentPreviewOverlay from '@/components/DocumentPreviewOverlay';
 import ZonesList from '@/components/ZonesList';
@@ -65,6 +66,7 @@ import { zones as allZones } from '@/data/zones';
 import { assetTree, getAssetById, getPathToAsset, type AssetNode } from '@/data/assetTree';
 import { tickets as allTickets } from '@/data/tickets';
 import { quotations as allQuotations } from '@/data/quotations';
+import { getServiceOrderById } from '@/data/processOrders';
 import { documentFiles } from '@/data/documents';
 import { getMetricsForPeriod, applyContractVariation, CONTRACT_HIDDEN_THEME_KEYS, CONTRACT_HIDDEN_OPERATIONS_KEYS } from '@/data/metrics';
 import { buildingToSlug, slugToBuilding } from '@/utils/slugs';
@@ -130,6 +132,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     sidePeekAssetTab, setSidePeekAssetTab,
     sidePeekTicket, setSidePeekTicket,
     sidePeekQuotation, setSidePeekQuotation,
+    sidePeekServiceOrder, setSidePeekServiceOrder,
     sidePeekPlaceholder, setSidePeekPlaceholder,
     favorites, setFavorites,
     localQuickviewAsset, setLocalQuickviewAsset,
@@ -173,6 +176,7 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     setSidePeekAsset(null);
     setSidePeekTicket(null);
     setSidePeekQuotation(null);
+    setSidePeekServiceOrder(null);
     setSidePeekPlaceholder(null);
     setLocalQuickviewAsset(null);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -194,10 +198,12 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
       setURLParams({ peek: `ticket:${sidePeekTicket.id}` });
     } else if (sidePeekQuotation) {
       setURLParams({ peek: `quotation:${sidePeekQuotation.id}` });
+    } else if (sidePeekServiceOrder) {
+      setURLParams({ peek: `serviceorder:${sidePeekServiceOrder.id}` });
     } else {
       setURLParams({ peek: '' });
     }
-  }, [sidePeekBuilding, sidePeekZone, sidePeekAsset, sidePeekTicket, sidePeekQuotation]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sidePeekBuilding, sidePeekZone, sidePeekAsset, sidePeekTicket, sidePeekQuotation, sidePeekServiceOrder]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Read: URL ?peek= param → side peek state (on mount only)
   useEffect(() => {
@@ -223,6 +229,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
     } else if (type === 'quotation') {
       const q = allQuotations.find(q => q.id === id);
       if (q) { setSidePeekQuotation(q); }
+    } else if (type === 'serviceorder') {
+      const o = getServiceOrderById(id);
+      if (o) { setSidePeekServiceOrder(o); }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1037,6 +1046,22 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               onPanelFullscreen={() => {
                 router.push('/operations/quotations/' + sidePeekQuotation.id);
               }}
+            />
+          </Box>
+        )}
+      </SidePeekPanel>
+
+      {/* Service Order SidePeek Panel */}
+      <SidePeekPanel
+        open={!!sidePeekServiceOrder}
+        onClose={() => setSidePeekServiceOrder(null)}
+      >
+        {sidePeekServiceOrder && (
+          <Box sx={{ px: 3 }}>
+            <ServiceOrderTemplate
+              order={sidePeekServiceOrder}
+              onBackToOrders={() => setSidePeekServiceOrder(null)}
+              onPanelClose={() => setSidePeekServiceOrder(null)}
             />
           </Box>
         )}
