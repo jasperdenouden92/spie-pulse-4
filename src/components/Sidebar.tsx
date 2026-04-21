@@ -681,6 +681,82 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
           <Box sx={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
             <Box sx={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflowY: 'auto', px: isCollapsed ? 1.5 : 2, pt: 0, '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-track': { background: 'transparent' }, '&::-webkit-scrollbar-thumb': { background: 'transparent', borderRadius: '4px', transition: 'background 0.2s ease' }, '&:hover::-webkit-scrollbar-thumb': { background: '#ccc' } }}>
             <List data-annotation-id="sidebar-lijst-3" sx={{ py: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            {isCollapsed ? (
+              <NavItem
+                label={t('nav.search')}
+                icon={<SearchIcon sx={{ fontSize: 16 }} />}
+                onClick={() => setSearchModalOpen(true)}
+                shortcut={modifierHeld ? 'F' : undefined}
+              />
+            ) : (
+              <ListItem disablePadding>
+                <Box
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSearchModalOpen(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSearchModalOpen(true);
+                    }
+                  }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    width: '100%',
+                    height: 32,
+                    px: 1.25,
+                    borderRadius: '16px',
+                    bgcolor: c.bgSecondary,
+                    border: `1px solid ${c.borderSecondary}`,
+                    cursor: 'text',
+                    transition: 'background-color 0.15s, border-color 0.15s',
+                    '&:hover': {
+                      bgcolor: c.bgSecondaryHover,
+                      borderColor: c.borderPrimary,
+                    },
+                    '&:focus-visible': {
+                      outline: 'none',
+                      borderColor: c.borderActive,
+                    },
+                  }}
+                >
+                  <SearchIcon sx={{ fontSize: 16, color: 'text.secondary', flexShrink: 0 }} />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      flex: 1,
+                      color: 'text.secondary',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      userSelect: 'none',
+                    }}
+                  >
+                    {t('nav.search')}
+                  </Typography>
+                  {modifierHeld && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.625rem',
+                        color: 'text.disabled',
+                        bgcolor: c.bgSecondaryHover,
+                        px: 0.75,
+                        py: 0.25,
+                        borderRadius: '4px',
+                        fontWeight: 500,
+                        letterSpacing: 0,
+                        flexShrink: 0,
+                      }}
+                    >
+                      F
+                    </Typography>
+                  )}
+                </Box>
+              </ListItem>
+            )}
             <NavItem
               label={t('nav.new')}
               icon={<AddIcon sx={{ fontSize: 16 }} />}
@@ -689,12 +765,6 @@ function Sidebar({ selectedBuilding, selectedMetric, onBuildingSelect, onMetricS
               iconBoxBgColor="#eef2ff"
               alwaysAccent
               buttonRef={newButtonRef as React.Ref<HTMLDivElement>}
-            />
-            <NavItem
-              label={t('nav.search')}
-              icon={<SearchIcon sx={{ fontSize: 16 }} />}
-              onClick={() => setSearchModalOpen(true)}
-              shortcut={modifierHeld ? 'F' : undefined}
             />
             <Divider sx={{ my: 1.5 }} />
             <NavItem
