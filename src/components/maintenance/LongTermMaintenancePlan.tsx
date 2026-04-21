@@ -244,19 +244,11 @@ export default function LongTermMaintenancePlan() {
 
   return (
     <Box>
-      {/* Year range slider — always visible at the top */}
-      <Box sx={{ mb: 3, px: 0.5 }}>
-        <YearRangeSlider
-          fromYear={fromYear}
-          toYear={toYear}
-          onChange={(f, t2) => { setFromYear(f); setToYear(t2); }}
-          minYear={BUDGET_MIN_YEAR}
-          maxYear={BUDGET_MAX_YEAR}
-        />
-      </Box>
-
-      {/* Filters row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+      {/* Title + search row */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+        <Typography variant="h5" sx={{ fontWeight: 600, color: c.textPrimary }}>
+          {t('operations.maintenance.longTermPlan')}
+        </Typography>
         <TextField
           size="small"
           value={search}
@@ -280,6 +272,21 @@ export default function LongTermMaintenancePlan() {
             },
           }}
         />
+      </Box>
+
+      {/* Year range slider */}
+      <Box sx={{ mb: 2, px: 0.5 }}>
+        <YearRangeSlider
+          fromYear={fromYear}
+          toYear={toYear}
+          onChange={(f, t2) => { setFromYear(f); setToYear(t2); }}
+          minYear={BUDGET_MIN_YEAR}
+          maxYear={BUDGET_MAX_YEAR}
+        />
+      </Box>
+
+      {/* Filters row */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, flexWrap: 'wrap' }}>
         <FilterChip
           label={t('maintenance.budget.locations')}
           value={buildingsChipValue}
