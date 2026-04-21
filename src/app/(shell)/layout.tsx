@@ -1062,6 +1062,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
               order={sidePeekServiceOrder}
               onBackToOrders={() => setSidePeekServiceOrder(null)}
               onPanelClose={() => setSidePeekServiceOrder(null)}
+              onPanelFullscreen={() => {
+                router.push('/operations/maintenance/' + sidePeekServiceOrder.id);
+              }}
             />
           </Box>
         )}

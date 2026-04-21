@@ -3,10 +3,10 @@
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import AppTabs from '@/components/AppTabs';
 import LongTermMaintenancePlan from '@/components/maintenance/LongTermMaintenancePlan';
 import ProcessOrdersView from '@/components/maintenance/ProcessOrdersView';
+import PreventiveMaintenanceView from '@/components/maintenance/PreventiveMaintenanceView';
 import { useLanguage } from '@/i18n';
 import { useURLState } from '@/hooks/useURLState';
 
@@ -42,12 +42,7 @@ export default function OperationsMaintenanceRoute() {
       ) : activeTab === 'process-orders' ? (
         <ProcessOrdersView />
       ) : (
-        <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h4" sx={{ fontWeight: 600, mb: 2 }}>
-            {t('operations.maintenance.preventive')}
-          </Typography>
-          <Typography color="text.secondary">{t('operations.maintenancePlaceholder')}</Typography>
-        </Box>
+        <PreventiveMaintenanceView />
       )}
     </Container>
   );
