@@ -9,6 +9,7 @@ import type { ZoneDetailTab } from '@/templates/zone';
 import type { AssetDetailTab } from '@/templates/asset';
 import type { Ticket } from '@/data/tickets';
 import type { Quotation } from '@/data/quotations';
+import type { ServiceOrder } from '@/data/processOrders';
 import type { NotificationsPanelHandle } from '@/components/NotificationsPanel';
 
 export interface Favorite {
@@ -103,6 +104,10 @@ interface AppStateValue {
   sidePeekQuotation: Quotation | null;
   setSidePeekQuotation: React.Dispatch<React.SetStateAction<Quotation | null>>;
 
+  // Side peek - service order
+  sidePeekServiceOrder: ServiceOrder | null;
+  setSidePeekServiceOrder: React.Dispatch<React.SetStateAction<ServiceOrder | null>>;
+
   // Side peek - generic placeholder (insight / mutation / maintenance / document)
   sidePeekPlaceholder: PlaceholderPeek | null;
   setSidePeekPlaceholder: React.Dispatch<React.SetStateAction<PlaceholderPeek | null>>;
@@ -162,32 +167,37 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [sidePeekAssetTab, setSidePeekAssetTab] = useState<AssetDetailTab>('overview');
   const [sidePeekTicket, _setSidePeekTicket] = useState<Ticket | null>(null);
   const [sidePeekQuotation, _setSidePeekQuotation] = useState<Quotation | null>(null);
+  const [sidePeekServiceOrder, _setSidePeekServiceOrder] = useState<ServiceOrder | null>(null);
   const [sidePeekPlaceholder, _setSidePeekPlaceholder] = useState<PlaceholderPeek | null>(null);
 
   // Wrappers that enforce single-peek: opening one closes the others
   const setSidePeekBuilding: typeof _setSidePeekBuilding = (v) => {
     _setSidePeekBuilding(v);
-    if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekPlaceholder(null); }
+    if (v) { _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekZone: typeof _setSidePeekZone = (v) => {
     _setSidePeekZone(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekPlaceholder(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekAsset: typeof _setSidePeekAsset = (v) => {
     _setSidePeekAsset(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekPlaceholder(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekTicket: typeof _setSidePeekTicket = (v) => {
     _setSidePeekTicket(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekQuotation(null); _setSidePeekPlaceholder(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekQuotation: typeof _setSidePeekQuotation = (v) => {
     _setSidePeekQuotation(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekPlaceholder(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekServiceOrder(null); _setSidePeekPlaceholder(null); }
+  };
+  const setSidePeekServiceOrder: typeof _setSidePeekServiceOrder = (v) => {
+    _setSidePeekServiceOrder(v);
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekPlaceholder(null); }
   };
   const setSidePeekPlaceholder: typeof _setSidePeekPlaceholder = (v) => {
     _setSidePeekPlaceholder(v);
-    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); }
+    if (v) { _setSidePeekBuilding(null); _setSidePeekZone(null); _setSidePeekAsset(null); _setSidePeekTicket(null); _setSidePeekQuotation(null); _setSidePeekServiceOrder(null); }
   };
 
   // Favorites — default to a real tenant building so the sidebar never shows
@@ -261,6 +271,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       sidePeekAssetTab, setSidePeekAssetTab,
       sidePeekTicket, setSidePeekTicket,
       sidePeekQuotation, setSidePeekQuotation,
+      sidePeekServiceOrder, setSidePeekServiceOrder,
       sidePeekPlaceholder, setSidePeekPlaceholder,
       favorites, setFavorites,
       localQuickviewAsset, setLocalQuickviewAsset,
