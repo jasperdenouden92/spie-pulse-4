@@ -23,6 +23,7 @@ import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverla
 import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
+import { useLanguage } from '@/i18n';
 
 // ── Topic definitions ──
 
@@ -216,6 +217,7 @@ interface OperationsPerformancePageProps {
 
 export default function OperationsPerformancePage({ opsScores, opsTrends, overallScore = 75, overallTrend = 3, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: OperationsPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const isNarrow = useMediaQuery('(max-width:960px)');
   const [chartView, setChartView] = useState<ViewMode>('tickets');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
@@ -249,10 +251,10 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
   const topics = useMemo(() => buildTopics(opsScores, opsTrends), [opsScores, opsTrends]);
 
   const opsSeries = useMemo(() => ({
-    label: 'Operational KPIs',
+    label: t('performance.operationalKpis'),
     color: c.brand,
     data: [55, 52, 58, 62, 48, 60, 65, 68, 72, 70, 75, overallScore],
-  }), [overallScore]);
+  }), [overallScore, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -298,9 +300,9 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'tickets', label: 'Tickets', icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'quotations', label: 'Quotations', icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'maintenance', label: 'Maintenance', icon: <EngineeringOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'tickets', label: t('metric.tickets'), icon: <ConfirmationNumberOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'quotations', label: t('metric.quotations'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'maintenance', label: t('metric.maintenance'), icon: <EngineeringOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   // Group dashboards by theme
@@ -318,11 +320,11 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
       {/* ═══ Operational KPIs Combined Score Over Time (card) ═══ */}
       <PerformanceChartCard
         icon={<BuildOutlinedIcon sx={{ color: c.brand }} />}
-        title="Operational KPI Performance"
+        title={t('performance.operationalKpiPerformance')}
         score={overallScore}
         trend={overallTrend}
         data={opsSeries.data}
-        label="Operational KPIs"
+        label={t('performance.operationalKpis')}
         goodAbove={OPS_GOOD_ABOVE}
         moderateAbove={OPS_MODERATE_ABOVE}
         gradientId="threshold-gradient-ops"
@@ -333,11 +335,11 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
       <GridCard
         size="sm"
         icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
-        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
+        title={buildingMode === 'clusters' ? t('performance.topClusters') : t('performance.topBuildings')}
         headerRight={
           <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>{t('performance.top')}</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>{t('performance.improved')}</Box>
           </Box>
         }
       >
@@ -385,18 +387,18 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
               </Box>
             );
           })}
-          <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+          <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>{t('performance.viewAll')}</Button>
       </GridCard>
 
       {/* ═══ Worst Buildings ═══ */}
       <GridCard
         size="sm"
         icon={<WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />}
-        title={buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}
+        title={buildingMode === 'clusters' ? t('performance.worstClusters') : t('performance.worstBuildings')}
         headerRight={
           <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>{t('performance.worst')}</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>{t('performance.dropping')}</Box>
           </Box>
         }
       >
@@ -444,7 +446,7 @@ export default function OperationsPerformancePage({ opsScores, opsTrends, overal
               </Box>
             );
           })}
-          <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+          <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>{t('performance.viewAll')}</Button>
       </GridCard>
 
       {/* ═══ KPI Score Over Time ═══ */}

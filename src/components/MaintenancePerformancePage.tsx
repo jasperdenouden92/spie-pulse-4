@@ -406,7 +406,7 @@ export default function MaintenancePerformancePage({ themeScore = 78, themeTrend
       {/* ═══ SECTION 1: Theme KPI + Topic KPI Cards ═══ */}
       <PerformanceIndicatorsCard
         icon={<BuildOutlinedIcon sx={{ color: c.brand }} />}
-        title="Maintenance Performance"
+        title={t('performance.maintenancePerformance')}
         score={adjustedThemeScore}
         trend={adjustedThemeTrend}
         topics={topics}
