@@ -78,6 +78,7 @@ const nl: Record<TranslationKey, string> = {
   'common.type': 'Type',
   'common.date': 'Datum',
   'common.amount': 'Bedrag',
+  'common.of': 'van',
   'common.contract': 'Contract',
   'common.energyLabel': 'Energielabel',
   'common.modified': 'Gewijzigd',
@@ -271,6 +272,16 @@ const nl: Record<TranslationKey, string> = {
   'controlRoom.title': 'Controlekamer',
   'controlRoom.statusOverview': 'Statusoverzicht',
   'controlRoom.kpiScoreOverTime': 'KPI-score over tijd',
+  'controlRoom.tabPortfolio': 'Portfolio',
+  'controlRoom.tabPerformance': 'Prestatie',
+  'controlRoom.tabInsights': 'Inzichten',
+  'controlRoom.sortWorstToBest': 'Slechtste naar beste',
+  'controlRoom.sortBestToWorst': 'Beste naar slechtste',
+  'controlRoom.sortMostImproved': 'Meest verbeterd',
+  'controlRoom.sortMostDeteriorated': 'Meest verslechterd',
+  'controlRoom.sortAToZ': 'A tot Z',
+  'controlRoom.sortZToA': 'Z tot A',
+  'dashboards.themeOther': 'Overig',
 
   // Portfolio
   'portfolio.title': 'Portfolio',
@@ -393,6 +404,8 @@ const nl: Record<TranslationKey, string> = {
   'operations.rowsPerPage': 'Rijen per pagina',
   'operations.resultsPerPage': 'Resultaten per pagina:',
   'operations.ticketNo': 'Ticket nr.',
+  'operations.quotationNo': 'Offerte nr.',
+  'operations.titleColumn': 'Titel',
   'operations.reference': 'Referentie',
   'operations.description': 'Omschrijving',
   'operations.sortDateNewest': 'Datum (nieuwste eerst)',
@@ -553,7 +566,7 @@ const nl: Record<TranslationKey, string> = {
   'filters.reset': 'Filters resetten',
 
   // Performance components
-  'performance.overallPerformance': 'Totale Prestaties',
+  'performance.overallPerformance': 'Overall prestatie',
   'performance.comfortPerformance': 'Comfortprestaties',
   'performance.comfortDashboards': 'Comfort Dashboards',
   'performance.sustainabilityPerformance': 'Duurzaamheidsprestaties',
@@ -569,8 +582,8 @@ const nl: Record<TranslationKey, string> = {
   'performance.compliancePerformance': 'Complianceprestaties',
   'performance.complianceDashboards': 'Compliance Dashboards',
   'performance.operationalKpiPerformance': 'Operationele KPI-prestaties',
-  'performance.operationalKpis': 'Operationele KPI\u2019s',
-  'performance.themeKpis': 'Thema KPI\u2019s',
+  'performance.operationalKpis': 'Operationele KPIs',
+  'performance.themeKpis': 'Thema KPIs',
   'performance.weiEnergyPerformance': 'WEii Energieprestaties',
   'performance.otherSustainabilityDashboards': 'Overige Duurzaamheid Dashboards',
   'performance.aboveExpectation': 'Boven verwachting',
@@ -631,8 +644,8 @@ const nl: Record<TranslationKey, string> = {
   'topic.legionellaPrevention': 'Legionellapreventie',
   'topic.maintenanceInspection': 'Onderhoud & Inspectie',
   'topic.permits': 'Vergunningen',
-  'topic.themeKpis': 'Thema KPI\u2019s',
-  'topic.operationalKpis': 'Operationele KPI\u2019s',
+  'topic.themeKpis': 'Thema KPIs',
+  'topic.operationalKpis': 'Operationele KPIs',
 
   // Performance dashboard links
   'dashboard.comfortBuildingOverview': 'Comfort Gebouwoverzicht',
@@ -698,6 +711,16 @@ const nl: Record<TranslationKey, string> = {
   'performance.assetMonitoringKpi': 'Asset Monitoring KPI',
   'performance.complianceKpi': 'Compliance KPI',
   'performance.sustainabilityKpi': 'Duurzaamheid KPI',
+
+  // Shared performance labels
+  'performance.viewDetails': 'Bekijk details',
+  'performance.building': 'gebouw',
+  'performance.buildings': 'Gebouwen',
+  'performance.byLabel': 'Op label',
+  'performance.byPerformance': 'Op prestatie',
+  'performance.allActive': 'Alle actieve',
+  'performance.noActiveTickets': 'Geen actieve tickets',
+  'performance.noActiveQuotations': 'Geen actieve offertes',
 };
 
 export default nl;

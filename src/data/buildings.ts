@@ -93,6 +93,18 @@ function genAllMetrics(seed: number): { performance: PerformanceMetric; metrics:
     metrics[keys[i]] = genMetric(seed * 17 + i * 31, baseGreen + variance);
   }
 
+  // Overall is the average of theme-KPI average and operational-KPI average,
+  // so it matches the two-topic breakdown shown on the building card.
+  const themeKeys: MetricKeys[] = ['sustainability', 'comfort', 'asset_monitoring', 'compliance'];
+  const opsKeys: MetricKeys[] = ['tickets', 'quotations', 'maintenance'];
+  const themeAvg = Math.round(themeKeys.reduce((s, k) => s + metrics[k].green, 0) / themeKeys.length);
+  const opsAvg = Math.round(opsKeys.reduce((s, k) => s + metrics[k].green, 0) / opsKeys.length);
+  const overallGreen = Math.round((themeAvg + opsAvg) / 2);
+  const overallRemaining = 100 - overallGreen;
+  const overallYellow = Math.floor(overallRemaining * (0.5 + rng() * 0.3));
+  const overallRed = overallRemaining - overallYellow;
+  metrics.overall = { green: overallGreen, yellow: overallYellow, red: overallRed };
+
   return { performance: metrics.overall, metrics };
 }
 

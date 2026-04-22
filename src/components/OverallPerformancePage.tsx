@@ -14,6 +14,7 @@ import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
 import { PerformanceGrid, GridCard, PerformanceChartCard } from '@/components/performance';
+import { useLanguage } from '@/i18n';
 
 // ── Helpers ──
 
@@ -37,20 +38,18 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-// ── Building score helpers (overall = all 7 KPIs) ──
+// ── Building score helpers (overall = avg of theme-KPI avg and operational-KPI avg) ──
 
 function getAvgOverallScore(b: Building): number {
-  return Math.round(
-    (b.metrics.sustainability.green + b.metrics.comfort.green + b.metrics.asset_monitoring.green + b.metrics.compliance.green +
-     b.metrics.tickets.green + b.metrics.quotations.green + b.metrics.maintenance.green) / 7
-  );
+  const themeAvg = (b.metrics.sustainability.green + b.metrics.comfort.green + b.metrics.asset_monitoring.green + b.metrics.compliance.green) / 4;
+  const opsAvg = (b.metrics.tickets.green + b.metrics.quotations.green + b.metrics.maintenance.green) / 3;
+  return Math.round((themeAvg + opsAvg) / 2);
 }
 
 function getAvgOverallTrend(b: Building): number {
-  return Math.round(
-    (b.trends.sustainability + b.trends.comfort + b.trends.asset_monitoring + b.trends.compliance +
-     b.trends.tickets + b.trends.quotations + b.trends.maintenance) / 7 * 10
-  ) / 10;
+  const themeAvg = (b.trends.sustainability + b.trends.comfort + b.trends.asset_monitoring + b.trends.compliance) / 4;
+  const opsAvg = (b.trends.tickets + b.trends.quotations + b.trends.maintenance) / 3;
+  return Math.round((themeAvg + opsAvg) / 2 * 10) / 10;
 }
 
 const sortedBest = [...buildings].sort((a, b) => getAvgOverallScore(b) - getAvgOverallScore(a)).slice(0, 7);
@@ -123,15 +122,16 @@ export default function OverallPerformancePage({
   onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings',
 }: OverallPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
 
   const overallSeries = useMemo(() => ({
-    label: 'Overall Performance',
+    label: t('performance.overallPerformance'),
     data: generateKpiTimeSeries('overall_performance', overallScore),
     goodAbove: 75,
     moderateAbove: 55,
-  }), [overallScore]);
+  }), [overallScore, t]);
 
   // Building list renderer
   const renderBuildingList = (
@@ -184,11 +184,11 @@ export default function OverallPerformancePage({
       {/* ═══ Overall Performance Chart ═══ */}
       <PerformanceChartCard
         icon={<ShowChartOutlinedIcon sx={{ color: c.brand }} />}
-        title="Overall Performance"
+        title={t('performance.overallPerformance')}
         score={overallScore}
         trend={overallTrend}
         data={overallSeries.data}
-        label="Overall Performance"
+        label={t('performance.overallPerformance')}
         goodAbove={overallSeries.goodAbove}
         moderateAbove={overallSeries.moderateAbove}
         gradientId="threshold-gradient-overall"
@@ -199,11 +199,11 @@ export default function OverallPerformancePage({
       <GridCard
         size="sm"
         icon={<EmojiEventsOutlinedIcon sx={{ color: '#66bb6a' }} />}
-        title={buildingMode === 'clusters' ? 'Top Clusters' : 'Top Buildings'}
+        title={buildingMode === 'clusters' ? t('performance.topClusters') : t('performance.topBuildings')}
         headerRight={
           <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>Top</Box>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>Improved</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'best' ? c.bgPrimary : 'transparent', color: leftListMode === 'best' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'best' ? c.shadow : 'none' }} onClick={() => setLeftListMode('best')}>{t('performance.top')}</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: leftListMode === 'improved' ? c.bgPrimary : 'transparent', color: leftListMode === 'improved' ? 'text.primary' : 'text.secondary', boxShadow: leftListMode === 'improved' ? c.shadow : 'none' }} onClick={() => setLeftListMode('improved')}>{t('performance.improved')}</Box>
           </Box>
         }
       >
@@ -213,18 +213,18 @@ export default function OverallPerformancePage({
             : (leftListMode === 'best' ? sortedBest : sortedMostImproved),
           leftListMode === 'improved',
         )}
-        <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+        <Button size="small" onClick={() => onViewAllBuildings?.('Best to Worst')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>{t('performance.viewAll')}</Button>
       </GridCard>
 
       {/* ═══ Worst Buildings ═══ */}
       <GridCard
         size="sm"
         icon={<WarningAmberOutlinedIcon sx={{ color: '#ef5350' }} />}
-        title={buildingMode === 'clusters' ? 'Worst Clusters' : 'Worst Buildings'}
+        title={buildingMode === 'clusters' ? t('performance.worstClusters') : t('performance.worstBuildings')}
         headerRight={
           <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>Worst</Box>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>Dropping</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'worst' ? c.bgPrimary : 'transparent', color: rightListMode === 'worst' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'worst' ? c.shadow : 'none' }} onClick={() => setRightListMode('worst')}>{t('performance.worst')}</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: rightListMode === 'deteriorated' ? c.bgPrimary : 'transparent', color: rightListMode === 'deteriorated' ? 'text.primary' : 'text.secondary', boxShadow: rightListMode === 'deteriorated' ? c.shadow : 'none' }} onClick={() => setRightListMode('deteriorated')}>{t('performance.dropping')}</Box>
           </Box>
         }
       >
@@ -234,7 +234,7 @@ export default function OverallPerformancePage({
             : (rightListMode === 'worst' ? sortedWorst : sortedMostDeteriorated),
           rightListMode === 'deteriorated',
         )}
-        <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>View all</Button>
+        <Button size="small" onClick={() => onViewAllBuildings?.('Worst to Best')} sx={{ mt: 1, textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>{t('performance.viewAll')}</Button>
       </GridCard>
 
     </PerformanceGrid>

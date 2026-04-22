@@ -49,6 +49,7 @@ import {
 import { useThemeMode } from '@/theme-mode-context';
 import { useAppState } from '@/context/AppStateContext';
 import { useURLState } from '@/hooks/useURLState';
+import { useLanguage } from '@/i18n';
 
 interface DashboardDef {
   id: string;
@@ -444,6 +445,8 @@ export default function DashboardsRoute() {
   const isNarrow = useMediaQuery('(max-width:960px)');
   const { pendingDashboardId, setPendingDashboardId, setActiveDashboardId, setActiveDashboardLabel } = useAppState();
   const { dateRange, setDateRange } = useURLState();
+  const { t } = useLanguage();
+  const themeLabel = (group: ThemeGroup) => group.themeKey === 'other' ? t('dashboards.themeOther') : group.theme;
 
   const initialDashboardId = pendingDashboardId;
   const selectedBuildingNames: string[] = [];
@@ -521,7 +524,7 @@ export default function DashboardsRoute() {
                     {group.icon}
                   </Box>
                   <ListItemText
-                    primary={group.theme}
+                    primary={themeLabel(group)}
                     primaryTypographyProps={{
                       variant: 'body2',
                       fontWeight: 600,
@@ -605,7 +608,7 @@ export default function DashboardsRoute() {
           <Box sx={{ mb: 1.5 }}>
             {selectedGroup && (
               <Typography variant="caption" color="text.secondary">
-                {selectedGroup.theme}
+                {themeLabel(selectedGroup)}
               </Typography>
             )}
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

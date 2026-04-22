@@ -34,6 +34,7 @@ import Button from '@mui/material/Button';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
 import { buildingOperationalStats } from '@/data/buildingOperationalStats';
+import { useLanguage, type TranslationKey } from '@/i18n';
 
 // ── Threshold gradient ──
 
@@ -88,13 +89,13 @@ function getStatusLabel(score: number, goodAbove: number, moderateAbove: number)
 }
 
 const TOPIC_DEFS = [
-  { key: 'consumption', label: 'Consumption', icon: <BoltOutlinedIcon sx={{ fontSize: 20 }} />, offset: 5, trend: 4, chartColor: '#f57c00', goodAbove: 75, moderateAbove: 55 },
-  { key: 'generation', label: 'Generation', icon: <SolarPowerOutlinedIcon sx={{ fontSize: 20 }} />, offset: -8, trend: 6, chartColor: '#66bb6a', goodAbove: 70, moderateAbove: 50 },
-  { key: 'emissions', label: 'Emissions', icon: <FilterDramaOutlinedIcon sx={{ fontSize: 20 }} />, offset: -3, trend: -2, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
-  { key: 'cost', label: 'Cost', icon: <PaidOutlinedIcon sx={{ fontSize: 20 }} />, offset: 6, trend: 3, chartColor: '#0288d1', goodAbove: 75, moderateAbove: 55 },
+  { key: 'consumption', labelKey: 'topic.consumption', icon: <BoltOutlinedIcon sx={{ fontSize: 20 }} />, offset: 5, trend: 4, chartColor: '#f57c00', goodAbove: 75, moderateAbove: 55 },
+  { key: 'generation', labelKey: 'topic.generation', icon: <SolarPowerOutlinedIcon sx={{ fontSize: 20 }} />, offset: -8, trend: 6, chartColor: '#66bb6a', goodAbove: 70, moderateAbove: 50 },
+  { key: 'emissions', labelKey: 'topic.emissions', icon: <FilterDramaOutlinedIcon sx={{ fontSize: 20 }} />, offset: -3, trend: -2, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
+  { key: 'cost', labelKey: 'topic.cost', icon: <PaidOutlinedIcon sx={{ fontSize: 20 }} />, offset: 6, trend: 3, chartColor: '#0288d1', goodAbove: 75, moderateAbove: 55 },
 ];
 
-function buildTopics(themeScore: number): TopicDef[] {
+function buildTopics(themeScore: number, t: (key: TranslationKey) => string): TopicDef[] {
   return TOPIC_DEFS.map(d => {
     const score = Math.max(0, Math.min(100, themeScore + d.offset));
     const sparkline = Array.from({ length: 10 }, (_, i) => {
@@ -105,7 +106,7 @@ function buildTopics(themeScore: number): TopicDef[] {
     sparkline[9] = score;
     return {
       key: d.key,
-      label: d.label,
+      label: t(d.labelKey as TranslationKey),
       icon: d.icon,
       color: getStatusColor(score, d.goodAbove, d.moderateAbove),
       chartColor: d.chartColor,
@@ -318,13 +319,13 @@ interface WeiiDataPoint {
   image?: string;
 }
 
-function getExpectationIcon(rating: string, consumption: number): { icon: '↑' | '↓' | '~'; tooltip: string; color: string } {
+function getExpectationIcon(rating: string, consumption: number): { icon: '↑' | '↓' | '~'; tooltipKey: 'above' | 'below' | 'expected'; color: string } {
   const baseRating = rating.replace(/\+/g, '');
   const expected = WEII_EXPECTED[baseRating] ?? WEII_EXPECTED[rating] ?? 80;
   const diff = consumption - expected;
-  if (diff < -15) return { icon: '↑', tooltip: 'Above expectation', color: '#4caf50' };
-  if (diff > 15) return { icon: '↓', tooltip: 'Below expectation', color: '#f44336' };
-  return { icon: '~', tooltip: 'As expected', color: '#bbb' };
+  if (diff < -15) return { icon: '↑', tooltipKey: 'above', color: '#4caf50' };
+  if (diff > 15) return { icon: '↓', tooltipKey: 'below', color: '#f44336' };
+  return { icon: '~', tooltipKey: 'expected', color: '#bbb' };
 }
 
 // ── WEii Sidebar ──
@@ -348,6 +349,12 @@ function getExpectationKey(rating: string, consumption: number): 'above' | 'expe
 
 function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, onGroupModeChange }: { data: WeiiDataPoint[]; onBuildingClick?: (building: Building) => void; hoveredName: string | null; onHover: (name: string | null) => void; groupMode: SidebarGroupMode; onGroupModeChange: (mode: SidebarGroupMode) => void }) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
+  const expectationLabels: Record<'above' | 'expected' | 'below', string> = {
+    above: t('performance.aboveExpectation'),
+    expected: t('performance.asExpected'),
+    below: t('performance.belowExpectation'),
+  };
   // Group by rating
   const groupedByRating = useMemo(() => {
     const groups: Record<string, WeiiDataPoint[]> = {};
@@ -400,7 +407,7 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, o
           <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem', color: 'text.secondary' }}>
             {point.consumption} kWh
           </Typography>
-          <Tooltip title={expectation.tooltip} arrow placement="left">
+          <Tooltip title={expectationLabels[expectation.tooltipKey]} arrow placement="left">
             <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: expectation.color, width: 16, textAlign: 'center', lineHeight: 1, cursor: 'default' }}>
               {expectation.icon}
             </Typography>
@@ -415,11 +422,11 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, o
       {/* Segmented control header */}
       <Box sx={{ px: 2, py: 1.25, flexShrink: 0, bgcolor: c.bgPrimaryHover, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="caption" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem', flexShrink: 0 }}>
-          Buildings
+          {t('performance.buildings')}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'rating' ? c.bgPrimary : 'transparent', color: groupMode === 'rating' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'rating' ? c.shadow : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('rating')}>By Label</Box>
-          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'performance' ? c.bgPrimary : 'transparent', color: groupMode === 'performance' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'performance' ? c.shadow : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('performance')}>By Performance</Box>
+          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'rating' ? c.bgPrimary : 'transparent', color: groupMode === 'rating' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'rating' ? c.shadow : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('rating')}>{t('performance.byLabel')}</Box>
+          <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: groupMode === 'performance' ? c.bgPrimary : 'transparent', color: groupMode === 'performance' ? 'text.primary' : 'text.secondary', boxShadow: groupMode === 'performance' ? c.shadow : 'none', whiteSpace: 'nowrap' }} onClick={() => onGroupModeChange('performance')}>{t('performance.byPerformance')}</Box>
         </Box>
       </Box>
       {/* Scrollable list */}
@@ -439,7 +446,7 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, o
                   </Typography>
                 </Box>
                 <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
-                  {points.length} {points.length === 1 ? 'building' : 'buildings'}
+                  {points.length} {points.length === 1 ? t('performance.building') : t('performance.buildings').toLowerCase()}
                 </Typography>
               </Box>
               {points.map(renderBuildingRow)}
@@ -457,7 +464,7 @@ function WeiiSidebar({ data, onBuildingClick, hoveredName, onHover, groupMode, o
                     {group.icon}
                   </Typography>
                   <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem' }}>
-                    {group.label}
+                    {expectationLabels[group.key]}
                   </Typography>
                   <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.disabled', fontSize: '0.7rem' }}>
                     ({points.length})
@@ -762,6 +769,7 @@ interface SustainabilityPerformancePageProps {
 
 export default function SustainabilityPerformancePage({ themeScore = 72, themeTrend = 4, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, buildingMode = 'buildings' }: SustainabilityPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -793,13 +801,13 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
     );
   };
 
-  const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
+  const topics = useMemo(() => buildTopics(themeScore, t), [themeScore, t]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Sustainability KPI',
+    label: t('performance.sustainabilityKpi'),
     color: '#2e7d32',
     data: generateKpiTimeSeries('sustainability_theme', themeScore),
-  }), [themeScore]);
+  }), [themeScore, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -856,11 +864,11 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Sustainability KPI', icon: <NatureOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'consumption', label: 'Consumption', icon: <BoltOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'generation', label: 'Generation', icon: <SolarPowerOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'emissions', label: 'Emissions', icon: <FilterDramaOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'cost', label: 'Cost', icon: <PaidOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: t('performance.sustainabilityKpi'), icon: <NatureOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'consumption', label: t('topic.consumption'), icon: <BoltOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'generation', label: t('topic.generation'), icon: <SolarPowerOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'emissions', label: t('topic.emissions'), icon: <FilterDramaOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'cost', label: t('topic.cost'), icon: <PaidOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   return (
@@ -868,7 +876,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
       {/* ═══ SECTION 1: Topic KPI Cards ═══ */}
       <PerformanceIndicatorsCard
         icon={<NatureOutlinedIcon sx={{ color: c.brand }} />}
-        title="Sustainability Performance"
+        title={t('performance.sustainabilityPerformance')}
         score={themeScore}
         trend={themeTrend}
         topics={topics}
@@ -918,14 +926,14 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
       <GridCard
         size="xl"
         icon={<SpeedOutlinedIcon sx={{ color: '#2e7d32' }} />}
-        title="WEii Energy Performance"
+        title={t('performance.weiEnergyPerformance')}
         headerRight={
           <Button
             size="small"
             endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
           >
-            View details
+            {t('performance.viewDetails')}
           </Button>
         }
       >
@@ -942,7 +950,7 @@ export default function SustainabilityPerformancePage({ themeScore = 72, themeTr
       </GridCard>
 
       {/* ═══ Other Sustainability Dashboards ═══ */}
-      <DashboardLinksCard title="Other Sustainability Dashboards" dashboards={SUSTAINABILITY_DASHBOARDS} onNavigate={onNavigateToDashboard} />
+      <DashboardLinksCard title={t('performance.otherSustainabilityDashboards')} dashboards={SUSTAINABILITY_DASHBOARDS} onNavigate={onNavigateToDashboard} />
     </PerformanceGrid>
   );
 }

@@ -842,7 +842,7 @@ export default function ControlRoomPage() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                         <StyleOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
                         <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-jost), "Jost", sans-serif', fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
-                          Theme KPIs
+                          {t('performance.themeKpis')}
                         </Typography>
                         <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
                           <AnimatedNumber value={themesScore} />%
@@ -949,7 +949,7 @@ export default function ControlRoomPage() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                         <EngineeringOutlinedIcon sx={{ fontSize: isCompact ? 16 : 18, color: 'text.secondary' }} />
                         <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: isCompact ? '0.75rem' : '0.875rem' }}>
-                          Operational KPIs
+                          {t('performance.operationalKpis')}
                         </Typography>
                         <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isCompact ? '1rem' : '1.25rem' }}>
                           <AnimatedNumber value={operationsScore} />%
@@ -1029,18 +1029,27 @@ export default function ControlRoomPage() {
                   value={buildingsPanelTab}
                   onChange={setBuildingsPanelTab}
                   tabs={[
-                    { value: 'portfolio', label: 'Portfolio' },
-                    { value: 'performance', label: 'Performance' },
-                    { value: 'insights', label: 'Insights' },
+                    { value: 'portfolio', label: t('controlRoom.tabPortfolio') },
+                    { value: 'performance', label: t('controlRoom.tabPerformance') },
+                    { value: 'insights', label: t('controlRoom.tabInsights') },
                   ]}
                 />
 
                 {/* Sort Dropdown + View Toggle -- only on Buildings tab */}
-                {buildingsPanelTab === 'portfolio' && (
+                {buildingsPanelTab === 'portfolio' && (() => {
+                  const sortOrderLabels: Record<string, string> = {
+                    'Worst to Best': t('controlRoom.sortWorstToBest'),
+                    'Best to Worst': t('controlRoom.sortBestToWorst'),
+                    'Most Improved': t('controlRoom.sortMostImproved'),
+                    'Most Deteriorated': t('controlRoom.sortMostDeteriorated'),
+                    'A to Z': t('controlRoom.sortAToZ'),
+                    'Z to A': t('controlRoom.sortZToA'),
+                  };
+                  return (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Chip
                       icon={<SortOutlinedIcon sx={{ fontSize: 16 }} />}
-                      label={sortOrder}
+                      label={sortOrderLabels[sortOrder] ?? sortOrder}
                       onClick={(e) => setSortAnchorEl(e.currentTarget)}
                       deleteIcon={<ExpandMoreIcon />}
                       onDelete={(e) => setSortAnchorEl(e.currentTarget as any)}
@@ -1057,12 +1066,12 @@ export default function ControlRoomPage() {
                       open={Boolean(sortAnchorEl)}
                       onClose={() => setSortAnchorEl(null)}
                     >
-                      <MenuItem onClick={() => { setSortOrder('Worst to Best'); setSortAnchorEl(null); }}>Worst to Best</MenuItem>
-                      <MenuItem onClick={() => { setSortOrder('Best to Worst'); setSortAnchorEl(null); }}>Best to Worst</MenuItem>
-                      <MenuItem onClick={() => { setSortOrder('Most Improved'); setSortAnchorEl(null); }}>Most Improved</MenuItem>
-                      <MenuItem onClick={() => { setSortOrder('Most Deteriorated'); setSortAnchorEl(null); }}>Most Deteriorated</MenuItem>
-                      <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>A to Z</MenuItem>
-                      <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>Z to A</MenuItem>
+                      <MenuItem onClick={() => { setSortOrder('Worst to Best'); setSortAnchorEl(null); }}>{t('controlRoom.sortWorstToBest')}</MenuItem>
+                      <MenuItem onClick={() => { setSortOrder('Best to Worst'); setSortAnchorEl(null); }}>{t('controlRoom.sortBestToWorst')}</MenuItem>
+                      <MenuItem onClick={() => { setSortOrder('Most Improved'); setSortAnchorEl(null); }}>{t('controlRoom.sortMostImproved')}</MenuItem>
+                      <MenuItem onClick={() => { setSortOrder('Most Deteriorated'); setSortAnchorEl(null); }}>{t('controlRoom.sortMostDeteriorated')}</MenuItem>
+                      <MenuItem onClick={() => { setSortOrder('A to Z'); setSortAnchorEl(null); }}>{t('controlRoom.sortAToZ')}</MenuItem>
+                      <MenuItem onClick={() => { setSortOrder('Z to A'); setSortAnchorEl(null); }}>{t('controlRoom.sortZToA')}</MenuItem>
                     </Menu>
                     <IconButton
                       onClick={() => setBuildingsViewMode(buildingsViewMode === 'cards' ? 'list' : 'cards')}
@@ -1080,7 +1089,8 @@ export default function ControlRoomPage() {
                         : <GridViewOutlinedIcon sx={{ fontSize: 18 }} />}
                     </IconButton>
                   </Box>
-                )}
+                  );
+                })()}
               </Box>
 
               {/* Panel Content */}
@@ -1095,16 +1105,16 @@ export default function ControlRoomPage() {
                         const firstMetrics = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).metrics : (firstItem as typeof filteredBuildings[0]).metrics) : undefined;
                         const firstTrends = firstItem ? (titleBuildingMode === 'clusters' ? (firstItem as typeof clusterData[0]).trends : (firstItem as typeof filteredBuildings[0]).trends) : undefined;
                         const topicHeaders = firstMetrics && firstTrends ? (
-                          selection === 'themes_group' ? getThemesTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys)
-                          : selection === 'operations_group' ? getOperationsTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>)
-                          : selectedMetric === 'overall' ? getOverallTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys)
-                          : selectedMetric === 'comfort' ? getComfortTopics(firstMetrics.comfort.green)
-                          : selectedMetric === 'sustainability' ? getSustainabilityTopics(firstMetrics.sustainability.green)
-                          : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(firstMetrics.asset_monitoring.green)
-                          : selectedMetric === 'compliance' ? getComplianceTopics(firstMetrics.compliance.green)
-                          : selectedMetric === 'maintenance' ? getMaintenanceTopics(firstMetrics.maintenance.green)
-                          : selectedMetric === 'quotations' ? getQuotationsTopics(firstMetrics.quotations.green)
-                          : selectedMetric === 'tickets' ? getTicketsTopics(firstMetrics.tickets.green)
+                          selection === 'themes_group' ? getThemesTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys, t)
+                          : selection === 'operations_group' ? getOperationsTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, t)
+                          : selectedMetric === 'overall' ? getOverallTopics(firstMetrics as Record<MetricKeys, { green: number }>, firstTrends as Record<MetricKeys, number>, activeThemeKeys, t)
+                          : selectedMetric === 'comfort' ? getComfortTopics(firstMetrics.comfort.green, t)
+                          : selectedMetric === 'sustainability' ? getSustainabilityTopics(firstMetrics.sustainability.green, t)
+                          : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(firstMetrics.asset_monitoring.green, t)
+                          : selectedMetric === 'compliance' ? getComplianceTopics(firstMetrics.compliance.green, t)
+                          : selectedMetric === 'maintenance' ? getMaintenanceTopics(firstMetrics.maintenance.green, t)
+                          : selectedMetric === 'quotations' ? getQuotationsTopics(firstMetrics.quotations.green, t)
+                          : selectedMetric === 'tickets' ? getTicketsTopics(firstMetrics.tickets.green, t)
                           : undefined
                         ) : undefined;
                         const colHeaderSx = { fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase' as const, fontSize: '0.7rem', letterSpacing: '0.05em' };
@@ -1150,16 +1160,16 @@ export default function ControlRoomPage() {
 
                           const metrics = isCluster ? c.metrics : b.metrics;
                           const trends = isCluster ? c.trends : b.trends;
-                          const topics = selection === 'themes_group' ? getThemesTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys)
-                            : selection === 'operations_group' ? getOperationsTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>)
-                            : selectedMetric === 'overall' ? getOverallTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys)
-                            : selectedMetric === 'comfort' ? getComfortTopics(metrics.comfort.green)
-                            : selectedMetric === 'sustainability' ? getSustainabilityTopics(metrics.sustainability.green)
-                            : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(metrics.asset_monitoring.green)
-                            : selectedMetric === 'compliance' ? getComplianceTopics(metrics.compliance.green)
-                            : selectedMetric === 'maintenance' ? getMaintenanceTopics(metrics.maintenance.green)
-                            : selectedMetric === 'quotations' ? getQuotationsTopics(metrics.quotations.green)
-                            : selectedMetric === 'tickets' ? getTicketsTopics(metrics.tickets.green)
+                          const topics = selection === 'themes_group' ? getThemesTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys, t)
+                            : selection === 'operations_group' ? getOperationsTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, t)
+                            : selectedMetric === 'overall' ? getOverallTopics(metrics as Record<MetricKeys, { green: number }>, trends as Record<MetricKeys, number>, activeThemeKeys, t)
+                            : selectedMetric === 'comfort' ? getComfortTopics(metrics.comfort.green, t)
+                            : selectedMetric === 'sustainability' ? getSustainabilityTopics(metrics.sustainability.green, t)
+                            : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(metrics.asset_monitoring.green, t)
+                            : selectedMetric === 'compliance' ? getComplianceTopics(metrics.compliance.green, t)
+                            : selectedMetric === 'maintenance' ? getMaintenanceTopics(metrics.maintenance.green, t)
+                            : selectedMetric === 'quotations' ? getQuotationsTopics(metrics.quotations.green, t)
+                            : selectedMetric === 'tickets' ? getTicketsTopics(metrics.tickets.green, t)
                             : undefined;
 
                           const energyRating = selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined;
@@ -1306,7 +1316,7 @@ export default function ControlRoomPage() {
                               showOverall={selectedMetric !== 'overall'}
                               trend={cluster.trends[selectedMetric]}
                               periodLabel={periodMetrics.periodLabel}
-                              topics={selection === 'themes_group' ? getThemesTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys) : selection === 'operations_group' ? getOperationsTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>) : selectedMetric === 'overall' ? getOverallTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys) : selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(cluster.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(cluster.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(cluster.metrics.tickets.green) : undefined}
+                              topics={selection === 'themes_group' ? getThemesTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys, t) : selection === 'operations_group' ? getOperationsTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, t) : selectedMetric === 'overall' ? getOverallTopics(cluster.metrics as Record<MetricKeys, { green: number }>, cluster.trends as Record<MetricKeys, number>, activeThemeKeys, t) : selectedMetric === 'comfort' ? getComfortTopics(cluster.metrics.comfort.green, t) : selectedMetric === 'sustainability' ? getSustainabilityTopics(cluster.metrics.sustainability.green, t) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(cluster.metrics.asset_monitoring.green, t) : selectedMetric === 'compliance' ? getComplianceTopics(cluster.metrics.compliance.green, t) : selectedMetric === 'maintenance' ? getMaintenanceTopics(cluster.metrics.maintenance.green, t) : selectedMetric === 'quotations' ? getQuotationsTopics(cluster.metrics.quotations.green, t) : selectedMetric === 'tickets' ? getTicketsTopics(cluster.metrics.tickets.green, t) : undefined}
                             />
                           </motion.div>
                         ))
@@ -1374,7 +1384,7 @@ export default function ControlRoomPage() {
                             operationalStats={operationalStats}
                             trend={b.trends[selectedMetric]}
                             periodLabel={periodMetrics.periodLabel}
-                            topics={selection === 'themes_group' ? getThemesTopics(b.metrics, b.trends, activeThemeKeys) : selection === 'operations_group' ? getOperationsTopics(b.metrics, b.trends) : selectedMetric === 'overall' ? getOverallTopics(b.metrics, b.trends, activeThemeKeys) : selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green) : selectedMetric === 'compliance' ? getComplianceTopics(b.metrics.compliance.green) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green) : undefined}
+                            topics={selection === 'themes_group' ? getThemesTopics(b.metrics, b.trends, activeThemeKeys, t) : selection === 'operations_group' ? getOperationsTopics(b.metrics, b.trends, t) : selectedMetric === 'overall' ? getOverallTopics(b.metrics, b.trends, activeThemeKeys, t) : selectedMetric === 'comfort' ? getComfortTopics(b.metrics.comfort.green, t) : selectedMetric === 'sustainability' ? getSustainabilityTopics(b.metrics.sustainability.green, t) : selectedMetric === 'asset_monitoring' ? getAssetMonitoringTopics(b.metrics.asset_monitoring.green, t) : selectedMetric === 'compliance' ? getComplianceTopics(b.metrics.compliance.green, t) : selectedMetric === 'maintenance' ? getMaintenanceTopics(b.metrics.maintenance.green, t) : selectedMetric === 'quotations' ? getQuotationsTopics(b.metrics.quotations.green, t) : selectedMetric === 'tickets' ? getTicketsTopics(b.metrics.tickets.green, t) : undefined}
                             energyRating={selectedMetric === 'sustainability' && stats ? stats.sustainability.weiiRating : undefined}
                             alertCount={selectedMetric === 'comfort' && stats ? stats.comfort.alerts : selectedMetric === 'sustainability' && stats ? stats.sustainability.alerts : selectedMetric === 'asset_monitoring' && stats ? stats.assetMonitoring.alerts : undefined}
                           />

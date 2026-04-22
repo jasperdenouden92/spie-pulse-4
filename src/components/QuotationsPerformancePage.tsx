@@ -36,6 +36,7 @@ import { useThemeMode } from '@/theme-mode-context';
 import { HorizontalThresholdGradient, InteractiveThresholdLine, ChartHoverOverlay } from '@/components/KpiChartComponents';
 import { buildings, Building } from '@/data/buildings';
 import StackedImages from '@/components/StackedImages';
+import { useLanguage, type TranslationKey } from '@/i18n';
 
 // ── Threshold gradient (rendered inside LineChart SVG) ──
 
@@ -92,12 +93,12 @@ function getStatusLabel(score: number, goodAbove: number, moderateAbove: number)
 // Topics: run time, response time, approval time
 // Offsets: run_time +5, response_time -8, approval_time +3 → sum = 0
 const TOPIC_DEFS = [
-  { key: 'run_time', label: 'Run time', icon: <TimerOutlinedIcon sx={{ fontSize: 20 }} />, offset: 5, trend: 3, chartColor: '#2196f3', goodAbove: 80, moderateAbove: 60 },
-  { key: 'response_time', label: 'Response time', icon: <QuickreplyOutlinedIcon sx={{ fontSize: 20 }} />, offset: -8, trend: -3, chartColor: '#ff9800', goodAbove: 75, moderateAbove: 55 },
-  { key: 'approval_time', label: 'Approval time', icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 20 }} />, offset: 3, trend: 6, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
+  { key: 'run_time', labelKey: 'topic.runTime', icon: <TimerOutlinedIcon sx={{ fontSize: 20 }} />, offset: 5, trend: 3, chartColor: '#2196f3', goodAbove: 80, moderateAbove: 60 },
+  { key: 'response_time', labelKey: 'topic.responseTime', icon: <QuickreplyOutlinedIcon sx={{ fontSize: 20 }} />, offset: -8, trend: -3, chartColor: '#ff9800', goodAbove: 75, moderateAbove: 55 },
+  { key: 'approval_time', labelKey: 'topic.approvalTime', icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 20 }} />, offset: 3, trend: 6, chartColor: '#9c27b0', goodAbove: 80, moderateAbove: 60 },
 ];
 
-function buildTopics(themeScore: number): TopicDef[] {
+function buildTopics(themeScore: number, t: (key: TranslationKey) => string): TopicDef[] {
   return TOPIC_DEFS.map(d => {
     const score = Math.max(0, Math.min(100, themeScore + d.offset));
     const sparkline = Array.from({ length: 10 }, (_, i) => {
@@ -108,7 +109,7 @@ function buildTopics(themeScore: number): TopicDef[] {
     sparkline[9] = score;
     return {
       key: d.key,
-      label: d.label,
+      label: t(d.labelKey as TranslationKey),
       icon: d.icon,
       color: getStatusColor(score, d.goodAbove, d.moderateAbove),
       chartColor: d.chartColor,
@@ -284,6 +285,7 @@ function ActiveQuotationsTable({ themeColors: c, items, statusCounts, onViewAll 
   statusCounts: StatusCount[];
   onViewAll?: (actionRequired: boolean) => void;
 }) {
+  const { t } = useLanguage();
   const [actionFilter, setActionFilter] = useState(false);
   const [page, setPage] = useState(0);
   const rowsPerPage = 10;
@@ -302,12 +304,12 @@ function ActiveQuotationsTable({ themeColors: c, items, statusCounts, onViewAll 
   return (
     <GridCard
       size="lg"
-      title="Active Quotations"
+      title={t('performance.activeQuotations')}
       headerRight={
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: c.bgSecondaryHover, borderRadius: '8px', p: '3px', gap: '2px', border: `1px solid ${c.borderTertiary}` }}>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: !actionFilter ? c.bgPrimary : 'transparent', color: !actionFilter ? 'text.primary' : 'text.secondary', boxShadow: !actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(false); setPage(0); }}>All active</Box>
-            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: actionFilter ? c.bgPrimary : 'transparent', color: actionFilter ? 'text.primary' : 'text.secondary', boxShadow: actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(true); setPage(0); }}>Action required</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: !actionFilter ? c.bgPrimary : 'transparent', color: !actionFilter ? 'text.primary' : 'text.secondary', boxShadow: !actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(false); setPage(0); }}>{t('performance.allActive')}</Box>
+            <Box sx={{ px: 1.5, py: 0.5, fontSize: '0.7rem', fontWeight: 600, borderRadius: '6px', cursor: 'pointer', transition: 'all 0.15s', bgcolor: actionFilter ? c.bgPrimary : 'transparent', color: actionFilter ? 'text.primary' : 'text.secondary', boxShadow: actionFilter ? c.shadow : 'none' }} onClick={() => { setActionFilter(true); setPage(0); }}>{t('performance.actionRequired')}</Box>
           </Box>
           <MuiButton
             size="small"
@@ -315,7 +317,7 @@ function ActiveQuotationsTable({ themeColors: c, items, statusCounts, onViewAll 
             sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.7rem', minWidth: 0 }}
             onClick={() => onViewAll?.(actionFilter)}
           >
-            View all
+            {t('performance.viewAll')}
           </MuiButton>
         </Box>
       }
@@ -334,10 +336,10 @@ function ActiveQuotationsTable({ themeColors: c, items, statusCounts, onViewAll 
           </colgroup>
           <TableHead>
             <TableRow sx={{ '& .MuiTableCell-root': { borderBottom: 'none' } }}>
-              {['Quotation no.', 'Title', 'Building', 'Contact person', 'Status', 'Creation date', 'Expiration date'].map(h => (
+              {[t('operations.quotationNo'), t('operations.titleColumn'), t('common.building'), t('operations.contactPerson'), t('common.status'), t('operations.creationDate'), t('operations.expirationDate')].map(h => (
                 <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1 }}>{h}</TableCell>
               ))}
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', color: 'text.secondary', py: 1, textAlign: 'right' }}>{t('common.amount')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -394,7 +396,7 @@ function ActiveQuotationsTable({ themeColors: c, items, statusCounts, onViewAll 
             {paginated.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} sx={{ py: 4, textAlign: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">No active quotations</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('performance.noActiveQuotations')}</Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -411,7 +413,7 @@ function ActiveQuotationsTable({ themeColors: c, items, statusCounts, onViewAll 
             <ChevronLeftIcon sx={{ fontSize: 18 }} />
           </IconButton>
           <Typography variant="body2" sx={{ fontSize: '0.8125rem', color: 'text.secondary', mx: 1 }}>
-            {page * rowsPerPage + 1} – {Math.min((page + 1) * rowsPerPage, filtered.length)} of {filtered.length}
+            {page * rowsPerPage + 1} – {Math.min((page + 1) * rowsPerPage, filtered.length)} {t('common.of')} {filtered.length}
           </Typography>
           <IconButton size="small" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)} sx={{ color: 'text.secondary' }}>
             <ChevronRightIcon sx={{ fontSize: 18 }} />
@@ -440,6 +442,7 @@ interface QuotationsPerformancePageProps {
 
 export default function QuotationsPerformancePage({ themeScore = 74, themeTrend = 2, onNavigateToDashboard, onBuildingSelect, onViewAllBuildings, onStatusFilter, onViewAllQuotations, buildingMode = 'buildings' }: QuotationsPerformancePageProps) {
   const { themeColors: c } = useThemeMode();
+  const { t } = useLanguage();
   const [chartView, setChartView] = useState<ViewMode>('theme');
   const [leftListMode, setLeftListMode] = useState<'best' | 'improved'>('best');
   const [rightListMode, setRightListMode] = useState<'worst' | 'deteriorated'>('worst');
@@ -470,13 +473,13 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
     );
   };
 
-  const topics = useMemo(() => buildTopics(themeScore), [themeScore]);
+  const topics = useMemo(() => buildTopics(themeScore, t), [themeScore, t]);
 
   const themeSeries = useMemo(() => ({
-    label: 'Quotations KPI',
+    label: t('performance.quotationsKpi'),
     color: c.brand,
     data: generateKpiTimeSeries('quotations_theme', themeScore),
-  }), [themeScore]);
+  }), [themeScore, t]);
 
   const topicSeries = useMemo(() => topics.map(t => ({
     label: t.label,
@@ -529,10 +532,10 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
   }, [chartSeries, activeThresholdZones, showThresholds]);
 
   const menuItems: { key: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'theme', label: 'Quotations KPI', icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'run_time', label: 'Run time', icon: <TimerOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'response_time', label: 'Response time', icon: <QuickreplyOutlinedIcon sx={{ fontSize: 16 }} /> },
-    { key: 'approval_time', label: 'Approval time', icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'theme', label: t('performance.quotationsKpi'), icon: <RequestQuoteOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'run_time', label: t('topic.runTime'), icon: <TimerOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'response_time', label: t('topic.responseTime'), icon: <QuickreplyOutlinedIcon sx={{ fontSize: 16 }} /> },
+    { key: 'approval_time', label: t('topic.approvalTime'), icon: <ThumbUpAltOutlinedIcon sx={{ fontSize: 16 }} /> },
   ];
 
   // Building / cluster lists
@@ -548,7 +551,7 @@ export default function QuotationsPerformancePage({ themeScore = 74, themeTrend 
       {/* ═══ SECTION 1: Theme KPI + Topic KPI Cards ═══ */}
       <PerformanceIndicatorsCard
         icon={<RequestQuoteOutlinedIcon sx={{ color: c.brand }} />}
-        title="Quotations Performance"
+        title={t('performance.quotationsPerformance')}
         score={themeScore}
         trend={themeTrend}
         topics={topics}

@@ -76,6 +76,7 @@ const en = {
   'common.type': 'Type',
   'common.date': 'Date',
   'common.amount': 'Amount',
+  'common.of': 'of',
   'common.contract': 'Contract',
   'common.energyLabel': 'Energy label',
   'common.modified': 'Modified',
@@ -269,6 +270,16 @@ const en = {
   'controlRoom.title': 'Control Room',
   'controlRoom.statusOverview': 'Status Overview',
   'controlRoom.kpiScoreOverTime': 'KPI Score Over Time',
+  'controlRoom.tabPortfolio': 'Portfolio',
+  'controlRoom.tabPerformance': 'Performance',
+  'controlRoom.tabInsights': 'Insights',
+  'controlRoom.sortWorstToBest': 'Worst to Best',
+  'controlRoom.sortBestToWorst': 'Best to Worst',
+  'controlRoom.sortMostImproved': 'Most Improved',
+  'controlRoom.sortMostDeteriorated': 'Most Deteriorated',
+  'controlRoom.sortAToZ': 'A to Z',
+  'controlRoom.sortZToA': 'Z to A',
+  'dashboards.themeOther': 'Other',
 
   // Portfolio
   'portfolio.title': 'Portfolio',
@@ -391,6 +402,8 @@ const en = {
   'operations.rowsPerPage': 'Rows per page',
   'operations.resultsPerPage': 'Results per page:',
   'operations.ticketNo': 'Ticket no.',
+  'operations.quotationNo': 'Quotation no.',
+  'operations.titleColumn': 'Title',
   'operations.reference': 'Reference',
   'operations.description': 'Description',
   'operations.sortDateNewest': 'Date (newest first)',
@@ -696,6 +709,16 @@ const en = {
   'performance.assetMonitoringKpi': 'Asset Monitoring KPI',
   'performance.complianceKpi': 'Compliance KPI',
   'performance.sustainabilityKpi': 'Sustainability KPI',
+
+  // Shared performance labels
+  'performance.viewDetails': 'View details',
+  'performance.building': 'building',
+  'performance.buildings': 'Buildings',
+  'performance.byLabel': 'By Label',
+  'performance.byPerformance': 'By Performance',
+  'performance.allActive': 'All active',
+  'performance.noActiveTickets': 'No active tickets',
+  'performance.noActiveQuotations': 'No active quotations',
 } as const;
 
 export type TranslationKey = keyof typeof en;
