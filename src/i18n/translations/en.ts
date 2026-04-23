@@ -566,6 +566,7 @@ const en = {
 
   // Performance components
   'performance.overallPerformance': 'Overall Performance',
+  'performance.averageScoreLastMonth': 'Average score last month',
   'performance.comfortPerformance': 'Comfort Performance',
   'performance.comfortDashboards': 'Comfort Dashboards',
   'performance.sustainabilityPerformance': 'Sustainability Performance',

@@ -88,7 +88,7 @@ export default function KpiScoreOverTimeCard({
         anchorEl={dropdownAnchor}
         open={Boolean(dropdownAnchor)}
         onClose={() => setDropdownAnchor(null)}
-        slotProps={{ paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 200 } } }}
+        slotProps={{ root: { sx: { zIndex: 1800 } }, paper: { sx: { borderRadius: '8px', mt: 0.5, minWidth: 200 } } }}
       >
         {menuItems.map(item => (
           <MenuItem

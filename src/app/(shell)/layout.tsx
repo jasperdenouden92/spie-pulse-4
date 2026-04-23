@@ -46,6 +46,7 @@ import BuildingTemplate from '@/templates/building';
 import ZoneTemplate from '@/templates/zone';
 import AssetTemplate from '@/templates/asset';
 import LinkedDocumentsList from '@/components/LinkedDocumentsList';
+import BuildingPerformanceTab from '@/components/BuildingPerformanceTab';
 import TicketTemplate from '@/templates/ticket';
 import QuotationTemplate from '@/templates/quotation';
 import ServiceOrderTemplate from '@/templates/serviceOrder';
@@ -932,6 +933,9 @@ export default function ShellLayout({ children }: { children: React.ReactNode })
             )}
             {sidePeekBuildingTab === 'documents' && (
               <LinkedDocumentsList buildingName={sidePeekBuilding.name} />
+            )}
+            {sidePeekBuildingTab === 'performance' && (
+              <BuildingPerformanceTab building={sidePeekBuilding} />
             )}
           </Box>
         )}

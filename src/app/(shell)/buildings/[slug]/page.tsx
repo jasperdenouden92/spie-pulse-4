@@ -9,6 +9,7 @@ import type { BuildingDetailTab } from '@/templates/building';
 import ZonesList from '@/components/ZonesList';
 import AssetsList, { type EnrichedAsset } from '@/components/AssetsList';
 import LinkedDocumentsList from '@/components/LinkedDocumentsList';
+import BuildingPerformanceTab from '@/components/BuildingPerformanceTab';
 import { useURLState } from '@/hooks/useURLState';
 import { useAppState } from '@/context/AppStateContext';
 import { slugToBuilding, buildingToSlug } from '@/utils/slugs';
@@ -102,6 +103,9 @@ export default function BuildingDetailRoute({ params }: { params: Promise<{ slug
       )}
       {currentTab === 'documents' && (
         <LinkedDocumentsList buildingName={building.name} />
+      )}
+      {currentTab === 'performance' && (
+        <BuildingPerformanceTab building={building} />
       )}
     </Container>
   );
