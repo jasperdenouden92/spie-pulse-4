@@ -281,10 +281,10 @@ export default function ProcessOrdersView() {
     <Box>
       {/* Title + count + search */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: c.textPrimary }}>
+        <Typography variant="h5" sx={{ fontWeight: 600, color: c.textPrimary, lineHeight: 1.2 }}>
           {t('operations.maintenance.processOrders')}
         </Typography>
-        <Typography sx={{ fontSize: '0.85rem', color: c.textSecondary }}>
+        <Typography sx={{ fontSize: '0.85rem', color: c.textSecondary, lineHeight: 1.2 }}>
           {t('maintenance.processOrders.locationsCount', { count: filteredLines.length })}
         </Typography>
         <TextField

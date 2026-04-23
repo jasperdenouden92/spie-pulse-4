@@ -326,6 +326,7 @@ const en = {
   'operations.maintenance.processOrders': 'Process orders',
   'operations.maintenance.longTermPlan': 'Long-term maintenance plan',
   'maintenance.budget.locations': 'Locations',
+  'maintenance.budget.locationsCount': '{count} locations',
   'maintenance.budget.assetTypes': 'Asset types',
   'maintenance.budget.status': 'Status',
   'maintenance.budget.amountRange': 'Amount range',

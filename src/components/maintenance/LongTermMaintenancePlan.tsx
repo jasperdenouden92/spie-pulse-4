@@ -245,10 +245,15 @@ export default function LongTermMaintenancePlan() {
   return (
     <Box>
       {/* Title + search row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h5" sx={{ fontWeight: 600, color: c.textPrimary }}>
-          {t('operations.maintenance.longTermPlan')}
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, color: c.textPrimary, lineHeight: 1.2 }}>
+            {t('operations.maintenance.longTermPlan')}
+          </Typography>
+          <Typography sx={{ fontSize: '0.85rem', color: c.textSecondary, lineHeight: 1.2 }}>
+            {t('maintenance.budget.locationsCount', { count: groups.length })}
+          </Typography>
+        </Box>
         <TextField
           size="small"
           value={search}
@@ -262,6 +267,7 @@ export default function LongTermMaintenancePlan() {
             ),
           }}
           sx={{
+            ml: 'auto',
             width: 220,
             '& .MuiOutlinedInput-root': {
               height: 30,
