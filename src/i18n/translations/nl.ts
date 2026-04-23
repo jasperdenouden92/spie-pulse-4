@@ -328,6 +328,7 @@ const nl: Record<TranslationKey, string> = {
   'operations.maintenance.processOrders': 'Onderhoudsorders',
   'operations.maintenance.longTermPlan': 'Meerjarenonderhoudsbegroting',
   'maintenance.budget.locations': 'Locaties',
+  'maintenance.budget.locationsCount': '{count} locaties',
   'maintenance.budget.assetTypes': 'Installatietypes',
   'maintenance.budget.status': 'Status',
   'maintenance.budget.amountRange': 'Bedrag',
