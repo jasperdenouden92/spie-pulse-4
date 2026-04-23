@@ -281,7 +281,7 @@ export default function ProcessOrdersView() {
     <Box>
       {/* Title + count + search */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem', color: c.textPrimary }}>
+        <Typography variant="h5" sx={{ fontWeight: 600, color: c.textPrimary }}>
           {t('operations.maintenance.processOrders')}
         </Typography>
         <Typography sx={{ fontSize: '0.85rem', color: c.textSecondary }}>
