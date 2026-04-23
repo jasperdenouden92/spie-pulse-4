@@ -567,6 +567,7 @@ const nl: Record<TranslationKey, string> = {
 
   // Performance components
   'performance.overallPerformance': 'Overall prestatie',
+  'performance.averageScoreLastMonth': 'Gemiddelde score afgelopen maand',
   'performance.comfortPerformance': 'Comfortprestaties',
   'performance.comfortDashboards': 'Comfort Dashboards',
   'performance.sustainabilityPerformance': 'Duurzaamheidsprestaties',
